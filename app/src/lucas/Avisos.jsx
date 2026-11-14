@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { enSoles, fechaCorta, fechaDia } from '../formato.js'
 import { vistaCon } from '../motor/cliente.js'
-import { armarBandeja, candidatos, MAXIMO_POR_SEMANA } from './avisos.js'
+import { armarBandeja, candidatos, inicioDeSemana, MAXIMO_POR_SEMANA } from './avisos.js'
 import { guardarOpiniones, guardarRegistro, leerOpiniones, leerRegistro } from './avisosGuardados.js'
 
 const GASTO_DE_PRUEBA = 300
@@ -38,24 +38,33 @@ function Etiqueta({ aviso }) {
   )
 }
 
+// Regla 3 de historias.md: cada aviso dice acción, impacto en S/, por qué, datos usados, supuesto y qué tan seguro es.
 function textos(aviso) {
   if (aviso.tipo === 'riesgo') {
+    const masProbable = aviso.esperado < 0
     return {
       titulo: aviso.dias === 0 ? 'Hoy podrías quedar en rojo' : `Podrías quedar en rojo ${cuando(aviso)}`,
-      detalle: `En el peor caso tu saldo baja a ${enSoles(aviso.impacto)} antes de tu cobro del ${fechaCorta(aviso.cobro.fecha)}. Lo más probable es que el ${fechaCorta(aviso.peorFecha)} tengas ${enSoles(aviso.esperado)}.`,
+      detalle: `En el peor caso tu saldo baja a ${enSoles(aviso.impacto)} antes de tu cobro del ${fechaCorta(aviso.cobro.fecha)}.${
+        aviso.tip ? ` Con «${aviso.tip.titulo}», ese día mejora ${enSoles(aviso.tip.mejora)}.` : ''
+      }`,
       impacto: `${enSoles(aviso.impacto)} en el peor caso`,
-      porque:
-        'Sale de tu pronóstico a 30 días: tus pagos programados, tu gasto diario y el rango de lo que sueles cobrar. Lucas avisa cuando faltan 7 días o menos, para que tengas tiempo de ajustar.',
+      porque: 'Lucas avisa cuando faltan 7 días o menos, para que tengas tiempo de ajustar.',
+      datos: 'Tu pronóstico a 30 días: pagos programados, gasto diario y el rango de lo que sueles cobrar.',
+      supuesto: 'El peor caso es el borde bajo de la banda del pronóstico, no lo más probable.',
+      seguridad: masProbable
+        ? `Alta: incluso lo más probable es que ese día tengas ${enSoles(aviso.esperado)}.`
+        : `Baja: lo más probable es que el ${fechaCorta(aviso.peorFecha)} tengas ${enSoles(aviso.esperado)}; el rojo es posible, no seguro.`,
     }
   }
   if (aviso.tipo === 'pago') {
     return {
       titulo: `${aviso.concepto}: ${enSoles(-aviso.impacto)} ${cuando(aviso)}`,
-      detalle: aviso.tip
-        ? `${aviso.uso}. Si la pausas, tu día más justo mejora ${enSoles(aviso.tip.mejora)}.`
-        : 'Es un pago programado: tenlo en cuenta en lo que gastes hasta entonces.',
+      detalle: `${aviso.uso}. Si la pausas, tu día más justo mejora ${enSoles(aviso.tip.mejora)}.`,
       impacto: `${enSoles(aviso.impacto)} de tu saldo`,
-      porque: 'Es un pago programado de tu cuenta y cae en los próximos 7 días.',
+      porque: 'Se cobra en los próximos 7 días y casi no la usas.',
+      datos: 'Tus pagos programados y cuántas veces usaste el servicio.',
+      supuesto: 'Que la pausas antes del cobro y la retomas cuando quieras.',
+      seguridad: 'Alta: el monto y la fecha son los de tu pago programado.',
     }
   }
   return {
@@ -64,7 +73,10 @@ function textos(aviso) {
       ? `Ese día podrías apartar ${enSoles(aviso.apartado.monto)} sin quedar en rojo después.`
       : 'Ese margen lo necesitas para tus próximos pagos.',
     impacto: `+${enSoles(aviso.impacto)} esperados`,
-    porque: 'Sale de tus cobros de los últimos 6 meses.',
+    porque: 'Apartar el día del cobro es más fácil que al final del mes.',
+    datos: 'Tus cobros de los últimos 6 meses.',
+    supuesto: 'Que el cobro llegue en la fecha de siempre.',
+    seguridad: 'Media: el monto de tus cobros cambia de un mes a otro.',
   }
 }
 
@@ -106,7 +118,13 @@ function Aviso({ aviso, opinion, alOpinar }) {
       </Link>
       <details>
         <summary>¿Por qué?</summary>
-        <p className="suave">{t.porque}</p>
+        <ul className="lista-limpia aviso-porque">
+          <li>{t.porque}</li>
+          <li>Datos usados: {t.datos}</li>
+          <li>Supuesto: {t.supuesto}</li>
+          <li>Qué tan seguro: {t.seguridad}</li>
+          <li>Tú decides: Lucas no mueve tu plata.</li>
+        </ul>
       </details>
       <Opinion id={aviso.id} opinion={opinion} alOpinar={alOpinar} />
     </li>
@@ -141,21 +159,32 @@ export default function Avisos({ cliente }) {
   const [diaDemo, setDiaDemo] = useState(cliente.hoy)
   const [conGasto, setConGasto] = useState(false)
   const [registro, setRegistro] = useState(leerRegistro)
+  // La demo usa una copia en memoria: probar otros días no gasta el tope de la semana real.
+  const [registroDemo, setRegistroDemo] = useState(leerRegistro)
   const [opiniones, setOpiniones] = useState(leerOpiniones)
 
   const vista = useMemo(
     () => (conGasto ? vistaCon(cliente.elegidos, cliente.personaId, [{ id: 'prueba', fecha: sumarDias(diaDemo, 1), monto: GASTO_DE_PRUEBA }]) : cliente),
     [cliente, conGasto, diaDemo],
   )
+  const enDemo = diaDemo !== cliente.hoy || conGasto
+  const actual = enDemo ? registroDemo : registro
   const { avisos: lista, riesgoLejano } = candidatos(vista, diaDemo)
-  const bandeja = armarBandeja(lista, registro, diaDemo)
+  const bandeja = armarBandeja(lista, actual, diaDemo)
   const idsSemana = bandeja.registro[bandeja.semana]
 
   // Lo que se muestra pasa a contar en el tope de la semana; se ajusta en el mismo render, sin esperar a un efecto.
-  if (JSON.stringify(registro[bandeja.semana] ?? []) !== JSON.stringify(idsSemana)) {
-    setRegistro({ ...registro, [bandeja.semana]: idsSemana })
+  if (JSON.stringify(actual[bandeja.semana] ?? []) !== JSON.stringify(idsSemana)) {
+    const nuevo = { ...actual, [bandeja.semana]: idsSemana }
+    if (enDemo) setRegistroDemo(nuevo)
+    else setRegistro(nuevo)
   }
-  useEffect(() => guardarRegistro(registro), [registro])
+  // Solo se guarda la semana en curso: las pasadas ya no cuentan para el tope.
+  const semanaReal = inicioDeSemana(cliente.hoy)
+  const idsReales = registro[semanaReal]
+  useEffect(() => {
+    if (idsReales) guardarRegistro({ [semanaReal]: idsReales })
+  }, [semanaReal, idsReales])
 
   function opinar(id, valor) {
     const nuevas = { ...opiniones, [id]: opiniones[id] === valor ? undefined : valor }
@@ -172,16 +201,15 @@ export default function Avisos({ cliente }) {
         { fecha: sumarDias(riesgoBase.desde, -2), nombre: fechaCorta(sumarDias(riesgoBase.desde, -2)) },
       ]
     : [{ fecha: cliente.hoy, nombre: 'Hoy' }]
-  const enDemo = diaDemo !== cliente.hoy || conGasto
-
   return (
     <>
       <section className="seccion" aria-labelledby="avisos-titulo">
         <h2 id="avisos-titulo">Tus avisos</h2>
         <p className="suave">
-          Lucas te escribe como máximo {MAXIMO_POR_SEMANA} veces por semana, de lunes a domingo. Esta semana{' '}
-          {bandeja.restantes === 1 ? 'queda 1 aviso' : `quedan ${bandeja.restantes} avisos`}.
+          Lucas te escribe como máximo {MAXIMO_POR_SEMANA} veces por semana, de lunes a domingo. Esta semana van{' '}
+          {MAXIMO_POR_SEMANA - bandeja.restantes} de {MAXIMO_POR_SEMANA}.
         </p>
+        <Demo dias={diasDemo} diaDemo={diaDemo} setDiaDemo={setDiaDemo} conGasto={conGasto} setConGasto={setConGasto} />
         {enDemo && (
           <p className="aviso-nota" role="status">
             Vista de prueba: así se vería el {fechaDia(diaDemo)}
@@ -220,7 +248,6 @@ export default function Avisos({ cliente }) {
         )}
       </section>
 
-      <Demo dias={diasDemo} diaDemo={diaDemo} setDiaDemo={setDiaDemo} conGasto={conGasto} setConGasto={setConGasto} />
 
       <p className="decision">Lucas te avisa, no mueve tu plata ni es asesoría: tú decides.</p>
     </>

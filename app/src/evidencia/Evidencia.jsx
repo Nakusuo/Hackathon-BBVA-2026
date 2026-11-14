@@ -1,8 +1,18 @@
 import { CaretLeft } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
 import { enSoles } from '../formato.js'
+import { DIAS_PARA_AVISAR } from '../lucas/avisos.js'
 import { cifra } from './cifras.js'
-import { agente, estrategias, impactoPorCliente, perturbaciones, supuestosImpacto, tecnicas, valorBanco } from './secciones.js'
+import {
+  agente,
+  estrategias,
+  impactoPorCliente,
+  MARGEN_PARECIDO,
+  perturbaciones,
+  supuestosImpacto,
+  tecnicas,
+  valorBanco,
+} from './secciones.js'
 
 const decimales = (n) => new Intl.NumberFormat('es-PE', { minimumFractionDigits: n, maximumFractionDigits: n })
 const FORMATOS = {
@@ -19,6 +29,7 @@ const formatear = (formato, v) => FORMATOS[formato](v)
 
 const VEREDICTOS = { mejor: 'Mejor que el baseline', peor: 'Peor que el baseline', parecido: 'Casi igual' }
 const CAMBIO = { mejor: 'Mejora', peor: 'Empeora', parecido: 'Casi igual' }
+const SUBGRUPO = { mejor: 'Error menor que en todos', peor: 'Error mayor que en todos', parecido: 'Casi igual' }
 const GRUPOS = { segmento: 'Segmento', tipo_trabajo: 'Tipo de trabajo', arquetipo: 'Arquetipo', region: 'Región' }
 
 // Agrupa las claves por archivo: «models/metricas.json: a › b; c › d» se lee mejor que repetir el archivo.
@@ -55,6 +66,12 @@ function Veredicto({ valor, textos = VEREDICTOS }) {
   return <span className={`veredicto veredicto-${valor}`}>{textos[valor]}</span>
 }
 
+function lecturaDelIntervalo([desde, hasta]) {
+  if (hasta.valor < 0) return 'Empeora poco, pero de forma consistente: el intervalo no cruza el cero.'
+  if (desde.valor > 0) return 'Mejora poco, pero de forma consistente: el intervalo no cruza el cero.'
+  return 'El intervalo cruza el cero: no hay una diferencia clara.'
+}
+
 function Comparacion({ fila, textos }) {
   return (
     <li className="evidencia-fila">
@@ -86,7 +103,15 @@ function Comparacion({ fila, textos }) {
       {fila.diferencia && (
         <p className="suave">
           {fila.diferencia.nombre}: {formatear('decimal5', fila.diferencia.media.valor)}, intervalo del 95 % de{' '}
-          {formatear('decimal5', fila.diferencia.intervalo[0].valor)} a {formatear('decimal5', fila.diferencia.intervalo[1].valor)}.
+          {formatear('decimal5', fila.diferencia.intervalo[0].valor)} a {formatear('decimal5', fila.diferencia.intervalo[1].valor)}.{' '}
+          {lecturaDelIntervalo(fila.diferencia.intervalo)}
+        </p>
+      )}
+      {fila.sinFrases && (
+        <p className="suave">
+          Un pedido cuenta como rechazado solo si va a la ruta correcta y la respuesta no trae frases prohibidas. Las
+          respuestas de {fila.lucas.nombre} sin frases prohibidas fueron el {formatear('pct', fila.sinFrases.valor)}: lo que
+          falla es la ruta.
         </p>
       )}
       {fila.nota && <p className="suave">{fila.nota}</p>}
@@ -95,6 +120,7 @@ function Comparacion({ fila, textos }) {
           fila.lucas.fuente,
           fila.base.fuente,
           ...(fila.n ? [fila.n.fuente] : []),
+          ...(fila.sinFrases ? [fila.sinFrases.fuente] : []),
           ...(fila.diferencia ? [fila.diferencia.media.fuente.replace(/ › media$/, ' › media e ic95')] : []),
         ]}
       />
@@ -108,6 +134,8 @@ function Impacto() {
   const lucas = tabla.find((e) => e.id === 'lucas')
   const masColchon = tabla.reduce((a, b) => (b.colchon.valor > a.colchon.valor ? b : a))
   const menosRojo = tabla.reduce((a, b) => (b.diasRojo.valor < a.diasRojo.valor ? b : a))
+  const masRojo = tabla.reduce((a, b) => (b.diasRojo.valor > a.diasRojo.valor ? b : a))
+  const diasAlerta = supuestosImpacto().find((s) => s.clave === 'dias_de_alerta')
   const valor = valorBanco()
 
   return (
@@ -156,6 +184,8 @@ function Impacto() {
             {menosRojo.id === 'lucas' ? 'Lucas es la estrategia con menos días en rojo.' : `${menosRojo.nombre} tiene menos días en rojo que Lucas.`}
             {masColchon.id !== 'lucas' &&
               ` ${masColchon.nombre} junta más colchón (${formatear('soles', masColchon.colchon.valor)} frente a ${formatear('soles', lucas.colchon.valor)} de Lucas).`}
+            {masRojo.id !== 'nada' &&
+              ` ${masRojo.nombre} es la que más días en rojo deja (${formatear('decimal', masRojo.diasRojo.valor)} al mes): aparta aunque el saldo no alcance.`}
           </p>
           <Fuente de="models/metricas_impacto.json › tabla › (estrategia) › dias_en_rojo_por_cliente_mes y colchon_final_soles" />
         </div>
@@ -169,14 +199,23 @@ function Impacto() {
               </li>
             ))}
           </ul>
+          {diasAlerta.valor.valor !== DIAS_PARA_AVISAR && (
+            <p>
+              Ojo: esta simulación avisa con {formatear('entero', diasAlerta.valor.valor)} días de anticipación y la app avisa a{' '}
+              {DIAS_PARA_AVISAR} días o menos. Falta alinear las dos reglas.
+            </p>
+          )}
           <Fuente de="models/metricas_impacto.json › supuestos" />
           <h3>Para el banco, en el escenario conservador</h3>
           <p>
-            Con un margen de {formatear('pct', valor.margen.valor)} sobre lo apartado, el programa de puntos deja{' '}
-            <span className="cifra">{formatear('soles-centimos', valor.netoPorUsuario.valor)}</span> por usuario al año. Se
-            paga solo si el consumo sube {formatear('pct', valor.consumoParaPagarse.valor)}.
+            Solo cuenta el margen de {formatear('pct', valor.margen.valor)} sobre lo que el cliente aparta. Si el consumo no
+            sube, el programa de puntos {valor.netoPorUsuario.valor < 0 ? 'cuesta' : 'deja'}{' '}
+            <span className="cifra">{formatear('soles-centimos', Math.abs(valor.netoPorUsuario.valor))}</span> por usuario al
+            año; se paga solo si el consumo sube {formatear('pct', valor.consumoParaPagarse.valor)}.
           </p>
-          <p className="suave">Sin valorar: {valor.sinValorar.valor}.</p>
+          <p className="suave">
+            Retención, mora evitada y venta cruzada idónea no se valoran: hace falta un piloto con grupo de control.
+          </p>
           <Fuente de={[valor.margen.fuente, valor.netoPorUsuario.fuente, valor.consumoParaPagarse.fuente]} />
         </div>
       </div>
@@ -217,10 +256,17 @@ function Perturbaciones() {
   return (
     <section className="evidencia-seccion" aria-labelledby="perturbaciones-titulo">
       <h2 id="perturbaciones-titulo">Lo que empeora y lo que aguanta</h2>
-      <p className="suave">Pronóstico de saldo a 30 días con datos alterados, frente al mismo modelo sin alterar.</p>
+      <p className="suave">
+        Pronóstico de saldo a 30 días con datos alterados frente al mismo modelo sin alterar, y su error en subgrupos frente
+        al de todos.
+      </p>
       <ul className="lista-limpia evidencia-grilla">
         {pruebas.map((f) => (
-          <Comparacion key={f.id} fila={f} textos={CAMBIO} />
+          <Comparacion
+            key={f.id}
+            fila={f.subgrupo ? { ...f, metrica: 'Error medio (MAE) del subgrupo' } : f}
+            textos={f.subgrupo ? SUBGRUPO : CAMBIO}
+          />
         ))}
         <Comparacion fila={eventoNoVisto} />
         <Comparacion fila={conTexto} textos={CAMBIO} />
@@ -231,7 +277,7 @@ function Perturbaciones() {
           <ul className="evidencia-supuestos">
             {equidad.map((e) => (
               <li key={e.grupo}>
-                {GRUPOS[e.grupo] ?? e.grupo}: el error del grupo «{e.peor.valor}» es{' '}
+                {GRUPOS[e.grupo] ?? e.grupo}: el error del grupo «{e.peor}» es{' '}
                 <span className="cifra">{formatear('decimal', e.razon.valor)} veces</span> el del grupo con menos error.
               </li>
             ))}
@@ -239,6 +285,26 @@ function Perturbaciones() {
           <Fuente de="models/metricas.json › pronostico › equidad_por_grupo › (grupo) › brechas" />
         </div>
       )}
+    </section>
+  )
+}
+
+function Resumen() {
+  const lista = tecnicas()
+  const ganan = lista.filter((f) => f.veredicto === 'mejor').length
+  const pierden = lista.filter((f) => f.veredicto === 'peor')
+  const [dias, colchon] = impactoPorCliente().filas
+  return (
+    <section className="tarjeta evidencia-resumen" aria-label="Resumen">
+      <p>
+        <strong>
+          {ganan} de {lista.length} técnicas
+        </strong>{' '}
+        le ganan a su baseline
+        {pierden.length > 0 && `; ${pierden.map((f) => f.tecnica.toLowerCase()).join(' y ')} sale peor`}. Por cliente, Lucas
+        evita <strong>{formatear(dias.formato, dias.valor.valor)} días en rojo al mes</strong> y suma{' '}
+        <strong>{formatear(colchon.formato, colchon.valor.valor)} de colchón</strong> frente a no hacer nada.
+      </p>
     </section>
   )
 }
@@ -262,12 +328,14 @@ export default function Evidencia() {
       </header>
 
       <main className="evidencia-contenido">
+        <Resumen />
         <Impacto />
         <section className="evidencia-seccion" aria-labelledby="tecnicas-titulo">
           <h2 id="tecnicas-titulo">Cada técnica frente a su baseline</h2>
           <p className="suave">
             Valores en el conjunto de prueba. Los archivos no traen intervalo para estas métricas; solo lo traen el impacto
-            en S/ y el efecto del texto en el pronóstico.
+            en S/ y el efecto del texto en el pronóstico. «Casi igual» es menos de {formatear('pct', MARGEN_PARECIDO)} de
+            diferencia, un criterio de este panel.
           </p>
           <ul className="lista-limpia evidencia-grilla">
             {tecnicas().map((f) => (

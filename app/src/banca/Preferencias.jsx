@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import SelectorPersona from '../componentes/SelectorPersona.jsx'
 import { fechaCorta } from '../formato.js'
+import { borrarAvisosGuardados } from '../lucas/avisosGuardados.js'
 import { aplicarTema, temaGuardado } from '../tema.js'
 
 function Privacidad() {
@@ -65,6 +66,7 @@ function Privacidad() {
 export default function Preferencias() {
   const { personaId, elegirPersona } = useOutletContext()
   const [tema, setTema] = useState(temaGuardado)
+  const [avisosBorrados, setAvisosBorrados] = useState(false)
 
   const oscuro = tema === 'oscuro'
 
@@ -109,6 +111,24 @@ export default function Preferencias() {
           </button>
         </div>
         <p className="suave">Se aplica a toda la app y se recuerda en este navegador.</p>
+      </section>
+
+      <section className="tarjeta" aria-labelledby="guardado-titulo">
+        <h2 id="guardado-titulo">Lo que Lucas guarda en este navegador</h2>
+        <p className="suave">Qué avisos viste esta semana y si te sirvieron. No guarda montos ni lo que escribes.</p>
+        <button
+          type="button"
+          className="boton boton-secundario"
+          onClick={() => {
+            borrarAvisosGuardados()
+            setAvisosBorrados(true)
+          }}
+        >
+          Borrar mis avisos y opiniones
+        </button>
+        <p className="suave" role="status">
+          {avisosBorrados && 'Listo, se borró.'}
+        </p>
       </section>
 
       <section className="tarjeta" aria-labelledby="evidencia-titulo">

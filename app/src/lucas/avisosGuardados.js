@@ -24,3 +24,12 @@ export const leerRegistro = () => leer(CLAVE_REGISTRO)
 export const guardarRegistro = (registro) => guardar(CLAVE_REGISTRO, registro)
 export const leerOpiniones = () => leer(CLAVE_OPINIONES)
 export const guardarOpiniones = (opiniones) => guardar(CLAVE_OPINIONES, opiniones)
+
+export function borrarAvisosGuardados() {
+  try {
+    window.localStorage.removeItem(CLAVE_REGISTRO)
+    window.localStorage.removeItem(CLAVE_OPINIONES)
+  } catch {
+    // Sin almacenamiento no hay nada guardado que borrar.
+  }
+}

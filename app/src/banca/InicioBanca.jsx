@@ -39,7 +39,8 @@ export default function InicioBanca() {
   const monto = (valor) => (montosVisibles ? enSoles(valor) : OCULTO)
   const { riesgo, cuenta, tarjeta, hoy, proximoIngreso } = cliente
   const pagosAntesDelCobro = cliente.proximosPagos.filter((p) => p.fecha < proximoIngreso.fecha)
-  const totalAvisos = armarBandeja(candidatos(cliente).avisos, leerRegistro(), hoy).avisos.length
+  const { avisos: candidatosHoy, riesgoLejano } = candidatos(cliente)
+  const totalAvisos = armarBandeja(candidatosHoy, leerRegistro(), hoy).avisos.length
 
   return (
     <>
@@ -129,9 +130,13 @@ export default function InicioBanca() {
         ) : riesgo ? (
           <Link to="/lucas/resumen" className="tarjeta-lucas">
             <MarcaLucas tamano={44} />
+            {/* Con el rojo a más de 7 días no hay aviso (regla de avisos): Lucas lo muestra como algo que viene. */}
             <span className="tarjeta-lucas-texto">
-              <strong>Lucas te avisa</strong>
-              <span>{textoDiasEnRojo(riesgo)} podrías quedar en rojo. Mira cómo evitarlo.</span>
+              <strong>{riesgoLejano ? 'Lucas lo ve venir' : 'Lucas te avisa'}</strong>
+              <span>
+                {riesgoLejano && `En ${riesgoLejano.dias} días: `}
+                {textoDiasEnRojo(riesgo)} podrías quedar en rojo. Mira cómo evitarlo.
+              </span>
             </span>
           </Link>
         ) : (

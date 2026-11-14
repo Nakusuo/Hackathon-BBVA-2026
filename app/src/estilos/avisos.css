@@ -109,3 +109,8 @@
   flex-wrap: wrap;
   justify-self: start;
 }
+
+.aviso-porque {
+  gap: 6px;
+  color: var(--tinta-suave);
+}

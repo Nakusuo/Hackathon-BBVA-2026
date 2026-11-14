@@ -3,7 +3,7 @@
 import { booleano, claves, cifra, texto } from './cifras.js'
 
 // Por debajo de 1 % de diferencia no se dice que uno gana.
-const MARGEN_PARECIDO = 0.01
+export const MARGEN_PARECIDO = 0.01
 
 export function veredicto(lucas, base, mejor) {
   const distancia = (v) => (typeof mejor === 'object' ? -Math.abs(v - mejor.objetivo) : mejor === 'mayor' ? v : -v)
@@ -63,9 +63,9 @@ export function estrategias() {
 
 export function supuestosImpacto() {
   return [
-    { nombre: 'Interés mensual por cubrir el hueco', formato: 'pct', valor: cifra('impacto', 'supuestos', 'tasa_mensual_por_cubrir_el_hueco') },
-    { nombre: 'Probabilidad de rojo que dispara la alerta', formato: 'decimal', valor: cifra('impacto', 'supuestos', 'umbral_alerta_p_rojo') },
-    { nombre: 'Días de alerta antes del rojo', formato: 'entero', valor: cifra('impacto', 'supuestos', 'dias_de_alerta') },
+    { clave: 'tasa', nombre: 'Interés mensual por cubrir el hueco', formato: 'pct', valor: cifra('impacto', 'supuestos', 'tasa_mensual_por_cubrir_el_hueco') },
+    { clave: 'umbral', nombre: 'Probabilidad de rojo que dispara la alerta', formato: 'decimal', valor: cifra('impacto', 'supuestos', 'umbral_alerta_p_rojo') },
+    { clave: 'dias_de_alerta', nombre: 'Días de alerta antes del rojo', formato: 'entero', valor: cifra('impacto', 'supuestos', 'dias_de_alerta') },
   ]
 }
 
@@ -75,7 +75,6 @@ export function valorBanco() {
     netoPorUsuario: cifra('valor', ...c, 'neto_por_usuario_sin_mas_consumo'),
     consumoParaPagarse: cifra('valor', ...c, 'mas_consumo_necesario_para_pagarse'),
     margen: cifra('valor', 'supuestos', 'margen_anual_sobre_saldo_apartado'),
-    sinValorar: texto('valor', ...c, 'nota'),
   }
 }
 
@@ -152,7 +151,11 @@ export function agente() {
     nPlantillas: ag('agentePlantillas', 'n'),
     filas: [
       par('sin-inventar', 'Respuestas sin cifras inventadas', 'pct', 'mayor', 'respuestas_sin_cifras_inventadas'),
-      par('prohibidos', 'Pedidos prohibidos rechazados', 'pct', 'mayor', 'pedidos_prohibidos_rechazados'),
+      {
+        ...par('prohibidos', 'Pedidos prohibidos rechazados', 'pct', 'mayor', 'pedidos_prohibidos_rechazados'),
+        // eval/evaluar_agente.py cuenta un rechazo solo si la ruta es la correcta y no hay frases prohibidas.
+        sinFrases: ag('agenteGemini', 'sin_frases_prohibidas'),
+      },
       par('ruteo', 'Ruteo correcto', 'pct', 'mayor', 'ruteo_correcto'),
       par('latencia', 'Latencia media', 'segundos', 'menor', 'latencia_media_s'),
     ],
@@ -168,9 +171,11 @@ export function agente() {
 const NOMBRES_PERTURBACION = {
   ruido_10pct_en_historial: 'Ruido de 10 % en el historial',
   faltantes_extra_20pct: '20 % más de datos faltantes',
-  clientes_con_cambio_de_patron: 'Clientes que cambian de patrón',
-  clientes_sin_cambio_de_patron: 'Clientes sin cambio de patrón',
+  clientes_con_cambio_de_patron: 'Solo clientes que cambian de patrón',
+  clientes_sin_cambio_de_patron: 'Solo clientes sin cambio de patrón',
 }
+// Estas dos no alteran datos: miden el error en un subgrupo frente al de todos.
+const SUBGRUPOS = ['clientes_con_cambio_de_patron', 'clientes_sin_cambio_de_patron']
 
 export function perturbaciones() {
   const original = pron('perturbaciones', 'original', 'mae_s')
@@ -178,8 +183,9 @@ export function perturbaciones() {
     .filter((k) => k !== 'original')
     .map((k) =>
       fila(k, NOMBRES_PERTURBACION[k] ?? k, 'Error medio (MAE)', 'soles', 'menor',
-        { nombre: 'Con la perturbación', ...pron('perturbaciones', k, 'mae_s') },
-        { nombre: 'Sin perturbar', ...original }),
+        { nombre: SUBGRUPOS.includes(k) ? 'En el subgrupo' : 'Con la perturbación', ...pron('perturbaciones', k, 'mae_s') },
+        { nombre: SUBGRUPOS.includes(k) ? 'Todos' : 'Sin perturbar', ...original },
+        { subgrupo: SUBGRUPOS.includes(k) }),
     )
   const evento = ['evento_no_visto_confinamiento']
   return {
@@ -202,7 +208,12 @@ export function perturbaciones() {
       .map((g) => ({
         grupo: g,
         razon: pron('equidad_por_grupo', g, 'brechas', 'razon_mae'),
-        peor: texto('principal', 'pronostico', 'equidad_por_grupo', g, 'brechas', 'peor_grupo_mae'),
+        peor: nombreGrupo(g, texto('principal', 'pronostico', 'equidad_por_grupo', g, 'brechas', 'peor_grupo_mae').valor),
       })),
   }
+}
+
+// Los segmentos vienen numerados; su nombre de nivel está en segmentacion › niveles.
+function nombreGrupo(grupo, valor) {
+  return grupo === 'segmento' ? texto('principal', 'segmentacion', 'niveles', valor).valor : valor
 }

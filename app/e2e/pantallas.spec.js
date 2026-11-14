@@ -104,7 +104,7 @@ test('con movimiento reducido las cifras del resumen salen ya en su valor final'
 test('lo importante se ve sin bajar: aviso de Lucas en la banca y gasto diario en Lucas', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/banca')
-  await expect(page.getByRole('link', { name: /Lucas te avisa/ })).toBeInViewport()
+  await expect(page.getByRole('link', { name: /Lucas lo ve venir/ })).toBeInViewport()
   await page.goto('/lucas/resumen')
   await expect(page.getByRole('region', { name: 'Cuánto puedes gastar' })).toBeInViewport()
 })
@@ -116,7 +116,7 @@ test('ingreso, permiso, banca, Lucas y guía de primera vez', async ({ page }) =
   await page.getByRole('button', { name: 'Acepto, activar Lucas' }).click()
   await expect(page).toHaveURL(/banca/)
 
-  await page.getByRole('link', { name: /Lucas te avisa/ }).click()
+  await page.getByRole('link', { name: /Lucas lo ve venir/ }).click()
   const guia = page.getByRole('dialog')
   const tarjeta = page.locator('.guia-tarjeta')
   // Cada paso debe verse completo: antes el paso 2 quedaba aplastado en 36 px.
@@ -413,10 +413,10 @@ test('Avisos: la campana abre la bandeja; hoy el riesgo está a 14 días y no ga
   await page.getByRole('link', { name: /^Avisos de Lucas/ }).click()
   await expect(page).toHaveURL(/lucas\/avisos/)
   const avisos = page.locator('.aviso-item')
-  await expect(avisos).toHaveCount(2)
+  await expect(avisos).toHaveCount(1)
+  await expect(avisos.first()).toContainText('MusiKa Plus')
   await expect(page.locator('.aviso-item[data-tipo="riesgo"]')).toHaveCount(0)
   await expect(page.getByText(/Tu riesgo de quedar en rojo empieza .* en 14 días/)).toBeVisible()
-  await expect(page.getByText('Otro aviso quedó fuera por el tope semanal')).toBeVisible()
   for (const aviso of await avisos.all()) {
     await expect(aviso.getByText('Aviso', { exact: true })).toBeVisible()
     await expect(aviso.getByText(/^Impacto:/)).toBeVisible()
@@ -449,7 +449,7 @@ test('Avisos CP-SIS-29: un gasto que adelanta el rojo actualiza el mismo aviso s
   await page.getByText('Probar la regla en la demo').click()
   await page.getByRole('group', { name: 'Día de la demo' }).getByRole('button', { name: '21 nov' }).click()
   const riesgo = page.locator('.aviso-item[data-tipo="riesgo"]')
-  const contador = page.getByText(/Esta semana (queda|quedan) \d/)
+  const contador = page.getByText(/Esta semana van \d de 3/)
   const antes = { contador: await contador.textContent(), texto: await riesgo.textContent() }
 
   await page.getByRole('group', { name: 'Gasto de prueba' }).getByRole('button', { name: /mañana/ }).click()
@@ -485,4 +485,17 @@ test('Evidencia: empieza por el impacto en S/, cada cifra con su fuente y muestr
   expect(await page.locator('.fuente').count()).toBeGreaterThan(20)
   await expect(page.getByText('Peor que el baseline').first()).toBeVisible()
   await expect(page.getByText('Empeora').first()).toBeVisible()
+})
+
+test('Avisos: probar la regla en la demo no gasta el tope de la semana real', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/avisos')
+  await expect(page.getByText('Esta semana van 1 de 3')).toBeVisible()
+  await page.getByText('Probar la regla en la demo').click()
+  await page.getByRole('group', { name: 'Día de la demo' }).getByRole('button', { name: '26 nov' }).click()
+  await page.getByRole('group', { name: 'Gasto de prueba' }).getByRole('button', { name: /mañana/ }).click()
+  await page.goto('/banca')
+  await expect(page.getByRole('link', { name: 'Avisos de Lucas: 1' })).toBeVisible()
+  const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem('lucas-avisos-semana')))
+  expect(Object.keys(guardado)).toEqual(['2026-11-09'])
 })

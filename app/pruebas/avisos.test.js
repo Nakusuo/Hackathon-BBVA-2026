@@ -39,11 +39,12 @@ test('el mismo pronóstico visto el 21 da aviso normal y el 26, urgente', () => 
   assert.equal(del21.impacto, cliente.riesgo.peorMonto)
 })
 
-test('los pagos solo avisan dentro de los 7 días y el de una suscripción sin uso lleva al tip', () => {
+test('solo avisan los pagos con algo que hacer, dentro de los 7 días, y llevan al tip', () => {
   const { avisos } = candidatos(cliente, HOY)
   const pagos = avisos.filter((a) => a.tipo === 'pago')
-  assert.ok(pagos.length > 0 && pagos.every((a) => a.dias >= 0 && a.dias <= 7))
-  const musika = pagos.find((a) => a.id.startsWith('pago-musika'))
+  assert.deepEqual(pagos.map((a) => a.id), ['pago-musika'])
+  assert.ok(pagos.every((a) => a.tip && a.dias >= 0 && a.dias <= 7))
+  const musika = pagos[0]
   assert.equal(musika.tip.id, 'musika')
   assert.equal(musika.accion.ruta, '/lucas/resumen#tips')
 })
@@ -91,4 +92,12 @@ test('la semana va de lunes a domingo: el domingo 15 y el lunes 16 están en sem
   const lleno = { '2026-11-09': ['pago-a', 'pago-b', 'riesgo-x'] }
   assert.equal(armarBandeja([aviso('pago-c', 'pago', -10)], lleno, '2026-11-15').avisos.length, 0)
   assert.equal(armarBandeja([aviso('pago-c', 'pago', -10)], lleno, '2026-11-16').avisos.length, 1)
+})
+
+test('un riesgo de un hueco nuevo conserva su lugar aunque lleguen pagos', () => {
+  const registro = { [inicioDeSemana(HOY)]: ['riesgo-2026-11-30'] }
+  const lista = [aviso('riesgo-2026-12-15', 'riesgo', -80), aviso('pago-1', 'pago', -300), aviso('pago-2', 'pago', -200)]
+  const { avisos, restantes } = armarBandeja(lista, registro, HOY)
+  assert.deepEqual(avisos.map((a) => a.id), ['riesgo-2026-12-15', 'pago-1'])
+  assert.equal(restantes, 0)
 })

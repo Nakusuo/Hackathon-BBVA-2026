@@ -4,7 +4,7 @@
 import { diasEntre } from '../formato.js'
 
 export const MAXIMO_POR_SEMANA = 3
-const DIAS_PARA_AVISAR = 7
+export const DIAS_PARA_AVISAR = 7
 const DIAS_URGENTE = 2
 const PREFIJO_RIESGO = 'riesgo-'
 
@@ -39,20 +39,22 @@ function avisoDeRiesgo(cliente, hoy) {
       esperado: riesgo.esperado,
       peorFecha: riesgo.peorFecha,
       cobro: proximoIngreso,
+      tip: cliente.recomendaciones[0],
       accion: { texto: 'Ver cómo evitarlo', ruta: '/lucas/resumen#tips' },
     },
   }
 }
 
+// Solo avisan los pagos con algo que hacer (un tip que los pausa); los demás se ven en Qué viene sin gastar el tope.
 function avisosDePagos(cliente, hoy) {
   return cliente.proximosPagos.flatMap((pago) => {
     const dias = diasEntre(hoy, pago.fecha)
-    if (dias < 0 || dias > DIAS_PARA_AVISAR) return []
     const tip = cliente.recomendaciones.find((r) => r.ajuste.pagosOmitidos?.includes(pago.id))
+    if (!tip || dias < 0 || dias > DIAS_PARA_AVISAR) return []
     const suscripcion = cliente.suscripciones.find((s) => s.id === pago.id)
     return [
       {
-        id: `pago-${pago.id}-${pago.fecha}`,
+        id: `pago-${pago.id}`,
         tipo: 'pago',
         urgencia: 'normal',
         fecha: pago.fecha,
@@ -61,9 +63,7 @@ function avisosDePagos(cliente, hoy) {
         concepto: pago.concepto,
         uso: suscripcion?.uso,
         tip,
-        accion: tip
-          ? { texto: 'Ver el tip para pausarla', ruta: '/lucas/resumen#tips' }
-          : { texto: 'Ver tus próximos pagos', ruta: '/lucas/que-viene' },
+        accion: { texto: 'Ver el tip para pausarla', ruta: '/lucas/resumen#tips' },
       },
     ]
   })
@@ -98,8 +98,9 @@ export function candidatos(cliente, hoy = cliente.hoy) {
 
 const esRiesgo = (id) => id.startsWith(PREFIJO_RIESGO)
 
-// `registro` guarda por semana los ids que ya se mostraron: un aviso ya mostrado sigue y no gasta otro lugar,
-// aunque cambien su fecha o su monto. Los demás entran por impacto en S/ mientras quede lugar.
+// `registro` guarda por semana los ids que ya se mostraron: un aviso ya mostrado sigue y no gasta otro lugar
+// (el de riesgo, aunque cambien su fecha o su monto). Los demás entran por impacto en S/ mientras quede lugar,
+// sin tocar nunca el lugar de un riesgo que todavía no se mostró.
 export function armarBandeja(lista, registro = {}, hoy) {
   const semana = inicioDeSemana(hoy)
   const previos = registro[semana] ?? []
@@ -107,7 +108,11 @@ export function armarBandeja(lista, registro = {}, hoy) {
   const otros = lista.filter((a) => a.tipo !== 'riesgo')
 
   const otrosPrevios = otros.filter((a) => previos.includes(a.id))
-  const lugaresOtros = MAXIMO_POR_SEMANA - 1 - previos.filter((id) => !esRiesgo(id)).length
+  const riesgoNuevo = riesgo && !previos.includes(riesgo.id) ? 1 : 0
+  const lugaresOtros = Math.min(
+    MAXIMO_POR_SEMANA - 1 - previos.filter((id) => !esRiesgo(id)).length,
+    MAXIMO_POR_SEMANA - previos.length - riesgoNuevo,
+  )
   const otrosNuevos = otros
     .filter((a) => !previos.includes(a.id))
     .sort((a, b) => Math.abs(b.impacto) - Math.abs(a.impacto))
