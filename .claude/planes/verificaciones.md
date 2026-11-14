@@ -4,6 +4,7 @@ Una fila por veredicto de un juez. Lo más reciente arriba.
 
 | Fecha y hora | Rama o módulo | Juez | Veredicto | Pendientes |
 |---|---|---|---|---|
+| 2026-11-14 | feature/ml-segmentos-sin-datos (PR #25) | juez-tecnico | APRUEBA | Rehace la rama de Diego sin el commit de 130 MB de parquet; conftest con embebedor léxico si Ollama no responde; data/generado vuelve a .gitignore. 386/386 sin Ollama con datos regenerados, sin blobs > 1 MB, sin conflictos. Opcional: el proveedor externo recibe la pregunta en texto libre (grafo.py:484, ya estaba en develop). Pidió Nakusuo/Marcela |
 | 2026-11-14 | feature/backend-fastapi-arreglos (PR #24, 10c8069) | juez-tecnico | APRUEBA | Rehace la rama de Miguel con sus 2 bloqueantes cerrados (goals y onboarding iguales a sus mocks) y los menores. 99/99, unión limpia. Siguen los 5 pendientes del PR #10; /chat aún sin figures, intent ni verified_figures. Pidió Nakusuo/Marcela |
 | 2026-11-14 | feature/datos-diagramas-arreglo (PR #23) | juez-tecnico | CAMBIOS → corregido | Rehace DX-04 de Dixon: ERD fiel a ARCHITECTURE §5 y mermaid válido (revisado a mano, sin renderizar). Pidió corregir rango 2019-2025, meta.json y la frase de .gitignore; corregido en 94d43c9. Pidió Nakusuo/Marcela |
 | 2026-11-14 | feature/ia-tools (PR #7, 197ca99) | juez-tecnico | APRUEBA | 308 pruebas de tests/agent, ruff OK, sin conflictos con develop. Opcionales: proteger `Buscador()` en `__main__`, patrón `token` del router, documentar figures/unit/sources en docs/api.md §12. Pidió Nakusuo/Marcela |
