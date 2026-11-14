@@ -10,6 +10,7 @@ import {
   peorDia,
   primerCobro,
   simular,
+  vecesHastaCobro,
 } from './motor.js'
 import { PERSONA_INICIAL, personaPorId } from './personas.js'
 
@@ -46,6 +47,20 @@ function apartadoDe(p, ajuste) {
   const monto = apartadoMaximo(p, ajuste)
   if (!monto) return null
   return { monto, repeticiones: REPETICIONES_APARTADO, total: monto * REPETICIONES_APARTADO, hasta: simular(p).at(-1).fecha }
+}
+
+// Lo que se sigue de cada tip desde que se elige: cuántas veces van del comercio frente a lo que el tip
+// permite hasta el cobro, o la fecha del cargo que hay que pausar. Cuenta los movimientos desde hoy.
+function seguimientoDe(definicion, cambio) {
+  const p = definicion.persona
+  const [idFrecuente, meta] = Object.entries(cambio.ajuste.frecuencias ?? {})[0] ?? []
+  if (idFrecuente) {
+    const gasto = p.gastosFrecuentes.find((g) => g.id === idFrecuente)
+    const usadas = definicion.movimientosRecientes.filter((m) => m.concepto === gasto.comercio && m.fecha >= p.hoy).length
+    return { tipo: 'veces', comercio: gasto.comercio, usadas, limite: vecesHastaCobro(p, meta), hasta: primerCobro(p).fecha }
+  }
+  const pago = p.pagos.find((pago) => cambio.ajuste.pagosOmitidos?.includes(pago.id))
+  return { tipo: 'pausa', comercio: pago.concepto, fecha: pago.fecha }
 }
 
 // Todo lo que cambia con la persona elegida o con los tips activados con «Lo hago» se recalcula aquí.
@@ -99,7 +114,9 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
       .map((c) => ({ ...c, total: Math.round((totales[c.id] ?? 0) * 100) / 100 }))
       .sort((a, b) => b.total - a.total),
     suscripciones: p.suscripciones,
-    recomendaciones: cambios.map((c) => evaluarCambio(p, c)).sort((a, b) => b.mejora - a.mejora),
+    recomendaciones: cambios
+      .map((c) => ({ ...evaluarCambio(p, c), seguimiento: seguimientoDe(definicion, c) }))
+      .sort((a, b) => b.mejora - a.mejora),
     conTodos: {
       peorFecha: peorConTodos.fecha,
       peorMonto: peorConTodos.banda[0],

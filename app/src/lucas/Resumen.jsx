@@ -24,6 +24,29 @@ import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee, fitzona: Barbell, taxi: Taxi }
 
+// Al elegir un tip, la tarjeta pasa a mostrar cómo va: es la razón para volver mañana.
+function Seguimiento({ seguimiento }) {
+  if (seguimiento.tipo === 'pausa') {
+    return (
+      <p className="seguimiento">
+        Pausa {seguimiento.comercio} antes del {fechaCorta(seguimiento.fecha)}, que es cuando se cobra.
+      </p>
+    )
+  }
+  const { usadas, limite, comercio, hasta } = seguimiento
+  return (
+    <div className="seguimiento">
+      <p>
+        Llevas <b>{usadas} de {limite}</b> veces en {comercio} hasta el {fechaCorta(hasta)}. Vuelve mañana para ver
+        cómo vas.
+      </p>
+      <span className="medidor" aria-hidden="true">
+        <span style={{ width: `${Math.min(1, usadas / limite) * 100}%` }} />
+      </span>
+    </div>
+  )
+}
+
 function Tip({ tip, activo, alAlternar }) {
   const Icono = ICONOS[tip.id] ?? PiggyBank
   return (
@@ -38,6 +61,7 @@ function Tip({ tip, activo, alAlternar }) {
       <p className="cifra cifra-azul">
         +{enSoles(tip.mejora)} el {fechaCorta(tip.fechaPeorDia)}
       </p>
+      <div aria-live="polite">{activo && <Seguimiento seguimiento={tip.seguimiento} />}</div>
       <div className="tip-acciones">
         <motion.button
           type="button"

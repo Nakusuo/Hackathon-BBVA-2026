@@ -173,6 +173,7 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   await botones.nth(0).click()
   await expect(botones.nth(0)).toHaveAttribute('aria-pressed', 'true')
   await expect(aviso).toContainText('−S/ 29')
+  await expect(tips.locator('.tip').nth(0)).toContainText('Llevas 0 de 2 veces en RapiFood hasta el 30 nov')
 
   await botones.nth(1).click()
   await botones.nth(2).click()

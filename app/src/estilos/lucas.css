@@ -147,6 +147,19 @@
   box-shadow: 0 0 0 1px var(--azul);
 }
 
+.seguimiento {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--azul-palido);
+}
+
+.seguimiento p {
+  margin: 0;
+}
+
 .tip-acciones {
   display: flex;
   flex-wrap: wrap;

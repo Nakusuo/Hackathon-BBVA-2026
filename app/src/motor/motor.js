@@ -30,6 +30,12 @@ export function primerCobro(persona) {
   return persona.ingresos.reduce((a, b) => (a.fecha <= b.fecha ? a : b))
 }
 
+// Una meta mensual («4 veces al mes») llevada al tramo que falta hasta el cobro, que es lo que el tip pide.
+export function vecesHastaCobro(persona, vecesMes) {
+  const dias = (new Date(`${primerCobro(persona).fecha}T12:00:00`) - new Date(`${persona.hoy}T12:00:00`)) / 86400000
+  return Math.round((vecesMes * dias) / 30)
+}
+
 export function simular(persona, { pagosOmitidos = [], frecuencias = {}, gastoDiario, pagosExtra = [] } = {}) {
   const diario = gastoDiario ?? gastoVariableDiario(persona, frecuencias)
   const puntos = []

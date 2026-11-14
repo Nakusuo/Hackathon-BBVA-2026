@@ -105,3 +105,19 @@ test('sin margen después del cobro no se propone apartar nada', () => {
   const sinMargen = { ...personaMinima, saldoHoy: 300, ingresos: [{ id: 'cobro', fecha: '2026-01-11', monto: 0, variacion: 0 }] }
   assert.equal(apartadoMaximo(sinMargen), 0)
 })
+
+test('el seguimiento de cada tip sale del mismo plan que el tip', () => {
+  for (const r of cliente.recomendaciones) {
+    const cambio = CAMBIOS.find((c) => c.id === r.id)
+    const s = r.seguimiento
+    if (s.tipo === 'pausa') {
+      assert.equal(persona.pagos.find((p) => p.id === cambio.ajuste.pagosOmitidos[0]).fecha, s.fecha)
+      continue
+    }
+    assert.equal(s.hasta, cliente.proximoIngreso.fecha)
+    assert.equal(s.usadas, 0, 'el seguimiento empieza hoy, sin movimientos todavía')
+    assert.ok(s.limite > 0 && s.limite <= Object.values(cambio.ajuste.frecuencias)[0], r.id)
+  }
+  // RapiFood 4 veces al mes son 2 en los 16 días que faltan para el cobro.
+  assert.equal(cliente.recomendaciones.find((r) => r.id === 'delivery').seguimiento.limite, 2)
+})
