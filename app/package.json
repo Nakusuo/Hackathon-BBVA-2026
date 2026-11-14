@@ -12,8 +12,7 @@
     "test": "node --test pruebas/"
   },
   "dependencies": {
-    "@fontsource-variable/plus-jakarta-sans": "5.3.0",
-    "@fontsource-variable/source-serif-4": "5.3.1",
+    "@fontsource-variable/manrope": "5.3.0",
     "@phosphor-icons/react": "2.1.10",
     "motion": "14.14.0",
     "react": "19.3.1",

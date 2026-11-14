@@ -54,7 +54,7 @@
   padding: 0 8px;
   border: 0;
   background: none;
-  color: var(--azul);
+  color: var(--azul-texto);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -104,7 +104,7 @@
   display: grid;
   place-items: center;
   background: var(--superficie-suave);
-  color: var(--azul);
+  color: var(--azul-texto);
   font-weight: 700;
 }
 
@@ -159,11 +159,6 @@
   font-weight: 700;
 }
 
-.texto-riesgo {
-  color: var(--riesgo);
-  font-weight: 700;
-}
-
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -178,7 +173,7 @@
   border-radius: 999px;
   border: 1px solid var(--azul);
   background: var(--superficie);
-  color: var(--azul);
+  color: var(--azul-texto);
   font: inherit;
   font-weight: 600;
   text-decoration: none;
@@ -269,7 +264,7 @@ details[open] summary::after {
 }
 
 .enlace {
-  color: var(--azul);
+  color: var(--azul-texto);
   font-weight: 700;
   text-underline-offset: 3px;
 }

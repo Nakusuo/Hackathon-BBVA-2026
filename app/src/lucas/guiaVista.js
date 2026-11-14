@@ -1,4 +1,4 @@
-export const CLAVE_GUIA = 'lucas-guia-vista'
+const CLAVE_GUIA = 'lucas-guia-vista'
 
 export function guiaYaVista() {
   try {

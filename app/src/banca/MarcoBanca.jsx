@@ -67,10 +67,10 @@ export default function MarcoBanca() {
             <CreditCard size={24} aria-hidden="true" />
             <span>Tarjetas</span>
           </button>
-          <button type="button" className="barra-item" onClick={avisarSinDemo}>
+          <NavLink to="/preferencias" className="barra-item">
             <DotsThreeOutline size={24} aria-hidden="true" />
             <span>Más</span>
-          </button>
+          </NavLink>
         </nav>
 
         <p className="aviso-flotante" role="status">

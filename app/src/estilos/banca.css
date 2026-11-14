@@ -50,7 +50,7 @@
 .saldo {
   font-family: var(--titulos);
   font-size: 2.5rem;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1.15;
 }
 
@@ -201,3 +201,73 @@
   color: var(--tinta-suave);
   font-weight: 600;
 }
+
+.preferencias {
+  display: grid;
+  gap: 16px;
+  padding: 16px 16px 112px;
+}
+
+.preferencias h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.ajuste {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+}
+
+.ajuste > svg {
+  color: var(--azul-texto);
+}
+
+.ajuste-nombre {
+  font-weight: 700;
+}
+
+.interruptor {
+  position: relative;
+  display: flex;
+  justify-content: flex-start;
+  width: 56px;
+  height: 32px;
+  padding: 3px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--borde);
+  cursor: pointer;
+}
+
+.interruptor[aria-checked='true'] {
+  justify-content: flex-end;
+  background: var(--azul);
+}
+
+.interruptor span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--superficie);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+.interruptor[aria-checked='true'] span {
+  background: var(--sobre-azul);
+}
+
+.interruptor::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+
+.creditos {
+  display: grid;
+  gap: 8px;
+  color: var(--tinta-suave);
+}
+

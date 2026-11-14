@@ -12,7 +12,7 @@
 .guia-foco {
   position: fixed;
   border-radius: var(--radio);
-  outline: 3px solid var(--crema);
+  outline: 3px solid var(--foco);
   box-shadow: 0 0 0 9999px color-mix(in srgb, var(--tinta) 60%, transparent);
   pointer-events: none;
 }

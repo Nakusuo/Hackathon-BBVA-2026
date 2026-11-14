@@ -1,68 +1,29 @@
-import { CheckCircle, Coffee, ForkKnife, PauseCircle, PiggyBank, Question, SealCheck, Warning } from '@phosphor-icons/react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useState } from 'react'
+import {
+  ChatCircleDots,
+  CheckCircle,
+  Coffee,
+  ForkKnife,
+  Heartbeat,
+  Lightbulb,
+  PauseCircle,
+  PiggyBank,
+  SealCheck,
+  Warning,
+} from '@phosphor-icons/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
-import AnilloSalud from '../componentes/AnilloSalud.jsx'
 import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
-import { conSigno, diasEntre, enSoles, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
+import { diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
 import { entrada } from '../movimiento.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee }
-const CAMBIO = {
-  initial: { opacity: 0, y: 4 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -4 },
-  transition: { duration: 0.15 },
-}
-
-function nivel(puntaje) {
-  if (puntaje >= 70) return 'vas bien'
-  if (puntaje >= 45) return 'vas regular'
-  return 'estás en riesgo'
-}
-
-function DatoAprendido({ dato }) {
-  const [respuesta, setRespuesta] = useState(null)
-  return (
-    <li className={`aprendido ${respuesta === 'no' ? 'por-revisar' : ''}`}>
-      <p>{dato.dato}</p>
-      <p className="suave">Lo saqué de: {dato.fuente.toLowerCase()}</p>
-      <AnimatePresence mode="wait" initial={false}>
-        {respuesta === null ? (
-          <motion.div key="pregunta" {...CAMBIO} className="confirmar" role="group" aria-label="¿Es correcto?">
-            <span className="suave">¿Es correcto?</span>
-            <button type="button" className="boton-texto" onClick={() => setRespuesta('si')}>
-              Sí
-            </button>
-            <button type="button" className="boton-texto" onClick={() => setRespuesta('no')}>
-              No
-            </button>
-          </motion.div>
-        ) : (
-          <motion.p key={respuesta} {...CAMBIO} className={respuesta === 'si' ? 'confirmado' : 'marcado'}>
-            {respuesta === 'si' ? (
-              <CheckCircle size={20} aria-hidden="true" />
-            ) : (
-              <Question size={20} aria-hidden="true" />
-            )}
-            {respuesta === 'si' ? 'Gracias, lo sigo usando.' : 'Marcado como por revisar.'}
-            {respuesta === 'no' && (
-              <button type="button" className="boton-texto" onClick={() => setRespuesta(null)}>
-                Deshacer
-              </button>
-            )}
-          </motion.p>
-        )}
-      </AnimatePresence>
-    </li>
-  )
-}
+const DIAS_DEL_CICLO = 30
 
 function Tip({ tip, activo, alAlternar }) {
   const Icono = ICONOS[tip.id] ?? PiggyBank
   return (
-    <li className={`tarjeta tip ${activo ? 'tip-activo' : ''}`}>
+    <li className={`tip ${activo ? 'tip-activo' : ''}`}>
       <div className="reco-cabecera">
         <span className="circulo" aria-hidden="true">
           <Icono size={22} />
@@ -70,15 +31,20 @@ function Tip({ tip, activo, alAlternar }) {
         <span className="pildora">{tip.facilidad}</span>
       </div>
       <h3>{tip.titulo}</h3>
-      <p>
-        <span className="cifra cifra-azul">{enSoles(tip.mejora)} más</span> el {fechaDia(tip.fechaPeorDia)} en el peor
-        caso.
+      <p className="cifra cifra-azul">
+        +{enSoles(tip.mejora)} el {fechaCorta(tip.fechaPeorDia)}
       </p>
       <div className="tip-acciones">
-        <button type="button" className="boton-lo-hago" aria-pressed={activo} onClick={() => alAlternar(tip.id)}>
+        <motion.button
+          type="button"
+          className="boton-lo-hago"
+          aria-pressed={activo}
+          onClick={() => alAlternar(tip.id)}
+          whileTap={{ scale: 0.95 }}
+        >
           {activo && <CheckCircle size={20} weight="fill" aria-hidden="true" />}
           Lo hago
-        </button>
+        </motion.button>
         <details>
           <summary>¿Por qué?</summary>
           <p className="suave">{tip.porque}</p>
@@ -88,75 +54,89 @@ function Tip({ tip, activo, alAlternar }) {
   )
 }
 
-function textoDelPlan(cliente) {
-  const { elegidos, totalCambios, conTodos, peorDia, riesgo } = cliente
-  if (!elegidos.length) {
-    const sinRojo = conTodos.peorMonto >= 0 ? ': ya no quedarías en rojo' : ''
-    return `Si haces los ${totalCambios}, tu peor caso del ${fechaDia(conTodos.peorFecha)} pasa de ${enSoles(conTodos.peorAntes)} a ${conSigno(conTodos.peorMonto)}${sinRojo}.`
-  }
-  const cuantos = elegidos.length === 1 ? 'tu cambio' : `tus ${elegidos.length} cambios`
-  const cierre = riesgo ? '' : ' Ya no quedas en rojo antes de cobrar.'
-  return `Con ${cuantos}, tu peor caso del ${fechaDia(peorDia.fecha)} pasa de ${enSoles(conTodos.peorAntes)} a ${conSigno(peorDia.monto)}.${cierre}`
+function Apartado({ cliente }) {
+  const { apartado, proximoIngreso } = cliente
+  return (
+    <li className="tip">
+      <div className="reco-cabecera">
+        <span className="circulo" aria-hidden="true">
+          <PiggyBank size={22} />
+        </span>
+        <span className="pildora">Después de cobrar</span>
+      </div>
+      {apartado ? (
+        <>
+          <h3>
+            El {fechaCorta(proximoIngreso.fecha)} podrías apartar {enSoles(apartado.monto)}
+          </h3>
+          <p className="suave">
+            No te deja en rojo hasta el {fechaCorta(apartado.hasta)}. En {apartado.repeticiones} meses juntarías{' '}
+            {enSoles(apartado.total)}.
+          </p>
+        </>
+      ) : (
+        <>
+          <h3>Al cobrar, todavía no te conviene apartar</h3>
+          <p className="suave">Ese margen lo necesitas para tus próximos pagos.</p>
+        </>
+      )}
+    </li>
+  )
 }
 
 export default function Resumen({ cliente, alternarTip, animarEntrada = true }) {
-  const { riesgo, proximoIngreso, recomendaciones, apartado, apartadoConTodos, salud, elegidos, peorDia } = cliente
+  const { riesgo, proximoIngreso, recomendaciones, apartado, apartadoConTodos, salud, elegidos, conTodos } = cliente
+  const faltanCambios = elegidos.length < cliente.totalCambios
   const exceso = cliente.gastoDiarioActual - cliente.gastoDiarioSeguro
-  const [saludAbierta, setSaludAbierta] = useState(false)
+  const faltan = diasEntre(cliente.hoy, proximoIngreso.fecha)
   // MotionConfig frena los desplazamientos con movimiento reducido, pero no los desvanecidos: aquí se apagan también.
   const reducido = useReducedMotion()
   const entra = (orden) => entrada(orden, animarEntrada && !reducido)
 
   return (
     <>
-      <motion.section {...entra(0)} className="recuadros" data-guia="cobro" aria-label="Cuánto puedes gastar">
-        <div className="recuadro recuadro-azul">
-          <span>Puedes gastar al día</span>
-          <strong className="recuadro-cifra">
-            <NumeroAnimado valor={cliente.gastoDiarioSeguro} formato={enSoles} />
-          </strong>
-          <span>sin quedar en rojo hasta el {fechaDia(proximoIngreso.fecha)}</span>
-        </div>
-        <div className="recuadro">
-          <span className="suave">Ahora gastas al día</span>
-          <strong className="recuadro-cifra">
-            <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} />
-          </strong>
-          <span className="suave">
-            {exceso > 0 ? `${enSoles(exceso)} más de lo que te conviene` : 'Dentro de lo que te conviene'}
+      <motion.section {...entra(0)} className="hero" data-guia="cobro" aria-label="Cuánto puedes gastar">
+        <span className="hero-etiqueta">Puedes gastar al día</span>
+        <strong className="hero-cifra">
+          <NumeroAnimado valor={cliente.gastoDiarioSeguro} formato={enSoles} />
+        </strong>
+        <span className={`hero-actual ${exceso > 0 ? 'hero-actual-alto' : ''}`}>
+          Hoy gastas <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} />
+          {exceso > 0 ? `, ${enSoles(exceso)} de más` : ''}
+        </span>
+        <div className="hero-cobro">
+          <span>
+            Cobras {enSoles(proximoIngreso.monto)} el {fechaCorta(proximoIngreso.fecha)}
           </span>
+          <span>{faltan} días</span>
         </div>
-        <p className="recuadros-pie suave">
-          Cobras {enSoles(proximoIngreso.monto)} en {diasEntre(cliente.hoy, proximoIngreso.fecha)} días.
-        </p>
+        <span className="hero-barra" aria-hidden="true">
+          <motion.span
+            initial={reducido ? false : { scaleX: 0 }}
+            animate={{ scaleX: 1 - faltan / DIAS_DEL_CICLO }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          />
+        </span>
       </motion.section>
 
       <motion.div {...entra(1)}>
         {riesgo ? (
-          <section className="aviso" role="status" aria-label="Aviso de Lucas">
-            <p className="aviso-etiqueta">
-              <Warning size={20} aria-hidden="true" />
-              Lucas te avisa
-            </p>
+          <section className="aviso aviso-corto" role="status" aria-label="Aviso de Lucas">
+            <Warning size={24} aria-hidden="true" />
             <p>
-              Si gastas un poco más de lo normal, {textoDiasEnRojo(riesgo).toLowerCase()} podrías quedar en rojo: el{' '}
-              {fechaDia(riesgo.peorFecha)} tendrías <span className="cifra">{enSoles(riesgo.peorMonto)}</span>. Lo más
-              probable es que ese día te queden {enSoles(riesgo.esperado)}.
+              <strong>Lucas te avisa:</strong> en el peor caso, el {fechaDia(riesgo.desde)}
+              {riesgo.hasta !== riesgo.desde && ` y el ${fechaDia(riesgo.hasta)}`} quedarías en rojo (
+              <span className="cifra">{enSoles(riesgo.peorMonto)}</span>).
             </p>
-            <a className="boton" href="#tips">
-              Ver cómo evitarlo
+            <a className="boton boton-chico" href="#tips">
+              Cómo evitarlo
             </a>
           </section>
         ) : (
-          <section className="aviso aviso-bien" role="status" aria-label="Aviso de Lucas">
-            <p className="aviso-etiqueta">
-              <SealCheck size={20} aria-hidden="true" />
-              Vas bien
-            </p>
+          <section className="aviso aviso-corto aviso-bien" role="status" aria-label="Aviso de Lucas">
+            <SealCheck size={24} aria-hidden="true" />
             <p>
-              Con tus cambios llegas a tu cobro del {fechaDia(proximoIngreso.fecha)} sin quedar en rojo, incluso si gastas
-              un poco más de lo normal. Lo más probable es que el {fechaDia(peorDia.fecha)} te queden{' '}
-              {enSoles(peorDia.esperado)}.
+              <strong>Vas bien:</strong> llegas a tu cobro sin quedar en rojo, incluso si gastas un poco más.
             </p>
           </section>
         )}
@@ -164,98 +144,58 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
 
       <motion.section {...entra(2)} id="tips" className="seccion" aria-labelledby="tips-titulo">
         <h2 id="tips-titulo">Tips para tu día más justo</h2>
-        <p className="sugerencia" aria-live="polite">
-          {textoDelPlan(cliente)}
+        <p className="impacto" aria-live="polite">
+          <span>
+            Días en rojo <b>{cliente.diasEnRojo}</b>
+            {faltanCambios && (
+              <>
+                {' '}
+                → <b>{conTodos.diasEnRojo}</b>
+              </>
+            )}
+          </span>
+          <span>
+            Apartas <b>{enSoles(apartado?.monto ?? 0)}</b>
+            {faltanCambios && apartadoConTodos && (
+              <>
+                {' '}
+                → <b>{enSoles(apartadoConTodos.monto)}</b>
+              </>
+            )}
+          </span>
+          <span className="impacto-nota">
+            {faltanCambios ? `con los ${cliente.totalCambios} tips` : 'con tus cambios'}
+          </span>
         </p>
-        <ul className="lista-limpia lista-tips">
+        <ul className="lista-limpia carrusel">
           {recomendaciones.map((t) => (
             <Tip key={t.id} tip={t} activo={elegidos.includes(t.id)} alAlternar={alternarTip} />
           ))}
-        </ul>
-
-        <div className="tarjeta tip">
-          <div className="reco-cabecera">
-            <span className="circulo" aria-hidden="true">
-              <PiggyBank size={22} />
-            </span>
-            <span className="pildora">Después de cobrar</span>
-          </div>
-          {apartado ? (
-            <>
-              <h3>
-                Cuando cobres el {fechaDia(proximoIngreso.fecha)}, podrías apartar {enSoles(apartado.monto)}
-              </h3>
-              <p className="suave">
-                Lo comprobé con tus pagos hasta el {fechaCorta(apartado.hasta)} y no te deja en rojo. Si lo repites{' '}
-                {apartado.repeticiones} meses, juntarías {enSoles(apartado.total)}.
-              </p>
-            </>
-          ) : (
-            <>
-              <h3>Cuando cobres, todavía no te conviene apartar</h3>
-              <p className="suave">Ese margen lo necesitas para tus pagos de diciembre.</p>
-            </>
-          )}
-          {apartadoConTodos && (!apartado || apartadoConTodos.monto > apartado.monto) && (
-            <p className="cifra-azul">
-              Con los {cliente.totalCambios} cambios podrías apartar {enSoles(apartadoConTodos.monto)}.
-            </p>
-          )}
-        </div>
-      </motion.section>
-
-      <motion.section {...entra(3)} className="tarjeta" data-guia="aprendido" aria-labelledby="aprendido-titulo">
-        <h2 id="aprendido-titulo">Lo que aprendí de ti</h2>
-        <ul className="lista-limpia lista-aprendido">
-          {cliente.aprendido.map((d) => (
-            <DatoAprendido key={d.id} dato={d} />
-          ))}
+          <Apartado cliente={cliente} />
         </ul>
       </motion.section>
 
-      <motion.section {...entra(4)} className="tarjeta" aria-labelledby="salud-titulo">
-        <details onToggle={(e) => setSaludAbierta(e.currentTarget.open)}>
-          <summary>
-            <span id="salud-titulo">
-              Tu salud financiera: {salud.puntaje} de 100, {nivel(salud.puntaje)}
-            </span>
-          </summary>
-          <div className="salud">
-            {saludAbierta ? (
-              <AnilloSalud puntaje={salud.puntaje} componentes={salud.componentes} />
-            ) : (
-              <div className="anillo" />
-            )}
-            <ul className="lista-limpia componentes">
-              {salud.componentes.map((c) => (
-                <li key={c.nombre} className="componente">
-                  <span className="componente-cabecera">
-                    <span>{c.nombre}</span>
-                    <span>{c.valor}</span>
-                  </span>
-                  <span className="suave">{c.explicacion}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <p className="suave">Es el promedio de las 4 partes.</p>
-        </details>
-      </motion.section>
+      <motion.nav {...entra(3)} className="bento" aria-label="Más de Lucas">
+        <Link to="/lucas/aprendido" className="bento-bloque" data-guia="aprendido">
+          <Lightbulb size={24} aria-hidden="true" />
+          <span className="bento-titulo">Lo que aprendí</span>
+          <span className="suave">{cliente.aprendido.length} datos</span>
+        </Link>
+        <Link to="/lucas/salud" className="bento-bloque">
+          <Heartbeat size={24} aria-hidden="true" />
+          <span className="bento-titulo">Tu salud</span>
+          <span className="suave">
+            {salud.puntaje}, {nivelDeSalud(salud.puntaje)}
+          </span>
+        </Link>
+        <Link to={`/lucas/chat?q=${encodeURIComponent(PREGUNTAS_SUGERIDAS[0])}`} className="bento-bloque">
+          <ChatCircleDots size={24} aria-hidden="true" />
+          <span className="bento-titulo">Pregúntale</span>
+          <span className="suave">{PREGUNTAS_SUGERIDAS[0]}</span>
+        </Link>
+      </motion.nav>
 
-      <motion.section {...entra(5)} className="tarjeta" aria-labelledby="pregunta-titulo">
-        <h2 id="pregunta-titulo">Pregúntale a Lucas</h2>
-        <div className="chips">
-          {PREGUNTAS_SUGERIDAS.slice(0, 2).map((p) => (
-            <Link key={p} className="chip" to={`/lucas/chat?q=${encodeURIComponent(p)}`}>
-              {p}
-            </Link>
-          ))}
-        </div>
-      </motion.section>
-
-      <motion.p {...entra(6)} className="decision">
-        Lucas te muestra simulaciones con tus datos. No mueve tu plata ni es asesoría: tú decides.
-      </motion.p>
+      <p className="decision">Son simulaciones con tus datos. Lucas no mueve tu plata ni es asesoría: tú decides.</p>
     </>
   )
 }

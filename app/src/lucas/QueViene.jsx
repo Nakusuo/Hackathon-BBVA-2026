@@ -23,8 +23,8 @@ const PERIODOS = [
 
 // El gráfico va sobre azul profundo: colores claros para la línea y el texto, y el rojo claro para el cero.
 const COLOR = {
-  linea: 'var(--crema)',
-  banda: 'var(--azul-claro)',
+  linea: 'var(--grafico-linea)',
+  banda: 'var(--grafico-banda)',
   rejilla: 'rgb(255 255 255 / 0.15)',
   texto: 'var(--sobre-azul-suave)',
   riesgo: 'var(--riesgo-claro)',
@@ -150,7 +150,7 @@ export default function QueViene({ cliente }) {
                 width={84}
               />
               <Tooltip content={<Globo />} cursor={{ stroke: COLOR.texto, strokeDasharray: '4 4' }} />
-              <Area dataKey="banda" stroke="none" fill={COLOR.banda} fillOpacity={0.35} isAnimationActive={false} />
+              <Area dataKey="banda" stroke="none" fill={COLOR.banda} isAnimationActive={false} />
               <Line
                 dataKey="esperado"
                 stroke={COLOR.linea}
