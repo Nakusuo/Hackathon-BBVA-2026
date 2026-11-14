@@ -1,0 +1,49 @@
+{
+ "recuperacion": {
+  "denso": {
+   "recall@4": 0.85,
+   "mrr": 0.825,
+   "n": 20
+  },
+  "denso + filtro de modulo": {
+   "recall@4": 0.95,
+   "mrr": 0.8875,
+   "n": 20
+  },
+  "bm25": {
+   "recall@4": 0.75,
+   "mrr": 0.7125,
+   "n": 20
+  },
+  "bm25 + filtro de modulo": {
+   "recall@4": 0.8,
+   "mrr": 0.8,
+   "n": 20
+  },
+  "hibrido": {
+   "recall@4": 0.8,
+   "mrr": 0.7375,
+   "n": 20
+  },
+  "hibrido + filtro de modulo": {
+   "recall@4": 0.9,
+   "mrr": 0.8666666666666666,
+   "n": 20
+  }
+ },
+ "filtro_relevancia": {
+  "umbral": 0.7057,
+  "exactitud_balanceada": 1.0,
+  "auc": 1.0,
+  "similitud_con_respuesta": {
+   "media": 0.7719100000000001,
+   "min": 0.7057
+  },
+  "similitud_fuera_del_indice": {
+   "media": 0.6609,
+   "max": 0.7054
+  },
+  "n_con_respuesta": 20,
+  "n_fuera": 8
+ }
+}
