@@ -105,6 +105,24 @@
   overflow-wrap: anywhere;
 }
 
+.fuente summary {
+  display: block;
+  min-height: 0;
+  padding: 10px 0;
+  font-weight: 400;
+}
+
+.fuente summary::after {
+  display: inline-block;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.fuente-claves {
+  gap: 4px;
+  padding: 4px 0 8px;
+}
+
 .evidencia-tabla {
   width: 100%;
   border-collapse: collapse;

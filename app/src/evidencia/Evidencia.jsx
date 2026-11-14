@@ -51,23 +51,30 @@ function porArchivo(fuentes) {
   return [...grupos]
 }
 
+// El archivo queda a la vista y las claves se abren al tocar: en celular las rutas largas alargaban la página.
 function Fuente({ de }) {
   const grupos = porArchivo(Array.isArray(de) ? de : [de])
   return (
-    <p className="fuente">
-      Fuente:{' '}
-      {grupos.map(([archivo, rutas], i) => (
-        <span key={archivo}>
-          {i > 0 && '; '}
-          <code>{archivo}</code>: {rutas.map((r, j) => (
-            <span key={r}>
-              {j > 0 && '; '}
+    <details className="fuente">
+      <summary>
+        Fuente:{' '}
+        {grupos.map(([archivo], i) => (
+          <span key={archivo}>
+            {i > 0 && ', '}
+            <code>{archivo}</code>
+          </span>
+        ))}
+      </summary>
+      <ul className="lista-limpia fuente-claves">
+        {grupos.flatMap(([archivo, rutas]) =>
+          rutas.map((r) => (
+            <li key={`${archivo}-${r}`}>
               <code>{r}</code>
-            </span>
-          ))}
-        </span>
-      ))}
-    </p>
+            </li>
+          )),
+        )}
+      </ul>
+    </details>
   )
 }
 

@@ -49,12 +49,6 @@
   box-shadow: 0 24px 60px var(--sombra);
 }
 
-.ingreso-marca {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
 
 .ingreso .logotipo {
   color: var(--tinta);

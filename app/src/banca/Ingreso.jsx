@@ -35,10 +35,7 @@ export default function Ingreso() {
           <LucasPose pose="saludo" tamano={92} animada />
           <p className="burbuja">¡Hola de nuevo! Soy Lucas, tu copiloto de plata.</p>
         </div>
-        <div className="ingreso-marca">
-          <span className="logotipo">Banco Vértice</span>
-          <span className="etiqueta-demo">Banco ficticio</span>
-        </div>
+        <span className="logotipo">Banco Vértice</span>
         <h1 id="ingreso-titulo">Ingresa a tu banca</h1>
 
         <SelectorPersona valor={personaId} alCambiar={setPersonaId} leyenda="Entra como" />

@@ -43,10 +43,7 @@ export default function InicioBanca() {
             <UserCircle size={26} aria-hidden="true" />
           </button>
           <div className="banca-saludo">
-            <div className="banca-saludo-fila">
-              <h1>Hola</h1>
-              <span className="etiqueta-demo">Banco ficticio</span>
-            </div>
+            <h1>Hola</h1>
             <p>Bienvenido a Banco Vértice</p>
           </div>
           <Link to="/lucas/avisos" className="icono-boton campana" aria-label={`Avisos de Lucas: ${totalAvisos}`}>

@@ -230,11 +230,10 @@
   color: var(--azul-texto);
 }
 
+/* En celular el anillo va arriba y cada parte ocupa todo el ancho: lado a lado el texto quedaba en columnas angostas. */
 .salud {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
+  display: grid;
+  gap: 12px;
   margin: 8px 0;
 }
 
@@ -268,12 +267,22 @@
 }
 
 .componentes {
-  flex: 1 1 220px;
-  gap: 6px;
+  gap: 0;
 }
 
 .componente {
   display: grid;
+  gap: 2px;
+  padding: 12px 0;
+}
+
+.componente + .componente {
+  border-top: 1px solid var(--borde);
+}
+
+.componente .enlace {
+  justify-self: start;
+  margin-top: 2px;
 }
 
 .componente-cabecera {
