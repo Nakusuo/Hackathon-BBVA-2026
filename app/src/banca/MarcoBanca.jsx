@@ -2,8 +2,8 @@ import { ArrowsLeftRight, CreditCard, DotsThreeOutline, House } from '@phosphor-
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
-import { vistaCon } from '../mocks/cliente.js'
-import { personaPorId } from '../mocks/personas.js'
+import { vistaCon } from '../motor/cliente.js'
+import { personaPorId } from '../motor/personas.js'
 import { CLAVE_TIPS, guardarPersona, permisoDe, personaGuardada, retirarPermiso } from '../sesion.js'
 
 const SIN_DEMO = 'En esta demo solo está activo Lucas.'

@@ -1,7 +1,7 @@
 // Sesión de la demo en el navegador: qué persona eligió quien presenta y si esa persona dio su permiso a Lucas.
 // Con la API, elegir persona pasa a ser `POST /sesion` y el token firmado reemplaza a la persona guardada aquí;
 // el identificador nunca va en la dirección (ARCHITECTURE §5.2).
-import { PERSONA_INICIAL, PERSONAS } from './mocks/personas.js'
+import { PERSONA_INICIAL, PERSONAS } from './motor/personas.js'
 
 const CLAVE_PERSONA = 'lucas-persona'
 const CLAVE_PERMISOS = 'lucas-consentimiento'

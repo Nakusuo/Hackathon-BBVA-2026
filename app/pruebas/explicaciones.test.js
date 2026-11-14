@@ -2,8 +2,8 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { diasEntre, enSoles } from '../src/formato.js'
 import { explicarQueViene, explicarResumen } from '../src/lucas/explicaciones.js'
-import { vistaCon } from '../src/mocks/cliente.js'
-import { PERSONAS } from '../src/mocks/personas.js'
+import { vistaCon } from '../src/motor/cliente.js'
+import { PERSONAS } from '../src/motor/personas.js'
 
 // HU-23: «explícamelo fácil» no trae cifras nuevas. Cada número del texto tiene que estar ya en la pantalla.
 
