@@ -55,17 +55,17 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **MI-01** Esqueleto del repo: carpetas del plan, `requirements.txt`, `.env.example`, `Makefile` con objetivos vacíos, config de ruff y pytest. *Hecho:* `make check` corre en verde. **Entra a develop antes de las 11:45.** Rama `feature/arq-esqueleto`
 - [ ] **MI-02** `docker-compose.yml` con Postgres 16 + pgvector y `make db`. *Hecho:* `make db` levanta y `make psql` conecta. Rama `feature/arq-docker`
 - [ ] **DX-01** Diccionario de datos v1 (`data/dictionary.md`) junto con Michael y Diego: tablas, columnas, tipos, etiquetas. *Hecho:* los tres lo aprueban. Rama `feature/datos-diccionario`
-- [ ] **MG-01** Contrato de la API (`docs/api.md`) junto con Marcela y Jeffrey: endpoints y JSON de ejemplo en `data/sample/mocks/`. *Hecho:* los tres lo aprueban. Rama `feature/backend-contrato`
+- [x] **MG-01** Contrato de la API (`docs/api.md`) junto con Marcela y Jeffrey: endpoints y JSON de ejemplo en `data/sample/mocks/`. *Hecho:* los tres lo aprueban. Rama `feature/backend-contrato` — Miguel, PR #4, 2026-11-14
 - [x] **MC-01** Decidir la UI a las 11:30 (React + Recharts o Streamlit) y esqueleto que navega las 6 pantallas vacías. *Hecho:* se abre en el navegador. Rama `feature/front-esqueleto` — Nakusuo/Marcela, 2026-11-14: React + Recharts; pantallas Cómo estás, Qué viene y Qué hacer con datos de prueba (las demás se agregan cuando hagan falta)
 - [x] **JF-01** Instalar Ollama con `qwen2.5:3b` (ajustes de GPU del plan maestro, sección 3) y un modelo de embeddings; anotar versiones en `PROMPTS.md`. Descargar los PDFs del «núcleo del RAG» de `.claude/investigacion/rag-fuentes.md` en `docs/rag/<modulo>/` y armar `docs/rag/fuentes.csv`. Buscar el texto oficial de la Ley 29571. Rama `feature/ia-setup`
 - [ ] **DI-01** Lista de variables por cliente y firma de las funciones de baseline (`src/models/baselines.py` con tests vacíos). Rama `feature/ml-baselines`
 
 ## Bloque 2 · Sábado 12:00–15:00 · Base que funciona
 
-- [ ] **DX-02** Generador v1 **estratificado**: cuotas fijas por arquetipo × perfil de ahorro × perfil de gasto; perfiles por bootstrap desde distribuciones calibradas; transacciones por reglas; quincena; `--seed`. *Hecho:* genera en < 1 min; test «misma semilla = mismo resultado»; test «ningún estrato vacío». Rama `feature/datos-generador`
+- [x] **DX-02** Generador v1 **estratificado**: cuotas fijas por arquetipo × perfil de ahorro × perfil de gasto; perfiles por bootstrap desde distribuciones calibradas; transacciones por reglas; quincena; `--seed`. *Hecho:* genera en < 1 min; test «misma semilla = mismo resultado»; test «ningún estrato vacío». Rama `feature/datos-generador` — Diego, PR #9 (`eaac673`), 2026-11-14: `src/generador/`, corre en ~30 s; pruebas `test_misma_semilla_misma_salida` y `test_ningun_estrato_vacio_ni_peso_extremo`
 - [ ] **DX-11** Con el agente `investigador`: ¿se pueden usar los microdatos de la ENAHO (INEI) como base del bootstrap? Licencia, variables útiles, tiempo de preparación. Informe en `.claude/investigacion/enaho.md`. *No bloquea a DX-02.*
 - [ ] **DX-03** Calendario: grati, CTS, feriados, campaña escolar, Día de la Madre, 28 de julio, Cyber Wow, Navidad, con subida de gasto. *Depende:* DX-02
-- [ ] **DX-04** Texto: glosas por comercio y canal, y mensajes con etiqueta de sentimiento (plantillas variadas). *Depende:* DX-02
+- [x] **DX-04** Texto: glosas por comercio y canal, y mensajes con etiqueta de sentimiento (plantillas variadas). *Depende:* DX-02 — Diego, PR #9 (`eaac673`), 2026-11-14: `src/generador/texto.py`
 - [ ] **MI-03** `db/init.sql`: esquemas `seguro` y `app`, roles `lucas_app`, `lucas_agente`, `lucas_admin`, RLS, pgcrypto, extensión vector, tablas de memoria (`app.metas`, `app.memoria`, `app.respuestas_reco`). *Hecho:* tests «lucas_agente no puede leer deuda_total» y «un cliente no ve la memoria de otro». Rama `feature/arq-db-seguridad`
 - [ ] **MG-02** Ingesta: validación Pydantic, dedup y carga a Postgres. `make data` completo. *Depende:* DX-02, MI-03. Rama `feature/backend-ingesta`
 - [ ] **MG-03** FastAPI con los endpoints del contrato devolviendo los mocks. `make run`. *Depende:* MG-01. Rama `feature/backend-api`
@@ -81,8 +81,8 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 
 - [ ] **DI-04** Recurrentes y duplicadas v1; F1 frente al baseline. Rama `feature/ml-recurrentes`
 - [ ] **DI-05** K-Prototypes: k por silueta y estabilidad, cluster por cliente guardado en Postgres, descripción de cada segmento en palabras. Rama `feature/ml-segmentos`
-- [ ] **DI-06** Pronóstico v1 + banda bootstrap + día de riesgo; MAE frente al baseline. Rama `feature/ml-pronostico`
-- [ ] **DI-07** Salud 0–100 con componentes y test de monotonicidad. Rama `feature/ml-salud`
+- [x] **DI-06** Pronóstico v1 + banda bootstrap + día de riesgo; MAE frente al baseline. Rama `feature/ml-pronostico` — Diego, PR #9 (`d0f3e2c`), 2026-11-14: `src/models/pronostico.py`, banda al 80 % por conformal (no bootstrap) frente al promedio móvil de 3 meses
+- [x] **DI-07** Salud 0–100 con componentes y test de monotonicidad. Rama `feature/ml-salud` — Diego, PR #9 (`d0f3e2c`), 2026-11-14: `src/models/salud.py`, prueba `test_salud_es_monotona`
 - [ ] **DI-13** Matriz ahorro × gasto encima de los clusters: umbrales (baseline) frente a perfil derivado de K-Prototypes; estabilidad mes a mes y acuerdo con las etiquetas sembradas. *Depende:* DI-05. Rama `feature/ml-perfil-ahorro`
 - [ ] **MG-04** Recomendador v1: candidatos por reglas, puntaje impacto × facilidad, ajuste por segmento, reglas de seguridad con un test cada una; tipos protegidos (`bajar_deuda_cara`, `colchon_minimo`) que una preferencia no excluye y exclusiones que nunca dejan entrar crédito (CP-SIS-32). *Depende:* DI-05, DI-07. Rama `feature/backend-recomendador`
 - [ ] **MG-05** Motor de eventos v1: ingreso, grati/CTS, fecha de calendario, gasto frecuente, riesgo; máximo 3 avisos por semana (lunes a domingo, Lima) con lugar reservado para el de riesgo; riesgo a 3–7 días normal, a 1–2 urgente, a más de 7 sin aviso; `id` de riesgo = `riesgo` + fecha del próximo ingreso (se actualiza, no se duplica). Con tests de CP-SIS-05, 28 y 29. *Depende:* DI-06. Rama `feature/backend-eventos`
