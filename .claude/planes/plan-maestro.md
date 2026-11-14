@@ -108,13 +108,13 @@ Todo lo anterior es DEBE, pero no todo pesa igual. Se construye en dos olas para
 
 | Ola | Módulos | Por qué primero |
 |---|---|---|
-| **1. Núcleo (hasta el checkpoint de 19:00)** | D1, D2 (esquemas, roles y RLS), D5, D6, D7 con segmento por umbrales, D8, D9, D10 con tools + juez + plantillas, D11, D16 | Es lo que mueve la plata del usuario y la del banco: aviso → Sueldo Lucas → simulador → impacto en S/ |
+| **1. Núcleo (hasta el checkpoint de 19:00)** | D1, D2 (esquemas, roles y RLS), D5, D6, D7 con segmento por umbrales, D8, D9, D10 con tools + juez + plantillas, D11, D16 y **A1 mínimo** (5 preguntas → pronóstico, sin comparación de MAE) | Es lo que mueve la plata del usuario y la del banco: aviso → Sueldo Lucas → simulador → impacto en S/, más el único gancho de atracción |
 | **2. Profundidad (19:00 en adelante)** | D3 clasificador de glosa, D4 K-Prototypes (reemplaza a los umbrales), D12 panel completo, D13, D14, D15 con 2 módulos (deudas y ahorro) antes que los 6 | Suben la nota de IA y personalización, pero el núcleo funciona sin ellos |
 
 Cada módulo de la ola 2 se compara con lo que ya hay en la ola 1 (por ejemplo, K-Prototypes frente a umbrales). Así la ola 1 ya es el baseline.
 
 ### DEBERÍA
-- Lucas en 5 preguntas (arranque en frío por cluster). *Prioridad alta.*
+- Lucas en 5 preguntas: comparación de MAE del arranque en frío frente al promedio poblacional. *La versión mínima ya es DEBE en la ola 1.*
 - Aprendizaje por respuestas: el ranking de recomendaciones se ajusta con lo que el usuario aceptó o rechazó.
 - Catálogo de ofertas y promociones para ahorradores (configurable, ver sección 5).
 - Bootstrap de perfiles desde microdatos públicos de la ENAHO (INEI), si la licencia y el tiempo lo permiten.
@@ -131,7 +131,7 @@ Cada módulo de la ola 2 se compara con lo que ya hay en la ola 1 (por ejemplo, 
 ### NO AHORA
 NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ubicación exacta/GPS, WhatsApp, app nativa, modo familia, vista para el banco.
 
-**Orden de recorte** si a mitad del sábado no hay flujo de punta a punta: sentimiento → BCRP → modelos por segmento (queda el global) → RAG a un solo módulo → memoria solo de metas → Lucas en 5 preguntas. El núcleo (ola 1) y D16 no se recortan.
+**Orden de recorte** si a mitad del sábado no hay flujo de punta a punta: sentimiento → BCRP → modelos por segmento (queda el global) → RAG a un solo módulo → memoria solo de metas. El núcleo (ola 1), D16 y A1 mínimo no se recortan: sin A1 no hay atracción, que es la mitad de lo que pidió el juez.
 
 ---
 
@@ -244,9 +244,9 @@ Pronóstico: walk-forward (entrena 1–9, valida 10, test 11–12). Recurrentes,
 | Eventos y avisos | Probabilidad de rojo + impacto en S/ + límite semanal | Avisar en cada evento | Precision, recall, anticipación en días |
 | Recomendador | Segmento + comportamiento → impacto × facilidad → seguridad | Top 3 fijo para todos | Ahorro simulado, % que evita día en rojo |
 | Ofertas | Necesidad detectada + idoneidad | Lo más popular para todos | Precision@3 sobre necesidades sembradas |
-| Arranque en frío (DEBERÍA) | Asignación a cluster con 5 respuestas | Promedio poblacional | MAE con 0, 1 y 3 meses de historia |
+| Arranque en frío (A1 mínimo DEBE; MAE DEBERÍA) | Asignación a cluster con 5 respuestas | Promedio poblacional | MAE con 0, 1 y 3 meses de historia |
 | Agente | LangGraph + tools + RAG + juez | Respuestas por plantilla | % cifras verificadas, % citas válidas, exactitud en 30 preguntas, bloqueo adverso |
-| Impacto (D16) | Seguir las recomendaciones de Lucas en el simulador | No hacer nada / apartar 10 % fijo | Días en rojo evitados, S/ de colchón a 3 meses, intereses evitados, % que sube de cuadrante |
+| Impacto (D16) | Lucas decide con artefactos hasta el mes 9; sus cambios se repiten sobre las transacciones reales de los meses 10 a 12, con adherencia 100 % y simulada | No hacer nada / apartar 10 % fijo | Días en rojo evitados, S/ de colchón a 3 meses, intereses evitados, % que sube de cuadrante |
 
 ### Lucas aprende del usuario
 
@@ -269,7 +269,7 @@ Baseline de la matriz: umbrales fijos. Métrica: estabilidad del perfil mes a me
 
 **Memoria del usuario.** Dos memorias distintas:
 1. **Memoria de conocimiento (RAG):** PDFs públicos, iguales para todos.
-2. **Memoria del usuario:** metas, preferencias («no me hables de inversión»), resúmenes de conversaciones y respuestas a cada recomendación. Se guarda en Postgres con RLS: solo la ve ese usuario. Hay un botón «olvidar lo que sabes de mí».
+2. **Memoria del usuario:** metas, preferencias («no me hables de inversión»), resúmenes de conversaciones y respuestas a cada recomendación. Todo con valores de listas cerradas, nunca texto libre del usuario, para que una inyección no quede guardada. Se guarda en Postgres con RLS: solo la ve ese usuario. Hay un botón «olvidar lo que sabes de mí».
 
 El agente lee la memoria del usuario antes de responder y guarda lo nuevo al final. Las cifras siguen saliendo de los modelos, nunca de la memoria.
 
@@ -308,7 +308,7 @@ Cada PDF va en `docs/rag/<modulo>/` con su fila en `docs/rag/fuentes.csv`: títu
 ## 6. Flujo de la demo
 
 1. Consentimiento y elección de persona: independiente con recibo por honorarios.
-2. **Aviso** al entrar: «el jueves 27 podrías quedar en rojo (confianza media)».
+2. **Aviso** al entrar: «el jueves podrías quedar en rojo (confianza media)». `HOY_DEMO` se elige para que el día de riesgo de la persona de la demo caiga a 3–7 días y la grati del paso 6 entre en la misma semana.
 3. **Cómo estás:** salud con componentes, segmento en palabras, gasto hormiga, 2 suscripciones de streaming.
 4. **Qué viene:** saldo con banda y día de riesgo.
 5. **Qué hacer:** 3 tarjetas con «¿por qué?», **Sueldo Lucas** y simulador: la banda se mueve y el día de riesgo desaparece.
@@ -320,7 +320,7 @@ Cada PDF va en `docs/rag/<modulo>/` con su fila en `docs/rag/fuentes.csv`: títu
 11. **Atracción:** alguien sin historial responde 5 preguntas y ve su pronóstico.
 12. **Evidencia:** cada técnica frente a su baseline y el **impacto en S/** sobre los 500 clientes simulados (días en rojo evitados, colchón, intereses evitados).
 
-Si el tiempo de demo no alcanza, se quitan los pasos 9 y 11.
+Si el tiempo de demo no alcanza, se quita el paso 9. El 11 se queda: es la prueba de atracción.
 
 Accesibilidad: contraste AA, texto ≥ 16 px, no depender solo del color, incertidumbre en palabras.
 

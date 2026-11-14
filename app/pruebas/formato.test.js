@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+import { conSigno, diasEntre, enSoles, fechaDia, iniciales } from '../src/formato.js'
+
+const NBSP = ' '
+
+test('enSoles: enteros sin decimales, céntimos con dos, negativos con signo menos', () => {
+  assert.equal(enSoles(0), `S/${NBSP}0`)
+  assert.equal(enSoles(1240), `S/${NBSP}1,240`)
+  assert.equal(enSoles(21.9), `S/${NBSP}21.90`)
+  assert.equal(enSoles(-20), `−S/${NBSP}20`)
+})
+
+test('conSigno: solo los positivos llevan +', () => {
+  assert.equal(conSigno(12), `+S/${NBSP}12`)
+  assert.equal(conSigno(0), `S/${NBSP}0`)
+  assert.equal(conSigno(-60), `−S/${NBSP}60`)
+})
+
+test('fechas en español de Perú', () => {
+  assert.equal(fechaDia('2026-11-29'), 'domingo 29')
+  assert.equal(diasEntre('2026-11-14', '2026-11-30'), 16)
+  assert.equal(diasEntre('2026-11-30', '2026-11-30'), 0)
+})
+
+test('iniciales: dos palabras como máximo y texto vacío sin error', () => {
+  assert.equal(iniciales('Cafetería La Esquina'), 'CL')
+  assert.equal(iniciales('RapiFood'), 'R')
+  assert.equal(iniciales('  '), '')
+})

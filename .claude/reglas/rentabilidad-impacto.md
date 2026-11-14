@@ -64,7 +64,7 @@ Público: trabajadores del sector privado, con foco en **independientes y mixtos
 - **69,8 %** del empleo es informal (INEI, abril 2025 a marzo 2026): ingreso irregular y sin un plan pensado para él.
 - **17,0 millones** de usuarios activos de Yape al mes (Credicorp, setiembre 2026): el canal digital para llegarles ya existe.
 
-Métricas de impacto que produce `make eval` sobre la población sintética (Lucas frente a «no hacer nada» y frente a «apartar 10 % fijo»):
+Métricas de impacto que produce `make eval` sobre la población sintética (Lucas frente a «no hacer nada» y frente a «apartar 10 % fijo»). Lucas decide con datos hasta el mes 9 y sus cambios se repiten sobre los meses 10 a 12 reales del generador, con adherencia 100 % y simulada. No modela que el gasto se mueva a otra categoría (Medina, 2021): eso lo mide el piloto.
 
 | Métrica | Qué significa para la persona |
 |---|---|

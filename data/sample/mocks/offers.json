@@ -1,0 +1,26 @@
+{
+  "customer_id": "demo-001",
+  "currency": "PEN",
+  "offers": [
+    {
+      "id": "offer-001",
+      "name": "Cuenta con apartados de ahorro",
+      "category": "savings",
+      "description": "Herramienta genérica para organizar metas de ahorro.",
+      "reason": "Ayuda a separar dinero para emergencias.",
+      "estimated_benefit": null,
+      "eligible": true,
+      "disclaimer": "Ejemplo ficticio. Tú decides."
+    },
+    {
+      "id": "offer-002",
+      "name": "Promoción de ahorro en compras",
+      "category": "promotion",
+      "description": "Descuento ficticio en compras habituales.",
+      "reason": "Podría reducir gastos recurrentes.",
+      "estimated_benefit": 20.0,
+      "eligible": true,
+      "disclaimer": "Beneficio simulado, no disponible comercialmente. Tú decides."
+    }
+  ]
+}

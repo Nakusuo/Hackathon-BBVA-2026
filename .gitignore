@@ -226,3 +226,6 @@ models/*.tmp
 models/*.log
 models/fig_*.png
 data/generado/memoria/
+
+# Caché local del BCRP (la serie grabada sí se versiona)
+data/bcrp/cache.json

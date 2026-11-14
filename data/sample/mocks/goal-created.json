@@ -1,0 +1,11 @@
+{
+  "id": "goal-001",
+  "name": "Fondo de emergencia",
+  "target_amount": 3000.0,
+  "current_amount": 600.0,
+  "target_date": "2027-06-30",
+  "progress_percentage": 20.0,
+  "suggested_biweekly_saving": 150.0,
+  "projected_year_end_savings": 900.0,
+  "completion_probability": 0.72
+}
