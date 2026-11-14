@@ -19,6 +19,8 @@ export default defineConfig({
     command: `npm run dev -- --port ${PUERTO} --strictPort`,
     url: `http://localhost:${PUERTO}`,
     reuseExistingServer: !process.env.CI,
+    // Enciende el chat contra el agente; las pruebas responden por /api/v1/chat con page.route.
+    env: { VITE_CHAT_AGENTE: 'si' },
   },
   projects: [
     {

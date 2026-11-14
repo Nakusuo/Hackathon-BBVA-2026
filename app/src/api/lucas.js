@@ -62,6 +62,15 @@ export function simularCambios(cambios, { id = CLIENTE_DEMO, horizonteDias = 30,
   })
 }
 
+// El agente redacta con un LLM: su meta es p95 < 8 s, más lenta que una lectura.
+const ESPERA_CHAT_MS = 12000
+
+/** Devuelve el cuerpo crudo de /chat; quien llama decide qué se muestra según `verified`. */
+export function preguntarAgente(mensaje, { id = CLIENTE_DEMO, conversacion, ...opciones } = {}) {
+  const cuerpo = { customer_id: id, message: mensaje, ...(conversacion ? { conversation_id: conversacion } : {}) }
+  return pedirJson(`${BASE}/chat`, { esperaMs: ESPERA_CHAT_MS, ...opciones, metodo: 'POST', cuerpo })
+}
+
 /** 'api' si todo vino del servidor, 'respaldo' si nada, 'parcial' si hubo de los dos. */
 export function origenGeneral(fuentes) {
   const origenes = new Set(Object.values(fuentes).map((f) => f.origen))
