@@ -1,0 +1,36 @@
+{
+  "customer_id": "demo-001",
+  "events": [
+    {
+      "id": "evt-001",
+      "type": "negative_balance_risk",
+      "title": "Posible saldo negativo",
+      "message": "Tu saldo podría ser negativo el 18 de noviembre. Revisa tus próximos gastos.",
+      "event_date": "2026-11-18",
+      "priority": "high",
+      "estimated_impact": -50.0,
+      "notified": true
+    },
+    {
+      "id": "evt-002",
+      "type": "recurring_expense",
+      "title": "Próximo pago recurrente",
+      "message": "Tienes un pago estimado de S/ 35 por una suscripción.",
+      "event_date": "2026-11-20",
+      "priority": "medium",
+      "estimated_impact": -35.0,
+      "notified": false
+    },
+    {
+      "id": "evt-003",
+      "type": "income",
+      "title": "Próximo ingreso",
+      "message": "Se espera un ingreso de S/ 1500 según tus movimientos anteriores.",
+      "event_date": "2026-11-30",
+      "priority": "low",
+      "estimated_impact": 1500.0,
+      "notified": false
+    }
+  ],
+  "weekly_notifications_remaining": 2
+}

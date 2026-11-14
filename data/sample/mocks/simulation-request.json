@@ -1,0 +1,12 @@
+{
+  "customer_id": "demo-001",
+  "horizon_days": 30,
+  "changes": [
+    {
+      "type": "expense",
+      "amount": 200.0,
+      "frequency": "once",
+      "description": "Reducir gastos durante el horizonte simulado"
+    }
+  ]
+}

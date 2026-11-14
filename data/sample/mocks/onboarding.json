@@ -1,0 +1,10 @@
+{
+  "customer_id": "demo-002",
+  "profile": {
+    "segment": "pending_model_assignment",
+    "quadrant": null
+  },
+  "confidence": null,
+  "model": "pending-di-12",
+  "is_estimate": true
+}
