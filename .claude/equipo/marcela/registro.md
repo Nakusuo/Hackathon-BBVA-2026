@@ -99,6 +99,6 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [x] Pantalla de consentimiento (datos sintéticos, qué se usa, se puede revocar). Nakusuo/Marcela
 - [x] Botón «explícamelo fácil» (regla de negocio de la UI). Nakusuo/Marcela
 - [x] Selector de persona (independiente / formal con quincena) para la demo. Nakusuo/Marcela
-- [ ] Push de `feature/front-consentimiento-persona` y PR a `develop` (falta permiso)
+- [x] Push de `feature/front-consentimiento-persona` y PR #13 a `develop`. Nakusuo/Marcela
 - [ ] Con la API: elegir persona = `POST /sesion`; retirar permiso llama a «olvidar» y el servidor niega `/yo/...` sin permiso (juez-cumplimiento)
 - [ ] Demo: dar el permiso de las dos personas antes de empezar, para que el cambio de persona del paso 9 no pida otro paso
