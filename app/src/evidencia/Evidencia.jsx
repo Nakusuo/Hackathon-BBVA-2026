@@ -246,7 +246,7 @@ function Agente() {
           <h3>Agente con LLM y juez</h3>
           <p>
             Con {qa.modelo.valor} pasó <span className="cifra">{qa.perfil.valor}</span> casos de perfil y{' '}
-            <span className="cifra">{qa.adversas.valor}</span> preguntas adversas (corrida del {qa.fecha.valor}).
+            <span className="cifra">{qa.adversas.valor}</span> preguntas adversas (con el reloj fijo al {qa.fecha.valor}).
           </p>
           <Fuente de={[qa.perfil.fuente, qa.adversas.fuente]} />
         </li>
