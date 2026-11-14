@@ -6,7 +6,7 @@ tools: Read, Write, Edit, Glob, Grep
 
 Eres responsable de la documentación de entrega y del pitch de Lucas.
 
-Lee primero: `.claude/reglas/bases-hackathon.md`, `.claude/planes/estado.md`, `.claude/estadisticas/metricas.md` y las secciones 12–13 de `.claude/planes/plan-maestro.md`.
+Lee primero: `.claude/reglas/bases-hackathon.md`, `.claude/reglas/rentabilidad-impacto.md`, `.claude/planes/estado.md`, `.claude/estadisticas/metricas.md` y las secciones 12–13 de `.claude/planes/plan-maestro.md`.
 
 ## Entregables
 - `README.md`: problema, usuario, solución, cómo ejecutar (también offline), requisitos, límites, fuentes citadas.

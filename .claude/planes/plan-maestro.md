@@ -1,374 +1,469 @@
-# PLAN MAESTRO — «Lucas», copiloto de plata
+# PLAN MAESTRO v3: «Lucas», tu compañero de plata
 
-**Hackathon BBVA · AI Financial Life · 14–15 de noviembre de 2026**
+**Hackathon BBVA · AI Financial Life · 14 y 15 de noviembre de 2026 · Equipo 2**
 
 > **Principio rector (bases):** la mejor solución no es la más compleja, sino la que convierte datos e IA en una decisión financiera más clara, segura y demostrablemente útil.
 
+> **Indicación del juez (14/11):** la IA tiene que ser el **compañero bancario** del cliente. Debe atacar necesidades reales de clientes actuales (**fidelización**) y futuros (**atracción**). No basta una demo cosmética ni un chatbot genérico.
+
+Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.md`. La v2 suma lo decidido el sábado 14 por la mañana; la v3, la verificación de rentabilidad, impacto, innovación y costo.
+
 ---
 
-## 0. Cambios respecto al brief del 13/11 (por las bases finales)
+## 0. Qué cambió en la v3
 
-Las bases finales cambian varias cosas del brief. Hay que tenerlas presentes:
-
-| Brief del 13/11 | Bases finales | Qué hacemos |
+| Antes (v2) | Ahora (v3) | Motivo |
 |---|---|---|
-| Pesos: valor ingeniería 25, técnica 25, IA 25, escalabilidad 15, demo 10 | **Valor 15 · IA y analítica 25 · Calidad técnica 25 · Producto y UX 15 · Innovación 10 · Demo 10** | La escalabilidad ya no tiene peso propio. Suben Producto/UX y Valor. Rigor + baseline + tests es el 50 %. |
-| Lucas como app amplia (perfil, pronóstico, chat, alertas, ubicación…) | «Elijan **un problema principal** y **una población usuaria** definida» | Un problema central y los módulos le sirven a ese problema. |
-| Chat con LangGraph: analista + pronóstico + estratega | **No hay puntos extra por usar más agentes, modelos o servicios**; cada técnica se compara con una alternativa sencilla | Un solo agente con herramientas. Se pueden sumar más solo si se mide que aportan. |
-| «OpenAI si hay clave» | BBVA **no da** API keys, créditos cloud ni GPU. Un LLM externo solo se usa si las reglas lo permiten y **sin datos personales** | Capa de LLM intercambiable: **Ollama local** como base, API propia opcional y **fallback a plantillas** siempre. |
-| Lucas «encaja como agente propio del banco (como Blue)» | **Prohibido** usar marcas o interfaces bancarias como si fuera un producto oficial | Marca propia «Lucas», sin logos ni colores de BBVA. En el pitch se habla de «podría integrarse», nunca de «es de BBVA». |
-| Escalabilidad como criterio | Prueba de evolución sorpresa (ingresos variables, duplicados, explicabilidad) | Diseño modular y escenarios difíciles en el generador **desde el día 1**. |
-| Ubicación, WhatsApp, modo familia | Datos no confidenciales y privacidad penalizada si hay riesgo | **Fuera del alcance.** |
+| «Fideliza y atrae», sin mecanismo de ingreso | **6 palancas de ingreso** para el banco, cada una con función y métrica de piloto, y calculadora con supuestos visibles ([rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md)) | El jurado pregunta por qué un banco pagaría |
+| Métricas solo técnicas | **Métricas de impacto en S/** por cliente: días en rojo evitados, colchón, intereses evitados, % que sube de cuadrante | Impacto entendible para cualquiera |
+| 15 módulos DEBE sin orden | **Núcleo rentable primero** (sección 2): lo que mueve la plata del usuario se construye antes que memoria, RAG y segmentos avanzados | Llegar al flujo de punta a punta a las 19:00 |
+| LLM: Ollama o «API externa» sin definir | **Ollama → Gemini (nivel gratuito, solo salidas de tools) → plantillas** ([gemini-api.md](../investigacion/gemini-api.md)) | Respaldo si Ollama falla en una laptop, sin costo |
+| Modelo de ingreso implícito | **B2B2C**: gratis para el usuario, licencia al banco, caja o cooperativa. Descartada la comisión por producto vendido | Coherente con «no es venta disfrazada» |
+
+## 0b. Qué cambió en la v2
+
+| Antes (v1) | Ahora (v2) | Motivo |
+|---|---|---|
+| Lucas responde cuando le preguntan | **Lucas se adelanta**: motor de eventos con avisos (ingresos, grati, CTS, fechas, gastos, riesgo) | Compañero, no chatbot |
+| DuckDB | **PostgreSQL** con esquema seguro (roles, RLS, cifrado), JSONB para datos variables y **pgvector** para el RAG | Seguridad demostrable y una sola base |
+| Sin texto | **Texto**: glosa de cada movimiento (clasificación) y mensajes del usuario (sentimiento) | Análisis NLP ligado a una decisión |
+| Perfiles K-Prototypes en DEBERÍA | **K-Prototypes en DEBE**: alimenta recomendaciones, Sueldo Lucas y arranque en frío | Personalización medible |
+| Un agente con tools | **Un agente LangGraph** con nodos: router, herramientas (nuestros modelos), RAG, BCRP, redacción y **juez** | Cero cifras inventadas, con fuentes |
+| Recomendador igual para todos | **Segmento + comportamiento individual + reglas de seguridad**, con ofertas de tipos de producto genéricos según necesidad | Fidelización responsable |
+| Sin nombres | **6 personas con roles y microtareas** ([tareas.md](tareas.md)) | Trabajo en paralelo |
+| Recomendaciones según la situación del momento | **Lucas aprende del usuario**: perfil de ahorro y gasto, metas con proyección a fin de año, memoria de metas, preferencias y respuestas a cada recomendación | Mejorar, no solo informar |
+| Segmentos sin nombre de negocio | **Matriz ahorro × gasto** (ahorrador/no ahorrador × gasta mucho/gasta poco) encima de los clusters | Segmentos que el banco entiende |
+| Datos generados solo por reglas | **Generación estratificada** + **bootstrap** de perfiles para que ningún segmento quede sub o sobrerrepresentado | Evitar sesgo |
+| RAG con manuales sueltos | **RAG por módulos**: salud financiera, ahorro, deudas, inversión básica, seguros y derechos del usuario | Educación que acompaña cada recomendación |
+| Controles de seguridad sueltos | **Alineado con 23 controles de ISO/IEC 27001:2022** (sin certificación), con declaración de aplicabilidad | Calidad técnica y confianza bancaria |
+| Tests sin método | **Estrategia de pruebas ISTQB**: 4 niveles, técnicas de diseño, riesgo, criterios de salida, 3 ciclos y catálogo de 27 casos de sistema | Pruebas funcionales del sistema demostrables |
+
+**Se descarta:** segunda base NoSQL (Postgres con JSONB la cubre), GraphRAG, deep learning entrenado desde cero, multimodal, varios agentes, ubicación exacta.
 
 ---
 
 ## 1. Problema, usuario y decisión
 
-**Población:** trabajadores **dependientes e independientes del sector privado** en Perú que necesitan manejar mejor sus finanzas: cobran por quincena, con comisiones o con pagos irregulares de clientes; usan Yape/Plin y tarjeta, y tienen cuotas o deudas.
+**Población:** trabajadores dependientes e independientes del sector privado en Perú: cobran por quincena, con comisiones o con pagos irregulares; usan Yape/Plin y tarjeta; tienen cuotas o deudas.
 
-**Problema principal: liquidez a 30 días.** No saben con anticipación si les alcanzará la plata ni qué cambio concreto mejora su situación. Ven su saldo de hoy, pero no el de la próxima quincena o el próximo pago. El problema es más agudo en los independientes, porque su ingreso varía.
-*(Contexto: según el equipo, el 61 % de los peruanos no cubriría un mes de ingresos ante una emergencia; la cifra se leyó en la fuente. Citar la fuente exacta en el README. La guía nombra el ámbito dos veces: «predicción de liquidez» e «ingresos variables» en la prueba sorpresa.)*
+**Problema principal: liquidez a 30 días.** No saben si les alcanzará la plata hasta el próximo ingreso ni qué cambio concreto mejora su situación. Es más agudo en independientes porque su ingreso varía.
+*(El 61 % sin colchón de un mes está pendiente de fuente exacta: ver `estadisticas/cifras-publicas.md`.)*
 
-**Arquetipos (un solo motor, varias personas):**
-| Persona | Ingreso | Qué muestra en la demo |
-|---|---|---|
-| Empleado formal con quincena | Estable + gratificación + CTS | Banda estrecha; foco en ahorro y suscripciones |
-| Empleado con base + comisiones | Fijo + variable | Banda media; meses buenos y malos |
-| Independiente con recibo por honorarios | Pagos irregulares de varios clientes | Banda ancha; «día de riesgo» y colchón |
-| Mixto (empleo + trabajo extra) | Fijo + extra irregular | Separar la plata del extra; qué apartar |
-
-La demo empieza con una persona y cambia a otra: mismo motor, distinta incertidumbre.
-
-**Decisión a mejorar:**
+**Decisión que mejoramos:**
 > «¿Cuánto puedo gastar o ahorrar este mes sin quedarme en rojo antes de mi próximo ingreso, y qué cambio me conviene más?»
 
-**Criterios de éxito (medibles):**
-1. El pronóstico de saldo a 30 días tiene **menor MAE** que el baseline (promedio móvil) en el set de test, y sus bandas al 80 % cubren entre el 75 % y el 85 % de los casos reales.
-2. El 100 % de las cifras que dice el chat se pueden rastrear hasta una herramienta (verificador).
-3. Un usuario de prueba llega al «día de riesgo» y a una recomendación accionable en **menos de 60 segundos** (tiempo hasta insight).
-4. Se detectan las recurrentes y suscripciones duplicadas con F1 ≥ 0,85 sobre etiquetas sintéticas.
+**Arquetipos:** formal con quincena (banda estrecha), base + comisiones (media), independiente con recibo por honorarios (ancha), mixto (media-ancha). Un solo motor. El arquetipo nunca entra a un modelo.
 
-5. La banda del pronóstico es más ancha para los independientes que para los dependientes y aun así mantiene su cobertura. Así se demuestra que el modelo refleja la incertidumbre real y no un promedio.
+**Para el banco** (detalle, calculadora y modelo de ingreso en [rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md)):
+- **Gana cuando el cliente ahorra**, no cuando se endeuda: metas y Sueldo Lucas traen fondeo barato (P1).
+- **Fidelización:** avisos a tiempo hacen que el cliente reciba su ingreso en el banco y vuelva cada quincena (P2); llegar a fin de mes baja la mora (P3).
+- **Atracción:** «Lucas en 5 preguntas» da valor a quien todavía no es cliente, sin oficina ni vendedor (P4).
+- **Oferta responsable:** tipos de producto genéricos solo cuando hay una necesidad detectada y pasan las reglas de idoneidad (P5).
+- **Camino de crecimiento:** quien gasta de más recibe metas de ahorro; cuando ya ahorra, Lucas le muestra promociones y productos de ahorro e inversión del catálogo del banco. El cliente crece con el banco y eso lo fideliza.
 
-### Cómo se integran los ámbitos de la guía (aporte del equipo)
-Un problema principal y las demás piezas como apoyo, no como problemas aparte:
+**Para los peruanos:** menos días en rojo, un colchón para imprevistos y menos intereses de deuda cara, medidos en S/ por cliente.
 
-| Ámbito | Rol en Lucas | Decisión que mejora | Métrica frente a una alternativa sencilla | Escenario difícil |
-|---|---|---|---|---|
-| **Predicción de liquidez** | **Problema principal** | Cuánto gastar o apartar y cuándo reaccionar | MAE, MAPE y cobertura de la banda frente a promedio móvil o estacional | Ingresos irregulares, datos incompletos |
-| Clasificación de gastos | Alimenta los datos | Separar «plata del negocio» y «plata de la casa» (independientes y mixtos) | F1 por categoría frente a un diccionario de comercios | Categorías ambiguas, datos incompletos |
-| Recurrentes y suscripciones | Aporta lo comprometido al pronóstico | Qué cancelar o consolidar | Precision, recall y F1 frente a la regla «mismo comercio y monto cada 30 días» | Suscripciones duplicadas, cambios de precio |
-| Planificación de ahorro | Salida dentro de «Qué hacer» | Cuánto apartar cada quincena sin quedarse corto | Probabilidad de cumplir la meta frente a una regla fija del 10 % | Cambios de patrón de gasto |
-| Simulación de escenarios | Salida «¿qué pasa si?» | «¿Qué pasa si pierdo un cliente o sube mi cuota?» | Exactitud frente a un cálculo exacto en hoja de cálculo | Ingresos variables |
-| Recomendaciones explicables | Capa final transversal | Qué hacer con fundamento, límites y confianza | Groundedness: todas las cifras salen de código | — |
-| Alertas de anomalías | Solo si sobra tiempo | Revisar un movimiento inusual (solo avisa, no opera) | Precision, recall y falsos positivos frente a un umbral fijo | Transacciones atípicas |
-| Educación financiera | Botón «explícamelo fácil» y costo real de las cuotas | Entender una deuda o una compra a cuotas | Fidelidad de las respuestas y casos adversos | — |
+### Criterios de éxito
 
-**Si el equipo quiere validar la elección:** cada persona puntúa de 1 a 5 cada opción en cuatro preguntas (¿dolor real y delimitado?, ¿medible con un baseline en dos días?, ¿se ve en la demo?, ¿lo podemos construir con lo que dominamos?) y gana la suma más alta. Alternativas: recurrentes + anomalías (más fácil de medir, menos distintiva) o educación financiera (muy inclusiva, más difícil de medir).
-
-**Fuera del producto:** prometer rentabilidades, ejecutar operaciones, predecir el tipo de cambio o decir «compra dólares». Las recomendaciones son orientación educativa y simulación con supuestos claros. **La decisión siempre es de la persona.**
+1. Pronóstico a 30 días con **menor MAE** que el promedio móvil; bandas al 80 % con cobertura entre 75 % y 85 %.
+2. **100 %** de las cifras del agente rastreables a una herramienta; **100 %** de las afirmaciones del RAG con cita real.
+3. Día de riesgo y recomendación accionable en **menos de 60 s**.
+4. Recurrentes y duplicadas con **F1 ≥ 0,85**.
+5. Banda más ancha para independientes que para dependientes, manteniendo cobertura.
+6. Avisos: mejor precision que «avisar en cada evento», con máximo 3 por semana.
+7. Ofertas: mejor precision@3 sobre necesidades sembradas que «lo más popular para todos».
+8. Metas: mayor probabilidad simulada de llegar a la meta de fin de año que la regla fija del 10 %.
+9. Aprendizaje: con la memoria de respuestas, la tasa simulada de recomendaciones aceptadas sube frente a un recomendador sin memoria.
+10. Impacto: siguiendo a Lucas, el cliente simulado tiene **menos días en rojo y más colchón** que con «no hacer nada» y que con «apartar 10 % fijo», reportado en S/ con intervalo.
+11. Costo: la demo cuesta S/ 0 y se reporta el % de respuestas del chat que salen por plantilla sin llamar al LLM.
 
 ---
 
-## 2. Alcance del MVP (MoSCoW)
+## 2. Alcance (MoSCoW)
 
-### DEBE (núcleo de la demo)
-| # | Módulo | Pantalla |
+### DEBE
+
+| # | Módulo | Responsable |
 |---|---|---|
-| D1 | **Generador de datos sintéticos** con calendario peruano y escenarios difíciles | (dataset) |
-| D2 | **Motor**: categorías, gasto fijo y variable, gasto hormiga, recurrentes | Cómo estás |
-| D3 | **Salud financiera** con un puntaje transparente (0–100, con sus componentes visibles) | Cómo estás |
-| D4 | **Pronóstico de saldo a 30 días** con banda de incertidumbre y «día de riesgo» | Qué viene |
-| D5 | **Recomendador híbrido**: 3 acciones con impacto en S/, el «¿por qué?», límites y confianza | Qué hacer |
-| D6 | **Simulador «qué pasaría si»**, que reutiliza el pronóstico | Qué hacer |
-| D7 | **Chat con herramientas + verificador de cifras** (el modelo explica, no calcula), con fallback | Chat |
-| D8 | **Panel «cómo sabemos que funciona»**: baseline contra modelo, cobertura y % de cifras verificadas | Evidencia |
+| D1 | Generador sintético: tabular + glosas + mensajes, calendario peruano, escenarios difíciles, necesidades sembradas | Dixon |
+| D2 | PostgreSQL seguro: esquemas `seguro` y `app`, roles, RLS, pgcrypto, pgvector, Docker | Michael |
+| D3 | Motor: categorías, fijo/variable, hormiga, recurrentes; clasificador de glosa | Diego |
+| D4 | Segmentación K-Prototypes por cliente | Diego |
+| D5 | Salud financiera 0–100 con componentes | Diego |
+| D6 | Pronóstico de saldo a 30 días con banda y día de riesgo (global vs por segmento vs baseline) | Diego |
+| D7 | Recomendador híbrido: segmento + comportamiento + reglas de seguridad + ofertas genéricas | Miguel |
+| D8 | Motor de eventos y avisos (ingreso, grati/CTS, calendario, gasto frecuente, riesgo) con límite semanal | Miguel |
+| D9 | Simulador «qué pasaría si» y Sueldo Lucas | Miguel + Diego |
+| D10 | Agente LangGraph: tools sobre nuestros modelos, RAG con pgvector, nodo juez, fallback a plantillas | Jeffrey |
+| D11 | UI interactiva: Cómo estás, Qué viene, Qué hacer, Avisos, Chat, Evidencia | Marcela |
+| D12 | Panel Evidencia + EVALUATION.md | Diego + Marcela |
+| D13 | Perfil de ahorro y gasto (matriz 2×2) y **metas de ahorro** con proyección a fin de año | Diego + Miguel |
+| D14 | **Memoria del usuario**: metas, preferencias, resúmenes de conversación y respuesta a cada recomendación (útil / no me sirve) | Jeffrey + Michael |
+| D15 | **RAG por módulos** con PDFs públicos de educación financiera y metadatos (fuente, licencia, módulo, nivel) | Jeffrey + Dixon |
+| D16 | **Métricas de impacto en S/** (días en rojo evitados, colchón, intereses evitados, % que sube de cuadrante) y **calculadora de valor para el banco** con supuestos visibles | Miguel + Diego |
+
+### Orden de construcción: núcleo rentable primero
+
+Todo lo anterior es DEBE, pero no todo pesa igual. Se construye en dos olas para llegar al flujo de punta a punta a las 19:00:
+
+| Ola | Módulos | Por qué primero |
+|---|---|---|
+| **1. Núcleo (hasta el checkpoint de 19:00)** | D1, D2 (esquemas, roles y RLS), D5, D6, D7 con segmento por umbrales, D8, D9, D10 con tools + juez + plantillas, D11, D16 | Es lo que mueve la plata del usuario y la del banco: aviso → Sueldo Lucas → simulador → impacto en S/ |
+| **2. Profundidad (19:00 en adelante)** | D3 clasificador de glosa, D4 K-Prototypes (reemplaza a los umbrales), D12 panel completo, D13, D14, D15 con 2 módulos (deudas y ahorro) antes que los 6 | Suben la nota de IA y personalización, pero el núcleo funciona sin ellos |
+
+Cada módulo de la ola 2 se compara con lo que ya hay en la ola 1 (por ejemplo, K-Prototypes frente a umbrales). Así la ola 1 ya es el baseline.
 
 ### DEBERÍA
-- Perfiles por cluster (K-Prototypes) que ajustan la prioridad y el tono de las recomendaciones.
-- Detector de suscripciones duplicadas (ya prepara la prueba de evolución).
-- Formulario «agrega un gasto o una meta» que recalcula todo en vivo.
-- Tipo de cambio del BCRP con caché y un valor grabado de respaldo. Solo genera alertas con contexto («tienes un pago de US$ 300 en 45 días»).
-- Pantalla de consentimiento y botón «explícamelo fácil».
+- Lucas en 5 preguntas (arranque en frío por cluster). *Prioridad alta.*
+- Aprendizaje por respuestas: el ranking de recomendaciones se ajusta con lo que el usuario aceptó o rechazó.
+- Catálogo de ofertas y promociones para ahorradores (configurable, ver sección 5).
+- Bootstrap de perfiles desde microdatos públicos de la ENAHO (INEI), si la licencia y el tiempo lo permiten.
+- Sentimiento de mensajes con modelo preentrenado en español (ajusta tono y urgencia).
+- Tipo de cambio e indicadores del BCRP con caché y respaldo grabado.
+- Plata del negocio y plata de la casa.
+- Resumen de la quincena con cambios del puntaje.
+- Consentimiento y botón «explícamelo fácil».
 
-### PODRÍA (solo si sobra tiempo)
-- Explicación contrafactual: «para subir de 55 a 70 tendrías que…».
-- Alerta de movimiento atípico (Isolation Forest).
-- Prueba de equipo rojo en vivo (el chat bloquea una prompt injection).
+### PODRÍA
+- «¿Cuánto te cuesta tapar el hueco?»: compara en S/ las salidas a un día en rojo (colchón, mover un gasto, tarjeta, préstamo informal) con TCEA supuesta y visible. Educa, no ofrece crédito.
+- Plan de grati y CTS completo. Explicación contrafactual. Alerta de atípicos. Equipo rojo en vivo. Servidor MCP con los modelos.
 
 ### NO AHORA
-Ubicación, WhatsApp real, app nativa, modo familia, vista para el banco, junta/pandero, plan de deudas con OR-Tools.
+NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ubicación exacta/GPS, WhatsApp, app nativa, modo familia, vista para el banco.
+
+**Orden de recorte** si a mitad del sábado no hay flujo de punta a punta: sentimiento → BCRP → modelos por segmento (queda el global) → RAG a un solo módulo → memoria solo de metas → Lucas en 5 preguntas. El núcleo (ola 1) y D16 no se recortan.
 
 ---
 
 ## 3. Arquitectura
 
-Las bases piden separar **ingesta/preparación**, **lógica analítica/IA** e **interacción**.
-
 ```
-┌──────────────────────── 1. INGESTA / PREPARACIÓN ────────────────────────┐
-│ generator/ (semilla fija) → CSV/Parquet → validación Pydantic → DuckDB   │
-│ fx_service (BCRP → caché → último valor → serie grabada)                 │
+┌──────────────────────── 1. INGESTA / DATOS ──────────────────────────────┐
+│ generator/ (semilla) → validación Pydantic → PostgreSQL                  │
+│   esquema seguro: clientes, deudas  (roles, RLS, pgcrypto)               │
+│   esquema app: transacciones, glosas, mensajes, avisos (JSONB)           │
+│   pgvector: fragmentos de manuales públicos para el RAG (por módulo)     │
+│   memoria: metas, preferencias, resúmenes y respuestas a recomendaciones │
+│ bcrp_service (API → caché → último valor → serie grabada)                │
 └───────────────────────────────────┬──────────────────────────────────────┘
-┌──────────────────────── 2. LÓGICA ANALÍTICA / IA ────────────────────────┐
-│ engine:   categorías · recurrentes · métricas · calendario PE            │
-│ health:   puntaje transparente por componentes                           │
-│ forecast: baseline (promedio móvil) vs modelo + banda (bootstrap)        │
-│ profile:  K-Prototypes (k fijado por silueta/estabilidad)                │
-│ recommender: reglas → puntaje impacto×facilidad → ajuste por perfil      │
-│              → reglas de seguridad globales                              │
-│ assistant: 1 agente LLM + tools (las cifras SOLO salen de tools)         │
-│ verifier: cada número de la respuesta debe estar en la salida de tools   │
-│           → si no, se reescribe o se usa la plantilla (fallback)         │
+┌──────────────────────── 2. ANALÍTICA / IA ───────────────────────────────┐
+│ engine: categorías, recurrentes, clasificador de glosa, calendario PE    │
+│ segment: K-Prototypes por cliente                                        │
+│ health, forecast (+ banda bootstrap), sentiment (preentrenado)           │
+│ events: detector de eventos → candidatos → puntaje → filtros → límite    │
+│ recommender: segmento + comportamiento → impacto × facilidad → seguridad │
+│ agent (LangGraph):                                                       │
+│   memoria → router → tools (modelos) / RAG / BCRP → redacción → juez     │
+│   → guarda en memoria lo aprendido (metas, preferencias, respuestas)     │
+│   juez: cifras en salida de tools + citas reales → si no, plantilla      │
 └───────────────────────────────────┬──────────────────────────────────────┘
 ┌──────────────────────── 3. INTERACCIÓN ──────────────────────────────────┐
-│ FastAPI (REST) ← UI: Cómo estás · Qué viene · Qué hacer · Chat · Evidencia│
+│ FastAPI (REST) ← UI: Cómo estás · Qué viene · Qué hacer · Avisos ·       │
+│                       Chat · Evidencia                                   │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Stack:** Python 3.11 · pandas/DuckDB · scikit-learn · `kmodes` · statsmodels · SciPy · `holidays` · FastAPI + Pydantic · pytest.
-**UI:** Streamlit si el equipo es pequeño o falta tiempo; React + Recharts si alguien lo domina. Se decide en la primera hora y no se cambia después.
-**LLM:** interfaz `LLMProvider` con tres implementaciones: `OllamaProvider` (por defecto, offline), `APIProvider` (opcional, con clave propia en `.env`) y `TemplateProvider` (fallback sin LLM). La demo tiene que funcionar **con la red apagada**.
+**Stack:** Python 3.11, pandas, scikit-learn, `kmodes`, statsmodels, SciPy, `holidays`, PostgreSQL 16 + pgvector (Docker), SQLAlchemy/psycopg, FastAPI + Pydantic, LangGraph + Ollama, pytest, ruff.
+**UI:** React + Recharts si Marcela lo domina; si no, Streamlit. Se decide a las 11:30 y no se cambia.
+**LLM** (detalle en [gemini-api.md](../investigacion/gemini-api.md)):
+1. **Ollama local**, por defecto en la demo.
+2. **Gemini `gemini-3.5-flash-lite` en nivel gratuito**, solo si Ollama falla, hay red y la organización lo autorizó. Se activa con `LLM_PROVIDER=gemini`; la clave va en `.env`, en un proyecto de AI Studio sin facturación. Recibe solo salidas de tools sobre datos sintéticos, porque en el nivel gratuito Google usa los prompts para mejorar sus productos y pueden leerlos revisores humanos. Con clientes reales haría falta el nivel de pago o un modelo propio del banco.
+3. **Plantillas**, siempre disponibles y baseline del agente.
+
+Los **embeddings del RAG son siempre locales** (Ollama): vectores de modelos distintos no se comparan y el RAG debe funcionar sin red. **La demo funciona con la red apagada.**
+
+### Seguridad de datos demostrable
+- Roles: `lucas_app` (lee y escribe `app`), `lucas_agente` (solo lectura, sin columnas sensibles), `lucas_admin`.
+- RLS por `customer_id`. Columnas sensibles cifradas con pgcrypto.
+- En la demo: el agente intenta leer `seguro.clientes.deuda_total` y Postgres lo bloquea.
 
 ---
 
 ## 4. Datos sintéticos
 
-### Decisión: generador propio + BD local, calibrado con cifras públicas
-- **No usamos un dataset público de transacciones como base.** No hay uno peruano a nivel de transacción (INEI, SBS y BCRP publican encuestas y agregados). Los de Kaggle no tienen quincena, gratificación, CTS ni nuestros escenarios difíciles, y habría que revisar la licencia de cada uno.
-- **El generador propio cubre lo que piden las bases:** semilla, escenarios difíciles, controles de calidad y particiones sin fuga. Además permite responder a la prueba sorpresa en minutos.
-- **Almacenamiento:** el generador escribe Parquet y lo carga en **DuckDB** (`data/lucas.duckdb`). Los gastos y metas que el usuario agrega en vivo van a una tabla aparte en la misma BD. Postgres no hace falta.
-- **Calibración:** 3 o 4 cifras públicas verificadas en su fuente original (por ejemplo, el 61 % sin colchón de un mes, el ingreso promedio por tipo de trabajo, la proporción de formales e independientes), documentadas en `QUALITY.md`.
-- **Opcional:** un dataset público con licencia citada, solo como prueba externa del detector de recurrentes o de anomalías. Nunca como base.
+Generador propio con semilla fija (`--seed`), ~500 clientes × 12 meses, calibrado con cifras públicas verificadas. No hay dataset peruano público a nivel de transacción.
 
-### Esquema (contrato recomendado por las bases + calendario)
-| Campo | Tipo | Nota |
-|---|---|---|
-| `customer_id` | str | ficticio (`C0001`) |
-| `transaction_id` | str | único |
-| `fecha_hora` | datetime | 12 meses |
-| `monto` | float | positivo; el signo lo da `tipo` |
-| `moneda` | PEN / USD | |
-| `tipo` | ingreso / gasto / transferencia | |
-| `categoria` | str | alimentación, transporte, delivery, suscripción, cuota, servicios… |
-| `comercio` | str | **ficticio** (p. ej., «StreamFlix», «RapiFood») |
-| `canal` | yape / plin / tarjeta / efectivo | |
-| `saldo` | float | opcional |
-| `es_recurrente` | bool | **etiqueta** para evaluar |
-| `es_atipico` | bool | **etiqueta** para evaluar |
+### Cómo evitamos el sesgo
+1. **Generación estratificada:** se fija cuántos clientes hay en cada combinación de arquetipo × perfil de ahorro × perfil de gasto, para que ningún grupo quede vacío o domine. Las proporciones se reportan en `QUALITY.md`.
+2. **Bootstrap de perfiles:** las variables de cada cliente (ingreso, gasto, deuda, colchón) se obtienen remuestreando con reemplazo desde una base de perfiles semilla y agregando un ruido pequeño. La base semilla, en orden de preferencia:
+   - microdatos públicos de la **ENAHO (INEI)**, que traen ingreso y gasto reales de hogares peruanos (DEBERÍA: revisar licencia y tiempo de preparación);
+   - si no da el tiempo, distribuciones paramétricas calibradas con las cifras públicas verificadas.
+3. Las **transacciones** se generan por reglas a partir de cada perfil (quincena, calendario, recurrentes, escenarios difíciles).
+4. **Bootstrap para la evaluación:** todas las métricas se reportan con intervalo de confianza por bootstrap por cliente.
 
-Tabla `clientes`: `customer_id`, rango de edad, tipo de trabajo (formal/independiente), frecuencia de ingreso, personas a cargo, deuda total, colchón en meses, arquetipo (**solo para evaluar; nunca entra al modelo**).
+Ojo: remuestrear datos sintéticos no les quita el sesgo que ya traen; por eso la base semilla debe venir de datos públicos reales cuando sea posible.
 
-**Nunca:** nombres, DNI, teléfonos, cuentas reales ni marcas reales.
+### Tabla `seguro.clientes`
+`customer_id`, `rango_edad`, `region` (Lima, norte, sur, centro, oriente), `tipo_trabajo`, `frecuencia_ingreso`, `personas_a_cargo`, `deuda_total`, `n_creditos`, `cuota_mensual`, `tcea_promedio`, `colchon_meses`, `antiguedad_cliente_meses`, `meta_ahorro`, `paga_en_usd`, `necesidad_oculta` (etiqueta), `perfil_ahorro_real` y `perfil_gasto_real` (etiquetas), `prob_acepta_reco` (etiqueta oculta para simular respuestas), `arquetipo` (etiqueta).
 
-### Generador (simulación por reglas y arquetipos)
-- Los 4 arquetipos de la sección 1 (formal quincenal, base + comisiones, independiente con recibo por honorarios, mixto). A cada uno se le agregan variaciones de deuda, dependientes y nivel de ahorro.
-- Calendario peruano: quincena, gratificación (julio y diciembre), CTS (mayo y noviembre) y feriados con `holidays` (PE). *(Confirmar el calendario de CTS y gratificación en una fuente oficial antes de citarlo.)*
-- **Escenarios difíciles obligatorios:** ingresos irregulares, suscripciones duplicadas, cambio de patrón a mitad de año, datos incompletos (faltantes y duplicados inyectados) y transacciones atípicas.
-- Volumen sugerido: alrededor de 500 clientes × 12 meses. Justificarlo con la estabilidad de las métricas y sus intervalos.
-- **Semilla fija** y un parámetro `--seed`. Cualquiera regenera exactamente el mismo dataset.
+### Tablas de memoria (esquema `app`, con RLS por cliente)
+- `app.metas`: `customer_id`, `nombre`, `monto_objetivo`, `fecha_objetivo`, `aporte_quincenal`, `estado`.
+- `app.memoria`: `customer_id`, `tipo` (preferencia, hecho, resumen), `contenido` (JSONB), `embedding` (vector), `fecha`.
+- `app.respuestas_reco`: `customer_id`, `reco_id`, `tipo_reco`, `respuesta` (aceptó, ignoró, no me sirve), `fecha`.
 
-### Controles de calidad (`data/QUALITY.md`, generado por script)
-Volumen, cobertura temporal, distribución de montos, % de faltantes, duplicados, casos extremos, proporción por arquetipo y contraste con una o dos cifras públicas verificadas.
+### Tabla `app.transacciones`
+`customer_id`, `transaction_id`, `fecha_hora`, `monto` (>0), `moneda`, `tipo`, `categoria`, `comercio` (ficticio), `glosa` (texto), `canal`, `saldo`, `es_recurrente` (etiqueta), `es_atipico` (etiqueta).
 
-### Particiones sin fuga de datos
-- **Pronóstico:** walk-forward temporal (entrenar meses 1–9, validar 10, test 11–12).
-- **Recurrentes/atípicos:** dividir **por cliente** (GroupKFold), no por transacción.
-- **Clusters:** sin etiquetas. El arquetipo se usa solo después, para medir la pureza (ARI).
+### Tabla `app.mensajes`
+`customer_id`, `fecha_hora`, `texto`, `sentimiento` (etiqueta). Frases variadas por plantillas; **set de evaluación de 100 frases escritas a mano por el equipo**.
 
-**Honestidad:** con datos sintéticos, un pronóstico, un cluster o un detector puede «descubrir» justo lo que sembramos en el generador. Por eso se hacen **pruebas con perturbaciones**: más ruido, otra semilla, cambio de patrón no sembrado durante el entrenamiento y faltantes extra, y se reporta cuánto empeoran las métricas. Lo decimos en el README y en el pitch.
+### Variables por cliente (entrada del K-Prototypes)
+Volatilidad del ingreso, fijo/ingreso, cuota/ingreso, % hormiga, % delivery, n.º de suscripciones, % Yape/Plin, ahorro neto mensual, días en rojo (3 meses), tipo de trabajo, frecuencia de ingreso, región.
+
+### Calendario y escenarios
+- Quincena, grati (jul/dic), CTS (may/nov), feriados (`holidays` PE), campaña escolar (mar), Día de la Madre, 28 de julio, Cyber Wow, Navidad, con **subida de gasto sembrada**.
+- Escenarios difíciles: ingresos irregulares, suscripciones duplicadas, cambio de patrón a mitad de año, faltantes y duplicados, atípicos.
+- Necesidades ocultas sembradas (pago en USD, deuda cara, ingreso irregular) para medir ofertas.
+
+### Particiones sin fuga
+Pronóstico: walk-forward (entrena 1–9, valida 10, test 11–12). Recurrentes, glosa y atípicos: GroupKFold por cliente. Clusters: sin etiquetas; ARI con arquetipo solo después.
+
+**Honestidad:** los modelos pueden descubrir lo que sembramos. Pruebas con perturbaciones (ruido, otra semilla, patrón no visto, faltantes extra) y set de texto escrito a mano.
 
 ---
 
 ## 5. Inteligencia: cada técnica con su baseline
 
-| Módulo | Técnica | Baseline sencillo | Métrica |
+| Módulo | Técnica | Baseline | Métrica |
 |---|---|---|---|
-| Recurrentes | Agrupar por comercio + periodicidad (desviación de intervalos) + tolerancia de monto | «Mismo comercio ≥ 3 veces» | Precision, recall, F1 |
-| Duplicadas | Recurrentes de la misma categoría y cliente que se solapan | — | Precision |
-| Pronóstico | Saldo = ingresos esperados por calendario − fijos conocidos + variable (regresión/ETS); banda por **bootstrap por bloques de residuos** | Promedio móvil de 3 meses | MAE, MAPE, cobertura de la banda |
-| Salud financiera | Puntaje ponderado: colchón, ratio de deuda, gasto fijo/ingreso, volatilidad del ingreso, ahorro | — (es transparente por diseño) | Coherencia: monotonicidad en tests |
-| Perfiles | K-Prototypes (columnas mixtas), k por codo, silueta y estabilidad entre semillas | Reglas por umbral (ingreso irregular + colchón bajo) | Silueta, estabilidad, ARI contra arquetipo |
-| Recomendador | Reglas candidatas → puntaje impacto (S/) × facilidad → ajuste por perfil → filtros de seguridad | Top 3 reglas fijas iguales para todos | Ahorro simulado en S/, % que evita el día en rojo, revisión por segmento |
-| Chat | 1 agente con tools (`get_health`, `get_forecast`, `get_recos`, `simulate`, `get_fx`) | Respuestas con plantillas | Groundedness (% de cifras verificadas), exactitud en 20–30 preguntas fijas, tasa de bloqueo en casos adversos |
-| Atípicos (Podría) | Isolation Forest por cliente | z-score robusto con umbral | Precision, tasa de falsos positivos |
+| Glosa → categoría | TF-IDF + regresión logística | Diccionario de comercios | F1 por categoría |
+| Recurrentes | Comercio + periodicidad + tolerancia de monto | «Mismo comercio ≥ 3 veces» | Precision, recall, F1 |
+| Segmentación | K-Prototypes, k por codo, silueta y estabilidad | Reglas por umbral | Silueta, estabilidad, ARI |
+| Pronóstico | Calendario + fijos + variable (ETS/regresión), banda bootstrap | Promedio móvil 3 meses | MAE, MAPE, cobertura |
+| Personalización del pronóstico | Global + cluster como variable / un modelo por cluster | Global sin cluster | MAE por segmento |
+| Salud | Puntaje ponderado transparente | — | Monotonicidad en tests |
+| Sentimiento (DEBERÍA) | Modelo preentrenado en español | Léxico de palabras | F1 en las 100 frases a mano |
+| Eventos y avisos | Probabilidad de rojo + impacto en S/ + límite semanal | Avisar en cada evento | Precision, recall, anticipación en días |
+| Recomendador | Segmento + comportamiento → impacto × facilidad → seguridad | Top 3 fijo para todos | Ahorro simulado, % que evita día en rojo |
+| Ofertas | Necesidad detectada + idoneidad | Lo más popular para todos | Precision@3 sobre necesidades sembradas |
+| Arranque en frío (DEBERÍA) | Asignación a cluster con 5 respuestas | Promedio poblacional | MAE con 0, 1 y 3 meses de historia |
+| Agente | LangGraph + tools + RAG + juez | Respuestas por plantilla | % cifras verificadas, % citas válidas, exactitud en 30 preguntas, bloqueo adverso |
+| Impacto (D16) | Seguir las recomendaciones de Lucas en el simulador | No hacer nada / apartar 10 % fijo | Días en rojo evitados, S/ de colchón a 3 meses, intereses evitados, % que sube de cuadrante |
 
-### Reglas de seguridad del recomendador (globales)
-- Nunca sugerir un crédito, una tarjeta o un préstamo a un perfil con colchón < 1 mes o deuda alta.
-- Nunca decir «compra o vende dólares». Solo dar contexto del tipo de cambio ligado a pagos propios en USD.
-- Cada recomendación muestra: **acción · impacto estimado en S/ · por qué (datos usados) · supuestos · confianza (alta/media/baja) · «tú decides»**.
-- Se registra qué datos usó cada recomendación (trazabilidad).
+### Lucas aprende del usuario
 
-### Verificador de cifras (diferencial)
-1. El LLM recibe solo las salidas de las tools.
-2. Se extraen todos los números de su respuesta.
-3. Cada número debe coincidir (con tolerancia de redondeo) con un valor de una tool.
-4. Si falla: se reintenta una vez y, si vuelve a fallar, se usa `TemplateProvider`.
-5. La UI marca las cifras verificadas con ✓.
+**Perfil de ahorro y gasto (matriz 2×2).** Se calcula con la tasa de ahorro y la intensidad de gasto frente a su ingreso, y se pone encima de los clusters K-Prototypes para darles un nombre que se entiende:
+
+| | Gasta poco | Gasta mucho |
+|---|---|---|
+| **Ahorra** | *Ahorrador firme*: promociones y productos de ahorro e inversión del catálogo | *Ahorra pero se le escapa*: bajar gasto hormiga y suscripciones |
+| **No ahorra** | *Ingreso justo*: colchón mínimo y Sueldo Lucas | *Gastador*: metas de ahorro, límites por categoría, avisos de riesgo |
+
+Baseline de la matriz: umbrales fijos. Métrica: estabilidad del perfil mes a mes y acuerdo con las etiquetas sembradas.
+
+**Camino de crecimiento.** El objetivo es que el usuario suba de cuadrante:
+- *Gastador* → Lucas propone una meta: «Si apartas S/ 120 por quincena, en diciembre tendrás S/ 1 680». La proyección usa el pronóstico y su banda, no una cuenta lineal.
+- Al cumplir metas → pasa a *ahorrador* → Lucas muestra contenidos del módulo de inversión del RAG y ofertas del catálogo según idoneidad.
+
+**Metas de ahorro.** El usuario crea una meta o Lucas la sugiere. Se calcula el aporte por quincena que no lo deja en rojo y la probabilidad de llegar a la fecha (simulación con la banda del pronóstico). Baseline: ahorrar el 10 % fijo.
+
+**Catálogo de ofertas y promociones.** Archivo configurable (`data/catalogo_ofertas.json`) con tipos de producto y promociones **ficticias o genéricas** (depósito a plazo, cuenta de ahorro con meta, promociones en categorías donde el usuario ya gasta). En el pitch: «se conecta al catálogo real del banco que integre a Lucas». Solo se muestra a quien pasa la idoneidad (colchón ≥ 3 meses y sin deuda cara para productos de inversión).
+
+**Memoria del usuario.** Dos memorias distintas:
+1. **Memoria de conocimiento (RAG):** PDFs públicos, iguales para todos.
+2. **Memoria del usuario:** metas, preferencias («no me hables de inversión»), resúmenes de conversaciones y respuestas a cada recomendación. Se guarda en Postgres con RLS: solo la ve ese usuario. Hay un botón «olvidar lo que sabes de mí».
+
+El agente lee la memoria del usuario antes de responder y guarda lo nuevo al final. Las cifras siguen saliendo de los modelos, nunca de la memoria.
+
+**Aprendizaje por respuestas (DEBERÍA).** Cada recomendación tiene «útil / no me sirve». El ranking sube los tipos de recomendación que el usuario acepta y baja los que rechaza (pesos por tipo y segmento, estilo bandit simple). Con datos sintéticos se simulan las respuestas con `prob_acepta_reco` y se compara frente al recomendador sin memoria. Se dice que es simulado.
+
+### RAG por módulos
+
+Fuentes con licencia verificada: [../investigacion/rag-fuentes.md](../investigacion/rag-fuentes.md).
+
+| Módulo | Para qué lo usa Lucas | Fuentes (nivel A salvo indicación) |
+|---|---|---|
+| Salud financiera | Explicar el puntaje y sus componentes | CFPB «Su dinero, sus metas» (español), FDIC Money Smart |
+| Ahorro | Acompañar metas y colchón | CFPB, cartillas del BCRP, FDIC |
+| Deudas y crédito | TCEA, costo real de cuotas, sobreendeudamiento | Res. SBS 3274-2017, folletos de deudas del CFPB |
+| Inversión básica | Para *ahorradores*: tipos, riesgo y plazo, sin recomendar uno | Res. SMV 011-2026 (perfil de riesgo), FDIC |
+| Seguros | Qué cubre cada tipo | Res. SBS 3274-2017; guía SBS «Para vivir seguros» (nivel C, por confirmar) |
+| Derechos y privacidad | Reclamos, transparencia, memoria del usuario | Ley 29571, Res. SBS 3274-2017, Ley 29733 + DS 016-2024-JUS, Banco Mundial 2017 |
+
+Las normas peruanas se pueden cargar porque el DL 822, artículo 9, excluye del derecho de autor a los textos oficiales. Las guías del CFPB y la FDIC son de dominio público, pero hablan de EE. UU.: solo se usan sus capítulos generales, con la etiqueta `contexto: EE. UU.`.
+
+Cada PDF va en `docs/rag/<modulo>/` con su fila en `docs/rag/fuentes.csv`: título, institución, enlace, fecha de consulta, licencia, nivel de licencia (A/B), contexto (Perú/EE. UU./internacional) y nivel de lectura (básico/intermedio). Cada fragmento lleva su módulo para que el agente busque solo en el que toca. Sin licencia clara, no entra.
+
+### Reglas de seguridad (globales)
+1. Nada de crédito a colchón < 1 mes o deuda alta.
+2. Nunca «compra/vende dólares»; el tipo de cambio solo como contexto de pagos propios en USD.
+3. Sin promesas de rentabilidad, sin operaciones, sin tools que muevan dinero.
+4. Toda recomendación u oferta: acción, impacto en S/, por qué, supuestos, confianza, «tú decides».
+5. Productos solo como tipos genéricos, nunca reales ni con marca.
+6. Máximo 3 avisos por semana.
+7. Inversión solo como educación (tipos, riesgo, plazo) y simulación con tasa supuesta y visible; nunca «invierte en X» ni rentabilidad prometida.
+8. Ofertas de inversión o ahorro a plazo solo con colchón ≥ 3 meses y sin deuda cara.
+9. La memoria del usuario se puede ver y borrar; nunca se usa para ofrecer crédito a quien no pasa la regla 1.
 
 ---
 
-## 6. Experiencia de usuario (flujo de la demo)
+## 6. Flujo de la demo
 
-1. **Consentimiento** (datos sintéticos, qué se usa y que se puede revocar). Se elige una persona: primero el independiente con recibo por honorarios y al final se cambia al empleado con quincena para contrastar las bandas.
-2. **Cómo estás:** salud 58/100 con sus componentes; gastos por categoría; gasto hormiga S/ X; «tienes 2 suscripciones de streaming».
-3. **Qué viene:** gráfico de saldo con banda → «riesgo de quedar en rojo el 27, unos días antes de la quincena (confianza media)».
-4. **Qué hacer:** 3 tarjetas de recomendación → botón «¿por qué?» → simulador: «cancelo una suscripción y bajo el delivery 20 %» → la banda se mueve y el día de riesgo desaparece.
-5. **Chat:** «¿llego a fin de mes si gasto S/ 150 en un regalo?» → respuesta con cifras ✓.
-6. **En vivo:** se agrega un gasto en el formulario → todo se recalcula.
-7. **Evidencia:** panel con baseline contra modelo y % verificado.
+1. Consentimiento y elección de persona: independiente con recibo por honorarios.
+2. **Aviso** al entrar: «el jueves 27 podrías quedar en rojo (confianza media)».
+3. **Cómo estás:** salud con componentes, segmento en palabras, gasto hormiga, 2 suscripciones de streaming.
+4. **Qué viene:** saldo con banda y día de riesgo.
+5. **Qué hacer:** 3 tarjetas con «¿por qué?», **Sueldo Lucas** y simulador: la banda se mueve y el día de riesgo desaparece.
+6. **En vivo:** se agrega «gratificación de julio» → salta el aviso con reparto propuesto (se viene el 28) → todo se recalcula.
+7. **Chat:** «¿llego a fin de mes si gasto S/ 150 en un regalo?» → cifras ✓; «¿qué es la TCEA?» → respuesta con fuente del RAG.
+8. **Metas:** el usuario es *gastador*; Lucas propone «S/ 120 por quincena = S/ 1 680 en diciembre» con su probabilidad. Marca una reco como «no me sirve» y la siguiente cambia (memoria).
+9. **Contraste:** se cambia a un *ahorrador firme*; Lucas le muestra el módulo de inversión básica y una promoción del catálogo.
+10. **Seguridad:** el agente intenta leer un dato sensible y Postgres lo bloquea.
+11. **Atracción:** alguien sin historial responde 5 preguntas y ve su pronóstico.
+12. **Evidencia:** cada técnica frente a su baseline y el **impacto en S/** sobre los 500 clientes simulados (días en rojo evitados, colchón, intereses evitados).
 
-**Accesibilidad:** contraste AA, texto mínimo de 16 px, no depender solo del color, botón «explícamelo fácil» e incertidumbre explicada con palabras («entre S/ 120 y S/ 380»).
+Si el tiempo de demo no alcanza, se quitan los pasos 9 y 11.
 
----
-
-## 7. Seguridad y controles mínimos
-
-- Secretos en `.env` (nunca en el repo) y `.env.example` con valores ficticios. Revisar con `git grep` antes de entregar.
-- Validación Pydantic de todas las entradas (montos ≥ 0, fechas, categorías válidas).
-- Manejo de errores: el timeout del LLM y del FX lleva a fallback, y la UI nunca se rompe.
-- Medir la latencia por endpoint (objetivo: < 2 s sin LLM y < 8 s con LLM local).
-- Defensa contra prompt injection: el system prompt fijo, las tools son de solo lectura y no existe ninguna tool que mueva dinero.
-- Documentar la versión del modelo, los prompts relevantes y las dependencias con versión fija (`requirements.txt`).
-- Atribución de librerías y de la fuente de FX (BCRP / ExchangeRate-API).
-- Sin logos ni colores de BBVA y sin aparentar ser una app oficial.
+Accesibilidad: contraste AA, texto ≥ 16 px, no depender solo del color, incertidumbre en palabras.
 
 ---
 
-## 8. Preparación para la prueba de evolución
+## 7. Seguridad y pruebas
 
-| Cambio sorpresa probable | Ya preparado |
+### Seguridad alineada con ISO/IEC 27001:2022
+Responsable: Michael. Declaración de aplicabilidad completa en [../reglas/seguridad-iso27001.md](../reglas/seguridad-iso27001.md).
+
+- **Acceso:** roles por componente, mínimo privilegio, RLS por cliente (5.15, 8.2, 8.3).
+- **Datos:** clasificación en 3 niveles, cifrado con pgcrypto, enmascaramiento en logs, borrado a pedido, solo datos sintéticos en pruebas (5.12, 8.24, 8.11, 8.10, 8.33).
+- **Privacidad:** consentimiento y memoria borrable, alineado con la Ley 29733 (5.34).
+- **Desarrollo seguro:** Gitflow, revisión cruzada, jueces, `ruff`, `pip-audit`, pruebas de seguridad (8.25, 8.28, 8.29, 8.8, 8.32).
+- **Operación:** logging sin datos sensibles, monitoreo de latencia y errores, configuración como código (8.15, 8.16, 8.9).
+- Además: secretos solo en `.env`, validación Pydantic, timeouts con fallback, tools de solo lectura, sin marca ni colores de BBVA.
+
+Decimos **«alineado con»**, nunca «certificado».
+
+### Pruebas con método ISTQB
+Coordina: Dixon. Estrategia en [../reglas/pruebas-istqb.md](../reglas/pruebas-istqb.md); catálogo en [pruebas.md](pruebas.md).
+
+- **Niveles:** componente (autor), integración (autor + revisor), sistema (Dixon + todos), aceptación (equipo + `juez-producto`).
+- **Técnicas:** partición de equivalencia, valores límite, tabla de decisión, transición de estados, predicción de errores, exploratoria; para ML y agente, metamórficas y adversas.
+- **Prioridad por riesgo:** crítica (daña al usuario o rompe las bases), alta (rompe la demo), media, baja.
+- **Ciclos:** sábado 23:00, domingo 10:00 (regresión) y domingo 12:00 (aceptación sobre `release/entrega`).
+- **Criterios de salida:** 100 % de críticos pasan, ≥ 90 % de altos, 0 defectos críticos o altos abiertos, todos los DEBE trazados a casos, cobertura ≥ 70 % en modelos y recomendador.
+- **Defectos:** issues de GitHub con etiqueta `defecto`, cerrados solo con prueba de confirmación.
+
+---
+
+## 8. Prueba de evolución
+
+| Cambio probable | Ya preparado |
 |---|---|
-| Ingresos variables | Arquetipo «independiente irregular» + banda por bootstrap |
-| Movimientos duplicados | Inyección en el generador + deduplicación en la ingesta, con test |
-| Recomendación que debe ser explicable | Cada reco ya trae por qué, supuestos y confianza |
-| Otro (desconocido) | Generador parametrizable + recomendador basado en reglas fáciles de agregar + `make test` en < 1 min |
+| Ingresos variables | Arquetipo independiente, banda bootstrap, Sueldo Lucas |
+| Movimientos duplicados | Inyección en el generador + dedup en la ingesta con test |
+| Explicabilidad | Cada reco y aviso con por qué, supuestos y confianza; juez del agente |
+| Otro | Generador parametrizable, reglas fáciles de agregar, `make test` < 1 min |
 
-Protocolo: (1) se lee el cambio, (2) se agrega el escenario al generador, (3) se escribe el test que falla, (4) se arregla, (5) se muestra el antes y el después en el panel de evidencia.
+Protocolo: leer el cambio → escenario en el generador → test que falla → arreglo → antes/después en Evidencia.
 
 ---
 
 ## 9. Estructura del repositorio
 
 ```
-lucas/
-├── README.md              # problema, usuario, solución, cómo ejecutar, requisitos
-├── ARCHITECTURE.md        # diagrama, componentes, modelos, dependencias, salvaguardas
-├── EVALUATION.md          # baseline vs modelo, métricas, intervalos, errores
-├── PROMPTS.md             # prompts, versión del modelo, fallback
-├── .env.example
-├── Makefile               # make data | make test | make eval | make run
-├── requirements.txt
-├── data/
-│   ├── generator.py
-│   ├── dictionary.md
-│   ├── QUALITY.md
-│   └── sample/            # dataset pequeño versionado
+├── README.md  ARCHITECTURE.md  EVALUATION.md  PROMPTS.md
+├── .env.example  Makefile  requirements.txt  docker-compose.yml
+├── db/              # init.sql: esquemas, roles, RLS, pgcrypto, pgvector
+├── data/            # generator.py, dictionary.md, QUALITY.md, sample/
+├── docs/rag/        # <modulo>/*.pdf + fuentes.csv (fuente, licencia, nivel)
 ├── src/
-│   ├── ingest/            # validación, limpieza, dedup
-│   ├── engine/            # categorías, recurrentes, calendario
-│   ├── models/            # health, forecast, profile, anomalies
-│   ├── recommender/
-│   ├── assistant/         # providers, tools, verifier
-│   ├── fx/                # BCRP + caché + respaldo
-│   └── api/               # FastAPI
-├── app/                   # UI
-├── eval/                  # scripts que generan EVALUATION.md
-├── tests/                 # unit + adversos + preguntas fijas del chat
-└── demo/                  # guion, video de respaldo, capturas
+│   ├── ingest/      # validación, dedup, carga a Postgres
+│   ├── engine/      # categorías, glosa, recurrentes, calendario
+│   ├── models/      # segment, health, forecast, sentiment
+│   ├── events/      # detector de eventos y avisos
+│   ├── recommender/ # recos, metas, ofertas, catálogo, reglas de seguridad
+│   ├── agent/       # LangGraph: nodos, tools, rag, memoria, juez, providers
+│   ├── bcrp/
+│   └── api/         # FastAPI
+├── app/             # UI
+├── eval/            # genera EVALUATION.md
+├── tests/
+└── demo/            # guion, video de respaldo, capturas
 ```
-
-**Regla de las bases:** el trabajo del evento debe distinguirse. Commits pequeños y frecuentes desde el sábado, y atribución de cualquier código reutilizado.
 
 ---
 
-## 10. Roles (ajustar a quienes somos)
+## 10. Equipo
 
-| Rol | Responsable de | Entregable |
-|---|---|---|
-| **Datos** | Generador, calidad, splits, dictionary.md | `make data` + QUALITY.md |
-| **ML / Analítica** | Recurrentes, pronóstico, salud, perfiles, baselines | `make eval` + EVALUATION.md |
-| **IA / Chat** | Providers, tools, verificador, preguntas fijas y adversas | Chat con ✓ + tests |
-| **Backend** | FastAPI, validaciones, FX, recomendador, latencia | API + tests |
-| **Frontend / UX** | Las 5 pantallas, simulador, accesibilidad | UI demo |
-| **PM / Pitch** (puede ser compartido) | README, ARCHITECTURE, guion, video de respaldo, tiempos | Pitch ensayado |
+| Persona | Rol | Módulos | Agente de apoyo | Revisa a |
+|---|---|---|---|---|
+| **Diego** | Analítica IA | Features, glosa, K-Prototypes, salud, pronóstico, sentimiento, evaluación | `ml-analitica` | Jeffrey |
+| **Miguel** | Desarrollo backend | FastAPI, ingesta, recomendador, ofertas, motor de eventos, simulador | `backend` | Michael |
+| **Jeffrey** | Desarrollo IA (AI Engineer) | Agente LangGraph, tools, RAG pgvector, juez, providers, BCRP | `ia-chat` | Diego |
+| **Marcela** | Desarrollo frontend | UI interactiva, avisos, simulador, chat, evidencia, accesibilidad | `frontend-ux` | Dixon |
+| **Michael** | Arquitectura de sistema y seguridad | Postgres seguro, Docker, contratos de API, Makefile, pruebas de punta a punta, **ISO 27001**, ARCHITECTURE.md | `backend` / `juez-cumplimiento` | Miguel |
+| **Dixon** | Arquitectura de datos, diagramas y QA | Generador sintético, diccionario, QUALITY.md, diagramas, README, guion del pitch, **coordinación de pruebas ISTQB** | `datos` / `pitch-docs` / `tester` | Marcela |
 
-Sincronización corta (10 min) en cada checkpoint: qué está hecho, qué bloquea y qué se recorta.
+- **Revisión cruzada:** cada persona revisa los PR de su pareja antes del merge, además del juez correspondiente.
+- **El pitch es de todos:** Dixon lo coordina; cada persona presenta su parte.
+- Microtareas, horarios y avisos: [tareas.md](tareas.md). Comandos: [comandos.md](comandos.md).
 
 ---
 
 ## 11. Cronograma
 
-*(Ajustar a los horarios que publique la organización.)*
-
-### Día 1 — sábado 14
 | Bloque | Objetivo | Hecho cuando… |
 |---|---|---|
-| 1.ª hora | Cerrar usuario, decisión, criterios y stack; crear repo y esqueleto; contratos (esquema y endpoints) | Repo con estructura, `.env.example`, esquema acordado |
-| Mañana | Generador v1 + ingesta + motor; **baselines primero**; mock de la UI con datos falsos | `make data` funciona; UI navega las 5 pantallas |
-| Tarde | Pronóstico + banda, salud, recomendador v1, tools del chat; conectar API ↔ UI | **Primer flujo funcional de punta a punta** |
-| Noche | Escenarios difíciles, verificador, fallback, primeros tests | Demo completa con datos sintéticos, aunque sea fea |
+| Sáb 11:00–12:00 | Contratos: esquema de datos, endpoints con JSON de ejemplo, decisión de UI, Docker con Postgres | Todos pueden trabajar en paralelo con datos falsos |
+| Sáb 12:00–15:00 | Generador v1, Postgres cargado, baselines, UI navegable con mocks, esqueleto del agente | `make data` y `make run` funcionan |
+| Sáb 15:00–19:00 | Modelos v1, recomendador, eventos, tools del agente, API conectada a la UI | **Primer flujo de punta a punta** (checkpoint 19:00) |
+| Sáb 19:00–23:00 | RAG, juez, avisos en UI, simulador, escenarios difíciles, tests | Demo completa aunque fea |
+| Dom 08:00–10:00 | `make eval`, EVALUATION.md, panel Evidencia, perturbaciones | Números reales |
+| Dom 10:00–12:00 | DEBERÍA según tiempo, pulido de UX, prueba de evolución | **12:00 congelamiento** |
+| Dom 12:00–14:00 | `release/entrega`, docs, video de respaldo, juez de cumplimiento | Entrega en `main` |
+| Dom tarde | 3 ensayos cronometrados y simulacro de preguntas | 10:00 min exactos |
 
-### Día 2 — domingo 15
-| Bloque | Objetivo | Hecho cuando… |
-|---|---|---|
-| Mañana temprano | `make eval`: baseline contra modelo, intervalos, errores; panel de evidencia | EVALUATION.md con números reales |
-| Mañana | Pulir UX, perfiles (si hay tiempo), FX con respaldo, prueba de evolución | Congelar funcionalidades |
-| Mediodía | **Congelamiento de código.** README, ARCHITECTURE, PROMPTS; grabar el video de respaldo | Entrega completa en el repo |
-| Tarde | 3 ensayos cronometrados del pitch y simulacro de preguntas | 10:00 min exactos |
-
-**Regla de recorte:** si a mitad del día 1 el flujo de punta a punta no funciona, se recorta todo lo que sea «Debería» hasta que funcione.
+*(Ajustar a los horarios oficiales.)*
 
 ---
 
 ## 12. Pitch (10 min + 3 de preguntas)
 
-| Min | Contenido |
-|---|---|
-| 0:00–1:00 | Persona y dolor: «faltan 5 días para la quincena y no sabe si llega» |
-| 1:00–2:00 | Decisión que mejoramos y criterios de éxito; por qué no es otro chatbot |
-| 2:00–6:00 | **Demo en vivo** (flujo de la sección 6) |
-| 6:00–8:00 | Evidencia: baseline contra modelo, cobertura de la banda, % de cifras verificadas, errores conocidos |
-| 8:00–9:00 | Arquitectura en 3 capas, seguridad, privacidad, fallback offline |
-| 9:00–10:00 | Límites y supuestos (datos sintéticos, clusters circulares, no es asesoría) y siguiente paso |
+| Min | Contenido | Presenta |
+|---|---|---|
+| 0:00–1:00 | Persona y dolor: «faltan 5 días para la quincena y no sabe si llega» | Dixon |
+| 1:00–2:00 | Decisión, criterios de éxito, por qué es compañero y no chatbot | Dixon |
+| 2:00–6:00 | Demo en vivo (sección 6) | Marcela + Jeffrey |
+| 6:00–7:30 | Evidencia: baselines, cobertura, % verificado, errores conocidos | Diego |
+| 7:30–8:30 | Arquitectura, seguridad de datos, offline | Michael |
+| 8:30–10:00 | Impacto en S/ para el usuario, palancas de ingreso y calculadora del banco, modelo B2B2C, costo, límites y piloto | Miguel |
 
-**Preguntas probables del jurado:** ¿por qué no basta con reglas? ¿Cómo evitan que el LLM invente cifras? ¿Qué pasa sin internet? ¿Cómo saben que los datos son plausibles? ¿Qué harían con datos reales y con consentimiento? Preparar una respuesta de 20 segundos para cada una.
+Preguntas probables: ¿por qué no bastan reglas? ¿Cómo evitan que el LLM invente? ¿Qué pasa sin internet? ¿Los datos son plausibles? ¿No es venta disfrazada? ¿Qué harían con datos reales? **¿Por qué un banco pagaría por esto? ¿Cuánto cuesta operarlo? ¿Qué tiene de nuevo frente a las apps de los bancos?** Respuesta de 20 s para cada una (base en [rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md)).
 
 ---
 
-## 13. Riesgos y mitigación
+## 13. Riesgos
 
 | Riesgo | Mitigación |
 |---|---|
-| Sin LLM disponible o lento | Ollama con modelo pequeño ya descargado + TemplateProvider |
-| WiFi cae en la demo | Todo local; FX con serie grabada; video de respaldo |
-| Alcance demasiado grande | MoSCoW estricto, flujo de punta a punta primero, regla de recorte |
-| Métricas «demasiado buenas» por datos sintéticos | Decirlo; pruebas con perturbaciones; mostrar errores; escenarios difíciles; intervalos por bootstrap |
-| Parecer app de BBVA | Marca Lucas propia, paleta propia, sin logos |
-| El LLM inventa números | Verificador + reintento + fallback; medirlo y mostrarlo |
-| Sonar a asesoría regulada | Lenguaje de «simulación/orientación», supuestos visibles, «tú decides» |
+| Alcance grande para 2 días | MoSCoW, orden de recorte, checkpoint 19:00 |
+| Postgres/Docker falla en una laptop | `data/sample/` + script que carga en un Postgres local; la máquina de demo se prueba el sábado |
+| LLM lento o sin red | Ollama con modelo pequeño ya descargado → Gemini en nivel gratuito si hay red y Ollama falla → plantillas |
+| Gemini corta por límite de uso (error 429) o la organización no lo autoriza | Pasa solo a plantillas; la demo de punta a punta se ensaya también con la red apagada |
+| El jurado ve «otra app de presupuesto» | Abrir la demo con el aviso anticipado y el Sueldo Lucas; cerrar con impacto en S/ y la calculadora del banco |
+| Cifras de negocio inventadas | Ninguna cifra de retención o mora «de Lucas»; solo fórmula con supuestos visibles y lo que mediría un piloto |
+| Métricas demasiado buenas | Perturbaciones, set de texto a mano, decirlo |
+| Ofertas que suenan a venta | Solo por necesidad, idoneidad, tipos genéricos, «tú decides» |
+| Parecer app de BBVA | Marca Lucas, paleta propia |
+| Conflictos de Git | Ramas cortas, `pull --rebase` frecuente, contratos fijados temprano |
 
 ---
 
-## 14. Preguntas para la organización (hacerlas hoy temprano)
+## 14. Preguntas a la organización
 
-1. ¿Se autoriza un LLM externo con clave propia (sin datos personales)? ¿O solo modelos locales?
-2. ¿Hay un dataset común o lo generamos nosotros?
-3. ¿Se pueden usar APIs públicas (BCRP) durante la demo?
-4. Formato de entrega (repo público o privado, hora de cierre) y confirmación de 10 + 3 min.
-5. ¿Se activa la prueba de evolución? ¿Cuándo y con qué peso?
-6. ¿Se pueden traer modelos y dependencias descargados de antemano?
+LLM externo permitido (en concreto, Gemini en nivel gratuito con datos sintéticos) · dataset común · APIs públicas en la demo · formato y hora de entrega · prueba de evolución · modelos descargados de antemano. Respuestas en `estado.md`.
 
 ---
 
-## 15. Checklist de salida (bases, sección 09)
+## 15. Checklist de salida
 
-- [ ] Problema y usuario definidos (sección 1)
+- [ ] Problema y usuario definidos
 - [ ] Datos legales y reproducibles (`make data`, semilla, QUALITY.md)
 - [ ] MVP ejecutable (`make run`, también offline)
-- [ ] IA/ML aporta valor medido (EVALUATION.md)
-- [ ] Baseline y casos adversos (tests + preguntas adversas del chat)
-- [ ] Seguridad y explicabilidad (verificador, reglas, «¿por qué?», `.env`)
-- [ ] README y arquitectura
-- [ ] Demo ensayada (3 veces + video de respaldo)
-- [ ] Entrega completa (repo accesible al jurado)
+- [ ] IA/ML con valor medido (EVALUATION.md)
+- [ ] Impacto en S/ y calculadora del banco con supuestos visibles (D16)
+- [ ] Baselines y casos adversos
+- [ ] Seguridad y explicabilidad (declaración de aplicabilidad ISO 27001 con evidencia)
+- [ ] Pruebas funcionales del sistema: 3 ciclos ejecutados y criterios de salida cumplidos
+- [ ] README y ARCHITECTURE
+- [ ] Demo ensayada 3 veces + video de respaldo
+- [ ] Entrega en `main`, repo accesible al jurado

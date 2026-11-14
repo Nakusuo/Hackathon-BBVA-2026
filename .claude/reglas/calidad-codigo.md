@@ -38,4 +38,4 @@ Si algo rompe una regla, se quita. Lo revisa el juez técnico antes de cada merg
 
 - Sin archivos sueltos de prueba (`test2.py`, `nuevo.ipynb`, `copia_final.py`).
 - Notebooks solo en `eval/` o `notebooks/`, sin salidas pesadas.
-- `.gitignore` al día: entornos, cachés, `.env`, `data/*.duckdb`, datos generados grandes.
+- `.gitignore` al día: entornos, cachés, `.env`, volcados de la base, datos generados grandes.

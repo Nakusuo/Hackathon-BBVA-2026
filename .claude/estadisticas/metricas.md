@@ -11,6 +11,23 @@ Regla: **cada técnica se compara con una alternativa sencilla**. Los resultados
 | 3 | Tiempo hasta insight | < 60 s hasta el «día de riesgo» y una recomendación accionable |
 | 4 | Recurrentes y duplicadas | F1 ≥ 0,85 sobre etiquetas sintéticas |
 | 5 | Banda según tipo de ingreso | Más ancha para independientes que para dependientes, manteniendo cobertura |
+| 6 | Impacto en el usuario | Menos días en rojo y más colchón que «no hacer nada» y que «apartar 10 % fijo», en S/ con intervalo |
+| 7 | Costo | Demo a S/ 0; se reporta el % de respuestas del chat por plantilla |
+
+## Impacto y negocio (D16, simulado)
+
+Se calculan sobre la población sintética con el simulador. Son **simulación**, no resultados de clientes reales. Detalle en [../reglas/rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md).
+
+| Métrica | Lucas | Baseline | Unidad |
+|---|---|---|---|
+| Días en rojo evitados | Sigue las recomendaciones | No hacer nada / 10 % fijo | días por cliente al mes |
+| Colchón a 3 meses | Sueldo Lucas y metas | 10 % fijo | S/ por cliente |
+| Intereses evitados | Hueco cubierto con colchón en vez de deuda | Hueco cubierto con deuda a TCEA supuesta | S/ por cliente al mes |
+| Sube de cuadrante | Metas y avisos | No hacer nada | % de clientes en 6 meses |
+| S/ apartados (entrada de la calculadora del banco) | Metas y Sueldo Lucas | 10 % fijo | S/ por cliente al mes |
+| Respuestas por plantilla | Chat | — | % de respuestas sin llamar al LLM |
+
+Cada supuesto (TCEA, márgenes del banco) va en `config/supuestos.yaml` y se muestra junto al resultado.
 
 ## Técnica frente a baseline
 
@@ -31,6 +48,14 @@ Regla: **cada técnica se compara con una alternativa sencilla**. Los resultados
 | F2 Sueldo Lucas | Monto quincenal estable según banda baja del ingreso esperado | Apartar 10 % fijo / no hacer nada | Días en rojo simulados, colchón a 3 meses |
 | A1 Lucas en 5 preguntas | Prior del perfil parecido + respuestas (arranque en frío) | Promedio de toda la población | MAE con 0, 1 y 3 meses de historia |
 | F3 Plan grati/CTS | Reparto sugerido con impacto en el puntaje | Gasto como mes normal | Cambio del puntaje y de la deuda simulada |
+| Matriz ahorro × gasto | Perfil derivado de K-Prototypes | Umbrales fijos | Estabilidad mes a mes, acuerdo con etiquetas sembradas |
+| Metas de ahorro | Aporte quincenal con banda del pronóstico | 10 % fijo | Probabilidad de cumplir a fin de año, días en rojo |
+| Ofertas por cuadrante | Necesidad + cuadrante + idoneidad | Lo más popular para todos | Precision@3 sobre necesidades sembradas, 0 violaciones de idoneidad |
+| Memoria y aprendizaje | Pesos que se ajustan con «útil / no me sirve» | Recomendador sin memoria | Tasa simulada de aceptación |
+| RAG por módulos | Búsqueda filtrada por módulo | Búsqueda en todos los documentos | % de citas válidas, exactitud en preguntas fijas |
+| Datos sin sesgo | Generación estratificada + bootstrap | Generación libre | Proporción por estrato, ningún estrato vacío |
+
+Todas las métricas se reportan con **intervalo de confianza por bootstrap por cliente**.
 
 ## Particiones sin fuga
 
@@ -52,3 +77,16 @@ Los modelos pueden «descubrir» lo que sembramos. Por eso se reportan **pruebas
 | Fecha | Métrica | Baseline | Modelo | Nota |
 |---|---|---|---|---|
 | — | — | — | — | — |
+
+## Métricas de pruebas (ISTQB)
+
+| Métrica | Meta para entregar |
+|---|---|
+| Casos críticos que pasan | 100 % |
+| Casos altos que pasan | ≥ 90 % |
+| Defectos críticos o altos abiertos | 0 |
+| Requisitos DEBE con al menos un caso | 100 % |
+| Cobertura de código en `src/models` y `src/recommender` | ≥ 70 % |
+| Vulnerabilidades altas en dependencias (`pip-audit`) | 0 |
+
+Resultados por ciclo en `.claude/planes/pruebas.md`.

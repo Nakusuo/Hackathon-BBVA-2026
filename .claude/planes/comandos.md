@@ -1,0 +1,151 @@
+# Comandos del equipo
+
+Copiar y pegar. Funcionan en Linux, macOS y en Windows con **Git Bash** o **WSL**.
+Requisitos: Git, Python 3.11, Docker, Make, GitHub CLI (`gh`) y Ollama.
+
+## 1. Solo la primera vez
+
+```bash
+git clone https://github.com/MaickolO/Hackathon-BBVA-2026-Equipo-2.git
+cd Hackathon-BBVA-2026-Equipo-2
+git switch develop
+gh auth login                      # para abrir PR desde la terminal
+python -m venv .venv
+source .venv/bin/activate          # Windows Git Bash: source .venv/Scripts/activate
+pip install -r requirements.txt    # cuando exista (tarea MI-01)
+cp .env.example .env               # y completar valores locales
+```
+
+Si ya lo tenías clonado:
+
+```bash
+git fetch origin
+git switch develop
+git pull
+```
+
+## 2. Actualizarte (cada hora y cada vez que alguien avise [MERGE])
+
+```bash
+git switch develop
+git pull
+```
+
+Si estás a mitad de una tarea, trae lo nuevo a tu rama:
+
+```bash
+git add -A && git commit -m "wip(area): avance"     # o guarda lo tuyo primero
+git pull --rebase origin develop
+```
+
+## 3. Empezar una tarea
+
+```bash
+git switch develop
+git pull
+git switch -c feature/<rol>-<tema>      # ej: feature/ml-pronostico
+```
+
+Roles: `datos`, `ml`, `ia`, `backend`, `front`, `arq`, `docs`.
+
+## 4. Guardar avance (seguido, cada 30 a 60 min)
+
+```bash
+git status                              # mira qué cambió
+git add <archivos>                      # evita "git add ." si hay archivos raros
+git commit -m "feat(forecast): agrega banda bootstrap"
+git push -u origin HEAD                 # sube tu rama (la primera vez con -u)
+```
+
+Tipos de commit: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`. En español, sin coautor.
+
+## 5. Terminar la tarea y pedir revisión
+
+```bash
+make check                              # ruff + tests, tiene que salir verde
+git pull --rebase origin develop
+git push
+gh pr create --base develop --fill      # abre el PR
+```
+
+Luego manda el aviso `[LISTO]` al grupo (formato en [tareas.md](tareas.md)).
+
+## 6. Revisar el PR de tu compañero
+
+```bash
+gh pr list                              # ver PR abiertos
+gh pr checkout <número>                 # bajar su rama
+make check
+make e2e                                # si el cambio se ve en la demo
+gh pr review <número> --approve         # o: --request-changes -b "qué falta"
+git switch develop                      # volver a lo tuyo
+```
+
+## 7. Unir tu PR aprobado
+
+```bash
+gh pr merge <número> --squash --delete-branch
+git switch develop
+git pull
+```
+
+Aviso al grupo: `[MERGE] DI-06 en develop`.
+
+## 8. Si hay un conflicto
+
+```bash
+git pull --rebase origin develop        # aparece el conflicto
+git status                              # muestra los archivos en conflicto
+# abrir cada archivo, elegir qué queda entre <<<<<<< y >>>>>>>, guardar
+git add <archivo>
+git rebase --continue
+```
+
+¿Te perdiste? `git rebase --abort` vuelve todo como estaba. Pide ayuda en el grupo antes de borrar nada.
+
+## 9. Proyecto
+
+```bash
+make db          # levanta Postgres con Docker
+make psql        # consola de Postgres
+make data        # genera datos sintéticos y los carga
+make test        # tests (< 1 min)
+make check       # ruff + tests
+make eval        # genera EVALUATION.md
+make run         # API + UI
+make e2e         # prueba del flujo completo
+```
+
+Docker:
+
+```bash
+docker compose up -d        # levantar
+docker compose ps           # ver qué corre
+docker compose logs -f db   # ver errores de Postgres
+docker compose down         # apagar
+docker compose down -v      # apagar y BORRAR datos (luego: make data)
+```
+
+Ollama:
+
+```bash
+ollama list                 # modelos descargados
+ollama pull <modelo>        # bajar el modelo acordado (ver PROMPTS.md)
+```
+
+## 10. Pedir ayuda a los agentes de Claude Code
+
+Dentro del repo, en Claude Code:
+
+- «Usa el investigador para comparar ETS y regresión para el pronóstico.»
+- «Usa el agente ml-analitica para hacer DI-06 en la rama feature/ml-pronostico.»
+- «Pasa mi rama por el juez-tecnico.»
+- «Pasa develop por el juez-producto como si fuera el jurado.»
+
+Anota cada veredicto en [verificaciones.md](verificaciones.md).
+
+## Nunca
+
+- `git push --force` en `main` o `develop`.
+- Commitear `.env`, `data/*.parquet` grandes o volcados de la base.
+- Trabajar directo en `main` o `develop`.

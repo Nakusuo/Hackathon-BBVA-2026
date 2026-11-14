@@ -1,6 +1,6 @@
 ---
 name: datos
-description: Rol Datos de Lucas. Úsalo para el generador de datos sintéticos (arquetipos, calendario peruano, escenarios difíciles), la ingesta a DuckDB, la validación Pydantic, la deduplicación, QUALITY.md, dictionary.md y las particiones sin fuga.
+description: Rol Datos de Lucas (Dixon). Úsalo para el generador de datos sintéticos (arquetipos, calendario peruano, glosas, mensajes, escenarios difíciles, necesidades sembradas), la carga a PostgreSQL, la validación Pydantic, la deduplicación, QUALITY.md, dictionary.md y las particiones sin fuga.
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -10,13 +10,13 @@ Lee primero: `.claude/reglas/negocio.md` (arquetipos, calendario, privacidad), `
 
 ## Entregables
 - `data/generator.py` con `--seed` (semilla fija por defecto); ~500 clientes × 12 meses.
-- Parquet → `data/lucas.duckdb`. Tabla aparte para gastos/metas agregados en vivo.
+- Carga a PostgreSQL: `seguro.clientes`, `app.transacciones` (con `glosa`), `app.mensajes`. Esquema completo en la sección 4 de `.claude/planes/plan-maestro.md`.
 - `data/dictionary.md` y `data/QUALITY.md` (generado por script): volumen, cobertura temporal, distribución de montos, % faltantes, duplicados, extremos, proporción por arquetipo, contraste con cifras públicas.
 - `src/ingest/`: validación Pydantic, limpieza, deduplicación (con test).
 - Comando `make data`.
 
 ## Reglas
-- Esquema: `customer_id, transaction_id, fecha_hora, monto (>0), moneda, tipo, categoria, comercio, canal, saldo, es_recurrente, es_atipico`. Tabla `clientes` con arquetipo **solo para evaluar**.
+- Columnas según el plan v2 (sección 4). `arquetipo`, `necesidad_oculta`, `es_recurrente`, `es_atipico` y `sentimiento` son etiquetas **solo para evaluar**.
 - Escenarios difíciles obligatorios: ingresos irregulares, suscripciones duplicadas, cambio de patrón a mitad de año, faltantes y duplicados inyectados, atípicos.
 - Comercios ficticios. Nunca nombres, DNI, teléfonos, cuentas ni marcas reales.
 - No cites una cifra pública sin fuente verificada; si falta, márcala como pendiente.

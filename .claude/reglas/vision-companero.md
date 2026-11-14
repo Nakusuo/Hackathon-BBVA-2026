@@ -44,10 +44,20 @@ Cada idea reutiliza el motor (pronóstico, simulador, recomendador) y tiene mét
 | A1 | **Lucas en 5 preguntas** | Alguien sin historial responde 5 datos (tipo de ingreso, frecuencia, gastos fijos, deudas, colchón) y recibe su pronóstico usando lo aprendido de perfiles parecidos | Promedio de toda la población | MAE con 0, 1 y 3 meses de historia | DEBERÍA (alta) |
 | A2 | **Plata del negocio y plata de la casa** | Separa gastos del negocio y del hogar para independientes, un segmento poco atendido | Diccionario de comercios | F1 por categoría | DEBERÍA |
 
+### Impacto (para todos)
+
+| # | Idea | Qué hace | Baseline | Métrica | Prioridad |
+|---|---|---|---|---|---|
+| I1 | **Impacto en S/** | Cada cliente simulado termina con días en rojo evitados, colchón e intereses evitados | No hacer nada / 10 % fijo | S/ y días por cliente | DEBE |
+| I2 | **¿Cuánto te cuesta tapar el hueco?** | Ante un día en rojo, compara en S/ usar el colchón, mover un gasto, tarjeta o préstamo informal (TCEA supuesta y visible). Educa, no ofrece crédito | Sin comparación | Intereses evitados simulados | PODRÍA |
+
 A1 es el gancho de atracción: el valor llega **antes** de abrir una cuenta. También es un reto técnico real (arranque en frío).
 
 ## Valor para el banco (para el pitch, sin pantalla propia)
 
+Palancas de ingreso, calculadora, modelo B2B2C, costo e impacto: [rentabilidad-impacto.md](rentabilidad-impacto.md).
+
+- **Gana cuando el cliente ahorra:** metas y Sueldo Lucas traen fondeo barato al banco.
 - **Fidelización:** el cliente vuelve porque Lucas le avisa a tiempo y le ahorra plata medible.
 - **Atracción:** A1 da valor a quien todavía no es cliente.
 - **Oferta responsable:** si Lucas detecta una necesidad (por ejemplo, una meta de ahorro), puede mostrar un **tipo de producto genérico** («cuenta con apartados»), nunca un producto real con marca, y solo si pasa las reglas de seguridad de [negocio.md](negocio.md).
