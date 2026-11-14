@@ -133,3 +133,63 @@
   margin: 0;
   color: var(--tinta-suave);
 }
+
+.ingreso .selector-persona .selector {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+}
+
+/* Consentimiento: la misma tarjeta del ingreso, un poco más ancha para que cada punto quepa en pocas líneas. */
+.permiso {
+  width: min(100%, 460px);
+  gap: 12px;
+}
+
+.permiso h1 {
+  font-size: 1.75rem;
+}
+
+.permiso-sintetico {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--crema);
+  border: 1px solid var(--crema-borde);
+}
+
+.permiso-sintetico svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--azul-texto);
+}
+
+.permiso-puntos {
+  gap: 12px;
+}
+
+.permiso-puntos li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.permiso-puntos li > span:last-child {
+  display: grid;
+}
+
+.permiso-acciones {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+
+.permiso-pie {
+  text-align: center;
+}
+
+.permiso-acciones .boton-texto {
+  justify-self: center;
+}

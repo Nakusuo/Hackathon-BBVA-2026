@@ -268,3 +268,122 @@ details[open] summary::after {
   font-weight: 700;
   text-underline-offset: 3px;
 }
+
+/* Selector de persona: radios reales con la forma del selector; el foco se dibuja en la opción. */
+.selector-persona {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.selector-persona legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+.selector-ancho {
+  display: flex;
+  width: 100%;
+}
+
+.selector-opcion {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--tinta-suave);
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.selector-opcion input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.selector-opcion:has(input:checked) {
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.selector-opcion:has(input:focus-visible) {
+  outline: 3px solid var(--azul-texto);
+  outline-offset: 2px;
+}
+
+.boton-borde {
+  background: transparent;
+  color: var(--azul-texto);
+  box-shadow: inset 0 0 0 2px var(--azul);
+}
+
+.boton-borde:hover {
+  background: var(--superficie-suave);
+}
+
+.boton-riesgo {
+  background: var(--riesgo);
+  color: var(--superficie);
+}
+
+.boton-riesgo:hover {
+  background: var(--tinta);
+}
+
+/* «Explícamelo fácil»: botón con borde y panel claro en los dos temas; los términos van en negrita, no en color. */
+.facil {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.facil-boton {
+  justify-self: start;
+  gap: 8px;
+}
+
+.facil-boton[aria-expanded='true'] {
+  background: var(--superficie-suave);
+}
+
+.facil-panel {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.facil-panel dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.facil-panel dt {
+  font-weight: 800;
+}
+
+.facil-panel dd {
+  margin: 2px 0 0;
+}
+
+.facil-cerrar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

@@ -1,6 +1,5 @@
 // Respuestas por plantilla mientras no exista el agente (JF-02). Toda cifra sale del motor, nunca del texto.
-import { CAMBIOS } from '../mocks/cliente.js'
-import { ajusteDe, apartadoSinRojo, evaluarGastoExtra } from '../mocks/motor.js'
+import { apartadoSinRojo, evaluarGastoExtra } from '../mocks/motor.js'
 import { conSigno, enSoles, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
 
 export const PREGUNTAS_SUGERIDAS = [
@@ -35,7 +34,7 @@ export function montoEn(texto) {
 }
 
 function ajusteActual(cliente) {
-  return ajusteDe(CAMBIOS.filter((c) => cliente.elegidos?.includes(c.id)))
+  return cliente.ajuste ?? {}
 }
 
 function llegarAlCobro(cliente) {

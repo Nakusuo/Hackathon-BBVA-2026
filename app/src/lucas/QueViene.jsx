@@ -15,6 +15,8 @@ import {
 } from 'recharts'
 import { conSigno, enSoles, fechaCorta, fechaDia, fechaLarga, textoDiasEnRojo } from '../formato.js'
 import { marcasDelEje } from '../grafico.js'
+import ExplicameFacil from './ExplicameFacil.jsx'
+import { explicarQueViene } from './explicaciones.js'
 
 const PERIODOS = [
   { id: 'ingreso', nombre: 'Hasta mi cobro' },
@@ -181,13 +183,16 @@ export default function QueViene({ cliente }) {
         </div>
       </section>
 
+      <ExplicameFacil puntos={explicarQueViene(cliente)} />
+
       <section className="tarjeta hoja" aria-labelledby="movimientos-titulo">
         <h2 id="movimientos-titulo">Pagos y cobros</h2>
         <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} />
         <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} />
         <p className="suave">
-          El rango se abre con los días porque tu gasto varía, y se ensancha en cada cobro porque tus clientes no siempre
-          te pagan lo mismo.
+          {cliente.ingresoVariable
+            ? 'El rango se abre con los días porque tu gasto varía, y se ensancha en cada cobro porque tus clientes no siempre te pagan lo mismo.'
+            : 'El rango es angosto porque tu sueldo llega fijo; solo se abre un poco con los días porque tu gasto varía.'}
         </p>
       </section>
     </>
