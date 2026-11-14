@@ -31,6 +31,12 @@
   --vidrio-borde: rgb(255 255 255 / 0.9);
   --brillo: rgb(33 96 224 / 0.35);
   --sombra: rgb(30 63 178 / 0.12);
+  --serie-1: #1e3fb2;
+  --serie-2: #2160e0;
+  --serie-3: #4f86f0;
+  --serie-4: #84aaf5;
+  --serie-5: #b5ccf9;
+  --serie-6: #9aa3b2;
 
   --letra: 'Manrope Variable', system-ui, sans-serif;
   --titulos: 'Manrope Variable', system-ui, sans-serif;
@@ -49,6 +55,7 @@
   --tinta-suave: #a9b1bd;
   --azul: #2d66e3;
   --azul-texto: #86acff;
+  --azul-profundo: #243150;
   --azul-claro: #2a3d6b;
   --azul-palido: #232836;
   --sobre-azul-suave: #c3d7fc;
@@ -62,8 +69,14 @@
   --bien-fondo: #14301f;
   --vidrio: rgb(255 255 255 / 0.06);
   --vidrio-borde: rgb(255 255 255 / 0.14);
-  --brillo: rgb(58 125 255 / 0.6);
+  --brillo: rgb(58 125 255 / 0.22);
   --sombra: rgb(0 0 0 / 0.45);
+  --serie-1: #8fb0f5;
+  --serie-2: #6d93e6;
+  --serie-3: #5277c9;
+  --serie-4: #3d5ea8;
+  --serie-5: #2f4a85;
+  --serie-6: #5b6270;
 
   color-scheme: dark;
 }

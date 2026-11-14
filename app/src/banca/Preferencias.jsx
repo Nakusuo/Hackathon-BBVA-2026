@@ -1,20 +1,18 @@
-import { CaretLeft, Moon, Sun } from '@phosphor-icons/react'
+import { CaretLeft, Moon } from '@phosphor-icons/react'
 import { motion } from 'motion/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { aplicarTema, temaGuardado } from '../tema.js'
 
-const TEMAS = [
-  { id: 'claro', nombre: 'Claro', Icono: Sun },
-  { id: 'oscuro', nombre: 'Oscuro', Icono: Moon },
-]
-
 export default function Preferencias() {
   const [tema, setTema] = useState(temaGuardado)
 
-  function elegir(id) {
-    setTema(id)
-    aplicarTema(id)
+  const oscuro = tema === 'oscuro'
+
+  function alternar() {
+    const nuevo = oscuro ? 'claro' : 'oscuro'
+    setTema(nuevo)
+    aplicarTema(nuevo)
   }
 
   return (
@@ -27,14 +25,21 @@ export default function Preferencias() {
 
       <section className="tarjeta" aria-labelledby="apariencia-titulo">
         <h2 id="apariencia-titulo">Apariencia</h2>
-        <div className="selector-tema" role="group" aria-label="Tema de la app">
-          {TEMAS.map(({ id, nombre, Icono }) => (
-            <button key={id} type="button" aria-pressed={tema === id} onClick={() => elegir(id)}>
-              {tema === id && <motion.span layoutId="tema-activo" className="selector-tema-fondo" />}
-              <Icono size={20} aria-hidden="true" />
-              {nombre}
-            </button>
-          ))}
+        <div className="ajuste">
+          <Moon size={24} aria-hidden="true" />
+          <span id="oscuro-etiqueta" className="ajuste-nombre">
+            Modo oscuro
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={oscuro}
+            aria-labelledby="oscuro-etiqueta"
+            className="interruptor"
+            onClick={alternar}
+          >
+            <motion.span layout transition={{ type: 'spring', stiffness: 500, damping: 32 }} />
+          </button>
         </div>
         <p className="suave">Se aplica a toda la app y se recuerda en este navegador.</p>
       </section>

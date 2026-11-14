@@ -117,7 +117,8 @@ const miles = (n) => `S/ ${n.toLocaleString('es-PE')}`
 
 const recomendaciones = CAMBIOS.map((c) => evaluarCambio(persona, c)).sort((a, b) => b.mejora - a.mejora)
 const peorSinCambios = peorDia(persona, simular(persona))
-const conTodosLosCambios = peorDia(persona, simular(persona, ajusteDe(CAMBIOS)))
+const pronosticoConTodos = simular(persona, ajusteDe(CAMBIOS))
+const conTodosLosCambios = peorDia(persona, pronosticoConTodos)
 
 function riesgoDe(puntos) {
   const rojo = diasEnRojo(persona, puntos)
@@ -151,7 +152,7 @@ export function vistaCon(elegidos = []) {
     proximosPagos: persona.pagos,
     pronostico,
     riesgo: riesgoDe(pronostico),
-    riesgoSinCambios: riesgoDe(simular(persona)),
+    diasEnRojo: diasEnRojo(persona, pronostico).length,
     peorDia: { fecha: peor.fecha, monto: peor.banda[0], esperado: peor.esperado },
     elegidos: activos.map((c) => c.id),
     salud: {
@@ -189,6 +190,7 @@ export function vistaCon(elegidos = []) {
       peorFecha: conTodosLosCambios.fecha,
       peorMonto: conTodosLosCambios.banda[0],
       peorAntes: peorSinCambios.banda[0],
+      diasEnRojo: diasEnRojo(persona, pronosticoConTodos).length,
     },
     apartado: apartadoDe(ajuste),
     apartadoConTodos: apartadoDe(ajusteDe(CAMBIOS)),

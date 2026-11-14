@@ -45,8 +45,9 @@ h3 {
 }
 
 :focus-visible {
-  outline: 3px solid var(--azul);
+  outline: 3px solid var(--azul-texto);
   outline-offset: 2px;
+  border-radius: 8px;
 }
 
 .suave {

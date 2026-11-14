@@ -1,108 +1,84 @@
-import {
-  ArrowDown,
-  ArrowUp,
-  Bus,
-  Coffee,
-  DotsThree,
-  FilmSlate,
-  ForkKnife,
-  Martini,
-  Repeat,
-} from '@phosphor-icons/react'
-import { enSoles, iniciales } from '../formato.js'
+import { ArrowUp, CaretRight } from '@phosphor-icons/react'
+import { motion, useReducedMotion } from 'motion/react'
+import { Link } from 'react-router-dom'
+import { Cell, Pie, PieChart } from 'recharts'
+import { enSoles } from '../formato.js'
+import { diferenciaConPromedio, partesDelGrafico, UMBRAL } from './categorias.js'
 
-const ICONOS = {
-  comida: ForkKnife,
-  transporte: Bus,
-  salidas: Martini,
-  hormiga: Coffee,
-  suscripciones: Repeat,
-  entretenimiento: FilmSlate,
-  otros: DotsThree,
-}
-
-// Diferencias de hasta S/ 5 no se señalan: con montos así cualquier mes varía un poco.
-const UMBRAL = 5
-
-function Comparacion({ total, promedio }) {
-  const diferencia = Math.round(total - promedio)
-  if (Math.abs(diferencia) <= UMBRAL) return <span className="suave">Como siempre</span>
-  const Flecha = diferencia > 0 ? ArrowUp : ArrowDown
-  return (
-    <span className={diferencia > 0 ? 'sube' : 'baja'}>
-      <Flecha size={16} aria-hidden="true" />
-      {enSoles(Math.abs(diferencia))} {diferencia > 0 ? 'más' : 'menos'} que tu promedio
-    </span>
-  )
-}
+const SERIES = [
+  'var(--serie-1)',
+  'var(--serie-2)',
+  'var(--serie-3)',
+  'var(--serie-4)',
+  'var(--serie-5)',
+  'var(--serie-6)',
+]
 
 export default function Gastos({ cliente }) {
   const { categorias, suscripciones } = cliente
+  const reducido = useReducedMotion()
   const total = categorias.reduce((s, c) => s + c.total, 0)
   const promedio = categorias.reduce((s, c) => s + c.promedio3m, 0)
   const diferencia = Math.round(total - promedio)
-  const mayor = Math.max(...categorias.map((c) => c.total))
+  const partes = partesDelGrafico(categorias)
+  const enSuscripciones = suscripciones.reduce((s, x) => s + x.monto, 0)
 
   return (
-    <>
-      <section className="panel-azul" aria-labelledby="total-titulo">
-        <p id="total-titulo">Gastaste en los últimos 30 días</p>
-        <p className="panel-cifra">{enSoles(Math.round(total))}</p>
-        <p>
-          {Math.abs(diferencia) <= UMBRAL
-            ? 'Igual que tu promedio de 3 meses.'
-            : `${enSoles(Math.abs(diferencia))} ${diferencia > 0 ? 'más' : 'menos'} que tu promedio de 3 meses.`}
-        </p>
-      </section>
-
-      <section className="tarjeta hoja" aria-labelledby="categorias-titulo">
-        <h2 id="categorias-titulo">Tus gastos por categoría</h2>
-        <ul className="lista-limpia">
-          {categorias.map((c) => {
-            const Icono = ICONOS[c.id] ?? DotsThree
-            return (
-              <li key={c.id} className="categoria">
-                <span className="circulo" aria-hidden="true">
-                  <Icono size={22} />
-                </span>
-                <span className="categoria-texto">
-                  <span className="categoria-cabecera">
-                    <span>{c.nombre}</span>
-                    <span className="cifra">{enSoles(Math.round(c.total))}</span>
-                  </span>
-                  <span className="medidor" aria-hidden="true">
-                    <span style={{ width: `${(c.total / mayor) * 100}%` }} />
-                  </span>
-                  <span className="categoria-pie">
-                    <span className="suave">{c.ejemplo}</span>
-                    <Comparacion total={c.total} promedio={c.promedio3m} />
-                  </span>
-                </span>
-              </li>
-            )
-          })}
-        </ul>
-      </section>
-
-      <section className="tarjeta" aria-labelledby="suscripciones-titulo">
-        <h2 id="suscripciones-titulo">Suscripciones</h2>
-        <ul className="lista-limpia">
-          {suscripciones.map((s) => (
-            <li key={s.id} className="fila">
-              <span className="circulo" aria-hidden="true">
-                {iniciales(s.comercio)}
+    <section className="tarjeta gastos-resumen" aria-labelledby="gastos-titulo">
+      <h2 id="gastos-titulo">Gastaste en los últimos 30 días</h2>
+      <div className="dona">
+        <PieChart width={168} height={168} aria-hidden="true">
+          <Pie
+            data={partes}
+            dataKey="total"
+            nameKey="nombre"
+            innerRadius={56}
+            outerRadius={80}
+            startAngle={90}
+            endAngle={-270}
+            paddingAngle={2}
+            stroke="none"
+            isAnimationActive={!reducido}
+          >
+            {partes.map((p, i) => (
+              <Cell key={p.id} fill={SERIES[i]} />
+            ))}
+          </Pie>
+        </PieChart>
+        <div className="dona-centro">
+          <strong>{enSoles(Math.round(total))}</strong>
+          <span className="suave">
+            {Math.abs(diferencia) <= UMBRAL
+              ? 'como siempre'
+              : `${enSoles(Math.abs(diferencia))} ${diferencia > 0 ? 'más' : 'menos'}`}
+          </span>
+        </div>
+      </div>
+      <ul className="lista-limpia leyenda-gastos">
+        {partes.map((p, i) => (
+          <motion.li
+            key={p.id}
+            initial={reducido ? false : { opacity: 0, x: 8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 + i * 0.05 }}
+          >
+            <span className="leyenda-punto" style={{ background: SERIES[i] }} aria-hidden="true" />
+            <span className="leyenda-nombre">{p.nombre}</span>
+            <span className="suave">{Math.round((p.total / total) * 100)} %</span>
+            <span className="cifra">{enSoles(Math.round(p.total))}</span>
+            {diferenciaConPromedio(p) > 0 && (
+              <span className="sube" title="Más que tu promedio">
+                <ArrowUp size={16} aria-label="Más que tu promedio" />
               </span>
-              <span className="fila-texto">
-                <span>{s.comercio}</span>
-                <span className="suave">
-                  Día {s.dia}. {s.uso}
-                </span>
-              </span>
-              <span className="fila-monto">{enSoles(s.monto)}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </>
+            )}
+          </motion.li>
+        ))}
+      </ul>
+      <p className="suave">Comparado con tu promedio de 3 meses. Suscripciones: {enSoles(enSuscripciones)} al mes.</p>
+      <Link to="/lucas/gastos-detalle" className="boton boton-chico boton-secundario">
+        Ver detalle
+        <CaretRight size={18} aria-hidden="true" />
+      </Link>
+    </section>
   )
 }

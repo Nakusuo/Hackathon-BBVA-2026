@@ -71,6 +71,12 @@
   cursor: pointer;
 }
 
+.barra-item:focus-visible {
+  outline: none;
+  background: var(--azul-palido);
+  border-radius: 16px;
+}
+
 .barra-item[aria-current='page'] {
   color: var(--azul-texto);
   font-weight: 800;
@@ -93,7 +99,8 @@
   padding: 12px 16px;
   border-radius: var(--radio-chico);
   background: var(--tinta);
-  color: var(--sobre-azul);
+  color: var(--fondo);
+  box-shadow: 0 8px 24px var(--sombra);
   text-align: center;
 }
 
