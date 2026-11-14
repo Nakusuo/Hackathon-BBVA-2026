@@ -1,7 +1,9 @@
 """Genera docs/EVALUACION_ANALITICA.md y docs/RESUMEN_DIEGO.md con las cifras de models/metricas*.json. Ningun numero se escribe a mano.
 Uso: python eval/generar_docs.py"""
+import csv
 import json
 import os
+import subprocess
 import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -170,6 +172,147 @@ def seccion_qa():
     return txt
 
 
+def _filas_csv(*partes) -> list[dict]:
+    p = ruta(*partes)
+    if not os.path.isfile(p):
+        return []
+    with open(p, encoding="utf-8") as fh:
+        return list(csv.DictReader(fh))
+
+
+def seccion_inventario() -> str:
+    """Cuantos archivos y lineas hay por carpeta, desde git: el inventario no se escribe a mano."""
+    ar = subprocess.run(["git", "ls-files"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8").stdout.splitlines()
+    grupos = [("src/generador", "Generador de datos sinteticos por lotes: clientes, simulacion, texto, calidad y reporte"),
+              ("src/models", "Segmentacion, salud financiera, pronostico (30 dias y por meses), clasificacion, recomendador, ofertas, niveles, programa de puntos, calendario laboral e impacto"),
+              ("src/rag", "Indice FAISS y BM25, busqueda, expansion de siglas y evaluacion del RAG"),
+              ("src/agente_analitico", "Agente LangGraph (unico y multiagente), proveedores de LLM, juez de cifras, traduccion, datos vivos, vigilancia y memoria"),
+              ("src/bcrp", "Cliente de las series del BCRP con respaldo y frescura"), ("src/datos_publicos", "Descarga de fuentes oficiales con hash y estado"), ("src/comun", "Rutas, reloj unico y huella de contenido"),
+              ("eval", "Entrenamiento, evaluaciones, QA con Gemini, comparativa de modelos, puerta de calidad y generacion de documentos"), ("tests", "Pruebas (no necesitan red ni Gemini)"),
+              ("data/parametros", "Toda la configuracion en YAML: generador, eventos, niveles y puntos, normas laborales, entidad, zonas del Nino, preguntas del RAG"),
+              ("models", "Modelos entrenados (.pkl) y metricas (.json)"), ("docs/rag", "Fuentes del RAG (PDF y texto), su registro y el indice vectorial"), ("notebooks", "Cinco notebooks ejecutados")]
+    filas = []
+    for pref, que in grupos:
+        fs = [f for f in ar if f.startswith(pref + "/")]
+        lineas = 0
+        for f in fs:
+            if f.endswith((".py", ".yaml", ".md", ".ipynb", ".json", ".csv", ".txt")) and os.path.getsize(os.path.join(RAIZ, f)) < 3_000_000:
+                with open(os.path.join(RAIZ, f), encoding="utf-8", errors="ignore") as fh:
+                    lineas += sum(1 for _ in fh)
+        filas.append(f"| `{pref}/` | {que} | {len(fs)} | {lineas:,} |")
+    return "| Carpeta | Que contiene | Archivos | Lineas |\n|---|---|---|---|\n" + "\n".join(filas) + f"\n\nTotal versionado en esta rama: {len(ar)} archivos.\n"
+
+
+def seccion_datos_reales() -> str:
+    from src.bcrp.cliente import CACHE, SERIES, TTL_SEGUNDOS
+    rag = _filas_csv("docs", "rag", "fuentes.csv")
+    hechas = [r for r in rag if r["archivo"]]
+    pendientes = [r for r in rag if not r["archivo"]]
+    L = ["Todo lo que el agente afirma sobre el mundo real sale de una de estas fuentes. **Los datos de los clientes son sinteticos**; lo real son las normas, los indicadores publicos y las guias.\n",
+         "### 8.1 Documentos del RAG (nivel A: normas y textos oficiales o de libre uso)\n",
+         "Cada documento se descarga con `python -m src.datos_publicos.descargar`, queda con su hash y estado en `docs/rag/fuentes.csv` y se parte en fragmentos de 900 caracteres con 120 de solape. La puerta de calidad verifica que ningun archivo se haya alterado.\n",
+         "| Modulo | Documento | Institucion | Consultado | Enlace |\n|---|---|---|---|---|"]
+    L += [f"| {r['modulo']} | {r['titulo']} | {r['institucion']} | {r['fecha_consulta']} | {r['enlace']} |" for r in sorted(hechas, key=lambda r: (r["modulo"], r["titulo"]))]
+    if pendientes:
+        L += ["", "No ingeridas (licencia por confirmar o descarga bloqueada): " + "; ".join(f"{r['titulo']} ({r['institucion']}, nivel {r['licencia_nivel']}): {r['enlace']}" for r in pendientes) + "\n"]
+    L += ["", "### 8.2 Fuentes de calibracion y de contexto\n", "| Documento | Institucion | Uso | Consultado | Enlace |\n|---|---|---|---|---|"]
+    L += [f"| {r['titulo']} | {r['institucion']} | {r['uso']} | {r['fecha_consulta']} | {r['enlace']} |" for r in _filas_csv("docs", "fuentes", "fuentes.csv")]
+    L += ["", "### 8.3 Series del BCRP\n", "API publica y sin clave: `https://estadisticas.bcrp.gob.pe/estadisticas/series/api/{codigo}/json/{desde}/{hasta}/esp`. Las bajadas para el generador quedan en `data/raw/bcrp/`.\n",
+          "| Codigo | Serie | Observaciones | Enlace |\n|---|---|---|---|"]
+    L += [f"| {r['codigo']} | {r['descripcion']} | {r['detalle']} | {r['enlace']} |" for r in _filas_csv("docs", "fuentes", "bcrp_series.csv")]
+    usadas = ", ".join(f"`{n}` ({v[0]}, {v[2]})" for n, v in SERIES.items())
+    L += ["", f"### 8.4 Conexiones en tiempo real y como se comportan\n",
+          "| Conexion | Que trae | Como se consulta | Si falla | Donde esta en el codigo |\n|---|---|---|---|---|",
+          f"| BCRP | {usadas} | API en cada consulta; cache en disco ({os.path.relpath(CACHE, RAIZ).replace(os.sep, '/')}, {TTL_SEGUNDOS // 3600} h) | cache de hasta 7 dias y luego la serie grabada; **un dato de la serie grabada o mas viejo de 75 dias (mensual) o 7 dias (diario) no se presenta como actual ni dispara avisos** (`al_dia`) | `src/bcrp/cliente.py` |",
+          "| ENFEN | Comunicados oficiales del Fenomeno El Nino | `https://enfen.imarpe.gob.pe/` (pagina) y `https://enfen.imarpe.gob.pe/download/comunicado-oficial-enfen-n-{N}-2026/` | si no responde, la vigilancia no avisa; la puerta de calidad compara el ultimo comunicado publicado con el del RAG | `src/agente_analitico/vigilancia.py` |",
+          "| Gemini | Redaccion y traduccion | `https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent`, clave en el encabezado `x-goog-api-key` (nunca en la URL) | reintento ante 429 o 5xx; luego Ollama local; luego plantillas | `src/agente_analitico/proveedores.py`, `traduccion.py` |",
+          "| Otra API de IA (cualquier `chat/completions`) | Redaccion | `LLM_BASE_URL` + `/chat/completions` con `Authorization: Bearer` | igual que Gemini | `Compatible` en `proveedores.py` |",
+          "| Ollama (local) | Embeddings del RAG (`nomic-embed-text`, 768 dimensiones) y LLM de respaldo | `http://localhost:11434` | sin embeddings no hay RAG; el agente sigue con las herramientas | `src/rag/indice.py` |",
+          "| Movimientos del cliente | Ingresos y gastos que entran al aplicativo | `datos_vivos.registrar(...)` (ver 9) | un movimiento invalido se rechaza con un error claro | `src/agente_analitico/datos_vivos.py` |", "",
+          "### 8.5 Normas laborales: de la fuente al sistema\n",
+          "`data/parametros/normas_laborales.yaml` guarda cada regla con la **frase literal** del documento oficial; la prueba `tests/test_calendario.py` falla si esa frase deja de estar en el documento. Para actualizar una norma: bajar el documento nuevo (`descargar.py`), indexarlo (`actualizar_incremental()`), corregir el YAML y su `fecha_verificacion`, y correr las pruebas.\n",
+          "### 8.6 Otras fuentes consultadas (no ingeridas)\n",
+          "Se usaron para contrastar fechas y noticias; las dos primeras se leyeron completas, las demas solo por el resumen del buscador, asi que **no son evidencia de una regla**:\n",
+          "- Ley 32322, texto oficial en El Peruano (leido completo e ingerido): https://busquedas.elperuano.pe/dispositivo/NL/2397811-1",
+          "- Repositorio de revision de repos de hackathon (escaneo estatico, sin hallazgos): https://github.com/JoCGM09/hackathon-evaluator",
+          "- Nota de El Peruano sobre la Ley 32322: https://www.elperuano.pe/noticia/270086-atencion-retira-el-100-de-tu-cts-hasta-el-2026-consulta-los-detalles-de-la-ley-32322",
+          "- Nota de El Peruano sobre proyectos para ampliar la libre disposicion hasta 2028 (proyecto, no ley; expediente no revisado): https://elperuano.pe/noticia/308663--congreso-proponen-ampliar-libre-disponibilidad-de-la-cts-hasta-diciembre-de-2028",
+          "- Nota de El Peruano sobre el plazo de la CTS de noviembre de 2025: https://elperuano.pe/noticia/282461-atencion-empleadores-este-ano-podran-depositar-la-cts-hasta-el-17-de-noviembre",
+          "- Infobae: https://www.infobae.com/peru/2026/05/15/retiro-de-cts-del-100-esta-vigente-hasta-el-31-de-diciembre-pero-luego-habra-acceso-parcial/ y EY Peru: https://www.ey.com/es_pe/newsroom/2026/04/deposito-retiro-cts-2026",
+          "- Nota de TV Peru sobre la gratificacion y la bonificacion del 9 %: https://www.tvperu.gob.pe/novedades/tvperu/gratificacion-por-navidad-sera-un-sueldo-mas-9-adicional",
+          "- DS 007-2025-TR (adecuacion del reglamento de la CTS), aparecio en la busqueda y no se leyo: https://www.gob.pe/institucion/mtpe/normas-legales/7512608-007-2025-tr",
+          "- lpderecho.pe sobre la Ley 32322 (no abrio: HTTP 403): https://lpderecho.pe/ley-32322-retiro-cts-diciembre-2026/",
+          "- Notas del vault de Obsidian que guiaron las tecnicas de RAG y de evaluacion: `rag-avanzado-crag-self-rag-y-graphrag`, `evaluacion-de-llm-y-rag-metodos`, `evaluacion-de-sistemas-con-llm`, `agentes-con-llm-que-redacta-y-no-calcula`.\n"]
+    L += ["", "### 8.7 Rutas de API\n", "**APIs externas que se llaman** (ninguna usa datos personales; a las de IA se les ocultan el id y la zona del cliente):\n",
+          "| Servicio | Metodo y ruta | Autenticacion | Cuerpo o parametros | Lo que se usa de la respuesta | Codigo |\n|---|---|---|---|---|---|",
+          "| BCRP series | `GET https://estadisticas.bcrp.gob.pe/estadisticas/series/api/{codigo}/json/{desde}/{hasta}/esp` | ninguna | codigo de serie y rango (mensual `2024-1/2027-12`, diaria `2024-1-1/2027-12-28`) | `periods[].name` y `periods[].values[0]` | `src/bcrp/cliente.py` |",
+          "| ENFEN (pagina) | `GET https://enfen.imarpe.gob.pe/` | ninguna | — | numero del ultimo «Comunicado Oficial ENFEN N.º N-2026» | `vigilancia.py` |",
+          "| ENFEN (comunicado) | `GET https://enfen.imarpe.gob.pe/download/comunicado-oficial-enfen-n-{N}-2026/` | ninguna | — | texto del comunicado | `descargar.py` |",
+          "| Gemini | `POST https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent` | encabezado `x-goog-api-key` | `systemInstruction`, `contents`, `generationConfig` (`temperature`, `maxOutputTokens`) | `candidates[0].content.parts[0].text` y `usageMetadata` | `proveedores.py`, `traduccion.py` |",
+          "| API de IA compatible | `POST {LLM_BASE_URL}/chat/completions` | `Authorization: Bearer {LLM_API_KEY}` | `model`, `messages`, `temperature`, `max_tokens` | `choices[0].message.content` y `usage` | `Compatible` en `proveedores.py` |",
+          "| Ollama (chat) | `POST http://localhost:11434/api/chat` | ninguna | `model`, `messages`, `options` | `message.content` | `proveedores.py` |",
+          "| Ollama (embeddings) | `POST http://localhost:11434/api/embed` | ninguna | `model` (`nomic-embed-text`), `input[]` | `embeddings` (768 dimensiones) | `src/rag/indice.py` |",
+          "| Ollama (modelos) | `GET http://localhost:11434/api/tags` | ninguna | — | lista de modelos (solo la puerta de calidad) | `puerta_de_calidad.py` |",
+          "| El Peruano | `GET https://busquedas.elperuano.pe/dispositivo/NL/2397811-1` | ninguna | — | texto de la Ley 32322 entre «LEY Nº 32322» y «DISPOSICIÓN COMPLEMENTARIA FINAL ÚNICA» | `descargar.py` |",
+          "| Descarga de documentos | `GET` de cada enlace de 8.1 y 8.2, con `User-Agent: analitica-hackathon/1.0` | ninguna | — | el PDF, con su hash | `descargar.py` |", "",
+          "**Rutas del aplicativo** (contrato `docs/api.md` v0.2 de Miguel) y la funcion de esta rama que las alimenta:\n",
+          "| Ruta | Funcion | Estado |\n|---|---|---|",
+          "| `GET /api/v1/customers/{customer_id}/health` | `Repositorio.contexto(cid)`: `salud`, `nivel`, `features['colchon_observado']` | calculado; falta el adaptador de nombres (seccion 10) |",
+          "| `GET /api/v1/customers/{customer_id}/forecast` | `Repositorio.contexto(cid)['pronostico']` | calculado al dia 30; la serie diaria no esta entrenada |",
+          "| `GET /api/v1/customers/{customer_id}/recommendations` | `recomendador.recomendar(ctx)` | calculado; falta definir `impact_type` |",
+          "| `GET /api/v1/customers/{customer_id}/events` | `vigilancia.eventos_para(...)` y `vigilancia.ciclo(...)` | calculado, con tope de 3 por semana y sin repetidos |",
+          "| `POST /api/v1/simulations` | `Repositorio._pronostico(fila, neto)` | gasto unico; ingresos y gastos recurrentes por definir |",
+          "| `GET /api/v1/fx` | `bcrp.cliente.ultimo_con_variacion('tipo_cambio_venta')` | calculado, con `origen` y `al_dia` |",
+          "| `POST /api/v1/customers/{customer_id}/expenses` | `datos_vivos.registrar(...)` | calculado, validado e idempotente |",
+          "| `POST /api/v1/chat` | `grafo.responder(agente, cid, pregunta)` | calculado |",
+          "| `GET /api/v1/customers/{customer_id}/offers` | `ofertas.ofertas_por_perfil(ctx, top_categorias)` | calculado, con catalogo ficticio |",
+          "| `GET` y `POST /api/v1/customers/{customer_id}/goals` | `memoria` guarda las metas del usuario | parcial: guarda, sin ruta propia |",
+          "| `POST /api/v1/onboarding` | — | no lo cubre la analitica |", ""]
+    mani = os.path.join(RAIZ, "data", "generado", "_manifiesto.json")
+    if os.path.isfile(mani):
+        with open(mani, encoding="utf-8") as fh:
+            m = json.load(fh)
+        L += ["### 8.8 Data sintetica cargada para la integracion\n",
+              f"`data/generado/` lleva **{m['total_archivos']} archivos ({m['total_mb']} MB), 100 % sinteticos** (semilla {m['semilla']}), cargados a proposito aunque la carpeta esta en `.gitignore` (`git add -f`), para que se usen al integrar sin tener que regenerarlos. "
+              "Cada archivo esta en `data/generado/_manifiesto.json` con su tamano y su hash; las caches de respuestas y la memoria de pruebas **no** se cargan.\n",
+              f"- **Para usarlos:** no hay que hacer nada; `Repositorio` y `eval/entrenar_modelos.py` leen `data/generado/`. Contenido: `clientes.parquet`, `transacciones/` (movimientos por lotes de clientes), `saldo_diario/`, `panel_mensual/`, `mensajes/`, `contexto_diario.parquet`, `eventos.parquet`, `macro_mensual.parquet` y `etiquetas_calidad/`. Diccionario en `data/dictionary.md` y calidad en `data/QUALITY.md`.",
+              f"- **Para regenerarlos identicos:** `{m['regenerar_identica']}`.",
+              f"- **Para quitarlos al terminar la integracion:** `{m['quitar_al_terminar']}`. La puerta de calidad (S5) lo avisa mientras esten versionados.", ""]
+    return "\n".join(L)
+
+
+def seccion_integracion_app() -> str:
+    return """Todo corre con `Repositorio` (modelos y datos del cliente), `Buscador` (RAG) y el grafo del agente. Pasos para conectarlo a un aplicativo:
+
+**1. Entorno.** Python 3.13, `pip install -r requirements-analitica.txt`, copiar `.env.analitica.example` a `.env` y completar las claves (solo en `.env`). Ollama con `nomic-embed-text` para el RAG.
+
+**2. Arranque (una vez por proceso, tarda unos segundos).**
+```python
+from src.agente_analitico.repositorio import Repositorio
+from src.agente_analitico.grafo import construir_grafo, responder
+from src.rag.indice import Buscador
+repo, rag = Repositorio(), Buscador()
+agente = construir_grafo(repo, rag, "agente_unico")
+```
+
+**3. Preguntas del cliente** (`POST /chat`): `r = responder(agente, customer_id, pregunta)`. Devuelve `respuesta` (siempre cierra con «Tu decides.»), `intencion`, `citas` (titulo, pagina, enlace), `recomendaciones`, `cifras_verificadas`, `cifras_sin_respaldo`, `proveedor`, `llamadas_llm` e `idioma`. Para otro idioma pasar `idioma="en"` o `"qu"` (o se detecta). Mostrar siempre las `citas`.
+
+**4. Datos que ya calcula el modelo** (`GET health`, `forecast`, `recommendations`): `repo.contexto(cid)` (salud, nivel, pronostico a 30 dias con banda y probabilidad de rojo, calendario laboral, movimientos vivos), `repo.proyeccion_mensual(cid)` (ingresos, gastos y neto de 1 a 6 meses) y `recomendador.recomendar(ctx)`. El mapeo a los nombres del contrato de la API esta en la seccion 10.
+
+**5. Alimentar con lo que entra y sale** (`POST expenses`): `datos_vivos.registrar(cid, "gasto", 35.0, categoria="transporte", fecha="2026-11-14", id_mov="id-del-aplicativo")`. Si el aplicativo no tiene categoria puede mandar `glosa="..."` y el clasificador la sugiere (confianza minima 0.80; si no, `otros`); **la glosa no se guarda**. Reintentar con el mismo `id_mov` no duplica. Con datos viejos (mas de 45 dias desde el cierre de datos) el riesgo a 30 dias no se reestima y el agente lo dice.
+
+**6. Avisos (`GET events`).** Un proceso programado (por ejemplo cada hora) llama `vigilancia.ciclo(agente, repo, lista_de_clientes)`; devuelve los avisos ya redactados, de lo mas urgente a lo menos, sin repetir un hecho y con tope de 3 por semana por cliente. Con `consultar_red=False` no consulta el BCRP ni el ENFEN (pruebas y demos sin internet).
+
+**7. Cambiar de API de IA.** `LLM_PROVIDER=compatible` y tres variables: `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` (cualquier API con formato `chat/completions`). Ningun otro archivo cambia. `LLM_USO=ahorro` usa el LLM solo para lo que una plantilla no cubre bien; `siempre` para todo. El consumo queda en `proveedores.USO` (llamadas y tokens). Un proveedor nuevo solo necesita `nombre`, `externo` y `redactar(pregunta, datos, tono, feedback)`; las pruebas de `tests/test_proveedores.py` fijan el contrato.
+
+**8. Privacidad y derechos.** Todo proveedor externo recibe los datos **sin id ni zona** del cliente (`externo=True`); el LLM nunca ve el detalle de los movimientos. `memoria.olvidar(cid)` borra la memoria y los movimientos vivos del cliente. Las claves viven solo en `.env`.
+
+**9. Mantener actualizado.** BCRP: automatico (cache y respaldo). ENFEN: la vigilancia avisa si hay un comunicado nuevo; hay que bajarlo e indexarlo. RAG: `python -m src.datos_publicos.descargar` y `Buscador` tras `indice.actualizar_incremental()` (solo embebe lo nuevo). Normas: ver 8.5. Evaluar todo: `python eval/puerta_de_calidad.py --gemini`.
+
+**10. Lo que no hay que hacer.** No usar el LLM para calcular: toda cifra sale de una herramienta y pasa por el juez, y si el LLM inventa una cifra, devuelve codigo o promete algo, la respuesta cae a la plantilla. No tratar un proyecto de ley como ley. No presentar un dato desactualizado como actual. No mover dinero ni recomendar comprar o vender dolares ni en que invertir: esos pedidos se cortan antes de llegar a cualquier modelo.
+"""
+
+
 def seccion_escala_valor():
     txt = ""
     if ESC:
@@ -296,6 +439,8 @@ Claves solo en `.env` (no se sube). `LLM_PROVIDER=gemini|compatible|ollama|plant
 | No adoptado | GraphRAG, deep learning desde cero | Sin puntos extra y riesgo de tiempo (decision del plan) |
 | Pendiente | Fuentes de nivel C (guia del Ministerio de Vivienda), cartilla del BCRP (bloqueo anti-bot) | Licencia por confirmar; descarga manual |
 
+### Inventario de lo que contiene esta rama
+{seccion_inventario()}
 ## 4. Resultados clave (validados)
 Todo con datos sinteticos; ver la evaluacion completa.
 {resultados_clave()}
@@ -315,8 +460,12 @@ Todo con datos sinteticos; ver la evaluacion completa.
 - **Innovacion**: banda de pronostico distinta para ingreso irregular, proyeccion por meses, alerta de El Nino por zona con fuente oficial, Sueldo Lucas, avisos en tiempo real, niveles con nombre, juez doble que impide cifras inventadas.
 - **Impacto**: ver la seccion 5 de la evaluacion; el efecto en retencion y mora lo mediria un piloto con grupo de control.
 
-## 8. Integracion con el equipo
-Esta rama se mantiene **separada** hasta la integracion final; aqui queda documentado lo que choca, lo que coincide y que tomar de cada lado. *Lo que sigue del PR #5 y de `develop` es observacion por lectura: no ejecute sus pruebas; compararlo con mediciones es parte de la integracion.*
+## 8. Datos reales y conexiones: de donde sale cada dato, con sus enlaces
+{seccion_datos_reales()}
+## 9. Como integrarlo en el aplicativo
+{seccion_integracion_app()}
+## 10. Integracion con el equipo
+Esta rama contiene **solo el trabajo de analitica e IA**: lo de otras personas (agente del producto, API, front) no esta aqui y la integracion final se hace despues. Aqui queda documentado lo que choca, lo que coincide y que tomar de cada lado. *Lo que se dice del PR #5 y de `develop` es observacion por lectura de su codigo y de `docs/api.md`; las pruebas del agente del producto no se ejecutaron en esta rama.* (El 14-nov se trajo `develop` a la copia remota de esta rama; esta version no lo incluye.)
 
 **Como se reparte el trabajo hoy.** Miguel define la API REST (`docs/api.md` v0.2, FastAPI) y su contrato dice que el calculo debe venir de los modelos de Diego; Jeffrey construyo el agente del producto (PR #5: grafo LangGraph, router por reglas, juez de cifras, Gemini de respaldo, BCRP con serie grabada, respuesta de `/chat`), que consume esa API por herramientas (`get_health`, `get_forecast`, `get_recos`, `simulate`, `get_fx`) hoy sobre mocks; Marcela hace el front (`app/`).
 
@@ -359,11 +508,11 @@ Esta rama se mantiene **separada** hasta la integracion final; aqui queda docume
 - La memoria del usuario (`memoria.py`) permite ver y olvidar; `olvidar` tambien borra sus movimientos vivos.
 - Postgres y pgvector del equipo: el indice FAISS puede cargarse a pgvector desde `docs/rag/indice/` (mismo modelo de embeddings, 768 dimensiones).
 
-## 9. Pendientes y preguntas a la organizacion
+## 11. Pendientes y preguntas a la organizacion
 LLM externo autorizado (hoy Gemini gratuito solo con datos sin identificadores; la API final se conecta con tres variables), datos publicos de calibracion (ENAHO), prueba de evolucion, formato de entrega, licencia de las guias de nivel C. Lo que sigue **sin verificar** esta listado en [QA_ANALITICA.md](QA_ANALITICA.md): calidad del quechua (sin hablante nativo), Google Cloud Translation (sin clave propia), datos reales de un banco, set independiente de frases para el sentimiento, 17 de 18 parametros de eventos (retiros AFP, bonos, covid, Nino) que son parciales o supuestos, la **serie diaria del pronostico** (el modelo esta calibrado en el dia 30; el contrato de la API la pide), el piloto del programa de puntos y la carga en produccion. El regimen de CTS y gratificacion asumido es el general: en regimenes especiales (p. ej. MYPE) el monto cambia.
 
-## 10. Fuentes
-INEI EPEN I trim. 2026 (cuadros 1.20, 1.28 a 1.30); ENFEN comunicados 15 a 20 de 2026; BCRP (API de series); SBS Res. 3274-2017 y Res. 6523-2013; DS 016-2024-JUS; Codigo de Proteccion y Defensa del Consumidor (Ley 29571); TUO de la Ley de CTS (DS 001-97-TR); guias del MTPE de CTS y de gratificaciones; Ley 30334; Ley 32322 (texto de El Peruano); CFPB; Banco Mundial 2017; MEF PEM. Detalle y hash en `docs/fuentes/fuentes.csv` y `docs/rag/fuentes.csv`.
+## 12. Fuentes
+Los enlaces completos, con su fecha de consulta y su hash, estan en la seccion 8. Resumen: INEI EPEN I trim. 2026 (cuadros 1.20, 1.28 a 1.30); ENFEN comunicados 15 a 20 de 2026; BCRP (API de series); SBS Res. 3274-2017 y Res. 6523-2013; DS 016-2024-JUS; Codigo de Proteccion y Defensa del Consumidor (Ley 29571); TUO de la Ley de CTS (DS 001-97-TR); guias del MTPE de CTS y de gratificaciones; Ley 30334; Ley 32322 (texto de El Peruano); CFPB; Banco Mundial 2017; MEF PEM. Detalle y hash en `docs/fuentes/fuentes.csv` y `docs/rag/fuentes.csv`.
 """
 
 
@@ -451,8 +600,10 @@ def hallazgos():
 
 
 if __name__ == "__main__":
+    from src.comun.huella import METRICAS, huella
+    pie = f"\n<!-- huella_metricas: {huella(METRICAS)} (la puerta de calidad compara esta huella con la de las metricas actuales) -->\n"
     with open(ruta("docs", "EVALUACION_ANALITICA.md"), "w", encoding="utf-8") as fh:
-        fh.write(evaluacion())
+        fh.write(evaluacion() + pie)
     with open(ruta("docs", "RESUMEN_DIEGO.md"), "w", encoding="utf-8") as fh:
-        fh.write(resumen())
+        fh.write(resumen() + pie)
     print("docs generados")

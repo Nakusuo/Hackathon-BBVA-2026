@@ -346,13 +346,13 @@ Por segmento:
 
 |  | n | ruteo_correcto | respuestas_sin_cifras_inventadas | sin_frases_prohibidas | cierra_con_tu_decides | pedidos_prohibidos_rechazados | latencia_media_s | latencia_p95_s | llamadas_llm_por_respuesta | por_plantilla |
 |---|---|---|---|---|---|---|---|---|---|---|
-| agente_unico | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.945 | 3.142 | 0.000 | 1.000 |
-| multiagente | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.385 | 1.026 | 0.000 | 1.000 |
+| agente_unico | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.938 | 2.888 | 0.000 | 1.000 |
+| multiagente | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.406 | 1.070 | 0.000 | 1.000 |
 
 
 Fallos de ruteo (agente unico): ninguno
 
-**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo 2026-11-14)**: preguntas de perfil 11/11, pedidos adversarios 16/16, datos vivos y vigilancia OK, traduccion ingles OK, quechua OK; 17 llamadas y 44,570 tokens de entrada con `gemini-3.5-flash-lite`; latencia media por respuesta 4.2 s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.
+**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo 2026-11-14)**: preguntas de perfil 11/11, pedidos adversarios 16/16, datos vivos y vigilancia OK, traduccion ingles OK, quechua OK; 17 llamadas y 44,571 tokens de entrada con `gemini-3.5-flash-lite`; latencia media por respuesta 4.2 s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.
 
 
 ## 7. Escalabilidad y valor
@@ -405,10 +405,11 @@ La base de los montos es la ultima gratificacion real del cliente (equivale a un
 ## 9. QA y comparativa de modelos
 La puerta de calidad (`python eval/puerta_de_calidad.py --gemini`) reune pruebas, metricas de los modelos, conexiones en tiempo real, agente, seguridad y frescura, y reporta PASS, WARN (conocido y documentado), FAIL o NOT RUN con el motivo. El detalle completo, incluida la lista de **lo que no se pudo verificar**, esta en [QA_ANALITICA.md](QA_ANALITICA.md).
 
-Ultima corrida (2026-11-14T15:31:58): **35 PASS, 5 WARN, 0 FAIL, 2 NOT RUN**.
+Ultima corrida (2026-11-14T15:52:19): **34 PASS, 6 WARN, 0 FAIL, 3 NOT RUN**.
 
 | # | Estado | Que | Detalle |
 |---|---|---|---|
+| P1b | NOT RUN | Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte | no hay pruebas del agente del producto en esta rama |
 | M6 | WARN | Equidad por segmento: brecha de cobertura <= 0.05 y razon de error entre segmentos | la cobertura es pareja (brecha 0.018) pero el error del peor segmento (0) es 1.58 veces el del mejor: el ingreso irregular es mas dificil de pronosticar. Documentado. |
 | M8 | WARN | Sentimiento: el modelo entrenado generaliza a frases escritas a mano | no: F1 0.73 con 24 frases contra 1.00 en plantillas. Documentado; no esta en produccion. |
 | M10 | WARN | Politica de ahorro: Lucas forma al menos tanto colchon como ahorrar 10 % fijo ajustado | el 10 % fijo ajustado forma 2.7 meses mas de colchon que Lucas. Hallazgo abierto, documentado. |
@@ -416,6 +417,9 @@ Ultima corrida (2026-11-14T15:31:58): **35 PASS, 5 WARN, 0 FAIL, 2 NOT RUN**.
 | M13 | WARN | Parametros de los eventos simulados (retiros de AFP, bonos, covid, Nino): verificados en fuente | parametros de eventos: 1 verificado, 4 parciales y 13 supuestos. Declarados en el YAML; hay que verificarlos antes de afirmarlos. |
 | C9 | NOT RUN | Google Cloud Translation | no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini. |
 | C10 | NOT RUN | Calidad del quechua revisada por un hablante nativo | no hay revision de un hablante nativo; el aviso al usuario lo dice |
+| S5 | WARN | Sin archivos pesados ni datos generados en el repositorio (solo data/sample), salvo la carga temporal documentada | 56 archivos de data/generado cargados A PROPOSITO para la integracion final (ver _manifiesto.json, todo sintetico); quitarlos al terminar con: git rm -r --cached data/generado |
 
 La comparativa de modelos (candidatos medidos, el elegido y por que, con su limite) esta en [comparativa_modelos.md](comparativa_modelos.md) y sus graficas en `docs/figuras/`.
 
+
+<!-- huella_metricas: 547dc044afbc5de0 (la puerta de calidad compara esta huella con la de las metricas actuales) -->

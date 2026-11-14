@@ -1,14 +1,15 @@
 # QA de analítica e IA: puerta de calidad
 
-Generado por `eval/puerta_de_calidad.py` el 2026-11-14T15:31:58 (reloj del agente: 2026-11-14). Estados: **PASS** cumple; **WARN** conocido y documentado, no bloquea; **FAIL** hay que corregirlo; **NOT RUN** no se pudo verificar y se dice por qué.
+Generado por `eval/puerta_de_calidad.py` el 2026-11-14T15:52:19 (reloj del agente: 2026-11-14). Estados: **PASS** cumple; **WARN** conocido y documentado, no bloquea; **FAIL** hay que corregirlo; **NOT RUN** no se pudo verificar y se dice por qué.
 
-**Resultado: 35 PASS · 5 WARN · 0 FAIL · 2 NOT RUN** (de 42 verificaciones, en 59.9 s).
+**Resultado: 34 PASS · 6 WARN · 0 FAIL · 3 NOT RUN** (de 43 verificaciones, en 65.6 s).
 
 ## Pruebas
 
 | # | Qué se verifica | Estado | Detalle |
 |---|---|---|---|
-| P1 | Toda la suite de pruebas (pytest) | **PASS** | 371 passed in 33.98s |
+| P1 | Suite de pruebas de analitica e IA (pytest, sin red ni Gemini) | **PASS** | 374 passed in 33.93s |
+| P1b | Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte | **NOT RUN** | no hay pruebas del agente del producto en esta rama |
 | P2 | Codigo sin importaciones sin uso, nombres sin definir, errores de sintaxis ni caracteres de control (ruff) | **PASS** |  |
 
 ## Modelos
@@ -41,7 +42,7 @@ Generado por `eval/puerta_de_calidad.py` el 2026-11-14T15:31:58 (reloj del agent
 | C5 | Ollama local con el modelo de embeddings del RAG | **PASS** | nomic-embed-text responde (768 dimensiones); modelos: qwen2.5:7b, qwen2.5:3b, nomic-embed-text:latest |
 | C6 | Agente configurado con Gemini y politica de ahorro; clave solo en .env | **PASS** | LLM_PROVIDER=gemini, LLM_USO=ahorro (Gemini con politica de ahorro de tokens); la clave esta solo en .env |
 | C7 | Gemini responde en vivo | **PASS** | gemini-3.5-flash-lite responde (HTTP 200) |
-| C8 | Traduccion es->en con cifras y nombres protegidos | **PASS** | es->en por gemini en 1.84 s, cifras intactas |
+| C8 | Traduccion es->en con cifras y nombres protegidos | **PASS** | es->en por gemini en 1.77 s, cifras intactas |
 | C9 | Google Cloud Translation | **NOT RUN** | no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini. |
 | C10 | Calidad del quechua revisada por un hablante nativo | **NOT RUN** | no hay revision de un hablante nativo; el aviso al usuario lo dice |
 | C11 | RAG: indice consistente, documentos sin alterar (hash) y solo fuentes de nivel A | **PASS** | 3833 fragmentos = 3833 vectores; 21 documentos con hash verificado; solo licencia nivel A |
@@ -54,7 +55,7 @@ Generado por `eval/puerta_de_calidad.py` el 2026-11-14T15:31:58 (reloj del agent
 | # | Qué se verifica | Estado | Detalle |
 |---|---|---|---|
 | G1 | Evaluacion con plantillas (reproducible): ruteo >= 0.95, cero cifras inventadas, cero frases prohibidas, todos los pedidos prohibidos rechazados | **PASS** | 69 preguntas x 2 arquitecturas: ruteo 1.000, 0 cifras inventadas, 0 frases prohibidas, 100% de pedidos prohibidos rechazados |
-| G2 | QA con Gemini real (una sola corrida): perfil, calendario, premisa falsa, datos vivos, idiomas y adversarios | **PASS** | Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 17 llamadas y 44,570 tokens de entrada |
+| G2 | QA con Gemini real (una sola corrida): perfil, calendario, premisa falsa, datos vivos, idiomas y adversarios | **PASS** | Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 17 llamadas y 44,571 tokens de entrada |
 | G3 | Diagramas de nodos del agente generados, con rutas relativas | **PASS** | los dos diagramas de nodos existen y se citan con ruta relativa |
 | G4 | No hay metricas de Gemini desfasadas (las anteriores a la seguridad se retiraron) | **PASS** | no queda el JSON de Gemini anterior al endurecimiento de seguridad |
 
@@ -62,18 +63,18 @@ Generado por `eval/puerta_de_calidad.py` el 2026-11-14T15:31:58 (reloj del agent
 
 | # | Qué se verifica | Estado | Detalle |
 |---|---|---|---|
-| S1 | Ninguna clave de API en lo versionado | **PASS** | 156 archivos versionados sin claves de API |
+| S1 | Ninguna clave de API en lo versionado | **PASS** | 170 archivos versionados sin claves de API |
 | S2 | .env no versionado e ignorado | **PASS** | .env ignorado y no versionado |
-| S3 | Sin rutas absolutas de ninguna laptop en codigo, parametros, metricas ni documentos | **PASS** | 87 archivos propios sin rutas absolutas |
+| S3 | Sin rutas absolutas de ninguna laptop en codigo, parametros, metricas ni documentos | **PASS** | 99 archivos propios sin rutas absolutas |
 | S4 | Ninguna mencion a un banco real en codigo, datos, metricas ni documentos propios | **PASS** | ninguna mencion a un banco real en lo propio (la entidad es inventada: Banco Kawsay) |
-| S5 | Sin archivos pesados ni datos generados en el repositorio (solo data/sample) | **PASS** | ningun archivo de mas de 50 MB ni datos generados versionados |
+| S5 | Sin archivos pesados ni datos generados en el repositorio (solo data/sample), salvo la carga temporal documentada | **WARN** | 56 archivos de data/generado cargados A PROPOSITO para la integracion final (ver _manifiesto.json, todo sintetico); quitarlos al terminar con: git rm -r --cached data/generado |
 
 ## Reproducibilidad
 
 | # | Qué se verifica | Estado | Detalle |
 |---|---|---|---|
 | R1 | Todo lo que importa el codigo esta en requirements-analitica.txt (un companero puede recrear el entorno) | **PASS** | las 22 bibliotecas de terceros que importa el codigo estan en requirements-analitica.txt |
-| R2 | Nada desfasado: metricas posteriores al codigo del agente y del RAG, y documentos posteriores a las metricas | **PASS** | metricas y documentos son posteriores al codigo y a los datos de los que dependen |
+| R2 | Nada desfasado: cada evaluacion corresponde al codigo actual y cada informe a las metricas actuales (huella de contenido) | **PASS** | las evaluaciones corresponden al codigo actual y los informes a las metricas actuales (huella de contenido) |
 | R3 | Las fuentes oficiales del RAG se consultaron en los ultimos 30 dias | **PASS** | 21 fuentes del RAG, ultima consulta hace 0 dias |
 
 ## Lo que NO se pudo verificar
