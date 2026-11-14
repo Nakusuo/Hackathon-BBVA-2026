@@ -44,6 +44,44 @@ def idoneo_para_credito(f: dict, p_rojo: float, cuota_nueva: float = 0.0) -> tup
     return (not razones), razones
 
 
+def _reparto(monto: float, f: dict, ingreso: float, gasto: float, tcea: float, deuda: float) -> tuple[float, float, float]:
+    """Como repartir un ingreso grande: primero el colchon (hasta 3 meses de gasto), luego la deuda cara (hasta el 50 % de la deuda); el resto es meta o gusto."""
+    a_colchon = min(monto, max(gasto * 3 - f["colchon_observado"] * ingreso, 0)) if f["colchon_observado"] < 3 else 0.0
+    a_deuda = min(monto - a_colchon, deuda * 0.5) if tcea > TCEA_DEUDA_CARA and deuda > 0 else 0.0
+    return a_colchon, a_deuda, max(monto - a_colchon - a_deuda, 0.0)
+
+
+def _plan_calendario(c: dict, f: dict, ingreso: float, gasto: float) -> dict | None:
+    """Recomendacion que se anticipa al pago laboral mas cercano (dentro de 30 dias): decidir antes de que la plata se gaste."""
+    cal = c.get("calendario") or {}
+    if not cal.get("aplica"):
+        return None
+    prox = next((e for e in cal["eventos"] if e["estado"] in ("proximo", "hoy") and e["dias_para"] <= 30), None)
+    if not prox:
+        return None
+    m, tcea, deuda = prox["monto_estimado"], float(c.get("tcea", 0)), float(c.get("deuda", 0))
+    urg = 0.95 if prox["dias_para"] <= 7 else 0.75
+    base_sup = "el monto es una estimacion con tu ultima gratificacion o tu ingreso medio (regimen general y semestre completo): confirmalo con tu empleador"
+    if prox["tipo"] == "gratificacion":
+        a_col, a_deu, resto = _reparto(m["total"], f, ingreso, gasto, tcea, deuda)
+        return {"id": "plan_gratificacion", "accion": f"Te llegan unos S/ {m['total']:,.0f} ({prox['nombre']}, hasta el {prox['fecha_limite_texto']}): decide antes de gastarlos: colchon S/ {a_col:,.0f} en tu apartado, "
+                                                      f"deuda cara S/ {a_deu:,.0f}, meta o gusto S/ {resto:,.0f}.", "impacto_soles": round(a_col + a_deu, 0), "urgencia": urg, "facilidad": 0.85,
+                "por_que": [f"tu {prox['nombre'].lower()} llega en {prox['dias_para']} dias", "primero se cubre el colchon (hasta 3 meses de gasto) y la deuda mas cara"],
+                "supuestos": [base_sup, "la bonificacion extraordinaria se calcula con el porcentaje de EsSalud (supuesto: no sabemos si estas en una EPS)"], "confianza": cal["confianza"],
+                "puntos": "aporte_a_meta_de_ahorro" if a_col > 0 else None}
+    dep, libre = m["deposito_semestral"], cal["libre_disposicion_cts"]
+    a_deu = min(dep, deuda * 0.5) if tcea > TCEA_DEUDA_CARA and deuda > 0 else 0.0
+    venc = f" Hasta el {libre['vigente_hasta_texto']} puedes disponer del 100 %; despues, solo hasta el 50 %." if libre["regimen_transitorio_vigente"] and libre["por_vencer"] else ""
+    if a_deu > 0:
+        accion = (f"Tu CTS (unos S/ {dep:,.0f}) se deposita hasta el {prox['fecha_limite_texto']}. Tu deuda cuesta {tcea:.0%} al ano: usar S/ {a_deu:,.0f} para cancelarla te ahorraria unos S/ {a_deu * tcea:,.0f} al ano en intereses. "
+                  f"El resto conviene dejarlo: es tu respaldo si termina tu trabajo.{venc}")
+    else:
+        accion = f"Tu CTS (unos S/ {dep:,.0f}) se deposita hasta el {prox['fecha_limite_texto']}. No hace falta retirarla para tu colchon: ya es tu respaldo si termina tu trabajo. Retira solo si tienes una necesidad concreta.{venc}"
+    return {"id": "plan_cts", "accion": accion, "impacto_soles": round(a_deu * tcea, 0), "urgencia": 0.85 if prox["dias_para"] <= 7 else 0.65, "facilidad": 0.7,
+            "por_que": [f"tu deposito de CTS vence en {prox['dias_para']} dias", cal["libre_disposicion_cts"]["finalidad_de_la_cts"]],
+            "supuestos": [base_sup, "el ahorro de intereses supone cancelar esa parte de la deuda hoy y mantener tu TCEA promedio durante un ano"], "confianza": cal["confianza"]}
+
+
 def candidatos(c: dict) -> list[dict]:
     """c: features observables, pronostico, salud, nivel, departamento, tipo_trabajo, tcea y, si existen, duplicadas, evento_ingreso y tasa_ref."""
     f, pr = c["features"], c.get("pronostico", {})
@@ -77,14 +115,13 @@ def candidatos(c: dict) -> list[dict]:
     ev = c.get("evento_ingreso")
     if ev:
         monto = float(ev["monto"])
-        a_colchon = min(monto, max(gasto * 3 - f["colchon_observado"] * ingreso, 0)) if f["colchon_observado"] < 3 else 0.0
-        a_deuda = 0.0
-        if c.get("tcea", 0) > TCEA_DEUDA_CARA and c.get("deuda", 0) > 0:
-            a_deuda = min(monto - a_colchon, c["deuda"] * 0.5)
-        resto = max(monto - a_colchon - a_deuda, 0)
+        a_colchon, a_deuda, resto = _reparto(monto, f, ingreso, gasto, c.get("tcea", 0), c.get("deuda", 0))
         out.append({"id": "plan_ingreso_extra", "accion": f"Entraron S/ {monto:,.0f} ({ev['origen']}): propon repartirlos asi: colchon S/ {a_colchon:,.0f}, deuda cara S/ {a_deuda:,.0f}, meta o gusto S/ {resto:,.0f}.",
                     "impacto_soles": round(a_colchon + a_deuda, 0), "urgencia": 0.9, "facilidad": 0.85, "por_que": [f"recibiste un ingreso extra por {ev['origen']}", "primero se cubre el colchon y la deuda mas cara"],
                     "supuestos": ["colchon objetivo: 3 meses de gastos", "se destina hasta el 50 % de la deuda cara"], "confianza": "alta"})
+    plan_cal = _plan_calendario(c, f, ingreso, gasto)
+    if plan_cal:
+        out.append(plan_cal)
     dep = c.get("departamento")
     alerta = RC.alerta_fen(dep, c.get("hoy")) if dep else None
     if alerta:

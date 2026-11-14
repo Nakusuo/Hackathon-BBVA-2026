@@ -6,6 +6,7 @@ import time
 import pandas as pd
 import requests
 
+from src.comun import reloj
 from src.comun.rutas import DATA_RAW, ruta
 
 MES_ES = {"Ene": 1, "Feb": 2, "Mar": 3, "Abr": 4, "May": 5, "Jun": 6, "Jul": 7, "Ago": 8, "Set": 9, "Sep": 9, "Oct": 10, "Nov": 11, "Dic": 12}
@@ -56,10 +57,17 @@ def serie(nombre: str, desde: str = "2024-1", hasta: str = "2027-12", timeout: i
         return _parsear(json.load(f)), "grabada"
 
 
-def ultimo_con_variacion(nombre: str) -> dict:
-    """Ultimo valor, el anterior y la variacion. Sirve para detectar que la tasa bajo."""
+MAX_ANTIGUEDAD_DIAS = {"mensual": 75, "diaria": 7}   # el dato mensual del BCRP sale con un mes de rezago; el diario no debe tener mas de una semana
+
+
+def ultimo_con_variacion(nombre: str, hoy=None) -> dict:
+    """Ultimo valor, el anterior y la variacion, con su frescura: de que fecha es, de donde vino y si esta al dia.
+    Un dato de la serie grabada o mas viejo que MAX_ANTIGUEDAD_DIAS NO se debe presentar como actual (al_dia=False)."""
     s, origen = serie(nombre)
     s = s.dropna()
     ult, prev = float(s.iloc[-1]), float(s.iloc[-2])
+    hoy = pd.Timestamp(hoy or reloj.hoy())
+    antig = max(int((hoy - s.index[-1]).days), 0)
+    maxima = MAX_ANTIGUEDAD_DIAS[SERIES[nombre][2]]
     return {"indicador": nombre, "descripcion": SERIES[nombre][3], "valor": ult, "fecha": str(s.index[-1].date()), "valor_previo": prev, "fecha_previa": str(s.index[-2].date()),
-            "variacion": round(ult - prev, 4), "origen": origen}
+            "variacion": round(ult - prev, 4), "origen": origen, "antiguedad_dias": antig, "al_dia": origen != "grabada" and antig <= maxima}
