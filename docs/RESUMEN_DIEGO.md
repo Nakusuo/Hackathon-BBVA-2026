@@ -28,7 +28,7 @@ Claves solo en `.env` (no se sube). `LLM_PROVIDER=ollama|gemini|plantillas`. Las
 | Puntos por conductas sanas y canje | `src/models/niveles.py` |
 | Alerta por zona de riesgo del Nino con prevencion | `src/models/riesgo_clima.py`, `data/parametros/zonas_riesgo_fen.yaml` |
 | RAG (fragmentos, embeddings locales, FAISS, filtro de relevancia) | `src/rag/`, `docs/rag/` |
-| Agente LangGraph (unico y multiagente), juez determinista y juez LLM, memoria, avisos en tiempo real | `src/agent/` |
+| Agente LangGraph (unico y multiagente), juez determinista y juez LLM, memoria, avisos en tiempo real | `src/agente_analitico/` |
 | Diagramas de nodos | `docs/diagramas/grafo_*.md` |
 | Notebooks | `notebooks/` |
 
@@ -100,10 +100,10 @@ Supuestos: {"margen_anual_sobre_saldo_apartado": 0.03, "usuarios_activos_escenar
 - **Impacto**: ver la seccion 5 de la evaluacion; el efecto en retencion y mora lo mediria un piloto con grupo de control.
 
 ## 8. Integracion con el equipo
-- Modelos: `models/*.pkl` (joblib, versiones en el manifiesto; abrirlos solo desde este repo). Cargar con `src/agent/repositorio.py`.
+- Modelos: `models/*.pkl` (joblib, versiones en el manifiesto; abrirlos solo desde este repo). Cargar con `src/agente_analitico/repositorio.py`.
 - Funciones para el backend: `Repositorio.contexto(cid)`, `Repositorio.proyeccion_mensual(cid)`, `recomendador.recomendar(ctx)`, `grafo.construir_grafo(repo, buscador, modo)` y `grafo.responder(app, cid, pregunta | evento)`.
-- Interfaz web: llama a `responder` y muestra `respuesta`, `citas`, `cifras_verificadas` y `recomendaciones`. La memoria del usuario (`src/agent/memoria.py`) permite ver y olvidar.
-- Avisos: `src/agent/vigilancia.py` (baja de tasa, ingreso extra, comunicado del ENFEN, riesgo de rojo; maximo 3 por semana).
+- Interfaz web: llama a `responder` y muestra `respuesta`, `citas`, `cifras_verificadas` y `recomendaciones`. La memoria del usuario (`src/agente_analitico/memoria.py`) permite ver y olvidar.
+- Avisos: `src/agente_analitico/vigilancia.py` (baja de tasa, ingreso extra, comunicado del ENFEN, riesgo de rojo; maximo 3 por semana).
 - Postgres y pgvector del equipo: el indice FAISS puede cargarse a pgvector desde `docs/rag/indice/` (mismo modelo de embeddings, 768 dimensiones).
 
 ## 9. Pendientes y preguntas a la organizacion

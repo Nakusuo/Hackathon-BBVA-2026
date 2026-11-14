@@ -5,7 +5,7 @@ import re
 
 import requests
 
-from src.agent.proveedores import Gemini, Ollama
+from src.agente_analitico.proveedores import Gemini, Ollama
 
 PROMPT = (
     "Eres un auditor estricto. Recibes DATOS y una RESPUESTA escrita por un asistente financiero. "

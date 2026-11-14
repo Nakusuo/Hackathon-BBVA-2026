@@ -81,7 +81,7 @@ NOTEBOOKS = {
         ("md", "## Impacto en soles de seguir a Lucas (reproducción contrafactual 2024–2025)"),
         ("code", "I = M['impacto']; display(tabla(I['tabla'])); print(json.dumps(I['diferencias'], indent=1)); display(tabla(I['por_segmento'])); I['supuestos']"),
         ("md", "## Recomendaciones y ofertas para tres perfiles"),
-        ("code", "os.environ['LLM_PROVIDER'] = 'plantillas'\nfrom src.agent.repositorio import Repositorio\nrepo = Repositorio()\nsys.path.insert(0, os.path.join(RAIZ, 'eval'))\nfrom evaluar_agente import clientes_de_prueba\nids = clientes_de_prueba(repo)\nfrom src.models import recomendador as R\nfor nombre, cid in ids.items():\n    c = repo.contexto(cid); print(nombre, cid, c['nivel'], 'salud', c['salud'])\n    for r in R.recomendar(c, 4): print('  -', r['id'], '|', r['accion'][:110])"),
+        ("code", "os.environ['LLM_PROVIDER'] = 'plantillas'\nfrom src.agente_analitico.repositorio import Repositorio\nrepo = Repositorio()\nsys.path.insert(0, os.path.join(RAIZ, 'eval'))\nfrom evaluar_agente import clientes_de_prueba\nids = clientes_de_prueba(repo)\nfrom src.models import recomendador as R\nfor nombre, cid in ids.items():\n    c = repo.contexto(cid); print(nombre, cid, c['nivel'], 'salud', c['salud'])\n    for r in R.recomendar(c, 4): print('  -', r['id'], '|', r['accion'][:110])"),
     ],
     "05_rag_y_agente": [
         ("md", "# 05. RAG y agente\n\nRecuperación evaluada por separado, filtro de relevancia tipo CRAG, agente único frente a multiagente y juez doble."),
@@ -91,7 +91,7 @@ NOTEBOOKS = {
         ("code", "A['agente_unico']['fallos_de_ruteo'], A['multiagente']['fallos_de_ruteo']"),
         ("code", "print(open(os.path.join(RAIZ, 'docs', 'diagramas', 'grafo_multiagente.md'), encoding='utf-8').read()[:1800])"),
         ("md", "## Demo del agente"),
-        ("code", "os.environ['LLM_PROVIDER'] = 'plantillas'\nfrom src.agent.repositorio import Repositorio\nfrom src.agent.grafo import construir_grafo, responder\nfrom src.rag.indice import Buscador\nsys.path.insert(0, os.path.join(RAIZ, 'eval'))\nfrom evaluar_agente import clientes_de_prueba\nrepo = Repositorio(); ids = clientes_de_prueba(repo); app = construir_grafo(repo, Buscador(), 'agente_unico')\nr = responder(app, ids['independiente_en_zona_del_nino'], '¿Estoy en riesgo por el Fenómeno El Niño?')\nprint(r['respuesta']); print(r['trazas'], r['cifras_verificadas'], r['rag_estado'])"),
+        ("code", "os.environ['LLM_PROVIDER'] = 'plantillas'\nfrom src.agente_analitico.repositorio import Repositorio\nfrom src.agente_analitico.grafo import construir_grafo, responder\nfrom src.rag.indice import Buscador\nsys.path.insert(0, os.path.join(RAIZ, 'eval'))\nfrom evaluar_agente import clientes_de_prueba\nrepo = Repositorio(); ids = clientes_de_prueba(repo); app = construir_grafo(repo, Buscador(), 'agente_unico')\nr = responder(app, ids['independiente_en_zona_del_nino'], '¿Estoy en riesgo por el Fenómeno El Niño?')\nprint(r['respuesta']); print(r['trazas'], r['cifras_verificadas'], r['rag_estado'])"),
     ],
 }
 

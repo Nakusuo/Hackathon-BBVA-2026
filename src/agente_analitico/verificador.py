@@ -4,6 +4,7 @@ import re
 PATRON = re.compile(r"(?<![\w.,])(\d{1,3}(?:[.,]\d{3})+(?:[.,]\d+)?|\d+(?:[.,]\d+)?)")
 CONSTANTES = {1.0, 2.0, 3.0, 6.0, 12.0, 18.0, 24.0, 30.0, 80.0, 100.0}  # plazos y horizontes fijos de las reglas, no cifras del cliente
 PROHIBIDOS = [
+    ("```", "incluye codigo"), (r"(?i)\bdef \w+\(|\bimport \w+|SELECT .* FROM", "incluye codigo"),
     (r"compr(a|ar|es)\s+(los\s+)?d[oó]lares", "recomienda comprar dolares"), (r"vend(e|er|as)\s+(los\s+)?d[oó]lares", "recomienda vender dolares"),
     (r"garantiz|garantizad|seguro que ganas|sin riesgo", "promete resultados"), (r"rentabilidad\s+(de|del|asegurada)", "habla de rentabilidad prometida"),
     (r"invierte\s+en\s+[A-Z0-9]", "recomienda invertir en algo concreto"), (r"(te\s+)?transfer(ir[eé]|o)\s", "ofrece hacer una transferencia"),

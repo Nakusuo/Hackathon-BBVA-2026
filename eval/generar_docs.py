@@ -128,10 +128,18 @@ def seccion_escala_valor():
     if ESC:
         txt += "**Escalabilidad medida** (esta laptop, 500 clientes): " + json.dumps(ESC) + "\n\n"
     if VAL:
-        e = VAL["entidad_por_anio_escenario_conservador"]
-        txt += (f"**Valor para la entidad** (escenario conservador, supuestos visibles): por cliente, colchon adicional S/ {VAL['por_cliente']['colchon_adicional_soles']:.0f}, "
-                f"{VAL['por_cliente']['dias_en_rojo_evitados_por_mes']:.2f} dias en rojo evitados al mes. Con {e['usuarios']:,} usuarios: margen por fondeo S/ {e['margen_por_fondeo_de_lo_apartado_soles']:,.0f}, "
-                f"costo de puntos S/ {e['costo_de_puntos_soles']:,.0f}, neto S/ {e['valor_neto_soles']:,.0f} al anio. {e['nota']}.\n\nSupuestos: {json.dumps(VAL['supuestos'], ensure_ascii=False)}\n")
+        pp, br, co, c = VAL["programa_de_puntos"], VAL["lectura_bruta"], VAL["lectura_conservadora"], VAL["por_cliente_lucas"]
+        txt += (f"**Programa de puntos sostenible** (supuestos del equipo, visibles en `data/parametros/niveles.yaml`): cada usuario gana en promedio {pp['puntos_por_usuario_al_mes']:.0f} puntos al mes y el programa cuesta "
+                f"S/ {pp['costo_por_usuario_al_anio']:.2f} por usuario al anio, es decir {pp['costo_sobre_ingreso_bruto']:.1%} del ingreso bruto que genera (tope de reinversion: {pp['tope_de_reinversion']:.0%}). "
+                "Los puntos por consumo solo se activan para quien tiene la caja ordenada; ahorrar suma siempre y mas para los niveles bajos.\n\n")
+        txt += "Por nivel (anual por usuario, lectura bruta):\n\n" + T(pp["por_nivel"], 2, ["clientes", "consumo_elegible_anual", "puntos_por_mes", "costo_de_puntos_anual", "ingreso_anual", "costo_sobre_ingreso", "consumo_por_cada_sol_de_puntos"]) + "\n"
+        txt += ("`consumo_por_cada_sol_de_puntos` es cuanto consume el cliente por cada S/ 1 de puntos que canjea (la proporcion de gasto sobre puntos).\n\n"
+                f"**Lectura bruta (techo, atribuye todo al programa)**: ingreso por usuario S/ {br['ingreso_por_usuario_al_anio']:.0f} al anio, neto S/ {br['neto_por_usuario_al_anio']:.0f}.\n\n"
+                f"**Lectura conservadora**: Lucas genera {c['colchon_adicional_soles']:.0f} soles mas de colchon por cliente, que dejan S/ {co['fondeo_adicional_por_usuario_al_anio']:.2f} al anio de fondeo; "
+                f"el programa cuesta S/ {co['costo_de_puntos_por_usuario_al_anio']:.2f}, asi que sin mas consumo el neto es S/ {co['neto_por_usuario_sin_mas_consumo']:.2f} por usuario. "
+                f"Se paga solo si el consumo elegible crece al menos {co['mas_consumo_necesario_para_pagarse']:.1%}. Sensibilidad (neto por usuario al anio):\n\n"
+                + T({k: {"neto_por_usuario": v["valor_neto_por_usuario_anual"], "neto_con_100_mil_usuarios": v["valor_neto_escenario"]} for k, v in co["sensibilidad"].items()}, 1) +
+                f"\n{co['nota']}.\n")
     return txt or "_pendiente_\n"
 
 
@@ -189,7 +197,7 @@ Claves solo en `.env` (no se sube). `LLM_PROVIDER=ollama|gemini|plantillas`. Las
 | Puntos por conductas sanas y canje | `src/models/niveles.py` |
 | Alerta por zona de riesgo del Nino con prevencion | `src/models/riesgo_clima.py`, `data/parametros/zonas_riesgo_fen.yaml` |
 | RAG (fragmentos, embeddings locales, FAISS, filtro de relevancia) | `src/rag/`, `docs/rag/` |
-| Agente LangGraph (unico y multiagente), juez determinista y juez LLM, memoria, avisos en tiempo real | `src/agent/` |
+| Agente LangGraph (unico y multiagente), juez determinista y juez LLM, memoria, avisos en tiempo real | `src/agente_analitico/` |
 | Diagramas de nodos | `docs/diagramas/grafo_*.md` |
 | Notebooks | `notebooks/` |
 
@@ -235,10 +243,10 @@ Todo con datos sinteticos; ver la evaluacion completa.
 - **Impacto**: ver la seccion 5 de la evaluacion; el efecto en retencion y mora lo mediria un piloto con grupo de control.
 
 ## 8. Integracion con el equipo
-- Modelos: `models/*.pkl` (joblib, versiones en el manifiesto; abrirlos solo desde este repo). Cargar con `src/agent/repositorio.py`.
+- Modelos: `models/*.pkl` (joblib, versiones en el manifiesto; abrirlos solo desde este repo). Cargar con `src/agente_analitico/repositorio.py`.
 - Funciones para el backend: `Repositorio.contexto(cid)`, `Repositorio.proyeccion_mensual(cid)`, `recomendador.recomendar(ctx)`, `grafo.construir_grafo(repo, buscador, modo)` y `grafo.responder(app, cid, pregunta | evento)`.
-- Interfaz web: llama a `responder` y muestra `respuesta`, `citas`, `cifras_verificadas` y `recomendaciones`. La memoria del usuario (`src/agent/memoria.py`) permite ver y olvidar.
-- Avisos: `src/agent/vigilancia.py` (baja de tasa, ingreso extra, comunicado del ENFEN, riesgo de rojo; maximo 3 por semana).
+- Interfaz web: llama a `responder` y muestra `respuesta`, `citas`, `cifras_verificadas` y `recomendaciones`. La memoria del usuario (`src/agente_analitico/memoria.py`) permite ver y olvidar.
+- Avisos: `src/agente_analitico/vigilancia.py` (baja de tasa, ingreso extra, comunicado del ENFEN, riesgo de rojo; maximo 3 por semana).
 - Postgres y pgvector del equipo: el indice FAISS puede cargarse a pgvector desde `docs/rag/indice/` (mismo modelo de embeddings, 768 dimensiones).
 
 ## 9. Pendientes y preguntas a la organizacion
@@ -301,7 +309,7 @@ def hallazgos():
     L += ["- El multiagente iguala al agente unico en ruteo y cifras verificadas: aporta modularidad, no precision; por la regla del equipo el agente unico es el defecto.",
           "- La busqueda hibrida no supera a la densa con filtro de modulo; el filtro de relevancia separa bien pero con margen estrecho entre la pregunta con respuesta mas baja y la de fuera mas alta.",
           "- Lucas baja los dias en rojo sin pedir cambios de habito, pero no construye colchon como lo hace apartar el 10 % recortando gasto (que supone recortes sin costo); el contrafactual solo incluye Sueldo Lucas, suscripcion duplicada, gasto hormiga y la alerta del pronostico.",
-          "- Con los supuestos del equipo, el valor neto anual para la entidad es **negativo** si el usuario promedio gana 120 puntos al mes: el fondeo de lo apartado deja menos de lo que cuestan los puntos. El programa se sostiene por debajo de unos 80 puntos al mes por usuario o premiando solo conductas que generen ingreso; la retencion, la mora evitada y la venta cruzada idonea no se valoran sin un piloto.",
+          "- Programa de puntos: el primer diseno (120 puntos al mes por usuario sin segmentar) salia negativo. El nuevo cuesta ~6 % del ingreso bruto que genera y da puntos por consumo solo con idoneidad; aun asi, en la lectura conservadora pierde unos S/ 5 por usuario al anio si el consumo no crece, y se paga solo con un aumento del consumo elegible de ~7 %: ese efecto no esta medido y lo validaria un piloto con grupo de control.",
           "- Latencia medida el 14-nov en esta laptop (sin GPU NVIDIA): plantillas ~1 s, Gemini 3.5 flash-lite 3 a 12 s con juez, Ollama qwen2.5:3b en CPU ~67 s por respuesta (con cifras verificadas pero redaccion regular). Para la demo conviene Gemini o plantillas; Ollama en una laptop con GPU.",
           "- La vigilancia en vivo detecto sola el comunicado N.o 20-2026 del ENFEN (13-nov), que el RAG no tenia; se agrego al indice y el mapa de zonas se actualizo (Ica pasa a exposicion media y la vigencia llega a julio de 2027).",
           "- Las magnitudes de los eventos y de los retiros AFP son supuestos del equipo salvo donde se cita una fuente; una cifra sin fuente nunca se presenta como verificada.",

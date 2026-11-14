@@ -1,13 +1,20 @@
 """Contexto de un cliente a una fecha: lo que ven las herramientas del agente. Solo lectura."""
 import os
 
+from datetime import date
+
 import joblib
 import pandas as pd
 
-from src.agent import memoria
+from src.agente_analitico import datos_vivos as DV
+from src.agente_analitico import memoria
+from src.comun import reloj
 from src.comun.rutas import DATA_GENERADO, MODELOS
+from src.models import calendario_laboral as CL
 from src.models import clasificacion as KL
 from src.models import datos, niveles as N, ofertas as O, pronostico as P, pronostico_mensual as PM, salud as SA, segmentacion as S
+
+VENTANA_RECALCULO_DIAS = 45   # el riesgo a 30 dias solo se reestima con los movimientos vivos si el cierre de datos no es muy viejo
 
 
 class Repositorio:
@@ -30,6 +37,8 @@ class Repositorio:
         parte = g.groupby(["customer_id", "categoria"])["monto_pen"].sum().reset_index().sort_values("monto_pen", ascending=False)
         self.top_cat = {c: list(x["categoria"]) for c, x in parte.groupby("customer_id")}
         self.redondeo = g.groupby("customer_id")["monto_pen"].apply(lambda m: O.ahorro_por_redondeo(m.to_numpy(), 6.0)).to_dict()
+        gr = tx[tx["categoria"].astype(str) == "gratificacion"].sort_values("fecha_hora")
+        self.ultima_gratificacion = gr.groupby("customer_id")["monto_pen"].last().to_dict()   # una gratificacion equivale a una remuneracion: la mejor base para estimar CTS y la proxima
         subs = tx[tx["comercio"].isin(KL.SUBS)].groupby("customer_id")["monto_pen"].median()
         self.monto_dup = subs.to_dict()
         t = int(self.series.fechas.searchsorted(self.fecha))
@@ -61,20 +70,40 @@ class Repositorio:
                         "neto_esperado": round(float(p["net_esperado"]), 0), "neto_bajo": round(float(p["net_bajo"]), 0), "neto_alto": round(float(p["net_alto"]), 0)})
         return sorted(out, key=lambda x: x["mes"])
 
-    def contexto(self, cid: str) -> dict:
+    def _pronostico(self, fila: int, neto_vivo: float = 0.0) -> dict:
+        """Pronostico a 30 dias. Con movimientos vivos se vuelve a puntuar el modelo con el saldo corregido (se mueve el saldo y su escala relativa)."""
+        pr = self.pred.loc[fila]
+        if neto_vivo:
+            x = self.origen.loc[[fila]].copy()
+            x["saldo_t"] = x["saldo_t"] + neto_vivo
+            x["saldo_rel"] = x["saldo_t"] / x["escala"]
+            pr = self.pron["modelo"].predecir(x).iloc[0]
+        return {"saldo_esperado": float(pr["saldo_esperado"]), "saldo_bajo": float(pr["saldo_bajo"]), "saldo_alto": float(pr["saldo_alto"]), "p_rojo": float(pr["p_rojo"]),
+                "dia_riesgo": float(pr["dia_riesgo"]) if pr["p_rojo"] >= 0.15 else None, "ancho_rel": float(pr["ancho_rel"])}
+
+    def contexto(self, cid: str, hoy: date | None = None) -> dict:
+        """Todo lo que el agente sabe de un cliente. 'hoy' viene del reloj unico; los datos del cliente llegan hasta fecha_datos y lo que entro despues (datos vivos) se suma aparte."""
+        hoy = hoy or reloj.hoy()
         f = self.features.loc[cid]
         seg = int(self.etiqueta_seg[cid])
         salud = float(self.salud[cid])
         nivel = N.nivel_individual(self.seg["niveles"][seg], salud)
         fila = self.origen[self.origen["cliente_idx"] == self.pos[cid]].index[0]
-        pr = self.pred.loc[fila]
         cl = self.clientes.loc[cid]
+        fecha_datos = self.fecha.date()
+        desfase = (hoy - fecha_datos).days
+        vivo = DV.resumen(cid, fecha_datos, max(hoy, fecha_datos))
+        reestimar = vivo["n"] > 0 and vivo["neto"] != 0 and 0 <= desfase <= VENTANA_RECALCULO_DIAS
+        saldo_base = float(self.origen.loc[fila, "saldo_t"])
+        ult = self.ultima_gratificacion.get(cid)
+        base_lab, origen_base = (float(ult), "historial") if ult else (float(f["ingreso_medio"]), "ingreso_medio")
         return {
-            "customer_id": cid, "fecha": str(self.fecha.date()), "hoy": str(self.fecha.date()), "segmento": seg, "nivel": nivel, "salud": round(salud, 1),
+            "customer_id": cid, "fecha": str(fecha_datos), "hoy": str(hoy), "fecha_datos": str(fecha_datos), "desfase_datos_dias": desfase, "segmento": seg, "nivel": nivel, "salud": round(salud, 1),
+            "aviso_datos": (f"Los movimientos del cliente llegan hasta el {CL.texto_fecha(fecha_datos)} (demostracion con datos sinteticos); lo que entro despues se suma aparte." if desfase > VENTANA_RECALCULO_DIAS else None),
             "features": {k: float(f[k]) for k in S.NUMERICAS}, "departamento": cl["departamento"], "tipo_trabajo": cl["tipo_trabajo"], "tcea": float(cl["tcea_promedio"]),
-            "deuda": float(cl["deuda_total"]), "saldo_actual": float(self.origen.loc[fila, "saldo_t"]),
-            "pronostico": {"saldo_esperado": float(pr["saldo_esperado"]), "saldo_bajo": float(pr["saldo_bajo"]), "saldo_alto": float(pr["saldo_alto"]), "p_rojo": float(pr["p_rojo"]),
-                           "dia_riesgo": float(pr["dia_riesgo"]) if pr["p_rojo"] >= 0.15 else None, "ancho_rel": float(pr["ancho_rel"])},
+            "deuda": float(cl["deuda_total"]), "saldo_base": saldo_base, "saldo_actual": saldo_base + vivo["neto"], "movimientos_vivos": vivo,
+            "pronostico": self._pronostico(fila, vivo["neto"] if reestimar else 0.0), "pronostico_reestimado": reestimar,
+            "calendario": CL.calendario(hoy, cl["tipo_trabajo"], base_lab, origen_base),
             "paga_en_usd": bool(cl["paga_en_usd"]), "top_categorias": [x for x in self.top_cat.get(cid, []) if x in ("alimentos", "transporte", "salud", "educacion", "hormiga")][:2],
             "ahorro_redondeo_mensual": round(float(self.redondeo.get(cid, 0.0)), 0), "duplicadas": cid in self.duplicadas, "monto_duplicada": float(self.monto_dup.get(cid, 30.0)),
             "memoria": memoria.cargar(cid),

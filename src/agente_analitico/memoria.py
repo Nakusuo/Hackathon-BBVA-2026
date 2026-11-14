@@ -48,15 +48,22 @@ def puede_avisar(cid: str, ahora: datetime | None = None, maximo_semana: int = 3
     return len(ultimos) < maximo_semana
 
 
-def registrar_aviso(cid: str, tipo: str, ahora: datetime | None = None) -> None:
+def ya_avisado(cid: str, clave: str) -> bool:
+    """Un mismo hecho (un movimiento, una fecha del calendario) se avisa una sola vez, aunque el vigilante corra muchas veces."""
+    return any(a.get("clave") == clave for a in cargar(cid)["avisos"])
+
+
+def registrar_aviso(cid: str, tipo: str, ahora: datetime | None = None, clave: str | None = None) -> None:
     m = cargar(cid)
-    m["avisos"].append({"fecha": (ahora or datetime.now()).isoformat(timespec="seconds"), "tipo": tipo})
+    m["avisos"].append({"fecha": (ahora or datetime.now()).isoformat(timespec="seconds"), "tipo": tipo, **({"clave": clave} if clave else {})})
     guardar(m)
 
 
 def olvidar(cid: str) -> bool:
-    """Borra todo lo que Lucas sabe del usuario (derecho de supresion)."""
+    """Borra todo lo que Lucas sabe del usuario (derecho de supresion): su memoria y los movimientos vivos que envio el aplicativo."""
+    from src.agente_analitico import datos_vivos   # import tardio: datos_vivos no depende de la memoria, pero asi se evita cualquier ciclo
+    borrado = False
     if os.path.isfile(_archivo(cid)):
         os.remove(_archivo(cid))
-        return True
-    return False
+        borrado = True
+    return datos_vivos.borrar(cid) > 0 or borrado
