@@ -49,12 +49,13 @@ function apartadoDe(p, ajuste) {
 }
 
 // Todo lo que cambia con la persona elegida o con los tips activados con «Lo hago» se recalcula aquí.
-export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL) {
+// `pagosExtra` son gastos de prueba (la bandeja de avisos los usa para mostrar cómo se mueve el riesgo).
+export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra = []) {
   const definicion = personaPorId(personaId)
   const p = definicion.persona
   const cambios = definicion.cambios
   const activos = cambios.filter((c) => elegidos.includes(c.id))
-  const ajuste = ajusteDe(activos)
+  const ajuste = { ...ajusteDe(activos), pagosExtra }
   const pronostico = simular(p, ajuste)
   const peor = peorDia(p, pronostico)
   const pronosticoConTodos = simular(p, ajusteDe(cambios))

@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import { diasEntre, enSoles, fechaCorta, fechaDia, iniciales, textoDiasEnRojo } from '../formato.js'
+import { armarBandeja, candidatos } from '../lucas/avisos.js'
+import { leerRegistro } from '../lucas/avisosGuardados.js'
 
 const ACCESOS = [
   { nombre: 'Transferir', Icono: ArrowsLeftRight },
@@ -37,6 +39,8 @@ export default function InicioBanca() {
   const monto = (valor) => (montosVisibles ? enSoles(valor) : OCULTO)
   const { riesgo, cuenta, tarjeta, hoy, proximoIngreso } = cliente
   const pagosAntesDelCobro = cliente.proximosPagos.filter((p) => p.fecha < proximoIngreso.fecha)
+  const { avisos: candidatosHoy, riesgoLejano } = candidatos(cliente)
+  const totalAvisos = armarBandeja(candidatosHoy, leerRegistro(), hoy).avisos.length
 
   return (
     <>
@@ -52,9 +56,14 @@ export default function InicioBanca() {
             </div>
             <p>Bienvenido a Banco Vértice</p>
           </div>
-          <button type="button" className="icono-boton" aria-label="Notificaciones" onClick={avisarSinDemo}>
+          <Link to="/lucas/avisos" className="icono-boton campana" aria-label={`Avisos de Lucas: ${totalAvisos}`}>
             <Bell size={24} aria-hidden="true" />
-          </button>
+            {totalAvisos > 0 && (
+              <span className="campana-numero" aria-hidden="true">
+                {totalAvisos}
+              </span>
+            )}
+          </Link>
         </div>
 
         <div className="saldo-total">
@@ -121,9 +130,15 @@ export default function InicioBanca() {
         ) : riesgo ? (
           <Link to="/lucas/resumen" className="tarjeta-lucas">
             <MarcaLucas tamano={44} />
+            {/* Con el rojo a más de 7 días no hay aviso (regla de avisos): Lucas lo muestra como algo que viene. */}
             <span className="tarjeta-lucas-texto">
-              <strong>Lucas te avisa</strong>
-              <span>{textoDiasEnRojo(riesgo)} podrías quedar en rojo. Mira cómo evitarlo.</span>
+              <strong>{riesgoLejano ? 'Lucas lo ve venir' : 'Lucas te avisa'}</strong>
+              <span>
+                {riesgoLejano
+                  ? `En ${riesgoLejano.dias} días, ${textoDiasEnRojo(riesgo).toLowerCase()}`
+                  : textoDiasEnRojo(riesgo)}{' '}
+                podrías quedar en rojo. Mira cómo evitarlo.
+              </span>
             </span>
           </Link>
         ) : (

@@ -1,10 +1,11 @@
-import { CaretLeft, Question } from '@phosphor-icons/react'
+import { Bell, CaretLeft, Question } from '@phosphor-icons/react'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, NavLink, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import EstadoDatos from '../componentes/EstadoDatos.jsx'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import Aprendido from './Aprendido.jsx'
+import Avisos from './Avisos.jsx'
 import Chat from './Chat.jsx'
 import Gastos from './Gastos.jsx'
 import GastosDetalle from './GastosDetalle.jsx'
@@ -21,7 +22,7 @@ const SECCIONES = [
   { id: 'chat', nombre: 'Chat' },
 ]
 // Pantallas de detalle: se abren desde los bloques del Resumen y no tienen pestaña propia.
-const DETALLES = { aprendido: 'resumen', salud: 'resumen', 'gastos-detalle': 'gastos' }
+const DETALLES = { aprendido: 'resumen', salud: 'resumen', 'gastos-detalle': 'gastos', avisos: 'resumen' }
 
 export default function EspacioLucas() {
   const { seccion } = useParams()
@@ -64,15 +65,20 @@ export default function EspacioLucas() {
             <MarcaLucas tamano={36} />
             <h1>Lucas</h1>
           </div>
-          <button
-            ref={botonGuia}
-            type="button"
-            className="icono-boton icono-boton-suave"
-            aria-label="Ver la guía"
-            onClick={abrirGuia}
-          >
-            <Question size={24} aria-hidden="true" />
-          </button>
+          <div className="lucas-iconos">
+            <Link to="/lucas/avisos" className="icono-boton icono-boton-suave" aria-label="Avisos">
+              <Bell size={24} aria-hidden="true" />
+            </Link>
+            <button
+              ref={botonGuia}
+              type="button"
+              className="icono-boton icono-boton-suave"
+              aria-label="Ver la guía"
+              onClick={abrirGuia}
+            >
+              <Question size={24} aria-hidden="true" />
+            </button>
+          </div>
         </div>
         <nav className="pestanas" aria-label="Secciones de Lucas">
           {SECCIONES.map((s) => (
@@ -104,6 +110,7 @@ export default function EspacioLucas() {
         {seccion === 'aprendido' && <Aprendido cliente={vista} />}
         {seccion === 'salud' && <Salud cliente={vista} />}
         {seccion === 'gastos-detalle' && <GastosDetalle cliente={vista} />}
+        {seccion === 'avisos' && <Avisos cliente={vista} />}
         {/* Al final: las cifras de arriba no dependen del servidor, así que el aviso no les quita el primer plano. */}
         <EstadoDatos estado={datosApi.estado} />
       </main>

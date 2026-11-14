@@ -8,8 +8,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: { '/api': API },
-    // El respaldo lee los JSON del contrato en data/sample/mocks/, fuera de app/.
-    fs: { allow: ['.', '../data/sample/mocks'] },
+    // Fuera de app/ solo se abren dos carpetas: los JSON del contrato (respaldo) y los de `make eval` (panel Evidencia).
+    fs: { allow: ['.', '../data/sample/mocks', '../models'] },
   },
   preview: { proxy: { '/api': API } },
 })

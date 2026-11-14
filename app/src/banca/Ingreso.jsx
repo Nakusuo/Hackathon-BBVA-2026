@@ -1,7 +1,7 @@
 import { LockSimple } from '@phosphor-icons/react'
 import { motion } from 'motion/react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import FondoIngreso from '../componentes/FondoIngreso.jsx'
 import Mascota from '../componentes/Mascota.jsx'
 import SelectorPersona from '../componentes/SelectorPersona.jsx'
@@ -59,6 +59,9 @@ export default function Ingreso() {
           <LockSimple size={18} aria-hidden="true" />
           Datos de prueba ya cargados. No escribas datos reales.
         </p>
+        <Link to="/evidencia" className="enlace">
+          Ver la evidencia de los modelos
+        </Link>
       </motion.form>
     </main>
   )
