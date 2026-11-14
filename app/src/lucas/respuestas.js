@@ -4,6 +4,7 @@ import { conSigno, diasEntre, enSoles, enSolesRedondo, fechaCorta, fechaDia, tex
 import { leerTipoCambio } from '../api/contrato.js'
 import { RESPALDO } from '../api/respaldo.js'
 import { finDeAnio, planDeMeta } from './metas.js'
+import { avisoDeCampana, campanaPara, campanaPorId, cifrasDeCampana, detalleCampana, respuestaCampana } from './campanas.js'
 
 export const PREGUNTAS_SUGERIDAS = [
   '¿Llego a mi cobro?',
@@ -167,7 +168,7 @@ export function esPedidoDeOperacion(pregunta) {
 // --- Metas: «quiero juntar para un carro a fin de año» se responde con el mismo plan de la pantalla Metas.
 
 const PIDE_META =
-  /\b(metas?|plan de ahorro|juntar|junto|reunir|quiero comprar\w*|comprarme|carro|auto|moto|viaje|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda)\b/
+  /\b(metas?|plan de ahorro|juntar|junto|reunir|quiero comprar\w*|comprarme|carro|auto|moto|viaje|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|concierto|festival|entradas?)\b/
 const EN_DOLARES = /(\bdolar|\busd\b|us\$|\$\s*\d)/
 const MESES_LARGOS = new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' })
 
@@ -217,6 +218,11 @@ function nombreFecha(fechaIso, hoy) {
   return `el ${fechaCorta(fechaIso)} de ${fechaIso.slice(0, 4)}`
 }
 
+function enSolesDe({ monto, enDolares }) {
+  if (!monto) return 0
+  return enDolares ? Math.round(monto * leerTipoCambio(RESPALDO.tipoCambio).tasa) : monto
+}
+
 function planDeAhorro(cliente, { monto, enDolares, fecha, que }) {
   if (!monto) {
     const plan = que ? `el plan de tu ${que}` : 'tu plan'
@@ -229,7 +235,7 @@ function planDeAhorro(cliente, { monto, enDolares, fecha, que }) {
   }
   const { hoy, proximoIngreso, finPronostico } = cliente
   const tipo = leerTipoCambio(RESPALDO.tipoCambio)
-  const objetivo = enDolares ? Math.round(monto * tipo.tasa) : monto
+  const objetivo = enSolesDe({ monto, enDolares })
   const puedes = cliente.apartado?.monto ?? 0
   const conTips = cliente.apartadoConTodos?.monto ?? 0
   const contexto = { primerApartado: proximoIngreso.fecha, finPronostico, hoy }
@@ -289,16 +295,30 @@ function planDeAhorro(cliente, { monto, enDolares, fecha, que }) {
 // --- Contexto de la conversación: cada mensaje se lee con todo lo que se habló antes, no solo el último.
 
 const OBJETO_META =
-  /\b(carro|auto|moto|viaje|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|bicicleta|televisor|tele)\b/
+  /\b(carro|auto|moto|viaje|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|bicicleta|televisor|tele|concierto|festival|entradas?)\b/
+// «el concierto está 450»: lo que se junta es la entrada.
+const NOMBRE_META = { concierto: 'entrada', festival: 'entrada', entradas: 'entrada' }
 // «¿y en 3 años?», «mejor 10 mil», «entonces para 2028»: siguen el tema anterior.
 const SIGUE_EL_TEMA = /^(y|e|pero|mejor|entonces|ok|vale|bueno|y si|cambia|cambialo|ahora)\b/
 const HABLA_DE_LA_META = /\b(eso|esa|ese|la meta|mi meta|el plan|ahorr|apart|junt|falta|cuanto|llego|llegaria|alcanz|tips?|plazo|fecha|cuota)/
 
-export const CONTEXTO_VACIO = { tema: null, monto: null, meta: { monto: null, enDolares: false, fecha: null, que: null } }
+export const CONTEXTO_VACIO = {
+  tema: null,
+  monto: null,
+  meta: { monto: null, enDolares: false, fecha: null, que: null },
+  campana: null,
+}
+
+const PIDE_CAMPANA = /\b(campanas?|ofertas?|ofertaq|promos?|promociones?|descuentos?|beneficios?|convenios?)\b/
+// «que sea toyota», «de marca kia»: la persona prefiere una marca y Lucas le cuenta la campaña que sí hay.
+const PIDE_MARCA = /\b(?:que sea|de (?:la )?marca|marca)\s+(?:un[ao]?\s+)?([a-z]{3,})\b/
+const QUIERE_INFO =
+  /^(si|sip|claro|dale|ya|ok|okey|bueno|por favor|cuentame)\b|\b(mas info\w*|me interesa|como (la )?uso|como funciona|condiciones|detalles?)\b/
 
 // Une lo nuevo de la meta con lo que ya se sabía. Si nombra otra cosa con su precio, es una meta nueva.
 function metaCon(anterior, texto, hoy) {
-  const que = texto.match(OBJETO_META)?.[1] ?? null
+  const hallado = texto.match(OBJETO_META)?.[1] ?? null
+  const que = NOMBRE_META[hallado] ?? hallado
   const monto = montoDeMeta(texto)
   const fecha = fechaDeMeta(texto, hoy)
   const nueva = que && anterior.que && que !== anterior.que && monto !== null
@@ -324,11 +344,32 @@ export function interpretar(pregunta, contexto, hoy) {
   const otroTema = pideGasto || pideCobro || pideCategorias
   const enMeta = contexto.tema === 'meta'
 
+  const pideMeta = PIDE_META.test(texto)
+
+  // Campañas: se preguntan directo o salen al nombrar una marca dentro de una meta.
+  const marca = texto.match(PIDE_MARCA)?.[1] ?? null
+  const sigueMeta = pideMeta || enMeta
+  const metaAhora = sigueMeta ? metaCon(contexto.meta, texto, hoy) : contexto.meta
+  const campana = campanaPara(texto) ?? campanaPara(metaAhora.que)
+  const pideCampana = PIDE_CAMPANA.test(texto)
+  if (!otroTema && (pideCampana || (marca && campana))) {
+    return {
+      intencion: 'campana',
+      marca: pideCampana ? null : marca,
+      contexto: { ...contexto, tema: sigueMeta ? 'meta' : 'campana', meta: metaAhora, campana: campana?.id ?? null },
+    }
+  }
+  const ofrecida = contexto.campana && (enMeta || contexto.tema === 'campana')
+  if (ofrecida && !otroTema && !conMontoOFecha && QUIERE_INFO.test(texto)) {
+    return { intencion: 'campana-detalle', contexto }
+  }
+
   const esMeta =
-    PIDE_META.test(texto) ||
-    (enMeta && !otroTema && (conMontoOFecha || SIGUE_EL_TEMA.test(texto) || HABLA_DE_LA_META.test(texto)))
+    pideMeta || (enMeta && !otroTema && (conMontoOFecha || SIGUE_EL_TEMA.test(texto) || HABLA_DE_LA_META.test(texto)))
   if (esMeta) {
-    return { intencion: 'meta', contexto: { ...contexto, tema: 'meta', meta: metaCon(contexto.meta, texto, hoy) } }
+    const meta = metaCon(contexto.meta, texto, hoy)
+    const deLaMeta = campanaPara(meta.que)?.id ?? null
+    return { intencion: 'meta', contexto: { ...contexto, tema: 'meta', meta, campana: deLaMeta ?? contexto.campana } }
   }
   const tema = (t, m = montoValido) => ({ intencion: t, contexto: { ...contexto, tema: t, monto: m } })
   if (/(ahorr|apart|guardar|colchon)/.test(texto)) return tema('ahorro')
@@ -345,13 +386,40 @@ export function contextoDe(previas, hoy) {
 }
 
 // `previas`: todo lo que la persona escribió antes en este chat, en orden.
+// Las campañas viven en el front: estas preguntas se responden aquí aunque el agente esté activo.
+export function esPreguntaDeCampana(pregunta, previas, hoy) {
+  const { intencion } = interpretar(pregunta, contextoDe(previas, hoy), hoy)
+  return intencion === 'campana' || intencion === 'campana-detalle'
+}
+
+// La meta suma su campaña: el aviso solo la primera vez; el ahorro, en cifras, siempre que haya precio.
+function metaConCampana(cliente, contexto, anterior) {
+  const plan = planDeAhorro(cliente, contexto.meta)
+  const campana = campanaPorId(contexto.campana)
+  if (!campana || campanaPara(contexto.meta.que) !== campana) return plan
+  const precio = enSolesDe(contexto.meta)
+  const nueva = anterior.campana !== campana.id
+  return {
+    texto: nueva ? `${plan.texto.replace(/ ¿Para cuándo lo quieres\?$/, '')} ${avisoDeCampana(campana, precio)}` : plan.texto,
+    cifras: precio ? [...plan.cifras, ...cifrasDeCampana(campana, precio)] : plan.cifras,
+  }
+}
+
 export function responder(pregunta, cliente, persona, previas = []) {
-  const { intencion, contexto } = interpretar(pregunta, contextoDe(previas, cliente.hoy), cliente.hoy)
+  const anterior = contextoDe(previas, cliente.hoy)
+  const { intencion, contexto, marca } = interpretar(pregunta, anterior, cliente.hoy)
   switch (intencion) {
     case 'limites':
       return LIMITES
+    case 'campana':
+      return {
+        ...respuestaCampana(campanaPorId(contexto.campana), { precio: enSolesDe(contexto.meta), marca }),
+        pose: 'senala',
+      }
+    case 'campana-detalle':
+      return { ...detalleCampana(campanaPorId(contexto.campana), enSolesDe(contexto.meta)), pose: 'senala' }
     case 'meta':
-      return { ...planDeAhorro(cliente, contexto.meta), pose: 'ahorra' }
+      return { ...metaConCampana(cliente, contexto, anterior), pose: 'ahorra' }
     case 'ahorro':
       return { ...cuantoAhorrar(cliente, persona, contexto.monto), pose: 'ahorra' }
     case 'gasto':

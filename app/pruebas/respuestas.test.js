@@ -162,3 +162,27 @@ test('un pedido de operación en medio de la charla se corta sin borrar la meta'
   assert.match(r[1].texto, /no lo hago/)
   assert.match(r[2].texto, /^Tu carro cuesta S\/.8,000\. Para fin de 2030/)
 })
+
+test('una meta con campaña suma el ahorro y ofrece más info solo la primera vez', () => {
+  const [entrada, detalle] = charla(['quiero ir al concierto, la entrada está 450', 'sí, más info'])
+  assert.match(entrada.texto, /^Tu entrada cuesta S\/.450\..*Ticketera Sol\. Te ahorras S\/.90\. ¿Quieres más info\?$/)
+  assert.ok(entrada.cifras.some((c) => c.etiqueta === 'Pagarías' && c.valor === `S/${NBSP}360`))
+  assert.match(detalle.texto, /^Ticketera Sol: .*Tú decides\.$/)
+})
+
+test('si pide una marca sin campaña, Lucas cuenta la que sí hay', () => {
+  const r = charla(['quiero comprarme un carro', 'ya pero que sea toyota', 'cuesta 60 mil'])
+  assert.match(r[1].texto, /^Con Toyota no hay campaña, pero con Autos Andinos/)
+  assert.doesNotMatch(r[2].texto, /Ojo/, 'la campaña ya se contó')
+  assert.ok(r[2].cifras.some((c) => c.etiqueta === 'Pagarías' && c.valor === `S/${NBSP}58,000`))
+})
+
+test('preguntar por campañas sin decir para qué lista los rubros, sin cifras', () => {
+  const r = preguntar('¿hay ofertas con el banco?')
+  assert.match(r.texto, /entradas, autos, viajes y tecnología/)
+  assert.deepEqual(r.cifras, [])
+})
+
+test('un «sí» sin campaña ofrecida no inventa una', () => {
+  assert.match(preguntar('sí').texto, /Todavía no sé/)
+})
