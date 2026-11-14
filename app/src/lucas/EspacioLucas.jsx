@@ -91,7 +91,6 @@ export default function EspacioLucas() {
       </header>
 
       <main className="lucas-contenido">
-        <EstadoDatos estado={datosApi.estado} />
         {seccion === 'resumen' && <Resumen cliente={vista} alternarTip={alternarTip} animarEntrada={!guiaAbierta} />}
         {seccion === 'gastos' && <Gastos cliente={vista} />}
         {seccion === 'que-viene' && <QueViene cliente={vista} />}
@@ -105,6 +104,8 @@ export default function EspacioLucas() {
         {seccion === 'aprendido' && <Aprendido cliente={vista} />}
         {seccion === 'salud' && <Salud cliente={vista} />}
         {seccion === 'gastos-detalle' && <GastosDetalle cliente={vista} />}
+        {/* Al final: las cifras de arriba no dependen del servidor, así que el aviso no les quita el primer plano. */}
+        <EstadoDatos estado={datosApi.estado} />
       </main>
 
       {guiaAbierta && seccion === 'resumen' && <Guia alCerrar={cerrarGuia} />}

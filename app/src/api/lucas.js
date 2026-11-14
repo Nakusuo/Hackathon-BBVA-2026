@@ -27,18 +27,19 @@ const FUENTES = {
  * Devuelve { datos, origen: 'api' | 'respaldo', motivo? }. Solo un ErrorApi pasa al respaldo:
  * cualquier otro error es un fallo del front y debe verse, no esconderse.
  */
-async function conRespaldo(leer, respaldo, pedirApi) {
+async function conRespaldo(nombre, leer, respaldo, pedirApi) {
   try {
     return { datos: leer(await pedirApi()), origen: 'api' }
   } catch (error) {
     if (!(error instanceof ErrorApi)) throw error
+    console.warn(`API: «${nombre}» pasa al respaldo (${error.tipo})`, error.message)
     return { datos: leer(respaldo), origen: 'respaldo', motivo: error.tipo }
   }
 }
 
-export function leerFuente(nombre, id = CLIENTE_DEMO, opciones = {}) {
+function leerFuente(nombre, id, opciones) {
   const fuente = FUENTES[nombre]
-  return conRespaldo(fuente.leer, RESPALDO[nombre], () => pedirJson(fuente.ruta(id), opciones))
+  return conRespaldo(nombre, fuente.leer, RESPALDO[nombre], () => pedirJson(fuente.ruta(id), opciones))
 }
 
 /** Pide las cinco lecturas a la vez; una que falle no frena a las demás. */
@@ -48,11 +49,17 @@ export async function cargarCliente(id = CLIENTE_DEMO, opciones = {}) {
   return Object.fromEntries(nombres.map((n, i) => [n, resultados[i]]))
 }
 
+// Un 4xx aquí es un pedido mal armado por el front: se lanza en vez de tapar el error con el mock.
 export function simularCambios(cambios, { id = CLIENTE_DEMO, horizonteDias = 30, ...opciones } = {}) {
   const cuerpo = pedidoSimulacion(id, cambios, horizonteDias)
-  return conRespaldo(leerSimulacion, RESPALDO.simulacion, () =>
-    pedirJson(`${BASE}/simulations`, { ...opciones, metodo: 'POST', cuerpo }),
-  )
+  return conRespaldo('simulacion', leerSimulacion, RESPALDO.simulacion, async () => {
+    try {
+      return await pedirJson(`${BASE}/simulations`, { ...opciones, metodo: 'POST', cuerpo })
+    } catch (error) {
+      if (error.tipo === 'http' && error.estado < 500) throw new Error(error.message, { cause: error })
+      throw error
+    }
+  })
 }
 
 /** 'api' si todo vino del servidor, 'respaldo' si nada, 'parcial' si hubo de los dos. */

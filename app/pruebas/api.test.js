@@ -102,3 +102,10 @@ test('la simulación manda el pedido en el formato del contrato y lee la diferen
   assert.equal(resultado.datos.diferencia, 200)
   assert.equal(resultado.datos.base.diasEnRojo, 3)
 })
+
+test('un 422 de la simulación no se tapa con el mock: es un pedido mal armado', async () => {
+  const pedir = async () => responde({ detail: 'amount debe ser mayor que 0' }, 422)
+  await assert.rejects(simularCambios([], { pedir }), (e) => !(e instanceof ErrorApi) && e.cause.estado === 422)
+  const caida = await simularCambios([], { pedir: async () => responde({}, 503) })
+  assert.equal(caida.origen, 'respaldo')
+})

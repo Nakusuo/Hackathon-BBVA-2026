@@ -1,7 +1,7 @@
 import { CheckCircle } from '@phosphor-icons/react'
 
-// Sitio de la marca ✓ (HU del verificador de Jeffrey). Hasta que la API devuelva qué cifras pasaron el verificador,
-// nadie pasa `verificada` y no se muestra: decir «verificada» sin verificador fue un hallazgo del juez.
+// Sitio de la marca ✓. Nadie pasa `verificada` hasta que la API diga qué cifras pasaron el verificador (Jeffrey):
+// sin verificador, la marca no se muestra.
 export default function CifraVerificada({ verificada = false, children }) {
   return (
     <span className="cifra-verificada">

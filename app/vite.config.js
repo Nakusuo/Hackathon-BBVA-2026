@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: { '/api': API },
     // El respaldo lee los JSON del contrato en data/sample/mocks/, fuera de app/.
-    fs: { allow: ['..'] },
+    fs: { allow: ['.', '../data/sample/mocks'] },
   },
   preview: { proxy: { '/api': API } },
 })
