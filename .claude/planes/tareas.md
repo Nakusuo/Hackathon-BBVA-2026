@@ -84,15 +84,15 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **DI-06** Pronóstico v1 + banda bootstrap + día de riesgo; MAE frente al baseline. Rama `feature/ml-pronostico`
 - [ ] **DI-07** Salud 0–100 con componentes y test de monotonicidad. Rama `feature/ml-salud`
 - [ ] **DI-13** Matriz ahorro × gasto encima de los clusters: umbrales (baseline) frente a perfil derivado de K-Prototypes; estabilidad mes a mes y acuerdo con las etiquetas sembradas. *Depende:* DI-05. Rama `feature/ml-perfil-ahorro`
-- [ ] **MG-04** Recomendador v1: candidatos por reglas, puntaje impacto × facilidad, ajuste por segmento, reglas de seguridad con un test cada una. *Depende:* DI-05, DI-07. Rama `feature/backend-recomendador`
-- [ ] **MG-05** Motor de eventos v1: ingreso, grati/CTS, fecha de calendario, gasto frecuente, riesgo; máximo 3 avisos por semana. Con tests. *Depende:* DI-06. Rama `feature/backend-eventos`
+- [ ] **MG-04** Recomendador v1: candidatos por reglas, puntaje impacto × facilidad, ajuste por segmento, reglas de seguridad con un test cada una; tipos protegidos (`bajar_deuda_cara`, `colchon_minimo`) que una preferencia no excluye y exclusiones que nunca dejan entrar crédito (CP-SIS-32). *Depende:* DI-05, DI-07. Rama `feature/backend-recomendador`
+- [ ] **MG-05** Motor de eventos v1: ingreso, grati/CTS, fecha de calendario, gasto frecuente, riesgo; máximo 3 avisos por semana (lunes a domingo, Lima) con lugar reservado para el de riesgo; riesgo a 3–7 días normal, a 1–2 urgente, a más de 7 sin aviso; `id` de riesgo = `riesgo` + fecha del próximo ingreso (se actualiza, no se duplica). Con tests de CP-SIS-05, 28 y 29. *Depende:* DI-06. Rama `feature/backend-eventos`
 - [ ] **MG-06** Conectar los endpoints a los modelos reales (fuera mocks). *Depende:* DI-05, DI-06, DI-07
-- [ ] **JF-03** Tools del agente: `get_health`, `get_forecast`, `get_recos`, `simulate`, `get_segment`, con el rol `lucas_agente`. *Depende:* MG-03. Rama `feature/ia-tools`
-- [ ] **JF-04** Nodo juez: verificador de cifras con tolerancia, reintento y plantilla; tests con respuestas trampa. Rama `feature/ia-juez`
+- [ ] **JF-03** Tools del agente: `get_health`, `get_forecast`, `get_recos`, `simulate`, `get_segment`, con el rol `lucas_agente`; cada tool devuelve también las entradas que usó. *Depende:* MG-03. Rama `feature/ia-tools`
+- [ ] **JF-04** Nodo juez: verificador de cifras con tolerancia, reintento y plantilla; acepta salidas y entradas de las tools del turno, sus fechas y los números del fragmento citado; filtro de frases prohibidas según las reglas que el cliente no pasa; tests con respuestas trampa (CP-SIS-10, 11, 30 y 31). Rama `feature/ia-juez`
 - [ ] **MC-03** Pantallas Qué hacer (tarjetas con «¿por qué?») y Avisos (bandeja). Rama `feature/front-recos-avisos`
 - [ ] **MC-04** Conectar la UI a la API real. *Depende:* MG-06
 - [ ] **MI-04** Makefile completo: `data`, `db`, `test`, `check` (ruff + tests con cobertura + `pip-audit`), `eval`, `run`, `e2e`. Rama `feature/arq-makefile`
-- [ ] **MG-13** Impacto y valor (D16): en el simulador, cada cliente sigue a Lucas frente a «no hacer nada» y «apartar 10 % fijo»; calcula días en rojo evitados, S/ de colchón a 3 meses, intereses evitados (TCEA supuesta en `config/supuestos.yaml`) y % que sube de cuadrante. `eval/valor_banco.py` aplica la calculadora de [rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md) con supuestos visibles. Con Diego. *Depende:* MG-07, DI-06. Rama `feature/backend-impacto`
+- [ ] **MG-13** Impacto y valor (D16): Lucas decide al cierre del mes 9 (artefactos de `eval/`) y sus cambios se repiten con `aplicar_cambios` sobre las transacciones reales de los meses 10 a 12, igual que los baselines «no hacer nada» y «apartar 10 % fijo»; adherencia 100 % y simulada con `prob_acepta_reco`, intervalo por bootstrap de clientes; calcula días en rojo evitados, S/ de colchón a 3 meses, intereses evitados (TCEA supuesta en `config/supuestos.yaml`) y % que sube de cuadrante. `eval/valor_banco.py` aplica la calculadora de [rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md) con supuestos visibles. Con Diego. *Depende:* MG-07, DI-06. Rama `feature/backend-impacto`
 - [ ] **MI-10** ISO 27001: completar la evidencia de la declaración de aplicabilidad (`reglas/seguridad-iso27001.md`), sección Activos en `ARCHITECTURE.md`, proteger las ramas `main` y `develop` en GitHub. Rama `feature/arq-iso27001`
 - [ ] **DX-13** Plan de pruebas: revisar el catálogo de `planes/pruebas.md` con el agente `tester`, crear la etiqueta `defecto` y la plantilla de issue en GitHub, armar `tests/sistema/` para los casos automatizables. Rama `feature/docs-pruebas-plan`
 - [ ] **TODOS-05** Cada persona agrega al catálogo los casos de su módulo (`CP-<código>-NN`) con al menos una técnica de caja negra.
@@ -104,12 +104,13 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 
 ## Bloque 4 · Sábado 19:00–23:00 · Demo completa
 
+- [ ] **DX-17 / MG-14 / MC-12** Lucas en 5 preguntas, versión mínima (HU-21, cierra la ola 1 y va antes que cualquier tarea de ola 2): `generar_cliente(respuestas, seed)` en el generador, con las mismas reglas que los 500 clientes (Dixon); endpoint sin token que llama a `calcular_estado` sin base (Miguel); formulario y resultado (Marcela). Segmento por umbrales. Caso CP-SIS-22. Rama `feature/backend-cinco-preguntas`
 - [ ] **JF-05** RAG por módulos: PDFs en `docs/rag/<modulo>/` con `fuentes.csv`; fragmentos con su módulo en pgvector; el agente busca solo en el módulo que toca; el juez valida que cada cita exista. Rama `feature/ia-rag`
 - [ ] **JF-06** 30 preguntas fijas y 10 adversas (inyección, «compra dólares», «transfiere») en `tests/agent/`. Rama `feature/ia-tests`
-- [ ] **MG-07** Endpoints de simulador y Sueldo Lucas (con Diego). Rama `feature/backend-simulador`
+- [ ] **MG-07** Endpoints de simulador y Sueldo Lucas (con Diego). Sueldo Lucas: solo si la volatilidad del ingreso supera el umbral; monto prudente con piso en los fijos (si no los cubre, `falta_para_fijos` y reco, nunca un monto que deje en rojo); sin pago actual, apartar 0 y días con colchón. Caso CP-SIS-33. Rama `feature/backend-simulador`
 - [ ] **MG-08** Ofertas: `data/catalogo_ofertas.json` con productos y promociones ficticias o genéricas; reglas por necesidad, cuadrante de la matriz e idoneidad (inversión solo con colchón ≥ 3 meses y sin deuda cara); precision@3 frente a «lo más popular». Rama `feature/backend-ofertas`
 - [ ] **MG-11** Metas de ahorro: aporte por quincena que no deja en rojo, proyección a fin de año con la banda del pronóstico y probabilidad de cumplir; frente a la regla del 10 %. Con Diego. *Depende:* DI-06. Rama `feature/backend-metas`
-- [ ] **JF-09** Memoria del usuario: nodo que lee memoria al inicio y guarda al final (metas, preferencias, resumen de la conversación); endpoint «olvidar lo que sabes de mí». Usa las tablas de MI-03. Rama `feature/ia-memoria`
+- [ ] **JF-09** Memoria del usuario: nodo que lee memoria al inicio y guarda al final (metas, preferencias y resumen, todo con valores de listas cerradas; nunca texto libre del usuario); endpoint «olvidar lo que sabes de mí». Usa las tablas de MI-03. Rama `feature/ia-memoria`
 - [ ] **MC-05** Simulador con controles deslizantes y banda que se mueve; formulario «agregar ingreso o gasto» que recalcula. Rama `feature/front-simulador`
 - [ ] **MC-06** Chat con cifras marcadas ✓ y fuentes del RAG. Rama `feature/front-chat`
 - [ ] **MC-11** Pantalla Metas (crear meta, aporte por quincena, proyección a diciembre) y botones «útil / no me sirve» en cada recomendación; opción «olvidar lo que sabes de mí». Rama `feature/front-metas`
@@ -137,7 +138,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 ## Bloque 6 · Domingo 10:00–12:00 · DEBERÍA y pulido
 
 - [ ] **DI-11** Sentimiento con modelo preentrenado frente a léxico, medido en las 100 frases.
-- [ ] **DI-12 / MG-10 / MC-08** Lucas en 5 preguntas: modelo de asignación (Diego), endpoint (Miguel), pantalla (Marcela).
+- [ ] **DI-12** Lucas en 5 preguntas, ola 2: asignación a cluster K-Prototypes y MAE con 0, 1 y 3 meses frente al promedio poblacional. *Depende:* DX-17 / MG-14 / MC-12.
 - [ ] **JF-08** BCRP: tipo de cambio e inflación con caché y serie grabada de respaldo.
 - [ ] **JF-10 / MG-12** Aprendizaje por respuestas: pesos por tipo de recomendación y segmento que suben o bajan con «útil / no me sirve»; simulación con `prob_acepta_reco` frente al recomendador sin memoria.
 - [ ] **DX-12** Si DX-11 dio luz verde: base semilla del bootstrap desde la ENAHO y regenerar datos (`make data`); comparar métricas antes y después.

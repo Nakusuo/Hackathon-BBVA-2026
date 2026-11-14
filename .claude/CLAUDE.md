@@ -17,6 +17,7 @@ Indicación del juez: Lucas debe ser **el compañero bancario** del cliente. Se 
 | Carpeta / archivo | Contenido | Cuándo leerlo |
 |---|---|---|
 | [planes/plan-maestro.md](planes/plan-maestro.md) | Plan completo: alcance, arquitectura, cronograma, pitch | Antes de decidir alcance o arquitectura |
+| [planes/historias.md](planes/historias.md) | Historias de usuario con criterios de aceptación, palanca y casos de prueba | Antes de construir una pantalla o un endpoint |
 | [planes/tareas.md](planes/tareas.md) | Microtareas por persona, dependencias y formato de avisos | Al empezar y terminar cada tarea |
 | [planes/comandos.md](planes/comandos.md) | Comandos fijos: Git, PR, revisión, make, Docker | Siempre que haya que tocar el repo |
 | [planes/estado.md](planes/estado.md) | Equipo, decisiones, checkpoints y bloqueos | En cada checkpoint |

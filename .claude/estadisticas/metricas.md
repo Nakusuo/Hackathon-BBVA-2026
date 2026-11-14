@@ -16,7 +16,7 @@ Regla: **cada técnica se compara con una alternativa sencilla**. Los resultados
 
 ## Impacto y negocio (D16, simulado)
 
-Se calculan sobre la población sintética con el simulador. Son **simulación**, no resultados de clientes reales. Detalle en [../reglas/rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md).
+Se calculan repitiendo las decisiones de Lucas (tomadas con datos hasta el mes 9) sobre las transacciones reales de los meses 10 a 12 de la población sintética, con adherencia 100 % y simulada; nunca con el pronóstico que eligió las acciones. Son **simulación**, no resultados de clientes reales. Detalle en [../reglas/rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md).
 
 | Métrica | Lucas | Baseline | Unidad |
 |---|---|---|---|
