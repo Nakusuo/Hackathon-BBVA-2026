@@ -86,12 +86,13 @@ function textosSinContraste() {
     const nodo = recorrido.currentNode
     const texto = nodo.textContent.trim()
     const padre = nodo.parentElement
-    if (!texto || !padre || padre.closest('[aria-hidden="true"], .solo-lector')) continue
+    if (!texto || !padre || padre.closest('[aria-hidden="true"]:not(.grafico), .solo-lector')) continue
     const caja = padre.getBoundingClientRect()
     if (caja.width === 0 || caja.height === 0) continue
     const estilo = getComputedStyle(padre)
     const fondo = fondoDe(padre)
-    const tinta = mezclar(leer(estilo.color), fondo)
+    // En el gráfico el texto es SVG: su color está en fill, no en color.
+    const tinta = mezclar(leer(padre instanceof SVGElement ? estilo.fill : estilo.color), fondo)
     const [clara, oscura] = [luz(tinta), luz(fondo)].sort((x, y) => y - x)
     const razon = (clara + 0.05) / (oscura + 0.05)
     const tamano = parseFloat(estilo.fontSize)
@@ -162,7 +163,7 @@ test('el gráfico de Qué viene lleva etiquetas directas y línea punteada', asy
   await sinGuia(page)
   await page.goto('/lucas/que-viene')
   const grafico = page.locator('.grafico')
-  for (const rotulo of ['Hoy', 'Cobro', 'Peor caso']) {
+  for (const rotulo of ['Hoy', 'Cobro', 'Peor caso −S/ 60']) {
     await expect(grafico.getByText(rotulo, { exact: true })).toBeVisible()
   }
   await expect(grafico.locator('.recharts-line-curve')).toHaveAttribute('stroke-dasharray', '8 5')

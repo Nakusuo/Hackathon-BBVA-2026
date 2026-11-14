@@ -85,7 +85,6 @@ export default function InicioBanca() {
             <div className="tarjeta-credito-frente">
               <svg className="tarjeta-credito-arcos" viewBox="0 0 200 200" aria-hidden="true">
                 <circle cx="200" cy="0" r="96" />
-                <circle cx="200" cy="0" r="150" />
               </svg>
               <div className="tarjeta-credito-fila">
                 <span className="logotipo logotipo-claro">Vértice</span>

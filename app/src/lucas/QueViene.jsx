@@ -39,20 +39,22 @@ const COLOR = {
   fuerte: 'var(--sobre-azul)',
 }
 
-// Etiquetas directas sobre el gráfico (ui-ux-pro-max): quien mira no tiene que cruzar colores con la leyenda.
+// Etiquetas directas sobre el gráfico: quien mira no tiene que cruzar colores con la leyenda.
 const ETIQUETA = { fontSize: 16, fontWeight: 700 }
 
 // El rótulo del peor caso lleva fondo propio: así no se cruza con la línea del cero y conserva contraste.
-function RotuloPeorCaso({ viewBox }) {
+// Va a la izquierda del punto, salvo que el peor día caiga al inicio y no quepa; entonces va a la derecha.
+function RotuloPeorCaso({ viewBox, texto }) {
   if (!viewBox) return null
-  const ancho = 92
-  const x = viewBox.x - ancho - 4
-  const y = viewBox.y - 34
+  const ancho = texto.length * 9 + 20
+  const izquierda = viewBox.x - ancho - 6
+  const x = izquierda >= 0 ? izquierda : viewBox.x + 6
+  const y = viewBox.y - 40
   return (
     <g>
       <rect x={x} y={y} width={ancho} height={26} rx={13} fill={COLOR.fondo} stroke={COLOR.riesgo} strokeWidth={1.5} />
       <text x={x + ancho / 2} y={y + 18} textAnchor="middle" fill={COLOR.fuerte} {...ETIQUETA}>
-        Peor caso
+        {texto}
       </text>
     </g>
   )
@@ -274,7 +276,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
                   fill={COLOR.riesgo}
                   stroke={COLOR.fondo}
                   strokeWidth={2}
-                  label={<RotuloPeorCaso />}
+                  label={<RotuloPeorCaso texto={`Peor caso ${enSoles(riesgo.peorMonto)}`} />}
                 />
               )}
             </ComposedChart>
