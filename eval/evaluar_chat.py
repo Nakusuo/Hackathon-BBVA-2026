@@ -34,7 +34,7 @@ EDUCACION = [
     ("¿Qué derechos tengo como consumidor?", "derechos"),
     ("¿Para qué sirve un fondo de emergencia?", "salud_financiera"),
 ]
-BLOQUEOS = {"operacion", "inyeccion"}
+BLOQUEOS = {"operacion", "inyeccion", "inversion"}
 
 
 def percentil(valores: list[float], p: float) -> float:

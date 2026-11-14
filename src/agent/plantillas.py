@@ -28,6 +28,13 @@ RESPUESTAS_FIJAS = {
         "Ahora no puedo ver tus datos, así que prefiero no darte cifras. "
         "Prueba de nuevo en un momento."
     ),
+    # Sin números: es una respuesta fija y el juez no tiene datos contra qué comprobarlos.
+    "inversion": (
+        "No puedo decirte en qué invertir: para recomendar una inversión la norma de la "
+        "Superintendencia del Mercado de Valores exige evaluar antes tu perfil de riesgo, y "
+        "Lucas no es un asesor. Sí puedo explicarte qué es un depósito a plazo, cómo armar tu "
+        "fondo de emergencia antes de pensar en invertir o simular cuánto puedes apartar."
+    ),
     "sin_fuente": (
         "No encontré una fuente oficial que responda eso, así que prefiero no inventarlo. "
         "Puedo explicarte la TCEA, tus derechos como usuario, la CTS, la gratificación "

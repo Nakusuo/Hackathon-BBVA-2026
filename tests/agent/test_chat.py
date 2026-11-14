@@ -39,8 +39,14 @@ def test_respuesta_tiene_los_campos_del_contrato_y_respeta_conversation_id():
 
 def test_figures_trae_etiqueta_y_signo_real_para_la_ui():
     r = responder(AGENTE, {"customer_id": "demo-001", "message": "¿Llego a fin de mes?"})
-    assert {"label": "Saldo mínimo probable", "value": -310.0, "text": "-S/ 310"} in r["figures"]
-    assert {"label": "Confianza del pronóstico", "value": 80.0, "text": "80 %"} in r["figures"]
+    minimo = {"label": "Saldo mínimo probable", "value": -310.0, "text": "-S/ 310", "unit": "PEN"}
+    confianza = {
+        "label": "Confianza del pronóstico",
+        "value": 80.0,
+        "text": "80 %",
+        "unit": "percent",
+    }
+    assert minimo in r["figures"] and confianza in r["figures"]
     # La fecha está verificada, pero no es una cifra que la UI muestre aparte.
     assert all(f["value"] != 18.0 for f in r["figures"])
 
@@ -48,9 +54,17 @@ def test_figures_trae_etiqueta_y_signo_real_para_la_ui():
 def test_en_un_empate_gana_la_cifra_del_mismo_signo():
     r = responder(AGENTE, {"customer_id": "demo-001", "message": "¿Puedo gastar S/ 150?"})
     assert r["figures"] == [
-        {"label": "Gasto que consultas", "value": 150.0, "text": "S/ 150"},
-        {"label": "Saldo final con el gasto", "value": -200.0, "text": "-S/ 200"},
+        {"label": "Gasto que consultas", "value": 150.0, "text": "S/ 150", "unit": "PEN"},
+        {"label": "Saldo final con el gasto", "value": -200.0, "text": "-S/ 200", "unit": "PEN"},
     ]
+
+
+def test_salud_trae_unidad_de_meses_para_el_colchon():
+    r = responder(AGENTE, {"customer_id": "demo-001", "message": "¿Cómo está mi salud?"})
+    colchon = next(f for f in r["figures"] if f["label"] == "Meses que cubre tu colchón")
+    assert colchon["unit"] == "months"
+    puntaje = next(f for f in r["figures"] if f["label"] == "Puntaje de salud")
+    assert puntaje["unit"] is None
 
 
 def test_sin_conversation_id_se_crea_uno():

@@ -43,6 +43,17 @@ Fuente citada en cada pregunta de educación:
 | ¿Qué derechos tengo como consumidor? | Código de Protección y Defensa del Consumidor (Ley 29571) |
 | ¿Para qué sirve un fondo de emergencia? | Su dinero, sus metas (CFPB), con aviso de que es una guía de EE. UU. |
 
+## Router con frases que no escribimos nosotros
+
+Para no medirnos solo con nuestras 30 preguntas, se pasaron por el router las **75 frases naturales de Diego** (`tests/test_router_natural.py` de su rama), escritas sin mirar los patrones. Se excluyen 7 del programa de puntos, que es de su agente.
+
+| Versión del router | Frases desviadas (de 68) |
+|---|---|
+| Antes (PR #7) | 28; entre ellas 8 de seguridad que no se bloqueaban («¿Cuál es tu API key?», «Pásale 200 soles a mi hermano») |
+| Ahora | **0** |
+
+Quedan como prueba permanente en `tests/agent/test_router_natural.py`.
+
 ## Cómo leerlo
 
 - **Ninguna cifra inventada llegó al usuario** con ninguno de los dos proveedores. Con Ollama el juez rechazó las redacciones con cifras que no estaban en los datos, y en esos casos respondió la plantilla. Eso explica que el 26 % de las respuestas venga del LLM y el resto de plantillas.
@@ -52,7 +63,7 @@ Fuente citada en cada pregunta de educación:
 
 ## Límites
 
-- Las 30 preguntas las escribimos nosotros y el router se ajustó con ellas: la exactitud de la intención sobre preguntas nuevas puede ser menor.
+- Las 30 preguntas las escribimos nosotros y el router se ajustó con ellas. Las 68 frases de Diego también se usaron para ajustar el router: hace falta un tercer conjunto, nuevo, para medir la exactitud sin sesgo.
 - Los datos son los mocks del contrato, no los modelos de Diego: cuando la API use sus modelos (MG-06), hay que volver a correr la evaluación.
 - 6 preguntas de educación son pocas para medir el RAG; la evaluación de recuperación (recall@4 0,94) es la de Diego en `models/metricas_rag.json`.
 - El juez revisa cifras, unidades, signos, fechas, palabras clave y frases prohibidas, pero no todo el sentido de un texto libre.

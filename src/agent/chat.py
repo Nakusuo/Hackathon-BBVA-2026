@@ -47,8 +47,15 @@ _SIN_SOLES = {
 }
 
 
+_MESES = {"emergency_fund_months", "meses_que_cubre_tu_ahorro_de_emergencia"}
+
+
 def cifras_con_etiqueta(detalle: list[tuple[float, str]]) -> list[dict]:
-    """[{label, value, text}] sin repetir, para que la UI muestre cada cifra con su ✓."""
+    """[{label, value, text, unit}] sin repetir, para que la UI muestre cada cifra con su ✓.
+
+    `unit` (PEN, percent, months o None) lo usa el chat de Marcela (`clienteChat.js`) para
+    dar formato con las mismas reglas que el resto de la app.
+    """
     vistas, cifras = set(), []
     for valor, campo in detalle:
         # Solo campos con etiqueta conocida: la página de una fuente no es una cifra del cliente.
@@ -56,14 +63,19 @@ def cifras_con_etiqueta(detalle: list[tuple[float, str]]) -> list[dict]:
             continue
         vistas.add((valor, campo))
         if campo in ("confidence_level", "confianza"):
-            texto = f"{valor * 100 if abs(valor) <= 1 else valor:g} %"
+            valor = valor * 100 if abs(valor) <= 1 else valor
+            texto, unidad = f"{valor:g} %", "percent"
+        elif campo in _MESES:
+            texto, unidad = f"{valor:g}", "months"
         elif campo in _SIN_SOLES:
-            texto = f"{valor:g}"
+            texto, unidad = f"{valor:g}", None
         elif campo == "rate":
-            texto = f"S/ {valor}"
+            texto, unidad = f"S/ {valor}", "PEN"
         else:
-            texto = soles(valor)
-        cifras.append({"label": ETIQUETAS.get(campo, campo), "value": valor, "text": texto})
+            texto, unidad = soles(valor), "PEN"
+        cifras.append(
+            {"label": ETIQUETAS.get(campo, campo), "value": valor, "text": texto, "unit": unidad}
+        )
     return cifras
 
 

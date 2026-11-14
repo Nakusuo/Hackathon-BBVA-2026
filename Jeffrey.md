@@ -3,7 +3,7 @@
 **Rol:** IA Engineer (código JF). Agente LangGraph, tools, juez de cifras, RAG, proveedores LLM y BCRP.
 **Revisa mis PR:** Diego. **Yo reviso:** los PR de Diego.
 **Código:** `src/agent/`, `src/bcrp/servicio.py`, `eval/evaluar_chat.py`. **Detalle técnico:** [PROMPTS.md](PROMPTS.md). **Bitácora:** [.claude/equipo/jeffrey/registro.md](.claude/equipo/jeffrey/registro.md).
-**Actualizado:** 14/11/2026, comparado con `develop` y con las ramas de Miguel (`feature/backend-fastapi`), Dixon (`smith`), Diego y Marcela.
+**Actualizado:** 14/11/2026, comparado con `develop` y con las ramas de Miguel (`feature/backend-fastapi`), Dixon (`smith`), Diego (`feature/ml-segmentos-pronostico`, con su `PROMPT_INTEGRACION.md`) y Marcela (`feature/front-chat-agente`).
 
 ---
 
@@ -12,7 +12,7 @@
 | Tarea | Qué es | Estado | Dónde está |
 |---|---|---|---|
 | JF-01 | Ollama, modelos y PDFs del RAG | ✅ Hecha | `develop` (PR #5) |
-| JF-02 | Grafo LangGraph: router → tools → redacción → juez → respuesta | ✅ Hecha | `develop` (PR #5) |
+| JF-02 | Grafo LangGraph: router → tools → redacción → juez → respuesta | ✅ Hecha · router reforzado con las 75 frases de Diego (28 desvíos → 0) | `develop` (PR #5) + PR #7 |
 | JF-03 | Tools sobre la API del contrato | ✅ Hecha sobre la API · falta la versión con rol `lucas_agente` | PR #7 |
 | JF-04 | Juez de cifras, signos, unidades, fechas, frases prohibidas y citas | ✅ Hecha | PR #7 |
 | JF-05 | RAG por módulos con el índice de Diego | ✅ Hecha con FAISS · falta pasarlo a pgvector | PR #7 |
@@ -59,7 +59,8 @@ respuesta = responder(agente, {"customer_id": "...", "message": "...", "conversa
 **También falta `first_risk_date` en `ForecastResponse`.** Sin ese campo Lucas no puede avisar «el 18 podrías quedar en rojo» (paso 2 de la demo).
 
 ### Marcela · chat de la pantalla
-- Cada cifra con su ✓: usa `figures` (`label` y `text` ya vienen formateados, con el signo real).
+- Cada cifra con su ✓: usa `figures` (`label` y `text` ya vienen formateados, con el signo real). Ya trae **`unit`** (`PEN`, `percent`, `months` o `null`), como espera tu `clienteChat.js` de `feature/front-chat-agente`.
+- Revisé tu `clienteChat.js`: es compatible con mi `/chat` sin cambios. Ojo: tu espera es de 12 s y en una laptop sin GPU el p95 de Ollama es 17 s; en la RTX 3050 de Michael no pasa de 4 s.
 - Fuentes: usa `sources`. Si `context` no es `"Peru"`, muestra la etiqueta «EE. UU.» (CP-SIS-47).
 - `intent: "sin_datos"` o `"sin_fuente"` significa que Lucas no inventó nada: no hay cifras que marcar.
 
@@ -67,10 +68,12 @@ respuesta = responder(agente, {"customer_id": "...", "message": "...", "conversa
 - Uso **tu índice del RAG** (`docs/rag/indice/`) y tu configuración: densa + filtro de módulo, umbral 0,70 y siglas.
 - La sección del chat para `EVALUATION.md` está lista en [docs/evaluacion-chat.md](docs/evaluacion-chat.md).
 - Mis tools leen el **contrato** (`score`, `lower_bound`, `upper_bound`, `first_risk_date`…). Cuando tus modelos lleguen a la API (MG-06, o el cargador de Dixon en la rama `smith`), mi agente los usa sin cambios.
+- Pasé **tus 75 frases naturales** por mi router (como pide tu `PROMPT_INTEGRACION.md`): desviaba 28 de 68 (sin contar las 7 de puntos, que son de tu agente), entre ellas 8 de seguridad. Ahora 0; quedan como test en `tests/agent/test_router_natural.py`.
+- **Tu índice no tiene el módulo de inversión:** la Res. SMV 011-2026 está en `docs/rag/inversion/` pero no se indexó. Sin eso, «¿qué es invertir?» no encuentra fuente. ¿Puedes agregarla con tu `actualizar_incremental`? No toco tu índice para no chocar.
 
 ### Dixon · pruebas
 - CP-SIS-10 (simulación por LLM): se prueba con `python -m agent --simular-con-llm`. Con el 3b el juez rechazó 4 de 4 redacciones (llamó «saldo actual» al saldo final), así que responde la plantilla.
-- Casos del agente cubiertos por tests: CP-SIS-11, 13, 14, 15, 30 y 47. CP-SIS-12 en parte: se niega a recomendar en qué invertir, pero todavía no ofrece la educación del módulo de inversión.
+- Casos del agente cubiertos por tests: CP-SIS-11, 12, 13, 14, 15, 30 y 47. En CP-SIS-12 Lucas se niega, explica que para recomendar una inversión hay que evaluar el perfil de riesgo y ofrece lo que sí puede explicar con fuente (depósito a plazo, fondo de emergencia). Cuando el índice tenga el módulo de inversión, podrá explicar también qué es invertir.
 
 ### Probar el agente en 1 minuto
 ```powershell
@@ -78,7 +81,7 @@ pip install -r requirements-ia.txt
 $env:PYTHONPATH = "src"
 python -m agent --plantilla                              # con los mocks, sin LLM
 python -m agent --api http://localhost:8000 --json       # contra la API de Miguel
-python -m pytest -q tests/agent tests/bcrp tests/api     # 278 pruebas
+python -m pytest -q tests/agent tests/bcrp tests/api     # 350 pruebas
 ```
 
 ## 4. Lo que espero de otros

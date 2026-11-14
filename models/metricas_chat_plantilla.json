@@ -8,7 +8,7 @@
  "educacion_sin_fuente_dicho_honesto": 0.0,
  "respuestas_por_plantilla": 1.0,
  "latencia_p50_s": 0.0,
- "latencia_p95_s": 2.3,
+ "latencia_p95_s": 2.31,
  "rag_disponible": true,
  "fallas": [],
  "fuentes_de_educacion": {

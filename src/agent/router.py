@@ -16,10 +16,21 @@ _OPERACION = [
     r"\b(yapea|plinea|envia(le)?\s+(plata|dinero))",
     r"\bmueve\s+(mi\s+)?(plata|dinero)",
     r"\b(donde|en que)\s+invierto\b",
+    # Casos de las frases naturales de Diego (tests/agent/test_router_natural.py).
+    r"\bpasa(le|me|les)?\s+(\w+\s+)?\d",
+    r"\binvierte\b",
+    r"\b(donde|en que)\s+(me\s+)?conviene\s+invertir\b",
+    r"\b(compr|vend)\w*\s+(\w+\s+)?(acciones|bitcoin|cripto\w*)",
+    r"\babre(me)?\s+(una\s+)?cuenta\b",
 ]
+_INVERSION = [r"\binvert\w*", r"\binvier\w*", r"\baccion(es)?\b", r"\bbitcoin\b", r"\bcripto\w*"]
 _INYECCION = [
     r"\bignora\w*\b",
     r"\bolvida\w*\s+(tus|las)\s+(instrucciones|reglas)",
+    r"\bolvida\w*\s+(todo|lo anterior)",
+    r"\bobedece\w*",
+    r"\b(api key|apikey|clave secreta|contrasena|token)\b",
+    r"\b(cuentas?|datos|saldo)\s+de\s+(otra persona|otro cliente|otros clientes|otras personas)",
     r"\b(system|sistema)\s+prompt\b",
     r"\bprompt\b",
     r"\bactua\s+como\b",
@@ -28,6 +39,20 @@ _INYECCION = [
     r"\bjailbreak\b",
     r"\brevela\w*\b",
 ]
+# Temas que siempre son de educación aunque la frase suene a pronóstico o a consejo:
+# «¿qué hago con mi CTS?» o «me atrasé con la cuota, ¿qué hago?» no se responden con el
+# saldo del cliente sino con la norma. Se revisan después de simular (que exige un monto).
+_EDUCACION_FUERTE = [
+    r"\b(cts|compensacion por tiempo|gratificacion|grati)\b",
+    r"\b(tarjeta|credito|prestamo|deuda|cuota|interes|tasa|refinanci)\w*",
+    r"\b(reclam|derecho|cobr)\w*",
+    r"\b(atrase|atrasado|atraso|no pago)\b",
+    r"\b(huaico|lluvia|llover|zona de riesgo|fenomeno|nino)\b",
+    r"\b(deposito a plazo|oferta)\w*",
+    # «¿Para qué sirve ahorrar?» pide una explicación, no una recomendación.
+    r"\bpara que sirve",
+]
+
 _INTENCIONES = [
     (
         "simular",
@@ -49,12 +74,15 @@ _INTENCIONES = [
             r"\bpronostico\b",
             r"\bsaldo\b",
             r"\bque viene\b",
+            r"\bvoy a (tener|ganar|gastar)\b",
+            r"\bproxim[oa]s (dias|semanas|meses)\b",
         ],
     ),
-    ("salud", [r"\bsalud\b", r"\bpuntaje\b", r"\bcomo estoy\b", r"\bcomo voy\b"]),
+    ("salud", [r"\bsalud\b", r"\bpuntaje\b", r"\bcomo estoy\b", r"\bcomo voy\b", r"\bsana\b"]),
     (
         "recos",
         [
+            r"\bgastando de mas\b",
             r"\bque (hago|me conviene|puedo hacer)\b",
             r"\brecomienda",
             r"\bconsejo",
@@ -96,7 +124,8 @@ _TEMAS_RAG = {
         "prestamo": "préstamos",
     },
     "derechos": {
-        "reclamo": "reclamos",
+        "reclam": "reclamos",
+        "cobr": "cobros",
         "derecho": "derechos del usuario",
         "indecopi": "Indecopi",
         "consumidor": "protección al consumidor",
@@ -122,6 +151,8 @@ _TEMAS_RAG = {
         "fenomeno": "fenómeno El Niño",
         "enfen": "ENFEN",
         "lluvia": "lluvias",
+        "huaico": "huaicos",
+        "zona de riesgo": "zonas de riesgo",
     },
 }
 
@@ -163,14 +194,28 @@ def extraer_monto(texto: str) -> float | None:
 def clasificar(pregunta: str) -> tuple[str, float | None]:
     """Devuelve (intención, monto). Las intenciones bloqueadas van primero."""
     texto = normalizar(pregunta)
-    if _alguna(_OPERACION, texto):
-        return "operacion", None
-    if _alguna(_INYECCION, texto):
-        return "inyeccion", None
-    for intencion, patrones in _INTENCIONES:
-        if _alguna(patrones, texto):
-            monto = extraer_monto(pregunta) if intencion == "simular" else None
-            if intencion == "simular" and monto is None:
-                return "pronostico", None
-            return intencion, monto
-    return "desconocido", None
+    bloqueada = (
+        "operacion"
+        if _alguna(_OPERACION, texto)
+        else "inyeccion"
+        if _alguna(_INYECCION, texto)
+        else None
+    )
+    if bloqueada:
+        # Un pedido de inversión bloqueado recibe una negativa que explica el porqué y
+        # ofrece lo que sí se puede explicar con fuente (CP-SIS-12).
+        return ("inversion" if _alguna(_INVERSION, texto) else bloqueada), None
+    patrones = dict(_INTENCIONES)
+    pide_simular = _alguna(patrones["simular"], texto)
+    monto = extraer_monto(pregunta) if pide_simular else None
+    if monto is not None:
+        return "simular", monto
+    if _alguna(patrones["pronostico"], texto):
+        return "pronostico", None
+    if _alguna(_EDUCACION_FUERTE, texto):
+        return "educacion", None
+    for intencion, lista in _INTENCIONES:
+        if intencion not in ("simular", "pronostico") and _alguna(lista, texto):
+            return intencion, None
+    # «¿Qué pasa si…?» sin monto: lo más útil es el pronóstico.
+    return ("pronostico" if pide_simular else "desconocido"), None
