@@ -550,7 +550,8 @@ test('selector de persona: el formal cambia todas las cifras y su banda es angos
   await expect(page.getByRole('button', { name: 'Lo hago' })).toHaveCount(3)
   await expect(page.getByText('Pausa FitZona este mes')).toBeVisible()
   await page.getByRole('link', { name: 'Qué viene' }).click()
-  await expect(page.getByRole('region', { name: 'Pagos y cobros' })).toContainText('El rango es angosto')
+  await page.getByRole('button', { name: 'Explícamelo fácil' }).click()
+  await expect(page.getByRole('region', { name: 'Explicación fácil' })).toContainText('Es angosta porque tu sueldo llega fijo')
 
   // Volver al independiente desde Preferencias: su permiso es aparte y su banda se explica distinto.
   await page.goto('/preferencias')

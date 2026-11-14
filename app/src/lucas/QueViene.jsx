@@ -301,20 +301,12 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
         {agregado}
       </p>
 
-      <ExplicameFacil puntos={explicarQueViene(cliente)} />
 
       <section className="tarjeta" aria-labelledby="movimientos-titulo">
         <h2 id="movimientos-titulo">Pagos y cobros</h2>
         <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} alQuitar={alQuitar} />
         <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} alQuitar={alQuitar} />
-        <details>
-          <summary>¿Por qué cambia el rango?</summary>
-          <p className="suave">
-            {cliente.ingresoVariable
-              ? 'El rango se abre con los días porque tu gasto varía, y se ensancha en cada cobro porque tus clientes no siempre te pagan lo mismo.'
-              : 'El rango es angosto porque tu sueldo llega fijo; solo se abre un poco con los días porque tu gasto varía.'}
-          </p>
-        </details>
+        <ExplicameFacil puntos={explicarQueViene(cliente)} />
       </section>
     </>
   )
