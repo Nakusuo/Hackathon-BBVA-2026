@@ -82,5 +82,5 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 
 | Fecha y hora | Qué | Acción |
 |---|---|---|
-| 2026-11-14 | Rutas sin definir para CU-10 y CU-11 (ola 1) y CU-04 6a, CU-08, CU-09 (ola 2); `docs/api.md` debe pasar a `/yo/...` | Backend (Miguel) las cierra en ARCHITECTURE.md; lista en `docs/casos-uso.md` §6 |
+| 2026-11-14 | Rutas sin definir para CU-10 y CU-11 (ola 1) y CU-04 6a, CU-08, CU-09 (ola 2); `docs/api.md` debe pasar a `/yo/...` | Backend (Miguel) las cierra en ARCHITECTURE.md; lista en `docs/casos-uso.md` §6. Decidir si el panel Evidencia (CU-11) va sin token: ARCHITECTURE §5.2 solo deja sin token `POST /sesion` y las 5 preguntas |
 | 2026-11-14 | HU-09 pide avisar de una recurrente duplicada antes de guardar; ARCHITECTURE §6.3 guarda y luego advierte | Backend (Miguel) ajusta el contrato de `POST /yo/movimientos` (confirmación previa) |

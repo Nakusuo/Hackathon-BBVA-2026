@@ -31,7 +31,7 @@ Lucas es un compañero bancario, no un chatbot. Los casos lo muestran así:
 
 - **Se adelanta**: avisa días antes de un posible saldo en rojo y propone qué hacer con la grati o la CTS (CU-03).
 - **Propone acciones con monto** que el cliente prueba antes de decidir: 3 acciones, Sueldo Lucas para quien cobra irregular y simulador (CU-04, CU-05).
-- **Fideliza**: el cliente vuelve cada quincena porque Lucas le dice cómo está y qué viene (CU-01 a CU-09).
+- **Fideliza**: el cliente vuelve porque el aviso de CU-03 le llega antes del problema y porque cada quincena ve cómo está y qué viene (CU-01, CU-02).
 - **Atrae**: quien no es cliente ve su pronóstico con 5 preguntas, antes de abrir una cuenta (CU-10).
 - **Le rinde al banco**: el banco ve en S/ cuánto mejora cada cliente y qué gana él (CU-11).
 
@@ -50,9 +50,9 @@ La fuente de verdad son las historias de [historias.md](../.claude/planes/histor
 | P1 | Captación de ahorro | S/ apartados por cliente al mes | CU-01, CU-03, CU-04, CU-05, CU-08 |
 | P2 | Principalidad y retención | Avisos útiles por semana (máximo 3) | CU-01, CU-03, CU-04, CU-09, CU-12 |
 | P3 | Menos mora | Días en rojo evitados | CU-02, CU-03, CU-04, CU-05, CU-06 |
-| P4 | Atracción con bajo costo | Tiempo hasta el primer pronóstico | CU-10 |
+| P4 | Atracción con bajo costo | Tiempo hasta el primer pronóstico | CU-10 y la extensión «Separar negocio y casa» de CU-01 (HU-25) |
 | P5 | Venta cruzada idónea | Precision@3 y 0 violaciones de idoneidad | CU-04, CU-07 |
-| P6 | Menos costo de atención | Contactos evitados | CU-03, CU-07 |
+| P6 | Menos costo de atención | — (los contactos evitados se miden en un piloto) | CU-03, CU-07 |
 
 - Todas las fichas cumplen además los criterios comunes de las historias: cada cifra sale de una herramienta, los montos van en S/ con incertidumbre en palabras, toda recomendación muestra acción, impacto, por qué, supuestos, confianza y «tú decides», contraste AA y funcionamiento sin red.
 
@@ -481,9 +481,9 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
 1. El cliente abre «mis datos».
 2. Lucas valida la sesión (incluye CU-12).
-3. Lucas muestra lo que recuerda: preferencias y respuestas a recomendaciones. Si el borrado incluye las metas sigue abierto (advertencia A9 en [verificaciones.md](../.claude/planes/verificaciones.md)).
+3. Lucas muestra lo que recuerda: preferencias y respuestas a recomendaciones.
 4. El cliente pulsa «olvidar lo que sabes de mí».
-5. Lucas borra en la base la memoria, las preferencias y las respuestas del cliente de la sesión.
+5. Lucas borra en la base la memoria, las preferencias y las respuestas del cliente de la sesión. Sigue abierto si el borrado incluye las metas (advertencia A9 en [verificaciones.md](../.claude/planes/verificaciones.md)).
 6. Lucas confirma el borrado.
 
 **Flujos alternos**
