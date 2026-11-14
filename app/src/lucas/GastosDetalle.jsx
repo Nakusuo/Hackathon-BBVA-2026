@@ -79,9 +79,9 @@ export default function GastosDetalle({ cliente, alternarTip }) {
                   <span className="suave">
                     Día {s.dia}. {s.uso}
                   </span>
-                  {tip && <PausarSuscripcion tip={tip} activo={elegidos.includes(tip.id)} alAlternar={alternarTip} />}
                 </span>
                 <span className="fila-monto">{enSoles(s.monto)}</span>
+                {tip && <PausarSuscripcion tip={tip} activo={elegidos.includes(tip.id)} alAlternar={alternarTip} />}
               </li>
             )
           })}
