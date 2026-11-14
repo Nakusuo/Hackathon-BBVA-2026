@@ -22,7 +22,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Revisión de choques entre ramas | `feature/front-rediseno-movil` | Se simuló la unión de `feature/front-rediseno-movil`, `feature/ia-jeffrey-actividades` y `feature/datos-diagramas-v2` con `develop` y entre ellas: sin conflictos (no comparten archivos). Con las tres juntas en una copia aparte: 29/29 pruebas del front, build OK, 149/149 pruebas de Python y ruff sin errores. `feature/datos-diagramas-v2` va 25 commits detrás de `develop`, pero se une sin choques. Nakusuo/Marcela |
 | 2026-11-14 | Push de la rama del front | `feature/front-rediseno-movil` | Rama subida a GitHub (sin PR todavía). Solo lo que estaba en commits; los cambios sin guardar de otra sesión en `app/` quedaron en la laptop. Nakusuo/Marcela |
 | 2026-11-14 | Jueces técnicos de las ramas de los demás | — | Dixon `feature/datos-diagramas-v2`: CAMBIOS, no unir (el doc ya está idéntico en `develop` por un commit directo; el diagrama mermaid no compila, el ERD contradice ARCHITECTURE). Jeffrey PR #5: CAMBIOS (el juez de cifras ignoraba el signo). Miguel `feature/backend-fastapi`: CAMBIOS (signo de `expense` contra el mock, simulador sin tope, al forecast le faltan `first_risk_date`/`model`/`sample_only`, cifras escritas en el código, `rate` como texto). Los jueces de mi rama y de Diego se cortaron sin veredicto. Nakusuo/Marcela |
-| 2026-11-14 | Arreglos en la rama de Jeffrey (con su PR #5) | `feature/ia-jeffrey-actividades` | Commits `ed58864` y `6c35ff4`, **solo locales, sin subir**: el juez rechaza «S/ 310 a favor» con saldo −310, redondeo solo a decena (≥100) o centena (≥1 000), prohibidas «préstamo», sugerir crédito y «sin riesgo», router manda «tipo de cambio» y «cambio del dólar» a fx, versiones fijas de `ollama` y `google-genai`, licencia del Banco Mundial corregida. 173/173 pytest y ruff limpio. Nakusuo/Marcela |
+| 2026-11-14 | Arreglos en la rama de Jeffrey (con su PR #5) | `feature/ia-jeffrey-actividades` | Commits `ed58864` y `6c35ff4`, subidos al PR #5: el juez rechaza «S/ 310 a favor» con saldo −310, redondeo solo a decena (≥100) o centena (≥1 000), prohibidas «préstamo», sugerir crédito y «sin riesgo», router manda «tipo de cambio» y «cambio del dólar» a fx, versiones fijas de `ollama` y `google-genai`, licencia del Banco Mundial corregida. 173/173 pytest y ruff limpio. Nakusuo/Marcela |
 | 2026-11-14 | Ramas nuevas revisadas | — | Diego subió `feature/ml-segmentos-pronostico` (152 archivos, ~24 500 líneas: ML, agente propio en `src/agente_analitico`, RAG, BCRP, puntos). No choca con `develop`, front ni backend, **sí con Jeffrey** (`.gitignore` y `docs/rag/fuentes.csv`) y duplica su trabajo: mismos PDFs con otros nombres, dos catálogos de fuentes, dos agentes con juez, dos `src/bcrp/`. Las historias de usuario que mencionó un compañero ya estaban en `develop` (commit de Michael a las 13:42). Nakusuo/Marcela |
 
 ## Lo que acordamos
@@ -58,7 +58,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 ## Para retomar en otra laptop (2026-11-14)
 
 1. `git fetch --all --prune` y `git switch feature/front-rediseno-movil` → `git pull`.
-2. Los arreglos de Jeffrey **solo existen en la laptop anterior** hasta que se suban (`git push origin feature/ia-jeffrey-actividades` desde allí). Si no se subieron, rehacerlos según la fila «Arreglos en la rama de Jeffrey».
+2. Los arreglos de Jeffrey ya están subidos al PR #5 (`git fetch` los trae). Falta avisarle a Jeffrey para que los revise.
 3. Volver a pasar `juez-tecnico` por `feature/front-rediseno-movil` y por `feature/ml-segmentos-pronostico` (se cortaron).
 4. Juntar a `develop` con PR + squash (`gh pr merge <n> --squash --delete-branch`) solo lo aprobado: mi rama y el PR #5 de Jeffrey con los arreglos.
 5. No juntar todavía: Dixon (no aporta nada; corregir el doc en rama nueva), Miguel (5 bloqueantes), Diego (decidir con Jeffrey qué agente, qué catálogo RAG y qué `src/bcrp` se quedan).
@@ -69,7 +69,8 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [x] Segunda ronda de jueces sobre `feature/front-banca-lucas`: APRUEBA, APRUEBA (~63) y CUMPLE CON RIESGOS. Nakusuo/Marcela
 - [x] Push de `feature/front-banca-lucas` y PR #6 unido a `develop`; PR #3 cerrado porque su contenido entró con el #6. Nakusuo/Marcela
 - [ ] PR de `feature/front-rediseno-movil` a `develop` tras su juez
-- [ ] Subir los arreglos de Jeffrey y unir el PR #5
+- [x] Subir los arreglos de Jeffrey al PR #5. Nakusuo/Marcela
+- [ ] Unir el PR #5 cuando Jeffrey vea los arreglos
 - [ ] Avisar a Dixon, Miguel y Diego de sus veredictos
 - [ ] Guion de demo de 60 s en `demo/` (banca → aviso → «Lo hago» → el rojo desaparece → apartar S/ 150)
 - [ ] Revisar «Banco Vértice» en el registro de la SBS antes del pitch
