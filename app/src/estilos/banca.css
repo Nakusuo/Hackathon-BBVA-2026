@@ -1,0 +1,98 @@
+.banca-cabecera {
+  padding: 12px 16px 72px;
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.banca-barra,
+.banca-iconos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.banca-barra {
+  justify-content: space-between;
+}
+
+.saludo {
+  margin-top: 16px;
+  font-size: 1.75rem;
+}
+
+.banca-contenido {
+  display: grid;
+  gap: 16px;
+  margin-top: -56px;
+  padding: 0 16px 24px;
+}
+
+.cuenta {
+  gap: 4px;
+}
+
+.saldo {
+  font-family: var(--titulos);
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.fila-tarjeta {
+  margin-top: 8px;
+  border-top: 1px solid var(--borde);
+  color: var(--azul);
+}
+
+.fila-tarjeta .fila-texto,
+.fila-tarjeta .fila-monto {
+  color: var(--tinta);
+}
+
+.accesos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.acceso {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+}
+
+.circulo-grande {
+  width: 56px;
+  height: 56px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+}
+
+.tarjeta-lucas {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--crema-borde);
+  border-radius: var(--radio);
+  background: var(--crema);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.tarjeta-lucas-texto {
+  display: grid;
+}

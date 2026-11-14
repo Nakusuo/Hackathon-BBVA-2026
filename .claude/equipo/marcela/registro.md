@@ -12,6 +12,9 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 
 | 2026-11-14 | Correcciones de los jueces | `feature/front-esqueleto` | Motor único de cifras (`app/src/mocks/motor.js`): gasto seguro S/ 26 al día, riesgo 28–29 con peor caso −S/ 60, cada recomendación con su efecto real y juntas dejan +S/ 12 sin días en rojo. Salud = promedio real (54). Cada pantalla cabe en 1366×768 (lo vigila una prueba). Paleta con ámbar. 14 pruebas de funciones (`npm test`) y 21 de Playwright en verde |
 | 2026-11-14 | Segunda revisión de jueces | `feature/front-esqueleto` | juez-tecnico APRUEBA, juez-producto APRUEBA (~61/100, antes ~46), juez-cumplimiento CUMPLE. Se aplicaron también dos opcionales: % de deudas calculado de los pagos (45 %, salud 52) y resumen del gráfico para lectores de pantalla |
+| 2026-11-14 | Push y PR #3 | `feature/front-esqueleto` | Rama subida y PR a `develop` abierto: https://github.com/MaickolO/Hackathon-BBVA-2026-Equipo-2/pull/3 (revisa Dixon) |
+| 2026-11-14 | Investigación de UI bancaria | — | Informe `.claude/investigacion/ui-banca.md` (agente investigador): ocultar saldo es estándar en Perú, categorías comparadas con el promedio, entrada al asistente con tarjeta proactiva + acceso fijo, guía corta (estudio NN/g) |
+| 2026-11-14 | Banca + Lucas v2 | `feature/front-banca-lucas` | Ingreso visual de Mi Banca, inicio con saldo ocultable, cuentas, accesos, tarjeta «Lucas te avisa» y Lucas al centro de la barra; espacio Lucas con Resumen (gasto diario, aviso, lo que aprendí con «¿Es correcto?», tips con efecto, apartado comprobado, salud), Gastos (7 categorías frente al promedio), Qué viene y Chat (respuestas con cifras verificadas y límites de asesoría); guía de 3 pasos. 19 pruebas de funciones y 28 de Playwright en verde |
 
 ## Lo que acordamos
 
@@ -26,9 +29,18 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Playwright para probar la UI; puede usar un navegador ya instalado con `PW_CHROMIUM` | Pruebas de sistema ISTQB y capturas para la demo |
 | 2026-11-14 | Todas las cifras de las pantallas salen de un solo motor, nunca escritas a mano en textos | Los jueces encontraron contradicciones (S/ 34 al día frente a rojo; 80 por quincena = 240) |
 | 2026-11-14 | Límite de marca (juez-cumplimiento): ningún azul a menos de ~20 puntos por canal de `#004481`, `#072146`, `#1464A5`, `#1973B8`, `#5BBEFF`, `#2DCCCD`; sin tipografías de BBVA; el ámbar es la firma de Lucas; en el pitch «podría integrarse» | Que el front se sienta bancario sin aparentar producto oficial |
+| 2026-11-14 | Sin modo oscuro: solo blancos y azules. Paleta: blanco, azul petróleo `#1b6378` (ajuste de Venice Blue `#16587B`, que quedaba a ≤ 22 puntos del azul `#004481` de BBVA), azul claro `#84b3ce` solo para fondos, crema Merino `#f5eedd` como superficie propia de Lucas. Reemplaza el ámbar | Pedido de Marcela; límite de marca del juez-cumplimiento |
+| 2026-11-14 | Nueva estructura: ingreso (formulario visual con datos ficticios) → «Mi Banca» genérica (banca de siempre) → botón de Lucas → espacio Lucas (lo que aprendió de ti, tips, gastos por categoría, qué viene) → chat que responde con lo aprendido y predicciones → guía la primera vez | Mostrar a Lucas integrado en una banca, como lo usaría un cliente |
+| 2026-11-14 | «Mi Banca» es una banca genérica, no la app de BBVA | Las bases prohíben interfaces bancarias como si fueran oficiales; en el pitch: «se integra en la app de cualquier banco» |
+| 2026-11-14 | Íconos: Phosphor Icons (`@phosphor-icons/react`) en vez de Lucide | Pedido de Marcela |
+| 2026-11-14 | Lucas entra por la tarjeta de aviso en el inicio y por un botón destacado al centro de la barra inferior, no por burbuja flotante | Investigación: la burbuja tapa contenido y se ignora; la tarjeta muestra valor antes de abrir |
+| 2026-11-14 | Guía de primera vez: 3 pasos en contexto, con «Saltar» y botón «?» para volver a verla | Estudio NN/g: los tutoriales largos no mejoran el uso |
 | 2026-11-14 | Rojo solo para riesgo y siempre con texto («Aviso», «podrías quedar en rojo») | No depender solo del color |
 
 ## Lo que falta
+
+- [ ] Pasar `feature/front-banca-lucas` por los 3 jueces y abrir su PR
+- [ ] Conectar el chat al agente real (JF-02/JF-03) y el pronóstico al modelo de Diego (DI-06)
 
 - [ ] Firecrawl: conectar en claude.ai (Settings → Connectors) para investigación web
 - [ ] Mejoras del juez-producto: apartado S/ 150 calculado por el motor (entrada a Sueldo Lucas); explicar «peor caso» con palabras simples y mostrar «evitas 2 días en rojo»; enlazar MusiKa (Suscripciones) y la salud a acciones

@@ -1,0 +1,109 @@
+.chat {
+  display: grid;
+  gap: 12px;
+}
+
+.mensajes {
+  gap: 12px;
+}
+
+.mensaje-tu {
+  justify-self: end;
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 18px 18px 4px 18px;
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.mensaje-lucas {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mensaje-cuerpo {
+  max-width: 88%;
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--borde);
+  border-radius: 18px 18px 18px 4px;
+  background: var(--superficie);
+}
+
+.cifras-verificadas {
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--borde);
+}
+
+.cifras-verificadas li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cifras-verificadas svg {
+  flex: none;
+  color: var(--bien);
+}
+
+.cifras-verificadas strong {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.chat-entrada {
+  position: sticky;
+  bottom: 84px;
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  background: var(--fondo);
+}
+
+.chat-entrada input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+}
+
+.guia {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.guia-foco {
+  position: fixed;
+  border-radius: var(--radio);
+  outline: 3px solid var(--crema);
+  box-shadow: 0 0 0 9999px rgb(20 48 63 / 0.6);
+  pointer-events: none;
+}
+
+.guia-tarjeta {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(400px, calc(100% - 32px));
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.guia-botones {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

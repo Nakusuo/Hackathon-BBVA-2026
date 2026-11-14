@@ -56,12 +56,6 @@ export default function QueViene({ cliente }) {
 
   return (
     <>
-      <div className="encabezado-pantalla">
-        <h1>Qué viene</h1>
-        <p>Tu saldo día por día y lo que entra o sale de tu cuenta.</p>
-      </div>
-
-      <div className="viene">
         <section className="tarjeta" aria-labelledby="pronostico-titulo">
           <div className="tarjeta-titulo">
             <h2 id="pronostico-titulo">Tu saldo proyectado</h2>
@@ -78,8 +72,8 @@ export default function QueViene({ cliente }) {
             <p>
               <strong className="texto-riesgo">{textoDiasEnRojo(riesgo)} podrías quedar en rojo.</strong> Peor caso:{' '}
               <span className="cifra">{enSoles(riesgo.peorMonto)}</span> el {fechaDia(riesgo.peorFecha)}.{' '}
-              <Link className="enlace" to="/que-hacer">
-                Ver qué puedo hacer
+              <Link className="enlace" to="/lucas/resumen">
+                Ver tips
               </Link>
             </p>
           ) : (
@@ -113,10 +107,10 @@ export default function QueViene({ cliente }) {
                 <Area dataKey="banda" stroke="none" fill="var(--banda)" fillOpacity={0.7} isAnimationActive={false} />
                 <Line
                   dataKey="esperado"
-                  stroke="var(--dato)"
+                  stroke="var(--azul)"
                   strokeWidth={3}
                   dot={false}
-                  activeDot={{ r: 6, fill: 'var(--superficie)', stroke: 'var(--dato)', strokeWidth: 3 }}
+                  activeDot={{ r: 6, fill: 'var(--superficie)', stroke: 'var(--azul)', strokeWidth: 3 }}
                   isAnimationActive={false}
                 />
                 <ReferenceLine y={0} stroke="var(--riesgo)" strokeDasharray="6 4" strokeWidth={2} />
@@ -159,7 +153,6 @@ export default function QueViene({ cliente }) {
             ))}
           </ul>
         </section>
-      </div>
     </>
   )
 }

@@ -29,7 +29,7 @@ export default function AnilloSalud({ puntaje, componentes }) {
               cy="66"
               r={RADIO}
               fill="none"
-              stroke="var(--dato)"
+              stroke="var(--azul)"
               strokeWidth={GROSOR}
               strokeLinecap="round"
               strokeDasharray={`${(largo * c.valor) / 100} ${CIRCUNFERENCIA}`}

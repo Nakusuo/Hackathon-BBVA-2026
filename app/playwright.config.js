@@ -21,16 +21,12 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'laptop-claro',
-      use: { browserName: 'chromium', viewport: { width: 1366, height: 768 }, colorScheme: 'light' },
-    },
-    {
-      name: 'laptop-oscuro',
-      use: { browserName: 'chromium', viewport: { width: 1366, height: 768 }, colorScheme: 'dark' },
+      name: 'laptop',
+      use: { browserName: 'chromium', viewport: { width: 1366, height: 768 } },
     },
     {
       name: 'celular',
-      use: { ...devices['Pixel 7'], browserName: 'chromium', colorScheme: 'light' },
+      use: { ...devices['Pixel 7'], browserName: 'chromium' },
     },
   ],
 })

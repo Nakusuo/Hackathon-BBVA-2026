@@ -24,14 +24,14 @@ export function anchoBanda(persona, dia) {
   return persona.banda.inicial + dia * persona.banda.porDia
 }
 
-export function simular(persona, { pagosOmitidos = [], frecuencias = {}, gastoDiario } = {}) {
+export function simular(persona, { pagosOmitidos = [], frecuencias = {}, gastoDiario, pagosExtra = [] } = {}) {
   const diario = gastoDiario ?? gastoVariableDiario(persona, frecuencias)
   const puntos = []
   let saldo = persona.saldoHoy
   for (let i = 0; i <= persona.horizonteDias; i++) {
     const fecha = sumarDias(persona.hoy, i)
     if (i > 0) {
-      const pagos = persona.pagos
+      const pagos = [...persona.pagos, ...pagosExtra]
         .filter((p) => p.fecha === fecha && !pagosOmitidos.includes(p.id))
         .reduce((s, p) => s + p.monto, 0)
       saldo -= diario + pagos
@@ -58,12 +58,12 @@ export function diasEnRojo(persona, puntos) {
 }
 
 // El mayor gasto diario con el que ni el peor caso queda bajo cero antes del ingreso.
-export function gastoDiarioSeguro(persona) {
+export function gastoDiarioSeguro(persona, ajuste = {}) {
   let bajo = 0
   let alto = gastoVariableDiario(persona) * 3
   for (let i = 0; i < 40; i++) {
     const medio = (bajo + alto) / 2
-    const puntos = simular(persona, { gastoDiario: medio })
+    const puntos = simular(persona, { ...ajuste, gastoDiario: medio })
     if (peorDia(persona, puntos).banda[0] >= 0) bajo = medio
     else alto = medio
   }
@@ -93,4 +93,25 @@ export function evaluarTodos(persona, cambios) {
   )
   const puntos = simular(persona, ajusteConjunto)
   return { peor: peorDia(persona, puntos), diasEnRojo: diasEnRojo(persona, puntos) }
+}
+
+// Un gasto puntual mañana: cómo cambia el peor día y cuánto conviene gastar al día después.
+export function evaluarGastoExtra(persona, monto) {
+  const extra = { pagosExtra: [{ id: 'extra', fecha: sumarDias(persona.hoy, 1), monto }] }
+  const antes = peorDia(persona, simular(persona))
+  const despues = peorDia(persona, simular(persona, extra))
+  return {
+    monto,
+    peorAntes: antes.banda[0],
+    peorDespues: despues.banda[0],
+    fechaPeorDia: despues.fecha,
+    gastoDiarioSeguro: gastoDiarioSeguro(persona, extra),
+  }
+}
+
+// Apartar el día del cobro solo se propone si el peor caso del resto del horizonte sigue sobre cero.
+export function apartadoSinRojo(persona, monto) {
+  const puntos = simular(persona, { pagosExtra: [{ id: 'apartado', fecha: persona.ingreso.fecha, monto }] })
+  const despuesDelCobro = puntos.filter((p) => p.fecha >= persona.ingreso.fecha)
+  return Math.min(...despuesDelCobro.map((p) => p.banda[0])) >= 0
 }

@@ -45,7 +45,7 @@ h3 {
 }
 
 :focus-visible {
-  outline: 3px solid var(--dato);
+  outline: 3px solid var(--azul);
   outline-offset: 2px;
 }
 
