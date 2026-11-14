@@ -13,6 +13,7 @@ _CITA = re.compile(r"\[fuente:\s*([^\]]+?)\s*\]")
 # «1.» o «2)» al inicio de línea numeran una lista, no son cifras.
 _VINETA = re.compile(r"^\s*\d{1,2}[.)]\s", re.MULTILINE)
 _FECHA_ISO = re.compile(r"^\d{4}-\d{2}(-\d{2})?$|^\d{4}-\d{2}-\d{2}T")
+_DECIMAL_EN_TEXTO = re.compile(r"^-?\d+(\.\d+)?$")
 
 # Al hablar se redondea a la decena desde 100 y a la centena desde 1 000; nada intermedio.
 _REDONDEOS = ((100, -1), (1000, -2))
@@ -23,7 +24,9 @@ class Veredicto:
     ok: bool
     cifras_verificadas: list[float] = field(default_factory=list)
     cifras_no_verificadas: list[float] = field(default_factory=list)
+    cifras_mal_descritas: list[float] = field(default_factory=list)
     citas_invalidas: list[str] = field(default_factory=list)
+    citas_validas: list[str] = field(default_factory=list)
     fechas_incorrectas: list[str] = field(default_factory=list)
     frases_prohibidas: list[str] = field(default_factory=list)
     # (valor de la tool, campo del que salió) de cada cifra verificada que no es una fecha:
@@ -116,6 +119,10 @@ def valores_permitidos(datos) -> Permitidos:
     def visitar(x, clave: str = ""):
         if isinstance(x, bool):
             return
+        # FastAPI manda los `Decimal` como texto («"rate": "3.75"»), y el contrato pide Decimal
+        # para montos; sin esto el juez rechaza cifras reales de la API de Miguel.
+        if isinstance(x, str) and _DECIMAL_EN_TEXTO.match(x):
+            x = float(x)
         if isinstance(x, (int, float)):
             p.cifras.add(float(x))
             p.campo.setdefault(float(x), clave)
@@ -212,7 +219,11 @@ _ROJO_ANTES = re.compile(
     r"(en rojo|en negativo|falta\w*|faltar\w*|d[eé]ficit|deuda|sobregir\w*|corto|debajo)"
     r"\s+(?:(?:por|de|en|con|unos|unas|cerca de)\s+)*(?:s/\s*)?$"
 )
-_ROJO_DESPUES = re.compile(r"^\s*(?:de\s+)?(en rojo|en negativo|abajo|bajo cero|de deuda|negativo)")
+_ROJO_DESPUES = re.compile(
+    r"^\s*(?:de\s+)?(en rojo|en negativo|abajo|bajo cero|de deuda|negativo"
+    # «S/ 200 te faltaron» sí; en «S/ 150 te faltarían S/ 200» lo que falta es el 200.
+    r"|(?:te |me )?falta\w*(?!.*s/))"
+)
 _NEGACION = re.compile(r"\b(no|sin|ni|nada|nunca|jam[aá]s|ning[uú]n\w*|tampoco|lejos de)\b")
 _A_FAVOR = re.compile(r"a favor|te sobra|sobran|de sobra|positiv|ganancia|tranquil")
 
@@ -234,39 +245,77 @@ def signo_contradice(valor: float, origen: float, alrededor: tuple[str, str, str
     return origen > 0 and (valor < 0 or _marca_rojo(antes, despues))
 
 
+# Lo vio Michael en la RTX 3050: «Tu saldo actual es S/ 120» con 120 = ahorro en delivery,
+# y el 3b llamó «saldo actual» al saldo final de la simulación.
+_CAMPOS_SALDO = re.compile(r"saldo|balance|bound")
+_CAMPOS_FUTUROS = re.compile(r"final|bound|predicted|previsto|probable")
+_DICE_HOY = re.compile(r"\b(actual|hoy|ahora)\b")
+
+
+def cifra_mal_descrita(campo: str, antes: str) -> bool:
+    """La cifra existe, pero el texto la llama como otra cosa."""
+    if "saldo" in antes and not _CAMPOS_SALDO.search(campo):
+        return True
+    return bool(_DICE_HOY.search(antes) and _CAMPOS_FUTUROS.search(campo))
+
+
 def juzgar(
     texto: str,
     datos,
     fuentes_validas: set[str] | None = None,
     exigir_cifra: bool = False,
     revisar_frases: bool = True,
+    fragmentos: dict[str, str] | None = None,
+    exigir_cita: bool = False,
 ) -> Veredicto:
     """Aprueba la respuesta solo si todas sus cifras y citas tienen respaldo.
 
     Con `exigir_cifra`, si las tools trajeron números la respuesta debe usar al menos uno
     que no sea parte de una fecha: un texto sin montos no es error, pero no ayuda a decidir.
+    `fragmentos` ({id: texto}) son los del RAG: citarlos es válido y los números de un
+    fragmento citado («artículo 11», «Ley 29571») también lo son. Con `exigir_cita`, la
+    respuesta tiene que citar al menos uno.
     """
+    fragmentos = fragmentos or {}
+    validas = set(fuentes_validas or ()) | set(fragmentos)
+    citas = _CITA.findall(texto)
+    citas_validas = list(dict.fromkeys(c for c in citas if c in validas))
     p = valores_permitidos(datos)
-    verificadas, no_verificadas, detalle = [], [], []
+    for cita in citas_validas:
+        for valor, _, _, _ in extraer_numeros(fragmentos.get(cita, "")):
+            for numero in (valor, abs(valor)):
+                p.cifras.add(numero)
+                p.soles.add(numero)
+                p.campo.setdefault(numero, "fragmento")
+    verificadas, no_verificadas, detalle, mal_descritas = [], [], [], []
     for valor, decimales, en_soles, alrededor in extraer_numeros(texto):
         respaldo = buscar(valor, decimales, p.soles if en_soles else p.todos)
         if respaldo is None or signo_contradice(valor, respaldo, alrededor):
             no_verificadas.append(valor)
             continue
-        verificadas.append(valor)
         origen = buscar(valor, decimales, p.soles if en_soles else p.cifras)
-        if origen is not None:
+        if origen is not None and cifra_mal_descrita(p.campo[origen], alrededor[0]):
+            mal_descritas.append(valor)
+            continue
+        verificadas.append(valor)
+        # Un número de la norma citada se verifica, pero no es una cifra del cliente para la UI.
+        if origen is not None and p.campo[origen] != "fragmento":
             detalle.append((origen, p.campo[origen]))
     montos = len(detalle)
-    citas_invalidas = [c for c in _CITA.findall(texto) if c not in (fuentes_validas or set())]
+    citas_invalidas = [c for c in citas if c not in validas]
+    sin_cita = exigir_cita and not citas_validas
     fechas_mal = fechas_incorrectas(texto, p.fechas)
     # Las plantillas las escribe el equipo y algunas niegan a propósito («no puedo comprar dólares»).
     prohibidas = frases_prohibidas(texto) if revisar_frases else []
     sin_cifras = exigir_cifra and bool(p.cifras) and not montos
     return Veredicto(
-        ok=not (no_verificadas or citas_invalidas or fechas_mal or prohibidas or sin_cifras),
+        ok=not (no_verificadas or mal_descritas or citas_invalidas or fechas_mal or prohibidas)
+        and not sin_cifras
+        and not sin_cita,
+        citas_validas=citas_validas,
         cifras_verificadas=verificadas,
         cifras_no_verificadas=no_verificadas,
+        cifras_mal_descritas=mal_descritas,
         citas_invalidas=citas_invalidas,
         fechas_incorrectas=fechas_mal,
         frases_prohibidas=prohibidas,

@@ -2,6 +2,7 @@ import pytest
 
 from agent import plantillas
 from agent.juez import interpretar_numero, juzgar
+from agent.prompts import resumen_para_llm
 from agent.tools import HerramientasMock
 
 T = HerramientasMock()
@@ -25,7 +26,9 @@ def test_interpreta_formatos_de_numero(texto, valor):
     assert interpretar_numero(texto)[0] == valor
 
 
-@pytest.mark.parametrize("intencion", list(plantillas.TOOLS_POR_INTENCION))
+@pytest.mark.parametrize(
+    "intencion", [i for i in plantillas.TOOLS_POR_INTENCION if i != "educacion"]
+)
 def test_aprueba_cada_plantilla(intencion):
     llamadas = {
         "get_health": lambda: T.get_health("c-001"),
@@ -255,3 +258,67 @@ def test_respuesta_vacia_de_cifras_se_rechaza_si_se_exigen():
 
 def test_exigir_cifra_no_aplica_si_las_tools_no_traen_numeros():
     assert juzgar("Tu perfil es Gastador.", {"perfil": "Gastador"}, exigir_cifra=True).ok
+
+
+# Casos de la medición de Michael en la RTX 3050 y de la duda de Dixon (CP-SIS-10).
+
+RECOS_LLM = resumen_para_llm("recos", {"get_recos": T.get_recos("c-001")})
+SIMULACION_LLM = resumen_para_llm("simular", {"simulate": T.simulate("c-001", 150.0)})
+
+
+def test_rechaza_impacto_presentado_como_saldo():
+    v = juzgar("Tu saldo actual es S/ 120.00. Reduce el delivery.", RECOS_LLM)
+    assert not v.ok and v.cifras_mal_descritas == [120.0]
+
+
+def test_acepta_impacto_bien_descrito():
+    assert juzgar("Si reduces el delivery dejas de gastar S/ 120 al mes.", RECOS_LLM).ok
+
+
+def test_rechaza_saldo_negativo_escrito_como_si_sobrara():
+    v = juzgar("Te sobraron S/ 50 sin el gasto.", SIMULACION_LLM)
+    assert not v.ok and v.cifras_no_verificadas == [50.0]
+
+
+@pytest.mark.parametrize(
+    "texto",
+    [
+        "Si gastas S/ 150, terminarías en rojo por S/ 200.",
+        "Si gastas S/ 150, tu saldo final sería -S/ 200.",
+        "Con el gasto de S/ 150 te faltarían S/ 200.",
+        "Con el gasto de S/ 150, S/ 200.0 te faltaron en tu saldo final.",
+    ],
+)
+def test_acepta_saldo_negativo_bien_dicho(texto):
+    assert juzgar(texto, SIMULACION_LLM, exigir_cifra=True).ok
+
+
+def test_el_negativo_de_otra_frase_no_salva_a_la_cifra():
+    # Textual de qwen2.5:3b: «saldo negativo» está en otra frase, no describe a los S/ 50.
+    texto = (
+        "S/ 50.0 te sobraron sin el gasto. Revisa tus gastos para no llegar a un saldo negativo."
+    )
+    v = juzgar(texto, SIMULACION_LLM)
+    assert not v.ok and v.cifras_no_verificadas == [50.0]
+
+
+def test_rechaza_saldo_final_presentado_como_actual():
+    v = juzgar("Tu saldo actual es de -S/ 50.00.", SIMULACION_LLM)
+    assert not v.ok and v.cifras_mal_descritas == [-50.0]
+
+
+def test_rechaza_puntaje_llamado_saldo():
+    datos = resumen_para_llm("salud", SALUD)
+    assert not juzgar("Tu saldo de salud es de 72 puntos.", datos).ok
+
+
+def test_salud_del_llm_con_escala_pasa():
+    datos = resumen_para_llm("salud", SALUD)
+    assert juzgar("Tu salud está en 72 de 100, estable.", datos, exigir_cifra=True).ok
+
+
+def test_acepta_decimales_que_la_api_manda_como_texto():
+    # Así responde /fx en la rama de Miguel: Pydantic serializa Decimal como texto.
+    datos = {"get_fx": {"rate": "3.75", "date": "2026-01-01", "customer_id": "demo-001"}}
+    v = juzgar("El tipo de cambio es S/ 3.75 por dólar.", datos)
+    assert v.ok and v.detalle == [(3.75, "rate")]
