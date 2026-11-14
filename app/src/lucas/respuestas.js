@@ -1,4 +1,4 @@
-// Respuestas por plantilla mientras no exista el agente (JF-02). Toda cifra sale del motor, nunca del texto.
+// Respuestas por plantilla: respaldo cuando el agente (JF-02) no está o no contesta. Toda cifra sale del motor, nunca del texto.
 import { CAMBIOS } from '../mocks/cliente.js'
 import { ajusteDe, apartadoSinRojo, evaluarGastoExtra } from '../mocks/motor.js'
 import { conSigno, enSoles, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
@@ -145,9 +145,13 @@ const NO_ENTIENDO = {
   cifras: [],
 }
 
+export function esPedidoDeOperacion(pregunta) {
+  return /(invert|inviert|inversion|dolar|accion|cripto|transfer|transfier|paga por mi|mueve)/.test(normalizar(pregunta))
+}
+
 export function responder(pregunta, cliente, persona) {
   const texto = normalizar(pregunta)
-  if (/(invert|inviert|inversion|dolar|accion|cripto|transfer|transfier|paga por mi|mueve)/.test(texto)) return LIMITES
+  if (esPedidoDeOperacion(pregunta)) return LIMITES
   const monto = montoEn(texto)
   const montoValido = monto > 0 ? monto : null
   if (/(ahorr|apart|guardar|colchon)/.test(texto)) return cuantoAhorrar(cliente, persona, montoValido)

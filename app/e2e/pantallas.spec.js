@@ -172,8 +172,13 @@ test('Qué viene cambia de periodo y muestra los pagos de diciembre', async ({ p
   await expect(pagos).toContainText('Pago total de tarjeta')
 })
 
+async function agenteCaido(page) {
+  await page.route('**/api/v1/chat', (ruta) => ruta.abort('connectionrefused'))
+}
+
 test('el chat responde «Calculado con tus datos» y no da asesoría', async ({ page }) => {
   await sinGuia(page)
+  await agenteCaido(page)
   await page.goto('/lucas/chat')
   await page.getByRole('button', { name: '¿Puedo gastar S/ 150 en un regalo?' }).click()
   const ultima = page.locator('.mensaje-lucas').last()
@@ -185,8 +190,55 @@ test('el chat responde «Calculado con tus datos» y no da asesoría', async ({ 
   await expect(page.locator('.mensaje-lucas').last()).toContainText('Eso no lo hago')
 })
 
+test('con el agente, el chat muestra «pensando», las cifras verificadas con ✓ y las fuentes', async ({ page }) => {
+  await sinGuia(page)
+  let soltar
+  const espera = new Promise((r) => (soltar = r))
+  await page.route('**/api/v1/chat', async (ruta) => {
+    await espera
+    await ruta.fulfill({
+      json: {
+        conversation_id: 'conv-001',
+        answer: 'Si gastas S/ 150, tu saldo mínimo probable sería -S/ 310. Tú decides.',
+        provider: 'ollama',
+        verified: true,
+        figures: [{ label: 'Saldo mínimo probable', value: -310, unit: 'PEN' }],
+        sources: [{ id: 'guia-1', title: 'Guía de presupuesto personal', url: 'https://ejemplo.pe/guia' }],
+        tools_used: ['simulate'],
+      },
+    })
+  })
+  await page.goto('/lucas/chat')
+  await page.getByRole('button', { name: '¿Puedo gastar S/ 150 en un regalo?' }).click()
+  await expect(page.getByText('Lucas está pensando')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Enviar' })).toBeDisabled()
+  soltar()
+
+  const ultima = page.locator('.mensaje-lucas').last()
+  const cifras = ultima.getByRole('list', { name: 'Cifras verificadas con tus datos' })
+  await expect(cifras).toContainText('−S/ 310')
+  await expect(cifras).toContainText('verificada')
+  await expect(ultima.getByRole('link', { name: 'Guía de presupuesto personal' })).toHaveAttribute('href', 'https://ejemplo.pe/guia')
+  await expect(page.getByText('Lucas está pensando')).toHaveCount(0)
+
+  const anchoExtra = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+  expect(anchoExtra).toBeLessThanOrEqual(0)
+})
+
+test('si el agente falla, el chat lo dice y responde con sus cálculos', async ({ page }) => {
+  await sinGuia(page)
+  await page.route('**/api/v1/chat', (ruta) => ruta.fulfill({ status: 500, body: 'error' }))
+  await page.goto('/lucas/chat')
+  await page.getByRole('button', { name: '¿Llego a mi cobro?' }).click()
+  const ultima = page.locator('.mensaje-lucas').last()
+  await expect(ultima).toContainText('No pude hablar con el agente de Lucas')
+  await expect(ultima.getByRole('list', { name: 'Calculado con tus datos' })).toBeVisible()
+  await expect(page.getByText('No es asesoría')).toBeVisible()
+})
+
 test('una pregunta sugerida desde el Resumen llega al chat una sola vez', async ({ page }) => {
   await sinGuia(page)
+  await agenteCaido(page)
   await page.goto('/lucas/resumen')
   await page.getByRole('link', { name: '¿Llego a mi cobro?' }).click()
   await expect(page).toHaveURL(/lucas\/chat$/)

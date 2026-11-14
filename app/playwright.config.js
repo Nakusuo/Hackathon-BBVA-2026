@@ -18,6 +18,8 @@ export default defineConfig({
     command: `npm run dev -- --port ${PUERTO} --strictPort`,
     url: `http://localhost:${PUERTO}`,
     reuseExistingServer: !process.env.CI,
+    // El chat llama al agente en el mismo origen; las pruebas responden por él con page.route.
+    env: { VITE_LUCAS_API: `http://localhost:${PUERTO}` },
   },
   projects: [
     {
@@ -26,7 +28,8 @@ export default defineConfig({
     },
     {
       name: 'celular',
-      use: { ...devices['Pixel 7'], browserName: 'chromium' },
+      // 390 px es el ancho más angosto de los celulares que apuntamos.
+      use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 }, browserName: 'chromium' },
     },
   ],
 })
