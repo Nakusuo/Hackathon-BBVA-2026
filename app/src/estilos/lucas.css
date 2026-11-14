@@ -77,7 +77,7 @@
 
 .lucas-contenido {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   padding: 16px;
 }
 
@@ -328,7 +328,7 @@
   position: relative;
   display: grid;
   gap: 4px;
-  padding: 20px;
+  padding: 18px 20px;
   border-radius: 24px;
   background: var(--azul-profundo);
   color: var(--sobre-azul);
@@ -364,7 +364,7 @@
 .hero-cobro {
   display: flex;
   justify-content: space-between;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .hero-barra {
@@ -397,10 +397,6 @@
   margin: 0;
 }
 
-.aviso-corto .boton {
-  grid-column: 2;
-}
-
 .boton-chico {
   min-height: 44px;
   padding: 0 18px;
@@ -411,7 +407,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px 8px;
 }
 
 .impacto span {
@@ -447,15 +443,15 @@
 
 .bento {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
+/* Tres bloques en una fila (Lo aprendido, Salud y Metas): el chat ya tiene su pestaña arriba. */
 .bento-bloque {
   display: grid;
   align-content: start;
   gap: 4px;
-  min-height: 112px;
   padding: 14px 12px;
   border: 1px solid var(--borde);
   border-radius: var(--radio);

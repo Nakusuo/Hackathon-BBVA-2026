@@ -1,5 +1,4 @@
 import {
-  ChatCircleDots,
   CheckCircle,
   Barbell,
   Coffee,
@@ -20,7 +19,6 @@ import { avanceDelCiclo, diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud 
 import { entrada } from '../movimiento.js'
 import ExplicameFacil from './ExplicameFacil.jsx'
 import { explicarResumen } from './explicaciones.js'
-import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee, fitzona: Barbell, taxi: Taxi }
 
@@ -163,11 +161,12 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
             <p>
               <strong>Lucas te avisa:</strong> en el peor caso, el {fechaDia(riesgo.desde)}
               {riesgo.hasta !== riesgo.desde && ` y el ${fechaDia(riesgo.hasta)}`} quedarías en rojo (
-              <span className="cifra">{enSoles(riesgo.peorMonto)}</span>).
+              <span className="cifra">{enSoles(riesgo.peorMonto)}</span>).{' '}
+              {/* Enlace en la frase, como «Ver tips» en Qué viene: un botón aparte ocupaba una fila entera. */}
+              <a className="enlace" href="#tips">
+                Cómo evitarlo
+              </a>
             </p>
-            <a className="boton boton-chico" href="#tips">
-              Cómo evitarlo
-            </a>
           </section>
         ) : mes.diasEnRojo ? (
           <section className="aviso aviso-corto" role="status" aria-label="Aviso de Lucas">
@@ -233,20 +232,17 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
         <Link to="/lucas/salud" className="bento-bloque">
           <Heartbeat size={24} aria-hidden="true" />
           <span className="bento-titulo">Tu salud</span>
+          {/* Corto para que el bloque no estire la fila: la meta con tips se lee en dos líneas en celular. */}
           <span className="suave">
-            {salud.puntaje}, {nivelDeSalud(salud.puntaje)}
-            {faltanCambios && salud.puntaje !== conTodos.salud && `. Si cumples los tips, ${conTodos.salud}`}
+            {faltanCambios && salud.puntaje !== conTodos.salud
+              ? `${salud.puntaje} hoy, ${conTodos.salud} con tips`
+              : `${salud.puntaje}, ${nivelDeSalud(salud.puntaje)}`}
           </span>
         </Link>
         <Link to="/lucas/metas" className="bento-bloque">
           <Target size={24} aria-hidden="true" />
           <span className="bento-titulo">Tus metas</span>
           <span className="suave">{metas.length ? `${metas.length} ${metas.length === 1 ? 'meta' : 'metas'}` : 'Crea la primera'}</span>
-        </Link>
-        <Link to={`/lucas/chat?q=${encodeURIComponent(PREGUNTAS_SUGERIDAS[0])}`} className="bento-bloque">
-          <ChatCircleDots size={24} aria-hidden="true" />
-          <span className="bento-titulo">Pregúntale</span>
-          <span className="suave">{PREGUNTAS_SUGERIDAS[0]}</span>
         </Link>
       </motion.nav>
 

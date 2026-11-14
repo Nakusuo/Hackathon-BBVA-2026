@@ -1,4 +1,4 @@
-import { Warning, X } from '@phosphor-icons/react'
+import { CaretDown, CaretUp, Warning, X } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -32,10 +32,32 @@ const PERIODOS = [
 const COLOR = {
   linea: 'var(--grafico-linea)',
   banda: 'var(--grafico-banda)',
-  rejilla: 'rgb(255 255 255 / 0.15)',
+  rejilla: 'rgb(255 255 255 / 0.12)',
   texto: 'var(--sobre-azul-suave)',
   riesgo: 'var(--riesgo-claro)',
   fondo: 'var(--azul-profundo)',
+  fuerte: 'var(--sobre-azul)',
+}
+
+// Etiquetas directas sobre el gráfico: quien mira no tiene que cruzar colores con la leyenda.
+const ETIQUETA = { fontSize: 16, fontWeight: 700 }
+
+// El rótulo del peor caso lleva fondo propio: así no se cruza con la línea del cero y conserva contraste.
+// Va a la izquierda del punto, salvo que el peor día caiga al inicio y no quepa; entonces va a la derecha.
+function RotuloPeorCaso({ viewBox, texto }) {
+  if (!viewBox) return null
+  const ancho = texto.length * 9 + 20
+  const izquierda = viewBox.x - ancho - 6
+  const x = izquierda >= 0 ? izquierda : viewBox.x + 6
+  const y = viewBox.y - 40
+  return (
+    <g>
+      <rect x={x} y={y} width={ancho} height={26} rx={13} fill={COLOR.fondo} stroke={COLOR.riesgo} strokeWidth={1.5} />
+      <text x={x + ancho / 2} y={y + 18} textAnchor="middle" fill={COLOR.fuerte} {...ETIQUETA}>
+        {texto}
+      </text>
+    </g>
+  )
 }
 
 function Globo({ active, payload }) {
@@ -111,6 +133,8 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
   const [periodo, setPeriodo] = useState('ingreso')
   const [borrador, setBorrador] = useState(VACIO)
   const [agregado, setAgregado] = useState('')
+  // El simulador va plegado: abierto ocupa casi una pantalla y Qué viene debe caber en 1.5 de celular.
+  const [simulando, setSimulando] = useState(false)
 
   const revision = validarPlanificado(cliente, borrador)
   const { movimiento } = revision
@@ -126,6 +150,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
   const panel = estadoDelPanel(vista, periodo)
   const puntoRiesgo = panel.rojo && datos.find((p) => p.fecha === panel.peorFecha)
   const ultimoDia = datos.at(-1).fecha
+  const primero = datos[0]
 
   const movimientos = [
     ...proximosPagos.map((p) => ({ ...p, entra: false })),
@@ -144,6 +169,12 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
     setBorrador((previo) => ({ ...previo, [campo]: valor }))
     // La vista sigue a la fecha: lo que cae después del cobro no se ve en «Hasta mi cobro».
     if (campo === 'fecha' && valor) setPeriodo(valor >= proximoIngreso.fecha ? 'mes' : 'ingreso')
+  }
+
+  // Al cerrar se descarta el borrador: si no, el gráfico seguiría mostrando una prueba que ya no se ve.
+  function alternarSimulador() {
+    if (simulando) setBorrador(VACIO)
+    setSimulando(!simulando)
   }
 
   function agregar(nuevo) {
@@ -187,8 +218,14 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
         <p className="solo-lector">{resumen}</p>
         <div className="grafico" aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={datos} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+            <ComposedChart data={datos} margin={{ top: 28, right: 16, bottom: 0, left: 0 }}>
               <CartesianGrid stroke={COLOR.rejilla} vertical={false} />
+              <ReferenceLine
+                x={proximoIngreso.fecha}
+                stroke={COLOR.texto}
+                strokeDasharray="2 4"
+                label={{ ...ETIQUETA, value: 'Cobro', position: 'insideTopRight', fill: COLOR.fuerte }}
+              />
               <XAxis
                 dataKey="fecha"
                 tickFormatter={fechaCorta}
@@ -224,11 +261,21 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
                 dataKey="esperado"
                 stroke={COLOR.linea}
                 strokeWidth={3}
+                strokeDasharray="8 5"
                 dot={false}
                 activeDot={{ r: 6, fill: COLOR.fondo, stroke: COLOR.linea, strokeWidth: 3 }}
                 isAnimationActive={false}
               />
               <ReferenceLine y={0} stroke={COLOR.riesgo} strokeDasharray="6 4" strokeWidth={2} />
+              <ReferenceDot
+                x={primero.fecha}
+                y={primero.esperado}
+                r={6}
+                fill={COLOR.linea}
+                stroke={COLOR.fondo}
+                strokeWidth={2}
+                label={{ ...ETIQUETA, value: 'Hoy', position: 'top', fill: COLOR.fuerte }}
+              />
               {puntoRiesgo && (
                 <ReferenceDot
                   x={puntoRiesgo.fecha}
@@ -237,6 +284,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
                   fill={COLOR.riesgo}
                   stroke={COLOR.fondo}
                   strokeWidth={2}
+                  label={<RotuloPeorCaso texto={`Peor caso ${enSoles(panel.peorMonto)}`} />}
                 />
               )}
             </ComposedChart>
@@ -246,34 +294,45 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
         <div className="leyenda" aria-hidden="true">
           <span className="clave-esperado">Lo más probable</span>
           <span className="clave-banda">Rango posible</span>
-          <span className="clave-cero">Saldo en cero</span>
         </div>
+
+        <button
+          type="button"
+          className="boton boton-ancho boton-sobre-azul"
+          aria-expanded={simulando}
+          aria-controls="simulador"
+          onClick={alternarSimulador}
+        >
+          {simulando ? 'Cerrar la simulación' : 'Simular un gasto o ingreso'}
+          {simulando ? <CaretUp size={20} aria-hidden="true" /> : <CaretDown size={20} aria-hidden="true" />}
+        </button>
       </section>
 
-      <Planificar
-        cliente={cliente}
-        prueba={prueba}
-        borrador={borrador}
-        revision={revision}
-        alCambiar={cambiar}
-        alAgregar={agregar}
-      />
-      <p className="solo-lector" role="status">
-        {agregado}
-      </p>
+      {/* Abierto va entre el panel y la lista; cerrado no existe, y la hoja de pagos vuelve a montarse sobre el panel. */}
+      {simulando && (
+        <div id="simulador">
+          <Planificar
+            cliente={cliente}
+            prueba={prueba}
+            borrador={borrador}
+            revision={revision}
+            alCambiar={cambiar}
+            alAgregar={agregar}
+          />
+        </div>
+      )}
 
-      <ExplicameFacil puntos={explicarQueViene(cliente)} />
 
-      <section className="tarjeta" aria-labelledby="movimientos-titulo">
+      <section className="tarjeta hoja" aria-labelledby="movimientos-titulo">
         <h2 id="movimientos-titulo">Pagos y cobros</h2>
         <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} alQuitar={alQuitar} />
         <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} alQuitar={alQuitar} />
-        <p className="suave">
-          {cliente.ingresoVariable
-            ? 'El rango se abre con los días porque tu gasto varía, y se ensancha en cada cobro porque tus clientes no siempre te pagan lo mismo.'
-            : 'El rango es angosto porque tu sueldo llega fijo; solo se abre un poco con los días porque tu gasto varía.'}
-        </p>
+        <ExplicameFacil puntos={explicarQueViene(cliente)} />
       </section>
+      {/* Al final y no entre el panel y la hoja: así la hoja sigue montada sobre el panel. */}
+      <p className="solo-lector" role="status">
+        {agregado}
+      </p>
     </>
   )
 }

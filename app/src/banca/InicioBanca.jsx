@@ -1,4 +1,4 @@
-import { ArrowsLeftRight, Bell, DeviceMobile, Eye, EyeSlash, QrCode, Receipt, UserCircle } from '@phosphor-icons/react'
+import { ArrowsLeftRight, Bell, CaretRight, DeviceMobile, Eye, EyeSlash, QrCode, Receipt, UserCircle } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
@@ -22,25 +22,18 @@ function nombreDelDia(fecha, hoy) {
   return fechaCorta(fecha)
 }
 
-function agruparPorDia(movimientos, hoy) {
-  const grupos = []
-  for (const m of movimientos) {
-    const nombre = nombreDelDia(m.fecha, hoy)
-    const grupo = grupos.at(-1)
-    if (grupo?.nombre === nombre) grupo.movimientos.push(m)
-    else grupos.push({ nombre, movimientos: [m] })
-  }
-  return grupos
-}
+// En el inicio bastan los últimos 3; el resto se abre con «Ver todo» para no cargar la pantalla.
+const MOVIMIENTOS_VISIBLES = 3
 
 export default function InicioBanca() {
   const { avisarSinDemo, vista: cliente, permiso } = useOutletContext()
   const [montosVisibles, setMontosVisibles] = useState(true)
   const monto = (valor) => (montosVisibles ? enSoles(valor) : OCULTO)
-  const { riesgo, cuenta, tarjeta, hoy, proximoIngreso } = cliente
-  const pagosAntesDelCobro = cliente.proximosPagos.filter((p) => p.fecha < proximoIngreso.fecha)
+  const { riesgo, cuenta, tarjeta, hoy } = cliente
   const { avisos: candidatosHoy, riesgoLejano } = candidatos(cliente)
   const totalAvisos = armarBandeja(candidatosHoy, leerRegistro(), hoy).avisos.length
+  const [todos, setTodos] = useState(false)
+  const movimientos = todos ? cliente.movimientosRecientes : cliente.movimientosRecientes.slice(0, MOVIMIENTOS_VISIBLES)
 
   return (
     <>
@@ -87,37 +80,32 @@ export default function InicioBanca() {
       </header>
 
       <main className="banca-contenido">
-        <section className="tarjeta-credito" aria-label={`${tarjeta.nombre} terminada en ${tarjeta.terminacion}`}>
-          <div className="tarjeta-credito-frente">
-            <span className="logotipo logotipo-claro">Vértice</span>
-            <span className="tarjeta-credito-numero" aria-hidden="true">
-              •••• •••• •••• {tarjeta.terminacion}
-            </span>
-          </div>
-          <div className="tarjeta-credito-pie">
-            <div>
-              <span>Pago del mes</span>
-              <strong>{monto(tarjeta.pagoMes)}</strong>
+        <div className="tarjeta-pila">
+          <section className="tarjeta-credito" aria-label={`${tarjeta.nombre} terminada en ${tarjeta.terminacion}`}>
+            <div className="tarjeta-credito-frente">
+              <svg className="tarjeta-credito-arcos" viewBox="0 0 200 200" aria-hidden="true">
+                <circle cx="200" cy="0" r="96" />
+              </svg>
+              <div className="tarjeta-credito-fila">
+                <span className="logotipo logotipo-claro">Vértice</span>
+                <span className="tarjeta-credito-tipo">Crédito</span>
+              </div>
+              <span className="tarjeta-credito-numero" aria-hidden="true">
+                •••• •••• •••• {tarjeta.terminacion}
+              </span>
             </div>
-            <div>
-              <span>Vence</span>
-              <strong>{fechaDia(tarjeta.vence)}</strong>
+            <div className="tarjeta-credito-pie">
+              <div>
+                <span>Pago del mes</span>
+                <strong>{monto(tarjeta.pagoMes)}</strong>
+              </div>
+              <div>
+                <span>Vence</span>
+                <strong>{fechaDia(tarjeta.vence)}</strong>
+              </div>
             </div>
-          </div>
-        </section>
-
-        <ul className="accesos" aria-label="Operaciones frecuentes">
-          {ACCESOS.map(({ nombre, Icono }) => (
-            <li key={nombre}>
-              <button type="button" className="acceso" onClick={avisarSinDemo}>
-                <span className="circulo circulo-grande">
-                  <Icono size={26} aria-hidden="true" />
-                </span>
-                {nombre}
-              </button>
-            </li>
-          ))}
-        </ul>
+          </section>
+        </div>
 
         {!permiso ? (
           <Link to="/consentimiento" state={{ volver: '/lucas/resumen' }} className="tarjeta-lucas">
@@ -140,6 +128,7 @@ export default function InicioBanca() {
                 podrías quedar en rojo. Mira cómo evitarlo.
               </span>
             </span>
+            <CaretRight size={20} aria-hidden="true" />
           </Link>
         ) : (
           <Link to="/lucas/resumen" className="tarjeta-lucas">
@@ -148,56 +137,56 @@ export default function InicioBanca() {
               <strong>Lucas</strong>
               <span>Con tus cambios llegas a tu cobro sin quedar en rojo. Mira tu plan.</span>
             </span>
+            <CaretRight size={20} aria-hidden="true" />
           </Link>
         )}
 
-        <section aria-labelledby="programados-titulo" className="seccion-banca">
-          <div className="tarjeta-titulo">
-            <h2 id="programados-titulo" className="titulo-chico">
-              Pagos programados
-            </h2>
-            <Link className="enlace" to="/lucas/que-viene">
-              Ver todos
-            </Link>
-          </div>
-          <ul className="programados" aria-label="Pagos antes de tu cobro">
-            {pagosAntesDelCobro.map((p) => (
-              <li key={p.id} className="programado">
-                <span className="circulo" aria-hidden="true">
-                  {iniciales(p.concepto)}
+        <ul className="accesos" aria-label="Operaciones frecuentes">
+          {ACCESOS.map(({ nombre, Icono }) => (
+            <li key={nombre}>
+              <button type="button" className="acceso" onClick={avisarSinDemo}>
+                <span className="acceso-icono">
+                  <Icono size={24} aria-hidden="true" />
                 </span>
-                <span className="programado-texto">
-                  <span>{p.concepto}</span>
-                  <strong>{monto(p.monto)}</strong>
-                  <span className="suave">{fechaDia(p.fecha)}</span>
+                {nombre}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        <section className="tarjeta" aria-labelledby="movimientos-titulo">
+          <div className="tarjeta-titulo">
+            <h2 id="movimientos-titulo" className="titulo-chico">
+              Últimos movimientos
+            </h2>
+            {cliente.movimientosRecientes.length > MOVIMIENTOS_VISIBLES && (
+              <button
+                type="button"
+                className="boton-texto"
+                aria-expanded={todos}
+                aria-controls="lista-movimientos"
+                onClick={() => setTodos(!todos)}
+              >
+                {todos ? 'Ver menos' : 'Ver todo'}
+              </button>
+            )}
+          </div>
+          <ul id="lista-movimientos" className="lista-limpia">
+            {movimientos.map((m) => (
+              <li key={m.id} className="fila">
+                <span className="circulo" aria-hidden="true">
+                  {iniciales(m.concepto)}
+                </span>
+                <span className="fila-texto">
+                  <span>{m.concepto}</span>
+                  <span className="suave">{nombreDelDia(m.fecha, hoy)}</span>
+                </span>
+                <span className={`fila-monto ${m.monto > 0 ? 'entra' : ''}`}>
+                  {montosVisibles ? `${m.monto > 0 ? '+' : ''}${enSoles(m.monto)}` : OCULTO}
                 </span>
               </li>
             ))}
           </ul>
-        </section>
-
-        <section className="tarjeta" aria-labelledby="movimientos-titulo">
-          <h2 id="movimientos-titulo" className="titulo-chico">
-            Últimos movimientos
-          </h2>
-          {agruparPorDia(cliente.movimientosRecientes, hoy).map((g) => (
-            <div key={g.nombre} className="grupo-dia">
-              <h3 className="grupo-nombre">{g.nombre}</h3>
-              <ul className="lista-limpia">
-                {g.movimientos.map((m) => (
-                  <li key={m.id} className="fila">
-                    <span className="circulo" aria-hidden="true">
-                      {iniciales(m.concepto)}
-                    </span>
-                    <span className="fila-texto">{m.concepto}</span>
-                    <span className={`fila-monto ${m.monto > 0 ? 'entra' : ''}`}>
-                      {montosVisibles ? `${m.monto > 0 ? '+' : ''}${enSoles(m.monto)}` : OCULTO}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
         </section>
       </main>
     </>

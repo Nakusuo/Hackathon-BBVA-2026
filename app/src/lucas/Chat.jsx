@@ -1,40 +1,45 @@
 import { BookOpen, Calculator, CheckCircle, PaperPlaneRight, WarningCircle } from '@phosphor-icons/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
+import { SUAVE } from '../movimiento.js'
 import { LARGO_MAXIMO, preguntarALucas } from './clienteChat.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 // Apagado hasta que exista POST /api/v1/chat en FastAPI; las demás lecturas no dependen de esto.
 const AGENTE = import.meta.env.VITE_CHAT_AGENTE === 'si'
 
-const BIENVENIDA = {
-  autor: 'lucas',
-  texto: 'Hola, soy Lucas. Respondo con lo que aprendí de tus movimientos y con mi pronóstico de tu saldo.',
-  cifras: [],
-  pose: 'saludo',
+// Cada mensaje nuevo sube un poco al entrar; con «reducir movimiento» aparece quieto.
+function entradaDe(reducido) {
+  if (reducido) return { initial: false }
+  return { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.25, ease: SUAVE } }
 }
 
+// Las cifras van en un bloque aparte y con su rótulo visible: así se distinguen del texto del modelo.
 function Cifras({ mensaje }) {
   // ✓ solo cuando el verificador del agente aprobó; las plantillas locales siguen como «Calculado con tus datos».
   const verificadas = mensaje.origen === 'agente' && mensaje.verificado
   const Icono = verificadas ? CheckCircle : Calculator
+  const titulo = `cifras-${mensaje.id}`
   return (
-    <ul
-      className={`lista-limpia cifras-verificadas${verificadas ? ' con-verificador' : ''}`}
-      aria-label={verificadas ? 'Cifras verificadas con tus datos' : 'Calculado con tus datos'}
-    >
-      {mensaje.cifras.map((c, i) => (
-        <li key={`${i}-${c.etiqueta}`}>
-          <Icono size={18} weight={verificadas ? 'fill' : 'regular'} aria-hidden="true" />
-          <span>{c.etiqueta}</span>
-          <strong>
-            {c.valor}
-            {verificadas && <span className="solo-lector"> (verificada)</span>}
-          </strong>
-        </li>
-      ))}
-    </ul>
+    <div className={`cifras-verificadas${verificadas ? ' con-verificador' : ''}`}>
+      <p className="cifras-titulo" id={titulo}>
+        <Icono size={18} weight={verificadas ? 'fill' : 'regular'} aria-hidden="true" />
+        {verificadas ? 'Cifras verificadas con tus datos' : 'Calculado con tus datos'}
+      </p>
+      <ul className="lista-limpia" aria-labelledby={titulo}>
+        {mensaje.cifras.map((c, i) => (
+          <li key={`${i}-${c.etiqueta}`}>
+            <span>{c.etiqueta}</span>
+            <strong>
+              {c.valor}
+              {verificadas && <span className="solo-lector"> (verificada)</span>}
+            </strong>
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
@@ -62,16 +67,17 @@ function Fuentes({ fuentes }) {
 }
 
 function Mensaje({ mensaje }) {
+  const entra = entradaDe(useReducedMotion())
   if (mensaje.autor === 'tu') {
     return (
-      <li className="mensaje mensaje-tu">
+      <motion.li {...entra} className="mensaje mensaje-tu">
         <span className="solo-lector">Tú: </span>
         {mensaje.texto}
-      </li>
+      </motion.li>
     )
   }
   return (
-    <li className="mensaje mensaje-lucas">
+    <motion.li {...entra} className="mensaje mensaje-lucas">
       {/* Con un aviso de falla Lucas no puede salir celebrando ni ahorrando. */}
       <MarcaLucas tamano={40} pose={mensaje.aviso ? 'alerta' : mensaje.pose} />
       <div className="mensaje-cuerpo">
@@ -83,10 +89,10 @@ function Mensaje({ mensaje }) {
           </p>
         )}
         <p>{mensaje.texto}</p>
-        {mensaje.cifras.length > 0 && <Cifras mensaje={mensaje} />}
+        {mensaje.cifras?.length > 0 && <Cifras mensaje={mensaje} />}
         {mensaje.fuentes?.length > 0 && <Fuentes fuentes={mensaje.fuentes} />}
       </div>
-    </li>
+    </motion.li>
   )
 }
 
@@ -108,14 +114,21 @@ function Pensando() {
 
 export default function Chat({ cliente, persona }) {
   const [parametros, setParametros] = useSearchParams()
-  const [mensajes, setMensajes] = useState([BIENVENIDA])
+  const [mensajes, setMensajes] = useState([])
   const [borrador, setBorrador] = useState('')
   const [pensando, setPensando] = useState(false)
   const conversacion = useRef(null)
   // Ref y no estado: dos clics en el mismo ciclo verían `pensando` aún en false.
   const ocupado = useRef(false)
   const montado = useRef(false)
+  const siguienteId = useRef(0)
   const final = useRef(null)
+  const sugerencias = useRef(null)
+
+  // Lo ya preguntado sale de las sugerencias; si se usaron todas, vuelven a aparecer.
+  const hechas = new Set(mensajes.filter((m) => m.autor === 'tu').map((m) => m.texto))
+  const pendientes = PREGUNTAS_SUGERIDAS.filter((p) => !hechas.has(p))
+  const visibles = pendientes.length ? pendientes : PREGUNTAS_SUGERIDAS
 
   // No se aborta el pedido al salir: en modo estricto React desmonta y vuelve a montar, y la
   // pregunta que llega desde el Resumen se perdería. La espera ya tiene tope en clienteChat.js.
@@ -126,12 +139,18 @@ export default function Chat({ cliente, persona }) {
     }
   }, [])
 
+  function agregar(mensaje) {
+    const id = siguienteId.current++
+    setMensajes((previos) => [...previos, { id, ...mensaje }])
+  }
+
   async function preguntar(texto) {
     const limpio = texto.trim()
     if (!limpio || ocupado.current) return
     ocupado.current = true
-    setMensajes((previos) => [...previos, { autor: 'tu', texto: limpio }])
+    agregar({ autor: 'tu', texto: limpio })
     setBorrador('')
+    sugerencias.current?.scrollTo?.({ left: 0 })
     setPensando(true)
     try {
       const respuesta = await preguntarALucas(limpio, {
@@ -142,7 +161,7 @@ export default function Chat({ cliente, persona }) {
       })
       if (!montado.current) return
       if (respuesta.conversacion) conversacion.current = respuesta.conversacion
-      setMensajes((previos) => [...previos, { autor: 'lucas', ...respuesta }])
+      agregar({ autor: 'lucas', ...respuesta })
     } finally {
       // Un fallo inesperado del front no debe dejar el chat bloqueado en «pensando».
       ocupado.current = false
@@ -167,47 +186,57 @@ export default function Chat({ cliente, persona }) {
 
   return (
     <section className="chat" aria-label="Chat con Lucas">
+      <div className="chat-bienvenida">
+        <MarcaLucas tamano={56} pose="saludo" />
+        <div>
+          <h2>Pregúntale a Lucas</h2>
+          <p>Respondo con lo que aprendí de tus movimientos y con mi pronóstico de tu saldo.</p>
+        </div>
+      </div>
+
       <ol className="lista-limpia mensajes" aria-live="polite">
-        {mensajes.map((m, i) => (
-          <Mensaje key={i} mensaje={m} />
+        {mensajes.map((m) => (
+          <Mensaje key={m.id} mensaje={m} />
         ))}
         {pensando && <Pensando />}
       </ol>
       <div ref={final} />
 
-      <div className="chips" role="group" aria-label="Preguntas sugeridas">
-        {PREGUNTAS_SUGERIDAS.map((p) => (
-          <button key={p} type="button" className="chip" disabled={pensando} onClick={() => preguntar(p)}>
-            {p}
-          </button>
-        ))}
-      </div>
+      <div className="chat-pie">
+        <div ref={sugerencias} className="chips chips-fila" role="group" aria-label="Preguntas sugeridas">
+          {visibles.map((p) => (
+            <button key={p} type="button" className="chip chip-suave" disabled={pensando} onClick={() => preguntar(p)}>
+              {p}
+            </button>
+          ))}
+        </div>
 
-      <form
-        className="chat-entrada"
-        onSubmit={(e) => {
-          e.preventDefault()
-          preguntar(borrador)
-        }}
-      >
-        <label className="solo-lector" htmlFor="pregunta">
-          Escribe tu pregunta
-        </label>
-        <input
-          id="pregunta"
-          value={borrador}
-          onChange={(e) => setBorrador(e.target.value)}
-          placeholder="Escribe tu pregunta"
-          autoComplete="off"
-          maxLength={LARGO_MAXIMO}
-        />
-        <button type="submit" className="icono-boton icono-boton-azul" aria-label="Enviar" disabled={pensando}>
-          <PaperPlaneRight size={22} aria-hidden="true" />
-        </button>
-      </form>
-      <p className="decision">
-        No es asesoría: no recomiendo inversiones ni compra de dólares, y no muevo tu plata. Tú decides.
-      </p>
+        <form
+          className="chat-entrada"
+          onSubmit={(e) => {
+            e.preventDefault()
+            preguntar(borrador)
+          }}
+        >
+          <label className="solo-lector" htmlFor="pregunta">
+            Escribe tu pregunta
+          </label>
+          <input
+            id="pregunta"
+            value={borrador}
+            onChange={(e) => setBorrador(e.target.value)}
+            placeholder="Escribe tu pregunta"
+            autoComplete="off"
+            maxLength={LARGO_MAXIMO}
+          />
+          <button type="submit" className="icono-boton icono-boton-azul" aria-label="Enviar" disabled={pensando}>
+            <PaperPlaneRight size={22} aria-hidden="true" />
+          </button>
+        </form>
+        <p className="decision">
+          No es asesoría: no recomiendo inversiones ni compra de dólares, y no muevo tu plata. Tú decides.
+        </p>
+      </div>
     </section>
   )
 }

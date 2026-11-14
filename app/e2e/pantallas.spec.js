@@ -52,8 +52,58 @@ async function sinGuia(page) {
   await page.addInitScript(() => window.localStorage.setItem('lucas-guia-vista', 'si'))
 }
 
-for (const { ruta, titulo } of PANTALLAS) for (const tema of ['claro', 'oscuro']) {
-  test(`${ruta} en ${tema} abre sin errores, sin scroll horizontal y con texto de 16 px o más`, async ({ page }, info) => {
+// Contraste AA calculado en el navegador: color del texto contra el fondo real, mezclando capas semitransparentes.
+// No ve imágenes ni desenfoques de fondo; para eso quedan las capturas en claro y oscuro.
+function textosSinContraste() {
+  const leer = (c) => {
+    const n = c.match(/[\d.]+/g)?.map(Number) ?? [0, 0, 0, 0]
+    return { r: n[0], g: n[1], b: n[2], a: n.length > 3 ? n[3] : 1 }
+  }
+  const mezclar = (arriba, abajo) => ({
+    r: arriba.r * arriba.a + abajo.r * (1 - arriba.a),
+    g: arriba.g * arriba.a + abajo.g * (1 - arriba.a),
+    b: arriba.b * arriba.a + abajo.b * (1 - arriba.a),
+    a: 1,
+  })
+  const luz = ({ r, g, b }) => {
+    const canal = (v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b)
+  }
+  const fondoDe = (elemento) => {
+    const capas = []
+    for (let e = elemento; e; e = e.parentElement) {
+      const c = leer(getComputedStyle(e).backgroundColor)
+      if (c.a > 0) capas.push(c)
+      if (c.a >= 1) break
+    }
+    let fondo = { r: 255, g: 255, b: 255, a: 1 }
+    for (const capa of capas.reverse()) fondo = mezclar(capa, fondo)
+    return fondo
+  }
+  const fallas = []
+  const recorrido = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+  while (recorrido.nextNode()) {
+    const nodo = recorrido.currentNode
+    const texto = nodo.textContent.trim()
+    const padre = nodo.parentElement
+    if (!texto || !padre || padre.closest('[aria-hidden="true"]:not(.grafico), .solo-lector')) continue
+    const caja = padre.getBoundingClientRect()
+    if (caja.width === 0 || caja.height === 0) continue
+    const estilo = getComputedStyle(padre)
+    const fondo = fondoDe(padre)
+    // En el gráfico el texto es SVG: su color está en fill, no en color.
+    const tinta = mezclar(leer(padre instanceof SVGElement ? estilo.fill : estilo.color), fondo)
+    const [clara, oscura] = [luz(tinta), luz(fondo)].sort((x, y) => y - x)
+    const razon = (clara + 0.05) / (oscura + 0.05)
+    const tamano = parseFloat(estilo.fontSize)
+    const grande = tamano >= 24 || (tamano >= 18.66 && Number(estilo.fontWeight) >= 700)
+    if (razon < (grande ? 3 : 4.5)) fallas.push(`${texto.slice(0, 40)} (${razon.toFixed(2)}:1)`)
+  }
+  return fallas
+}
+
+for (const tema of ['claro', 'oscuro']) for (const { ruta, titulo } of PANTALLAS) {
+  test(`${ruta} en ${tema}: sin errores ni scroll horizontal, texto de 16 px o más y contraste AA`, async ({ page }, info) => {
     await sinGuia(page)
     await page.addInitScript((t) => window.localStorage.setItem('lucas-tema', t), tema)
     const errores = []
@@ -76,7 +126,8 @@ for (const { ruta, titulo } of PANTALLAS) for (const tema of ['claro', 'oscuro']
         const nodo = recorrido.currentNode
         const texto = nodo.textContent.trim()
         const padre = nodo.parentElement
-        if (!texto || !padre || padre.closest('[aria-hidden="true"]:not(.circulo):not(.marca-lucas)')) continue
+        if (!texto || !padre || padre.closest('[aria-hidden="true"]:not(.circulo):not(.marca-lucas):not(.grafico)'))
+          continue
         const caja = padre.getBoundingClientRect()
         if (caja.width === 0 || caja.height === 0) continue
         const tamano = parseFloat(getComputedStyle(padre).fontSize)
@@ -86,11 +137,51 @@ for (const { ruta, titulo } of PANTALLAS) for (const tema of ['claro', 'oscuro']
     })
     // Movimiento reducido no apaga los desvanecidos de entrada: sin esperar, la captura salía a medio aparecer.
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'))
-    await page.screenshot({ path: `capturas/${info.project.name}-${tema}${ruta.replaceAll('/', '-')}.png`, fullPage: true })
+    await page.screenshot({
+      path: `capturas/${info.project.name}-${tema}${ruta.replaceAll('/', '-')}.png`,
+      fullPage: true,
+    })
     expect(textosChicos).toEqual([])
+    expect(await page.evaluate(textosSinContraste)).toEqual([])
     expect(errores).toEqual([])
   })
 }
+
+test('la banca muestra 3 movimientos y «Ver todo» abre el resto', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/banca')
+  const movimientos = page.getByRole('region', { name: 'Últimos movimientos' })
+  await expect(movimientos.locator('.fila')).toHaveCount(3)
+  const verTodo = movimientos.getByRole('button', { name: 'Ver todo' })
+  await expect(verTodo).toHaveAttribute('aria-expanded', 'false')
+  await verTodo.click()
+  await expect(movimientos.locator('.fila')).toHaveCount(5)
+  await expect(movimientos.getByRole('button', { name: 'Ver menos' })).toHaveAttribute('aria-expanded', 'true')
+})
+
+test('el gráfico de Qué viene lleva etiquetas directas y línea punteada', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/que-viene')
+  const grafico = page.locator('.grafico')
+  for (const rotulo of ['Hoy', 'Cobro', 'Peor caso −S/ 60']) {
+    await expect(grafico.getByText(rotulo, { exact: true })).toBeVisible()
+  }
+  await expect(grafico.locator('.recharts-line-curve[stroke-dasharray="8 5"]')).toHaveCount(1)
+})
+
+test('cada pantalla principal cabe en 1.5 pantallas de celular', async ({ page }, info) => {
+  test.skip(info.project.name !== 'celular', 'La regla es del celular')
+  await sinGuia(page)
+  for (const ruta of ['/banca', '/lucas/resumen', '/lucas/que-viene', '/lucas/chat']) {
+    await page.goto(ruta)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    const alto = await page.evaluate(async () => {
+      await document.fonts.ready
+      return document.documentElement.scrollHeight / window.innerHeight
+    })
+    expect(alto, ruta).toBeLessThanOrEqual(1.5)
+  }
+})
 
 test('con movimiento reducido las cifras del resumen salen ya en su valor final', async ({ page }) => {
   await sinGuia(page)
@@ -168,7 +259,7 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   const aviso = page.getByRole('status', { name: 'Aviso de Lucas' })
   await expect(tips.locator('.impacto')).toContainText('Días en rojo 2 → 0')
   const salud = page.getByRole('link', { name: /Tu salud/ })
-  await expect(salud).toContainText('56, vas regular. Si cumples los tips, 63')
+  await expect(salud).toContainText('56 hoy, 63 con tips')
   const botones = tips.getByRole('button', { name: 'Lo hago' })
   await expect(botones).toHaveCount(3)
   await expect(tips.locator('.tip').nth(0)).toContainText('Evitas 1 día en rojo')
@@ -188,7 +279,7 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   await expect(aviso).toContainText('Vas bien')
   await expect(page.getByText('podrías apartar S/ 150')).toBeVisible()
   await expect(salud).toContainText('63, vas regular')
-  await expect(salud).not.toContainText('Si cumples')
+  await expect(salud).not.toContainText('con tips')
 
   await page.getByRole('link', { name: 'Qué viene' }).click()
   await expect(page.locator('.panel-grafico')).toContainText('Con tus cambios llegas a tu cobro')
@@ -335,14 +426,14 @@ test('si el agente no verificó sus cifras, su texto no se muestra', async ({ pa
   await expect(ultima.getByRole('list', { name: 'Calculado con tus datos' })).toBeVisible()
 })
 
-test('una pregunta sugerida desde el Resumen llega al chat una sola vez', async ({ page }) => {
+test('una pregunta sugerida desde Salud llega al chat una sola vez', async ({ page }) => {
   await sinGuia(page)
   await agenteCaido(page)
-  await page.goto('/lucas/resumen')
-  await page.getByRole('link', { name: '¿Llego a mi cobro?' }).click()
+  await page.goto('/lucas/salud')
+  await page.getByRole('link', { name: 'Pregúntale cuánto puedes ahorrar' }).click()
   await expect(page).toHaveURL(/lucas\/chat$/)
   await expect(page.locator('.mensaje-tu')).toHaveCount(1)
-  await expect(page.locator('.mensaje-lucas').last()).toContainText('podrías quedar en rojo')
+  await expect(page.locator('.mensaje-lucas')).toHaveCount(1)
 })
 
 test('el aviso de «solo Lucas» dura completo aunque se toquen dos botones seguidos', async ({ page }) => {
@@ -459,7 +550,8 @@ test('selector de persona: el formal cambia todas las cifras y su banda es angos
   await expect(page.getByRole('button', { name: 'Lo hago' })).toHaveCount(3)
   await expect(page.getByText('Pausa FitZona este mes')).toBeVisible()
   await page.getByRole('link', { name: 'Qué viene' }).click()
-  await expect(page.getByRole('region', { name: 'Pagos y cobros' })).toContainText('El rango es angosto')
+  await page.getByRole('button', { name: 'Explícamelo fácil' }).click()
+  await expect(page.getByRole('region', { name: 'Explicación fácil' })).toContainText('Es angosta porque tu sueldo llega fijo')
 
   // Volver al independiente desde Preferencias: su permiso es aparte y su banda se explica distinto.
   await page.goto('/preferencias')

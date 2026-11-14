@@ -1,56 +1,86 @@
 .chat {
   display: grid;
-  gap: 12px;
+  gap: 16px;
+}
+
+/* La bienvenida usa el panel azul de las demás pestañas: una sola pieza protagonista por pantalla. */
+.chat-bienvenida {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--azul-profundo);
+  color: var(--sobre-azul);
+}
+
+.chat-bienvenida h2 {
+  color: var(--sobre-azul);
+}
+
+.chat-bienvenida p {
+  color: var(--sobre-azul-suave);
 }
 
 .mensajes {
-  gap: 12px;
+  gap: 14px;
+}
+
+.mensajes:empty {
+  display: none;
 }
 
 .mensaje-tu {
   justify-self: end;
   max-width: 85%;
-  padding: 10px 14px;
-  border-radius: 18px 18px 4px 18px;
+  padding: 10px 16px;
+  border-radius: 20px 20px 6px 20px;
   background: var(--azul);
   color: var(--sobre-azul);
+  font-weight: 600;
 }
 
 .mensaje-lucas {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 8px;
 }
 
 .mensaje-cuerpo {
   max-width: 88%;
   display: grid;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 14px 16px;
   border: 1px solid var(--borde);
-  border-radius: 18px 18px 18px 4px;
+  border-radius: 20px 20px 20px 6px;
   background: var(--superficie);
+  box-shadow: 0 2px 8px var(--sombra);
 }
 
+/* Las cifras van en un bloque aparte y con su rótulo visible: así se distinguen del texto del modelo. */
 .cifras-verificadas {
+  display: grid;
   gap: 4px;
-  padding-top: 8px;
-  border-top: 1px solid var(--borde);
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--superficie-suave);
+}
+
+.cifras-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--azul-texto);
+  font-weight: 700;
+}
+
+.cifras-titulo svg {
+  flex: none;
 }
 
 .cifras-verificadas li {
   display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.cifras-verificadas svg {
-  flex: none;
-  color: var(--azul-texto);
-}
-
-.cifras-verificadas.con-verificador svg {
-  color: var(--bien);
+  gap: 12px;
 }
 
 .cifras-verificadas strong {
@@ -58,25 +88,73 @@
   white-space: nowrap;
 }
 
-.chat-entrada {
+.chat-pie {
   position: sticky;
   bottom: calc(69px + env(safe-area-inset-bottom));
-  display: flex;
+  display: grid;
   gap: 8px;
-  padding: 8px 0;
+  margin: 0 -16px;
+  padding: 8px 16px;
   background: var(--fondo);
+}
+
+/* Las sugerencias se deslizan en una fila: no empujan la conversación hacia arriba. */
+.chips-fila {
+  flex-wrap: nowrap;
+  margin: 0 -16px;
+  padding: 0 16px 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chips-fila::-webkit-scrollbar {
+  display: none;
+}
+
+.chip-suave {
+  flex: none;
+  border-color: var(--borde);
+  white-space: nowrap;
+}
+
+.chat-entrada {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 8px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie);
+  box-shadow: 0 4px 16px var(--sombra);
+}
+
+.chat-entrada:focus-within {
+  outline: 3px solid var(--azul-texto);
+  outline-offset: 2px;
 }
 
 .chat-entrada input {
   flex: 1;
   min-width: 0;
-  min-height: 48px;
-  padding: 0 16px;
-  border: 1px solid var(--borde);
-  border-radius: 999px;
-  background: var(--superficie);
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
   color: var(--tinta);
   font: inherit;
+}
+
+.chat-entrada input::placeholder {
+  color: var(--tinta-suave);
+}
+
+.chat-entrada input:focus-visible {
+  outline: none;
+}
+
+/* Con el verificador del agente el rótulo pasa a verde con ✓; las plantillas siguen en azul. */
+.cifras-verificadas.con-verificador .cifras-titulo {
+  color: var(--bien);
 }
 
 .aviso-chat {

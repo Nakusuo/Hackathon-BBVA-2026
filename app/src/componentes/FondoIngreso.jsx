@@ -10,7 +10,6 @@ export default function FondoIngreso() {
   const reducido = useReducedMotion()
   return (
     <>
-      <div className="ingreso-halo" aria-hidden="true" />
       {ARCOS.map((a) => (
         <motion.svg
           key={a.lado}

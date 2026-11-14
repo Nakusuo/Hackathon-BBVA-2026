@@ -83,7 +83,7 @@ function gastoExtra(cliente, persona, monto) {
     }
   }
   return {
-    texto: `Te alcanza solo si ajustas lo demás: con ese gasto, el ${fechaDia(r.fechaPeorDia)} podrías quedar en ${enSoles(r.peorDespues)} si gastas un poco más de lo normal. Para evitarlo, gasta hasta ${enSoles(r.gastoDiarioSeguro)} al día hasta tu cobro.`,
+    texto: `Si lo compras, en el peor caso quedas en ${enSoles(r.peorDespues)} el ${fechaDia(r.fechaPeorDia)}. Para evitarlo, gasta hasta ${enSoles(r.gastoDiarioSeguro)} al día hasta tu cobro.`,
     cifras: [...cifras, { etiqueta: 'Gasto seguro por día después', valor: enSoles(r.gastoDiarioSeguro) }],
   }
 }

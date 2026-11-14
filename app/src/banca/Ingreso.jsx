@@ -1,5 +1,5 @@
 import { LockSimple } from '@phosphor-icons/react'
-import { motion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import FondoIngreso from '../componentes/FondoIngreso.jsx'
@@ -12,6 +12,7 @@ import { guardarPersona, permisoDe, personaGuardada } from '../sesion.js'
 // Elegir la persona es el inicio de sesión de la demo; el permiso a Lucas se pide después, una vez por persona.
 export default function Ingreso() {
   const navegar = useNavigate()
+  const reducido = useReducedMotion()
   const [personaId, setPersonaId] = useState(personaGuardada)
 
   function ingresar(evento) {
@@ -27,7 +28,7 @@ export default function Ingreso() {
         className="ingreso-tarjeta"
         onSubmit={ingresar}
         aria-labelledby="ingreso-titulo"
-        initial={{ opacity: 0, y: 16 }}
+        initial={reducido ? false : { opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: SUAVE, delay: 0.2 }}
       >
