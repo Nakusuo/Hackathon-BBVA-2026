@@ -51,7 +51,7 @@ El recorrido de 60 s no depende de la API ni del LLM: las cifras de pantalla sal
 | Falla | Qué se hace | Qué se dice |
 |---|---|---|
 | La API (FastAPI) no responde | Seguir: las cifras son las mismas y aparece el aviso de datos al pie de Lucas | «Si el servidor no responde, Lucas lo dice y sigue con los datos de la demo: nunca se queda en blanco.» |
-| El LLM (Ollama o Gemini) no responde | Nada: este flujo no usa el chat, y el chat del front todavía no llama al LLM (responde con plantillas). Si preguntan por el chat, usar una pregunta sugerida | «En esta demo el chat responde con plantillas y todas las cifras salen del motor. Cuando se conecte el LLM, solo va a redactar sobre esas cifras.» |
+| El LLM (Ollama o Gemini) no responde | Nada: este flujo no usa el chat. El chat solo llama al agente si el front se levantó con `VITE_CHAT_AGENTE=si`; si el agente falla, tarda más de 12 s o no comprueba sus cifras, el chat lo dice («No pude hablar con el agente de Lucas. Te respondo con mis cálculos de siempre.») y responde con plantillas | «Si el agente no responde, Lucas lo dice y sigue con sus cálculos. Un texto del LLM sin cifras comprobadas nunca llega al usuario.» |
 | `npm run dev` no levanta o el navegador se cuelga | Abrir la otra laptop con el front ya levantado; si tampoco, pasar las capturas de `demo/capturas/` en orden (`laptop-01-banca.png` … `laptop-05-apartar.png`) | Mismo guion, señalando cada captura |
 | Todo lo anterior | Video de respaldo | — |
 
