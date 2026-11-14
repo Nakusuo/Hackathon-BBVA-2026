@@ -78,12 +78,11 @@
 }
 
 .panel-grafico .leyenda .clave-esperado::before {
-  background: var(--crema);
+  background: var(--grafico-linea);
 }
 
 .panel-grafico .leyenda .clave-banda::before {
-  background: var(--azul-claro);
-  opacity: 0.6;
+  background: var(--grafico-banda);
 }
 
 .panel-grafico .leyenda .clave-cero::before {
