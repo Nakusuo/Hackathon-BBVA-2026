@@ -32,6 +32,8 @@ const PANTALLAS = [
   { ruta: '/lucas/aprendido', titulo: 'Lucas' },
   { ruta: '/lucas/salud', titulo: 'Lucas' },
   { ruta: '/lucas/gastos-detalle', titulo: 'Lucas' },
+  { ruta: '/lucas/avisos', titulo: 'Lucas' },
+  { ruta: '/evidencia', titulo: 'Evidencia de Lucas' },
   { ruta: '/preferencias', titulo: 'Preferencias' },
 ]
 
@@ -235,7 +237,7 @@ test('una pregunta sugerida desde el Resumen llega al chat una sola vez', async 
 test('el aviso de «solo Lucas» dura completo aunque se toquen dos botones seguidos', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/banca')
-  await page.getByRole('button', { name: 'Notificaciones' }).click()
+  await page.getByRole('button', { name: 'Transferir' }).click()
   await page.waitForTimeout(2000)
   await page.getByRole('button', { name: 'Mi perfil' }).click()
   await page.waitForTimeout(800)
@@ -404,4 +406,83 @@ test('si la API tarda demasiado, Lucas pasa a los datos guardados sin quedarse c
   await page.goto('/lucas/resumen')
   await expect(page.getByText('Puedes gastar al día')).toBeVisible()
   await expect(page.getByRole('status').filter({ hasText: 'No llegaron tus datos del servidor' })).toBeVisible({ timeout: 8000 })
+
+test('Avisos: la campana abre la bandeja; hoy el riesgo está a 14 días y no gasta aviso', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/banca')
+  await page.getByRole('link', { name: /^Avisos de Lucas/ }).click()
+  await expect(page).toHaveURL(/lucas\/avisos/)
+  const avisos = page.locator('.aviso-item')
+  await expect(avisos).toHaveCount(2)
+  await expect(page.locator('.aviso-item[data-tipo="riesgo"]')).toHaveCount(0)
+  await expect(page.getByText(/Tu riesgo de quedar en rojo empieza .* en 14 días/)).toBeVisible()
+  await expect(page.getByText('Otro aviso quedó fuera por el tope semanal')).toBeVisible()
+  for (const aviso of await avisos.all()) {
+    await expect(aviso.getByText('Aviso', { exact: true })).toBeVisible()
+    await expect(aviso.getByText(/^Impacto:/)).toBeVisible()
+  }
+})
+
+test('Avisos: a 7 días del riesgo es normal, a 2 días urgente, siempre con texto', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/avisos')
+  await page.getByText('Probar la regla en la demo').click()
+  const dia = page.getByRole('group', { name: 'Día de la demo' })
+
+  await dia.getByRole('button', { name: '21 nov' }).click()
+  const riesgo = page.locator('.aviso-item[data-tipo="riesgo"]')
+  await expect(riesgo).toHaveCount(1)
+  await expect(riesgo.getByText('Aviso', { exact: true })).toBeVisible()
+  await expect(riesgo).toContainText('Podrías quedar en rojo')
+
+  await dia.getByRole('button', { name: '26 nov' }).click()
+  await expect(riesgo.getByText('Urgente', { exact: true })).toBeVisible()
+  await page.screenshot({ path: `capturas/${test.info().project.name}-avisos-urgente.png`, fullPage: true })
+
+  await riesgo.getByRole('link', { name: 'Ver cómo evitarlo' }).click()
+  await expect(page).toHaveURL(/lucas\/resumen#tips/)
+})
+
+test('Avisos CP-SIS-29: un gasto que adelanta el rojo actualiza el mismo aviso sin gastar otro lugar', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/avisos')
+  await page.getByText('Probar la regla en la demo').click()
+  await page.getByRole('group', { name: 'Día de la demo' }).getByRole('button', { name: '21 nov' }).click()
+  const riesgo = page.locator('.aviso-item[data-tipo="riesgo"]')
+  const contador = page.getByText(/Esta semana (queda|quedan) \d/)
+  const antes = { contador: await contador.textContent(), texto: await riesgo.textContent() }
+
+  await page.getByRole('group', { name: 'Gasto de prueba' }).getByRole('button', { name: /mañana/ }).click()
+  await expect(riesgo).toHaveCount(1)
+  await expect(riesgo).not.toHaveText(antes.texto)
+  await expect(contador).toHaveText(antes.contador)
+})
+
+test('Avisos: «útil / no me sirve» se marca y se recuerda al volver', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/avisos')
+  const primero = page.locator('.aviso-item').first()
+  const util = primero.getByRole('button', { name: 'Útil' })
+  await util.click()
+  await expect(util).toHaveAttribute('aria-pressed', 'true')
+  await expect(primero.getByRole('status')).toHaveText(/Anotado/)
+  await primero.getByRole('button', { name: 'No me sirve' }).click()
+  await expect(util).toHaveAttribute('aria-pressed', 'false')
+  await page.reload()
+  await expect(page.locator('.aviso-item').first().getByRole('button', { name: 'No me sirve' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+})
+
+test('Evidencia: empieza por el impacto en S/, cada cifra con su fuente y muestra lo que empeora', async ({ page }) => {
+  await page.goto('/ingresar')
+  await page.getByRole('link', { name: 'Ver la evidencia de los modelos' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Evidencia de Lucas' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 2 }).first()).toHaveText('Impacto en S/ por cliente')
+  await expect(page.getByRole('heading', { name: 'Impacto en S/ por cliente' })).toBeInViewport()
+  await expect(page.getByText('S/ 322', { exact: true })).toBeVisible()
+  expect(await page.locator('.fuente').count()).toBeGreaterThan(20)
+  await expect(page.getByText('Peor que el baseline').first()).toBeVisible()
+  await expect(page.getByText('Empeora').first()).toBeVisible()
 })
