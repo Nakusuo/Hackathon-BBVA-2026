@@ -49,6 +49,53 @@ def test_si_no_hay_proveedor_queda_el_espanol(monkeypatch):
     assert not r["ok"] and "S/ 500" in r["texto"] and "RuntimeError" in r["motivo"]
 
 
+def _error_http(codigo):
+    import requests
+    resp = requests.Response()
+    resp.status_code = codigo
+    return requests.HTTPError(f"HTTP {codigo}", response=resp)
+
+
+@pytest.mark.parametrize("codigo", [429, 500, 503])
+def test_un_error_transitorio_se_reintenta_una_vez_y_se_recupera(monkeypatch, codigo):
+    monkeypatch.setattr(TR.time, "sleep", lambda s: None)
+    llamadas = []
+
+    def inestable(t, o, d):
+        llamadas.append(1)
+        if len(llamadas) == 1:
+            raise _error_http(codigo)
+        return "Your balance will be " + t.split("saldo sera ")[1]
+    _con_proveedor(monkeypatch, inestable)
+    r = TR.traducir("Tu saldo sera S/ 500.", "es", "en")
+    assert r["ok"] and len(llamadas) == 2 and "S/ 500" in r["texto"]
+
+
+@pytest.mark.parametrize("codigo", [400, 401, 403])
+def test_un_error_definitivo_no_se_reintenta_y_deja_su_codigo_en_el_diagnostico(monkeypatch, codigo):
+    monkeypatch.setattr(TR.time, "sleep", lambda s: None)
+    llamadas = []
+
+    def malo(t, o, d):
+        llamadas.append(1)
+        raise _error_http(codigo)
+    _con_proveedor(monkeypatch, malo)
+    r = TR.traducir("Tu saldo sera S/ 500.", "es", "en")
+    assert not r["ok"] and len(llamadas) == 1 and f"HTTP {codigo}" in r["motivo"]
+
+
+def test_si_el_error_transitorio_persiste_se_rinde_tras_el_reintento(monkeypatch):
+    monkeypatch.setattr(TR.time, "sleep", lambda s: None)
+    llamadas = []
+
+    def siempre_429(t, o, d):
+        llamadas.append(1)
+        raise _error_http(429)
+    _con_proveedor(monkeypatch, siempre_429)
+    r = TR.traducir("Tu saldo sera S/ 500.", "es", "en")
+    assert not r["ok"] and len(llamadas) == 2 and "HTTP 429" in r["motivo"] and "S/ 500" in r["texto"]
+
+
 def test_el_prompt_solo_habla_de_marcadores_si_el_texto_los_lleva(monkeypatch):
     """Regresion: con una pregunta sin cifras el prompt mencionaba ⟦0⟧ como ejemplo y Gemini lo inventaba en la traduccion."""
     vistos = []
