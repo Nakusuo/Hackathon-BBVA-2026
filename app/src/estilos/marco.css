@@ -108,18 +108,7 @@
   display: none;
 }
 
-.nota-demo {
-  display: none;
-}
 
-.etiqueta-demo {
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: var(--crema);
-  color: var(--tinta);
-  font-weight: 600;
-  white-space: nowrap;
-}
 
 @media (min-width: 760px) {
   .exterior {
@@ -130,13 +119,4 @@
     box-shadow: 0 0 0 1px var(--borde);
   }
 
-  .nota-demo {
-    display: block;
-    position: fixed;
-    left: 24px;
-    bottom: 24px;
-    max-width: 260px;
-    margin: 0;
-    color: var(--tinta-suave);
-  }
 }

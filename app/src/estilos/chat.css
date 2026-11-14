@@ -98,23 +98,54 @@
   background: var(--fondo);
 }
 
-/* Las sugerencias se deslizan en una fila: no empujan la conversación hacia arriba. */
-.chips-fila {
-  flex-wrap: nowrap;
-  margin: 0 -16px;
-  padding: 0 16px 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
+/* Preguntas frecuentes como menú: una por fila, fáciles de tocar y de leer completas. */
+.faq {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
 }
 
-.chips-fila::-webkit-scrollbar {
-  display: none;
+.faq-titulo {
+  color: var(--tinta-suave);
+  font-weight: 700;
 }
 
-.chip-suave {
+.faq-lista {
+  gap: 0;
+}
+
+.faq-lista li + li {
+  border-top: 1px solid var(--borde);
+}
+
+.faq-opcion {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--azul-texto);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.faq-opcion svg {
   flex: none;
-  border-color: var(--borde);
-  white-space: nowrap;
+  color: var(--tinta-suave);
+}
+
+.faq-opcion:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .chat-entrada {
@@ -234,7 +265,6 @@
   }
 }
 
-.chip:disabled,
 .chat-entrada button:disabled {
   opacity: 0.55;
   cursor: wait;

@@ -2,9 +2,9 @@ import { CloudSlash } from '@phosphor-icons/react'
 
 const TEXTOS = {
   cargando: 'Leyendo tus datos del servidor.',
-  parcial: 'Parte de tus datos no llegó del servidor; sigo con los datos de la demo.',
-  respaldo: 'No llegaron tus datos del servidor; sigo con los datos de la demo.',
-  error: 'No pude leer los datos del servidor; sigo con los datos de la demo.',
+  parcial: 'Parte de tus datos no se actualizó: te muestro los últimos.',
+  respaldo: 'Sin conexión: te muestro tus últimos datos.',
+  error: 'Sin conexión: te muestro tus últimos datos.',
 }
 
 // La carga dura milisegundos con la API local: se anuncia solo al lector de pantalla para no mover la página.

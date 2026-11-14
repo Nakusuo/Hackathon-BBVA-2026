@@ -143,8 +143,14 @@ const LIMITES = {
   pose: 'pensando',
 }
 
+const SALUDO = {
+  texto: 'Hola. ¿En qué te ayudo? Puedo decirte si llegas a tu cobro, en qué gastas más o armarte un plan para una meta.',
+  cifras: [],
+  pose: 'saludo',
+}
+
 const NO_ENTIENDO = {
-  texto: 'Todavía no sé responder eso. Prueba con una de las preguntas sugeridas.',
+  texto: 'No te entendí. Prueba con una de las preguntas frecuentes.',
   cifras: [],
   pose: 'pensando',
 }
@@ -283,15 +289,70 @@ function planDeAhorro(cliente, { monto, enDolares, fecha, que }) {
   if (puedes) cifras.push({ etiqueta: 'Puedes apartar al mes', valor: enSoles(puedes) })
   if (planTips) cifras.push({ etiqueta: 'Con los tips, al mes', valor: enSoles(conTips) })
   const pregunta = fecha ? '' : ' ¿Para cuándo lo quieres?'
-  return { texto: `${precio}${necesita}${ritmo}${tips}${pregunta}`, cifras }
+  const evitar = queEvitar(cliente)
+  return { texto: `${precio}${necesita}${ritmo}${tips}${evitar ? ` ${evitar}` : ''}${pregunta}`, cifras }
+}
+
+// Los tips que más mueven tu día más justo, con su efecto en S/: es lo que conviene cambiar para llegar antes.
+function queEvitar(cliente) {
+  const top = [...cliente.recomendaciones].sort((a, b) => b.mejora - a.mejora).slice(0, 2)
+  if (!top.length) return ''
+  return `Lo que más te ayuda: ${top.map((t) => `«${t.titulo}» (+${enSoles(t.mejora)})`).join(' y ')}.`
+}
+
+// «Explícame más» sobre el último tema: cómo sale la cifra, no la misma respuesta otra vez.
+function masDetalle(cliente, contexto) {
+  const { apartado, apartadoConTodos, proximoIngreso, finPronostico, hoy, riesgo, gastoDiarioSeguro, categorias } = cliente
+  const puedes = apartado?.monto ?? 0
+  const base = `Cada vez que cobras miro tus pagos hasta el siguiente cobro y solo aparto lo que no te deja en rojo, ni en un mes malo. Hoy eso es ${enSoles(puedes)} al mes.`
+  const evitar = queEvitar(cliente)
+  if (contexto.tema === 'meta' && contexto.meta.monto && contexto.meta.fecha) {
+    const { monto, enDolares, fecha } = contexto.meta
+    const objetivo = enDolares ? Math.round(monto * leerTipoCambio(RESPALDO.tipoCambio).tasa) : monto
+    const plan = planDeMeta(
+      { objetivo, ahorrado: 0, fecha },
+      { primerApartado: proximoIngreso.fecha, finPronostico, hoy, apartado: puedes },
+    )
+    const conTips = apartadoConTodos?.monto ?? 0
+    const cuentaTips =
+      conTips > puedes ? ` Con los tips: ${plan.veces} × ${enSoles(conTips)} = ${enSoles(plan.veces * conTips)}.` : ''
+    const veces = `${plan.veces} ${plan.veces === 1 ? 'vez' : 'veces'}`
+    return {
+      texto: `${base} Hasta ${nombreFecha(fecha, hoy)} cobras ${veces}: ${plan.veces} × ${enSoles(puedes)} = ${enSoles(plan.veces * puedes)}.${cuentaTips} Tu meta es ${enSoles(objetivo)}. ${evitar}`.trim(),
+      cifras: [],
+      pose: 'pensando',
+    }
+  }
+  if (contexto.tema === 'meta' || contexto.tema === 'ahorro') {
+    return {
+      texto: `${base} ${evitar} Si me dices para qué ahorras y cuánto cuesta, te armo el plan.`,
+      cifras: [],
+      pose: 'ahorra',
+    }
+  }
+  if (contexto.tema === 'cobro' || contexto.tema === 'gasto') {
+    return {
+      texto: riesgo
+        ? `Lo calculo para un mes malo: si gastas un poco más o te pagan menos, ${textoDiasEnRojo(riesgo).toLowerCase()} quedarías en ${enSoles(riesgo.peorMonto)}. Si gastas hasta ${enSoles(gastoDiarioSeguro)} al día hasta tu cobro del ${fechaDia(proximoIngreso.fecha)}, eso no pasa. ${evitar}`.trim()
+        : `Incluso en un mes malo llegas a tu cobro del ${fechaDia(proximoIngreso.fecha)} con plata en la cuenta. Tu límite seguro es ${enSoles(gastoDiarioSeguro)} al día.`,
+      cifras: [],
+      pose: 'pensando',
+    }
+  }
+  const top = categorias.slice(0, 3).map((c) => `${c.nombre.toLowerCase()} ${enSolesRedondo(c.total)}`)
+  return { texto: `Tus tres categorías más grandes en 30 días: ${top.join(', ')}. ${evitar}`.trim(), cifras: [] }
 }
 
 // --- Contexto de la conversación: cada mensaje se lee con todo lo que se habló antes, no solo el último.
 
 const OBJETO_META =
-  /\b(carro|auto|moto|viaje|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|bicicleta|televisor|tele)\b/
+  /\b(carro|auto|moto|viaje|vacaciones|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|bicicleta|televisor|tele|consola|concierto|entrada|evento|fiesta|curso|estudios|maestria|ropa|zapatillas|mascota|negocio)\b/
 // «¿y en 3 años?», «mejor 10 mil», «entonces para 2028»: siguen el tema anterior.
 const SIGUE_EL_TEMA = /^(y|e|pero|mejor|entonces|ok|vale|bueno|y si|cambia|cambialo|ahora)\b/
+const PIDE_MAS =
+  /(explica|mas sobre|mas detalle|por que|porque|como asi|como es|como lo|que significa|no entiendo|dime mas|cuentame mas)/
+const SALUDA = /^(hola|holi|buenas|buen dia|buenos dias|buenas tardes|buenas noches|que tal|hey)[\s!.,?]*$/
+
 const HABLA_DE_LA_META = /\b(eso|esa|ese|la meta|mi meta|el plan|ahorr|apart|junt|falta|cuanto|llego|llegaria|alcanz|tips?|plazo|fecha|cuota)/
 
 export const CONTEXTO_VACIO = { tema: null, monto: null, meta: { monto: null, enDolares: false, fecha: null, que: null } }
@@ -301,7 +362,8 @@ function metaCon(anterior, texto, hoy) {
   const que = texto.match(OBJETO_META)?.[1] ?? null
   const monto = montoDeMeta(texto)
   const fecha = fechaDeMeta(texto, hoy)
-  const nueva = que && anterior.que && que !== anterior.que && monto !== null
+  // Nombrar otra cosa empieza una meta nueva: el precio del concierto no es el del carro.
+  const nueva = que && anterior.que && que !== anterior.que
   const base = nueva ? CONTEXTO_VACIO.meta : anterior
   return {
     que: que ?? base.que,
@@ -315,6 +377,7 @@ function metaCon(anterior, texto, hoy) {
 export function interpretar(pregunta, contexto, hoy) {
   const texto = normalizar(pregunta).trim().replace(/^[¿¡\s]+/, '')
   if (esPedidoDeOperacion(pregunta)) return { intencion: 'limites', contexto }
+  if (SALUDA.test(texto)) return { intencion: 'saludo', contexto }
   const monto = montoEn(texto)
   const montoValido = monto > 0 ? monto : null
   const conMontoOFecha = montoDeMeta(texto) !== null || fechaDeMeta(texto, hoy) !== null
@@ -323,6 +386,7 @@ export function interpretar(pregunta, contexto, hoy) {
   const pideCategorias = /(gasto mas|en que gasto|categoria|donde se va)/.test(texto)
   const otroTema = pideGasto || pideCobro || pideCategorias
   const enMeta = contexto.tema === 'meta'
+  if (contexto.tema && PIDE_MAS.test(texto) && !conMontoOFecha) return { intencion: 'detalle', contexto }
 
   const esMeta =
     PIDE_META.test(texto) ||
@@ -337,6 +401,7 @@ export function interpretar(pregunta, contexto, hoy) {
   if (pideCategorias) return tema('categorias')
   // «¿y 80?» después de un gasto o de un ahorro: el mismo cálculo con el monto nuevo.
   if (montoValido && (contexto.tema === 'gasto' || contexto.tema === 'ahorro')) return tema(contexto.tema)
+  if (montoValido) return { intencion: 'monto-suelto', contexto: { ...contexto, monto: montoValido } }
   return { intencion: 'no-entiendo', contexto }
 }
 
@@ -350,6 +415,16 @@ export function responder(pregunta, cliente, persona, previas = []) {
   switch (intencion) {
     case 'limites':
       return LIMITES
+    case 'saludo':
+      return SALUDO
+    case 'detalle':
+      return masDetalle(cliente, contexto)
+    case 'monto-suelto':
+      return {
+        texto: `¿${enSolesRedondo(contexto.monto)} es algo que quieres comprar ahora o una meta para juntar? Dímelo y lo calculo con tus datos.`,
+        cifras: [],
+        pose: 'pensando',
+      }
     case 'meta':
       return { ...planDeAhorro(cliente, contexto.meta), pose: 'ahorra' }
     case 'ahorro':

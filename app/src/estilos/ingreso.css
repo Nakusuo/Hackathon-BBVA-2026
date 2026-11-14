@@ -49,12 +49,6 @@
   box-shadow: 0 24px 60px var(--sombra);
 }
 
-.ingreso-marca {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
 
 .ingreso .logotipo {
   color: var(--tinta);
@@ -114,14 +108,6 @@
 .ingreso .boton {
   min-height: 52px;
   margin-top: 4px;
-}
-
-.nota-seguridad {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 0;
-  color: var(--tinta-suave);
 }
 
 .ingreso .selector-persona .selector {

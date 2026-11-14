@@ -136,7 +136,7 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
           </CifraVerificada>
         </strong>
         <span className={`hero-actual ${exceso > 0 ? 'hero-actual-alto' : ''}`}>
-          Hoy gastas <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} />
+          Gastas <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} /> al día
           {exceso > 0 ? `, ${enSoles(exceso)} de más` : ''}
         </span>
         <div className="hero-cobro">
@@ -193,6 +193,8 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
       <motion.section {...entra(2)} id="tips" className="seccion" aria-labelledby="tips-titulo">
         <h2 id="tips-titulo">Tips para tu día más justo</h2>
         <p className="impacto" aria-live="polite">
+          {/* «0 → 0» no dice nada: sin rojo que evitar, solo se muestra cuánto apartas. */}
+          {!(faltanCambios && cliente.diasEnRojo === 0 && conTodos.diasEnRojo === 0) && (
           <span>
             Días en rojo <b>{cliente.diasEnRojo}</b>
             {faltanCambios && (
@@ -202,6 +204,7 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
               </>
             )}
           </span>
+          )}
           <span>
             Apartas <b>{enSoles(apartado?.monto ?? 0)}</b>
             {faltanCambios && apartadoConTodos && (
@@ -246,7 +249,7 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
         </Link>
       </motion.nav>
 
-      <p className="decision">Son simulaciones con tus datos. Lucas no mueve tu plata ni es asesoría: tú decides.</p>
+      <p className="decision">Son simulaciones. Tú decides.</p>
     </>
   )
 }

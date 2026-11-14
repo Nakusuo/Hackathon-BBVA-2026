@@ -1,4 +1,3 @@
-import { LockSimple } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -36,10 +35,7 @@ export default function Ingreso() {
           <LucasPose pose="saludo" tamano={92} animada />
           <p className="burbuja">¡Hola de nuevo! Soy Lucas, tu copiloto de plata.</p>
         </div>
-        <div className="ingreso-marca">
-          <span className="logotipo">Banco Vértice</span>
-          <span className="etiqueta-demo">Banco ficticio</span>
-        </div>
+        <span className="logotipo">Banco Vértice</span>
         <h1 id="ingreso-titulo">Ingresa a tu banca</h1>
 
         <SelectorPersona valor={personaId} alCambiar={setPersonaId} leyenda="Entra como" />
@@ -56,10 +52,6 @@ export default function Ingreso() {
         <motion.button type="submit" className="boton boton-ancho" whileTap={{ scale: 0.97 }}>
           Ingresar
         </motion.button>
-        <p className="nota-seguridad">
-          <LockSimple size={18} aria-hidden="true" />
-          Datos de prueba ya cargados. No escribas datos reales.
-        </p>
         <Link to="/evidencia" className="enlace">
           Ver la evidencia de los modelos
         </Link>

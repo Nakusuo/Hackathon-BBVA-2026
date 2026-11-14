@@ -9,7 +9,7 @@ const preguntar = (texto) => responder(texto, cliente, persona)
 
 test('cada pregunta sugerida tiene una respuesta propia, no la de «no entiendo»', () => {
   for (const p of PREGUNTAS_SUGERIDAS) {
-    assert.doesNotMatch(preguntar(p).texto, /Todavía no sé/, p)
+    assert.doesNotMatch(preguntar(p).texto, /No te entendí/, p)
   }
 })
 
@@ -32,9 +32,17 @@ test('no da asesoría de inversión ni ofrece mover plata', () => {
 })
 
 test('lo que no entiende lo dice sin inventar cifras', () => {
-  const r = preguntar('hola')
-  assert.match(r.texto, /Todavía no sé/)
+  const r = preguntar('¿cuál es la capital de Francia?')
+  assert.match(r.texto, /No te entendí/)
   assert.deepEqual(r.cifras, [])
+})
+
+test('un saludo recibe un saludo, sin cifras', () => {
+  for (const p of ['hola', 'Hola!', 'buenas tardes']) {
+    const r = preguntar(p)
+    assert.match(r.texto, /^Hola\. ¿En qué te ayudo\?/, p)
+    assert.deepEqual(r.cifras, [])
+  }
 })
 
 test('lectura de montos: con «S/», con «soles», con punto de miles y sin confundir días', async () => {
@@ -161,4 +169,31 @@ test('un pedido de operación en medio de la charla se corta sin borrar la meta'
   const r = charla(['meta: carro de 8 mil para 2029', '¿me conviene comprar dólares?', '¿y para 2030?'])
   assert.match(r[1].texto, /no lo hago/)
   assert.match(r[2].texto, /^Tu carro cuesta S\/.8,000\. Para fin de 2030/)
+})
+
+test('la charla del concierto: «en 3 meses» es plazo, «explícame más» da la cuenta y el carro no hereda el precio', () => {
+  const [saludo, meta, detalle, carro, precio] = charla([
+    'hola',
+    'hola quiero ir a un concierto que es en 3 meses, la entrada esta 450 puedes darme un plan de metas para ahorro o que evitar',
+    'puedes explicarme mas sobre eso?',
+    'quiero hacer una compra de carro a fin de año, cuanto deberia ir ahorrando',
+    'pero el carro esta alrededor de 12000 soles',
+  ])
+  assert.match(saludo.texto, /^Hola/)
+  assert.match(meta.texto, /^Tu concierto cuesta S\/.450\./)
+  assert.match(meta.texto, /Lo que más te ayuda/)
+  assert.match(detalle.texto, /3 × S\/.40 = S\/.120/)
+  assert.match(carro.texto, /¿Cuánto cuesta\?/)
+  assert.match(precio.texto, /^Tu carro cuesta S\/.12,000\./)
+  assert.doesNotMatch(precio.texto, /cr[eé]dito|pr[eé]stamo/i)
+})
+
+test('«¿por qué?» después de «¿Llego a mi cobro?» explica el cálculo; sin tema, no inventa', () => {
+  const [, porque] = charla(['¿Llego a mi cobro?', '¿por qué?'])
+  assert.match(porque.texto, /mes malo/)
+  assert.match(preguntar('¿puedes explicarme más sobre eso?').texto, /No te entendí/)
+})
+
+test('un monto suelto pregunta si es compra o meta', () => {
+  assert.match(preguntar('12000').texto, /¿S\/.12,000 es algo que quieres comprar ahora o una meta para juntar\?/)
 })

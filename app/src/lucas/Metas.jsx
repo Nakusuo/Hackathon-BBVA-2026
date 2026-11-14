@@ -280,7 +280,7 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) 
       <p className="solo-lector" role="status">
         {aviso}
       </p>
-      <p className="decision">Son simulaciones con tus datos. Lucas no mueve tu plata ni es asesoría: tú decides.</p>
+      <p className="decision">Son simulaciones. Tú decides.</p>
     </>
   )
 }
