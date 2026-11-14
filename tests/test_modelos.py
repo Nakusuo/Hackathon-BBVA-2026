@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.agent import memoria
-from src.agent.verificador import aplanar, numeros_de, verificar
+from src.agente_analitico import memoria
+from src.agente_analitico.verificador import aplanar, numeros_de, verificar
 from src.models import niveles as N
 from src.models import recomendador as R
 from src.models import riesgo_clima as RC
@@ -44,9 +44,9 @@ def test_al_independiente_se_le_pide_mas_colchon():
 
 # ---------------------------------------------------------------- niveles y puntos
 def test_puntos_se_multiplican_por_nivel():
-    assert N.puntos_por("aporte_a_meta_de_ahorro", "luchador")["puntos"] == 150
-    assert N.puntos_por("aporte_a_meta_de_ahorro", "campeon")["puntos"] == 100
-    assert N.puntos_por("quincena_sin_dias_en_rojo", "aprendiz", veces=2)["puntos"] == 130
+    assert N.puntos_por("aporte_a_meta_de_ahorro", "luchador")["puntos"] == 30
+    assert N.puntos_por("aporte_a_meta_de_ahorro", "campeon")["puntos"] == 20
+    assert N.puntos_por("quincena_sin_dias_en_rojo", "aprendiz", veces=2)["puntos"] == 26
 
 
 def test_canjes_solo_con_puntos_suficientes():
@@ -186,3 +186,37 @@ def test_el_nivel_individual_respeta_la_salud():
     assert N.nivel_individual("campeon", 20) == "luchador"
     assert N.nivel_individual("luchador", 95) == "luchador"
     assert N.nivel_individual("constructor", 90) == "constructor"
+
+
+# ---------------------------------------------------------------- programa de puntos sostenible
+def test_los_puntos_por_consumo_respetan_el_tope_de_reinversion():
+    from src.models import programa_puntos as PP
+    tope = PP.cfg()["programa"]["supuestos_economicos"]["reinversion_maxima_de_la_comision"]
+    assert all(v <= tope + 1e-9 for v in PP.verificar_topes().values())
+
+
+def test_no_se_incentiva_gastar_a_quien_tiene_la_caja_en_tension():
+    from src.models import programa_puntos as PP
+    assert PP.puntos_mes("luchador", 1000, 0, 0, 0)["consumo"] == 0.0           # el luchador nunca suma por consumo
+    assert PP.puntos_mes("maestro", 1000, 0, 3, 0)["consumo"] == 0.0            # con dias en rojo recientes tampoco
+    assert PP.puntos_mes("maestro", 1000, 0, 0, 0)["consumo"] == 200.0          # 2 puntos por cada S/ 10
+
+
+def test_ahorrar_siempre_suma_y_mas_para_quien_mas_lo_necesita():
+    from src.models import programa_puntos as PP
+    luchador = PP.puntos_mes("luchador", 0, 500, 5, 0)["ahorro"]
+    campeon = PP.puntos_mes("campeon", 0, 500, 0, 0)["ahorro"]
+    assert luchador > campeon > 0
+
+
+def test_los_puntos_tienen_tope_mensual():
+    from src.models import programa_puntos as PP
+    assert PP.puntos_mes("campeon", 1_000_000, 1_000_000, 0, 24, 1)["total"] == PP.cfg()["puntos"]["tope_mensual"]
+
+
+def test_la_economia_del_programa_deja_costo_menor_al_ingreso():
+    from src.models import programa_puntos as PP
+    df = pd.DataFrame({"nivel": ["luchador", "aprendiz", "maestro", "campeon"], "consumo_elegible": [800, 600, 1200, 1500], "ahorro_apartado": [50, 80, 200, 300],
+                       "dias_rojo_3m": [6, 0, 0, 0], "quincenas_sin_rojo": [10, 20, 24, 24], "meses_con_aporte": [0.3, 0.6, 0.9, 1.0]})
+    r = PP.economia(df)
+    assert 0 < r["total"]["costo_sobre_ingreso"] < PP.cfg()["programa"]["supuestos_economicos"]["reinversion_maxima_de_la_comision"]

@@ -14,9 +14,8 @@ os.environ["LLM_PROVIDER"] = "plantillas"
 
 import psutil  # noqa: E402
 
-from src.agent.repositorio import Repositorio  # noqa: E402
+from src.agente_analitico.repositorio import Repositorio  # noqa: E402
 from src.comun.rutas import MODELOS  # noqa: E402
-from src.generador.contexto import cargar_yaml  # noqa: E402
 from src.models import recomendador as REC  # noqa: E402
 
 # Supuestos del equipo, todos visibles. La entidad que integre Lucas los reemplaza por los suyos.
@@ -61,26 +60,31 @@ def medir() -> dict:
 
 
 def valor() -> dict:
+    """Valor para la entidad en dos lecturas. Bruta: la comision del consumo y el margen de lo apartado financian los puntos (atribuye todo al programa).
+    Conservadora: solo cuenta lo que Lucas genera de mas (el colchon adicional medido) y calcula cuanto debe crecer el consumo para que el programa se pague solo."""
     imp = json.load(open(os.path.join(MODELOS, "metricas_impacto.json"), encoding="utf-8"))
-    niv = cargar_yaml("niveles.yaml")["puntos"]
+    pp = json.load(open(os.path.join(MODELOS, "metricas_programa_puntos.json"), encoding="utf-8"))
     d = imp["diferencias"]["lucas_vs_nada"]
     colchon = d["colchon_adicional_soles"]["media"]
-    interes = d["intereses_evitados_soles_por_mes"]["media"]
-    dias = d["dias_rojo_evitados_por_cliente_mes"]["media"]
+    margen = pp["supuestos"]["margen_anual_sobre_saldo_apartado"]
     N = SUPUESTOS_VALOR["usuarios_activos_escenario_conservador"]
-    margen = SUPUESTOS_VALOR["margen_anual_sobre_saldo_apartado"]
-    ingreso_fondeo = N * colchon * margen
-    costo_puntos = N * SUPUESTOS_VALOR["puntos_promedio_por_usuario_al_mes"] * 12 * niv["valor_por_punto_soles"]
-    vpp = niv["valor_por_punto_soles"]
-    margen_por_usuario = colchon * margen
-    equilibrio_pts_mes = margen_por_usuario / (12 * vpp)
-    sens = {f"{p} puntos por usuario al mes": {"costo_de_puntos_soles": N * p * 12 * vpp, "valor_neto_soles": ingreso_fondeo - N * p * 12 * vpp} for p in (20, 40, 60, 80, 120)}
-    return {"punto_de_equilibrio": {"margen_por_usuario_al_anio_soles": margen_por_usuario, "puntos_por_usuario_al_mes_que_igualan_el_margen": equilibrio_pts_mes,
-                                    "lectura": "si el usuario promedio gana mas puntos que este numero, el programa cuesta mas que el fondeo que genera; hay que bajar el valor del punto o premiar solo conductas que den ingreso"},
-            "sensibilidad_costo_de_puntos": sens, "supuestos": SUPUESTOS_VALOR, "por_cliente": {"colchon_adicional_soles": colchon, "intereses_evitados_soles_por_mes": interes, "dias_en_rojo_evitados_por_mes": dias},
-            "entidad_por_anio_escenario_conservador": {"usuarios": N, "margen_por_fondeo_de_lo_apartado_soles": ingreso_fondeo, "costo_de_puntos_soles": costo_puntos, "valor_neto_soles": ingreso_fondeo - costo_puntos,
-                                                       "nota": "solo cuenta el fondeo de lo apartado; retencion, mora evitada y venta cruzada idonea no se valoran sin piloto"},
-            "ahorro_del_cliente_por_anio_soles": interes * 12}
+    t = pp["total"]
+    fondeo_lucas = colchon * margen
+    consumo_elegible = t["comision_anual"] / pp["supuestos"]["comision_por_consumo"]
+    comision_por_sol = pp["supuestos"]["comision_por_consumo"]
+    uplift_necesario = max((t["costo_anual"] - fondeo_lucas) / (consumo_elegible * comision_por_sol), 0.0) if consumo_elegible else None
+    sens = {f"{round(u * 100)} % mas de consumo": {"valor_neto_por_usuario_anual": fondeo_lucas + u * consumo_elegible * comision_por_sol - t["costo_anual"],
+                                                  "valor_neto_escenario": N * (fondeo_lucas + u * consumo_elegible * comision_por_sol - t["costo_anual"])} for u in (0.0, 0.05, 0.10, 0.15, 0.20)}
+    return {"supuestos": {**SUPUESTOS_VALOR, **pp["supuestos"], "valor_por_punto_soles": pp["valor_por_punto"]},
+            "por_cliente_lucas": {"colchon_adicional_soles": colchon, "dias_en_rojo_evitados_por_mes": d["dias_rojo_evitados_por_cliente_mes"]["media"], "intereses_evitados_soles_por_mes": d["intereses_evitados_soles_por_mes"]["media"]},
+            "programa_de_puntos": {"puntos_por_usuario_al_mes": t["puntos_por_usuario_al_mes"], "costo_por_usuario_al_anio": t["costo_anual"], "consumo_elegible_por_usuario_al_anio": consumo_elegible,
+                                   "costo_sobre_ingreso_bruto": t["costo_sobre_ingreso"], "tope_de_reinversion": pp["supuestos"]["reinversion_maxima_de_la_comision"], "topes_por_nivel": pp["topes_de_reinversion"],
+                                   "por_nivel": pp["por_nivel"]},
+            "lectura_bruta": {"ingreso_por_usuario_al_anio": t["ingreso_anual"], "neto_por_usuario_al_anio": t["neto_bruto_por_usuario_anual"], "neto_escenario": t["neto_bruto_anual_escenario"],
+                              "aviso": "atribuye al programa toda la comision del consumo y todo el margen de lo apartado: es un techo, no una prediccion"},
+            "lectura_conservadora": {"fondeo_adicional_por_usuario_al_anio": fondeo_lucas, "costo_de_puntos_por_usuario_al_anio": t["costo_anual"],
+                                     "neto_por_usuario_sin_mas_consumo": fondeo_lucas - t["costo_anual"], "mas_consumo_necesario_para_pagarse": uplift_necesario, "sensibilidad": sens,
+                                     "nota": "retencion, mora evitada y venta cruzada idonea no se valoran sin un piloto con grupo de control"}}
 
 
 if __name__ == "__main__":

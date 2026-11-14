@@ -1,7 +1,7 @@
 # Niveles de Lucas por segmento del cliente y programa de puntos.
 # El nombre sale del ranking de salud financiera de cada segmento (no del numero de cluster), asi que no cambia si se reentrena el modelo.
-# Los puntos premian conductas financieras sanas, nunca gastar mas ni endeudarse. Todo el catalogo es ficticio y generico (sin marcas).
-version: 1
+# Los puntos premian ahorro y conductas sanas siempre, y el consumo solo cuando la caja esta ordenada. Catalogo ficticio y generico (sin marcas).
+version: 2
 escalera: [luchador, aprendiz, constructor, maestro, campeon]   # con k segmentos se eligen k nombres repartidos en la escalera
 niveles:
   luchador:
@@ -41,17 +41,38 @@ niveles:
     para_subir: {}
 
 puntos:
-  # Puntos base por conducta. Se multiplican por el multiplicador del nivel: quien parte de mas lejos gana mas por cada logro.
+  # Puntos base por conducta sana. Se multiplican por el multiplicador del nivel: quien parte de mas lejos gana mas por cada logro.
   acciones:
-    quincena_sin_dias_en_rojo: 50
-    aporte_a_meta_de_ahorro: 100
-    cancelar_suscripcion_duplicada: 30
-    modulo_educativo_completado: 20
-    colchon_de_un_mes_mantenido: 60
-    accion_de_prevencion_ante_el_nino: 80
-    subir_de_nivel: 300
-  valor_por_punto_soles: 0.01      # supuesto del equipo para la calculadora del banco; el banco pone el suyo
-  tope_mensual: 600
+    quincena_sin_dias_en_rojo: 10
+    aporte_a_meta_de_ahorro: 20
+    cancelar_suscripcion_duplicada: 10
+    modulo_educativo_completado: 5
+    colchon_de_un_mes_mantenido: 15
+    accion_de_prevencion_ante_el_nino: 30
+    subir_de_nivel: 80
+  valor_por_punto_soles: 0.01      # supuesto del equipo; el banco pone el suyo
+  tope_mensual: 300
+
+# Programa de puntos con economia sostenible. Todos los supuestos economicos son del equipo (no son cifras publicas verificadas).
+programa:
+  supuestos_economicos:
+    comision_por_consumo: 0.010            # lo que gana la entidad por cada sol consumido con tarjeta o QR (intercambio o comision de comercio)
+    margen_anual_sobre_saldo_apartado: 0.03
+    porcentaje_de_puntos_que_se_canjea: 0.70
+    reinversion_maxima_de_la_comision: 0.30   # el programa no devuelve mas del 30 % de lo que la entidad gana por el consumo
+    canales_que_pagan_comision: [tarjeta_debito, tarjeta_credito, pago_qr]
+  # Puntos por cada S/ 10 consumidos. Solo para quien pasa la idoneidad de consumo: no se incentiva gastar a quien tiene la caja en tension.
+  # Cada tasa respeta el tope de reinversion: tasa x valor del punto / 10 <= reinversion_maxima x comision.
+  puntos_por_cada_10_soles_de_consumo: {luchador: 0.0, aprendiz: 0.5, constructor: 1.0, maestro: 2.0, campeon: 3.0}
+  # Puntos por cada S/ 100 que se aparta en el mes. Mas para quien mas lo necesita: el ahorro deja margen y baja el riesgo de mora.
+  puntos_por_cada_100_soles_apartados: {luchador: 8, aprendiz: 6, constructor: 5, maestro: 4, campeon: 3}
+  idoneidad_de_consumo: {dias_rojo_3m_max: 0, nivel_minimo: aprendiz}
+  beneficios_por_nivel:
+    luchador: ["Puntos extra por ahorrar y por cerrar quincenas sin rojo", "Plan Sueldo Lucas", "Aviso anticipado antes de un dia en rojo"]
+    aprendiz: ["Puntos por consumo en bodegas, transporte y salud afiliados", "Puntos por ahorrar", "Metas de ahorro con aporte automatico"]
+    constructor: ["Mas puntos por consumo con tarjeta o QR", "Simulador de escenarios", "Comparador educativo de tasas"]
+    maestro: ["Puntos dobles por consumo con tarjeta o QR", "Prioridad en ofertas idoneas", "Revision trimestral de gastos fijos"]
+    campeon: ["Maximo de puntos por consumo", "Acceso prioritario a las mejores condiciones idoneas", "Canje de beneficios exclusivos"]
 
 canje:
   - {id: descuento_mantenimiento, nombre: "Descuento en la comision de mantenimiento de cuenta", puntos: 500, tipo: generico}
