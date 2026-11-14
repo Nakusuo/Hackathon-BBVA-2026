@@ -3,6 +3,8 @@ import { useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import { diasEntre, enSoles, fechaCorta, fechaDia, iniciales, textoDiasEnRojo } from '../formato.js'
+import { armarBandeja, candidatos } from '../lucas/avisos.js'
+import { leerRegistro } from '../lucas/avisosGuardados.js'
 
 const ACCESOS = [
   { nombre: 'Transferir', Icono: ArrowsLeftRight },
@@ -37,6 +39,7 @@ export default function InicioBanca() {
   const monto = (valor) => (montosVisibles ? enSoles(valor) : OCULTO)
   const { riesgo, cuenta, tarjeta, hoy, proximoIngreso } = cliente
   const pagosAntesDelCobro = cliente.proximosPagos.filter((p) => p.fecha < proximoIngreso.fecha)
+  const totalAvisos = armarBandeja(candidatos(cliente).avisos, leerRegistro(), hoy).avisos.length
 
   return (
     <>
@@ -52,9 +55,14 @@ export default function InicioBanca() {
             </div>
             <p>Bienvenido a Banco Vértice</p>
           </div>
-          <button type="button" className="icono-boton" aria-label="Notificaciones" onClick={avisarSinDemo}>
+          <Link to="/lucas/avisos" className="icono-boton campana" aria-label={`Avisos de Lucas: ${totalAvisos}`}>
             <Bell size={24} aria-hidden="true" />
-          </button>
+            {totalAvisos > 0 && (
+              <span className="campana-numero" aria-hidden="true">
+                {totalAvisos}
+              </span>
+            )}
+          </Link>
         </div>
 
         <div className="saldo-total">
