@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import { diasEntre, enSoles, fechaCorta, fechaDia, iniciales, textoDiasEnRojo } from '../formato.js'
-import { cliente } from '../mocks/cliente.js'
 
 const ACCESOS = [
   { nombre: 'Transferir', Icono: ArrowsLeftRight },
@@ -33,7 +32,7 @@ function agruparPorDia(movimientos, hoy) {
 }
 
 export default function InicioBanca() {
-  const { avisarSinDemo } = useOutletContext()
+  const { avisarSinDemo, vista: cliente } = useOutletContext()
   const [montosVisibles, setMontosVisibles] = useState(true)
   const monto = (valor) => (montosVisibles ? enSoles(valor) : OCULTO)
   const { riesgo, cuenta, tarjeta, hoy, proximoIngreso } = cliente
@@ -47,10 +46,12 @@ export default function InicioBanca() {
             <UserCircle size={26} aria-hidden="true" />
           </button>
           <div className="banca-saludo">
-            <h1>Hola</h1>
+            <div className="banca-saludo-fila">
+              <h1>Hola</h1>
+              <span className="etiqueta-demo">Banco ficticio</span>
+            </div>
             <p>Bienvenido a Banco Vértice</p>
           </div>
-          <span className="etiqueta-demo">Banco ficticio</span>
           <button type="button" className="icono-boton" aria-label="Notificaciones" onClick={avisarSinDemo}>
             <Bell size={24} aria-hidden="true" />
           </button>
@@ -66,7 +67,7 @@ export default function InicioBanca() {
               type="button"
               className="icono-boton"
               aria-pressed={!montosVisibles}
-              aria-label={montosVisibles ? 'Ocultar montos' : 'Mostrar montos'}
+              aria-label="Ocultar montos"
               onClick={() => setMontosVisibles(!montosVisibles)}
             >
               {montosVisibles ? <EyeSlash size={22} aria-hidden="true" /> : <Eye size={22} aria-hidden="true" />}
@@ -109,12 +110,20 @@ export default function InicioBanca() {
           ))}
         </ul>
 
-        {riesgo && (
+        {riesgo ? (
           <Link to="/lucas/resumen" className="tarjeta-lucas">
             <MarcaLucas tamano={44} />
             <span className="tarjeta-lucas-texto">
               <strong>Lucas te avisa</strong>
               <span>{textoDiasEnRojo(riesgo)} podrías quedar en rojo. Mira cómo evitarlo.</span>
+            </span>
+          </Link>
+        ) : (
+          <Link to="/lucas/resumen" className="tarjeta-lucas">
+            <MarcaLucas tamano={44} />
+            <span className="tarjeta-lucas-texto">
+              <strong>Lucas</strong>
+              <span>Con tus cambios llegas a tu cobro sin quedar en rojo. Mira tu plan.</span>
             </span>
           </Link>
         )}

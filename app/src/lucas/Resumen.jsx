@@ -1,15 +1,14 @@
-import { CheckCircle, Coffee, ForkKnife, PauseCircle, PiggyBank, Question, Warning } from '@phosphor-icons/react'
-import { AnimatePresence, motion } from 'motion/react'
+import { CheckCircle, Coffee, ForkKnife, PauseCircle, PiggyBank, Question, SealCheck, Warning } from '@phosphor-icons/react'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import AnilloSalud from '../componentes/AnilloSalud.jsx'
 import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
-import { conSigno, diasEntre, enSoles, fechaDia, textoDiasEnRojo } from '../formato.js'
+import { conSigno, diasEntre, enSoles, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
 import { entrada } from '../movimiento.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee }
-const TIPS_VISIBLES = 2
 const CAMBIO = {
   initial: { opacity: 0, y: 4 },
   animate: { opacity: 1, y: 0 },
@@ -60,15 +59,10 @@ function DatoAprendido({ dato }) {
   )
 }
 
-function Tip({ tip }) {
+function Tip({ tip, activo, alAlternar }) {
   const Icono = ICONOS[tip.id] ?? PiggyBank
   return (
-    <motion.li
-      className="tarjeta tip"
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, transition: { duration: 0.15 } }}
-    >
+    <li className={`tarjeta tip ${activo ? 'tip-activo' : ''}`}>
       <div className="reco-cabecera">
         <span className="circulo" aria-hidden="true">
           <Icono size={22} />
@@ -77,24 +71,41 @@ function Tip({ tip }) {
       </div>
       <h3>{tip.titulo}</h3>
       <p>
-        <span className="cifra cifra-azul">{enSoles(tip.mejora)} más</span> el {fechaDia(tip.fechaPeorDia)}. Tu peor
-        caso pasa de {enSoles(tip.peorAntes)} a {enSoles(tip.peorDespues)}.
+        <span className="cifra cifra-azul">{enSoles(tip.mejora)} más</span> el {fechaDia(tip.fechaPeorDia)} en el peor
+        caso.
       </p>
-      <details>
-        <summary>¿Por qué?</summary>
-        <p className="suave">{tip.porque}</p>
-      </details>
-    </motion.li>
+      <div className="tip-acciones">
+        <button type="button" className="boton-lo-hago" aria-pressed={activo} onClick={() => alAlternar(tip.id)}>
+          {activo && <CheckCircle size={20} weight="fill" aria-hidden="true" />}
+          Lo hago
+        </button>
+        <details>
+          <summary>¿Por qué?</summary>
+          <p className="suave">{tip.porque}</p>
+        </details>
+      </div>
+    </li>
   )
 }
 
-export default function Resumen({ cliente, animarEntrada = true }) {
-  const { riesgo, proximoIngreso, recomendaciones, conTodos, apartado, salud } = cliente
-  const [todosLosTips, setTodosLosTips] = useState(false)
-  const tips = todosLosTips ? recomendaciones : recomendaciones.slice(0, TIPS_VISIBLES)
+function textoDelPlan(cliente) {
+  const { elegidos, totalCambios, conTodos, peorDia, riesgo } = cliente
+  if (!elegidos.length) {
+    const sinRojo = conTodos.peorMonto >= 0 ? ': ya no quedarías en rojo' : ''
+    return `Si haces los ${totalCambios}, tu peor caso del ${fechaDia(conTodos.peorFecha)} pasa de ${enSoles(conTodos.peorAntes)} a ${conSigno(conTodos.peorMonto)}${sinRojo}.`
+  }
+  const cuantos = elegidos.length === 1 ? 'tu cambio' : `tus ${elegidos.length} cambios`
+  const cierre = riesgo ? '' : ' Ya no quedas en rojo antes de cobrar.'
+  return `Con ${cuantos}, tu peor caso del ${fechaDia(peorDia.fecha)} pasa de ${enSoles(conTodos.peorAntes)} a ${conSigno(peorDia.monto)}.${cierre}`
+}
+
+export default function Resumen({ cliente, alternarTip, animarEntrada = true }) {
+  const { riesgo, proximoIngreso, recomendaciones, apartado, apartadoConTodos, salud, elegidos, peorDia } = cliente
   const exceso = cliente.gastoDiarioActual - cliente.gastoDiarioSeguro
   const [saludAbierta, setSaludAbierta] = useState(false)
-  const entra = (orden) => entrada(orden, animarEntrada)
+  // MotionConfig frena los desplazamientos con movimiento reducido, pero no los desvanecidos: aquí se apagan también.
+  const reducido = useReducedMotion()
+  const entra = (orden) => entrada(orden, animarEntrada && !reducido)
 
   return (
     <>
@@ -107,7 +118,7 @@ export default function Resumen({ cliente, animarEntrada = true }) {
           <span>sin quedar en rojo hasta el {fechaDia(proximoIngreso.fecha)}</span>
         </div>
         <div className="recuadro">
-          <span className="suave">Hoy gastas al día</span>
+          <span className="suave">Ahora gastas al día</span>
           <strong className="recuadro-cifra">
             <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} />
           </strong>
@@ -120,71 +131,86 @@ export default function Resumen({ cliente, animarEntrada = true }) {
         </p>
       </motion.section>
 
-      {riesgo && (
-        <motion.section {...entra(1)} className="aviso" role="status" aria-label="Aviso de Lucas">
-          <p className="aviso-etiqueta">
-            <Warning size={20} aria-hidden="true" />
-            Lucas te avisa
-          </p>
-          <p>
-            {textoDiasEnRojo(riesgo)} podrías quedar en rojo si sigues gastando igual. En el peor caso, es decir, si
-            este mes cobras menos o gastas más de lo normal, el {fechaDia(riesgo.peorFecha)} tendrías{' '}
-            <span className="cifra">{enSoles(riesgo.peorMonto)}</span>.
-          </p>
-          <a className="boton" href="#tips">
-            Ver cómo evitarlo
-          </a>
-        </motion.section>
-      )}
+      <motion.div {...entra(1)}>
+        {riesgo ? (
+          <section className="aviso" role="status" aria-label="Aviso de Lucas">
+            <p className="aviso-etiqueta">
+              <Warning size={20} aria-hidden="true" />
+              Lucas te avisa
+            </p>
+            <p>
+              Si gastas un poco más de lo normal, {textoDiasEnRojo(riesgo).toLowerCase()} podrías quedar en rojo: el{' '}
+              {fechaDia(riesgo.peorFecha)} tendrías <span className="cifra">{enSoles(riesgo.peorMonto)}</span>. Lo más
+              probable es que ese día te queden {enSoles(riesgo.esperado)}.
+            </p>
+            <a className="boton" href="#tips">
+              Ver cómo evitarlo
+            </a>
+          </section>
+        ) : (
+          <section className="aviso aviso-bien" role="status" aria-label="Aviso de Lucas">
+            <p className="aviso-etiqueta">
+              <SealCheck size={20} aria-hidden="true" />
+              Vas bien
+            </p>
+            <p>
+              Con tus cambios llegas a tu cobro del {fechaDia(proximoIngreso.fecha)} sin quedar en rojo, incluso si gastas
+              un poco más de lo normal. Lo más probable es que el {fechaDia(peorDia.fecha)} te queden{' '}
+              {enSoles(peorDia.esperado)}.
+            </p>
+          </section>
+        )}
+      </motion.div>
 
-      <motion.section {...entra(2)} className="tarjeta" data-guia="aprendido" aria-labelledby="aprendido-titulo">
+      <motion.section {...entra(2)} id="tips" className="seccion" aria-labelledby="tips-titulo">
+        <h2 id="tips-titulo">Tips para tu día más justo</h2>
+        <p className="sugerencia" aria-live="polite">
+          {textoDelPlan(cliente)}
+        </p>
+        <ul className="lista-limpia lista-tips">
+          {recomendaciones.map((t) => (
+            <Tip key={t.id} tip={t} activo={elegidos.includes(t.id)} alAlternar={alternarTip} />
+          ))}
+        </ul>
+
+        <div className="tarjeta tip">
+          <div className="reco-cabecera">
+            <span className="circulo" aria-hidden="true">
+              <PiggyBank size={22} />
+            </span>
+            <span className="pildora">Después de cobrar</span>
+          </div>
+          {apartado ? (
+            <>
+              <h3>
+                Cuando cobres el {fechaDia(proximoIngreso.fecha)}, podrías apartar {enSoles(apartado.monto)}
+              </h3>
+              <p className="suave">
+                Lo comprobé con tus pagos hasta el {fechaCorta(apartado.hasta)} y no te deja en rojo. Si lo repites{' '}
+                {apartado.repeticiones} meses, juntarías {enSoles(apartado.total)}.
+              </p>
+            </>
+          ) : (
+            <>
+              <h3>Cuando cobres, todavía no te conviene apartar</h3>
+              <p className="suave">Ese margen lo necesitas para tus pagos de diciembre.</p>
+            </>
+          )}
+          {apartadoConTodos && (!apartado || apartadoConTodos.monto > apartado.monto) && (
+            <p className="cifra-azul">
+              Con los {cliente.totalCambios} cambios podrías apartar {enSoles(apartadoConTodos.monto)}.
+            </p>
+          )}
+        </div>
+      </motion.section>
+
+      <motion.section {...entra(3)} className="tarjeta" data-guia="aprendido" aria-labelledby="aprendido-titulo">
         <h2 id="aprendido-titulo">Lo que aprendí de ti</h2>
         <ul className="lista-limpia lista-aprendido">
           {cliente.aprendido.map((d) => (
             <DatoAprendido key={d.id} dato={d} />
           ))}
         </ul>
-      </motion.section>
-
-      <motion.section {...entra(3)} id="tips" className="seccion" aria-labelledby="tips-titulo">
-        <h2 id="tips-titulo">Tips para tu día más justo</h2>
-        {riesgo && (
-          <p className="sugerencia">
-            Si haces los {recomendaciones.length}, tu peor caso del {fechaDia(riesgo.peorFecha)} pasa de{' '}
-            <span className="cifra">{enSoles(riesgo.peorMonto)}</span> a{' '}
-            <span className="cifra">{conSigno(conTodos.peorMonto)}</span>
-            {conTodos.diasEnRojo === 0 && `: evitas ${diasEntre(riesgo.desde, riesgo.hasta) + 1} días en rojo`}.
-          </p>
-        )}
-        <ul className="lista-limpia lista-tips">
-          <AnimatePresence initial={false}>
-            {tips.map((t) => (
-              <Tip key={t.id} tip={t} />
-            ))}
-          </AnimatePresence>
-        </ul>
-        {recomendaciones.length > TIPS_VISIBLES && (
-          <button type="button" className="boton-texto" onClick={() => setTodosLosTips(!todosLosTips)}>
-            {todosLosTips ? 'Ver menos' : `Ver ${recomendaciones.length - TIPS_VISIBLES} más`}
-          </button>
-        )}
-        {apartado && (
-          <div className="tarjeta tip">
-            <div className="reco-cabecera">
-              <span className="circulo" aria-hidden="true">
-                <PiggyBank size={22} />
-              </span>
-              <span className="pildora">Después de cobrar</span>
-            </div>
-            <h3>
-              Cuando cobres el {fechaDia(proximoIngreso.fecha)}, aparta {enSoles(apartado.monto)}
-            </h3>
-            <p className="suave">
-              Lo comprobé con tus pagos de diciembre y no te deja en rojo. En {apartado.cobros} cobros tendrías{' '}
-              {enSoles(apartado.total)} de colchón.
-            </p>
-          </div>
-        )}
       </motion.section>
 
       <motion.section {...entra(4)} className="tarjeta" aria-labelledby="salud-titulo">

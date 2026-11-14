@@ -143,6 +143,14 @@
   gap: 10px;
 }
 
+.aviso-bien {
+  background: var(--bien-fondo);
+}
+
+.aviso-bien .aviso-etiqueta {
+  color: var(--bien);
+}
+
 .aviso-etiqueta {
   display: flex;
   align-items: center;

@@ -46,7 +46,7 @@
 
 .cifras-verificadas svg {
   flex: none;
-  color: var(--bien);
+  color: var(--azul);
 }
 
 .cifras-verificadas strong {
@@ -56,7 +56,7 @@
 
 .chat-entrada {
   position: sticky;
-  bottom: 84px;
+  bottom: calc(69px + env(safe-area-inset-bottom));
   display: flex;
   gap: 8px;
   padding: 8px 0;
@@ -73,37 +73,4 @@
   background: var(--superficie);
   color: var(--tinta);
   font: inherit;
-}
-
-.guia {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-}
-
-.guia-foco {
-  position: fixed;
-  border-radius: var(--radio);
-  outline: 3px solid var(--crema);
-  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--tinta) 60%, transparent);
-  pointer-events: none;
-}
-
-.guia-tarjeta {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(400px, calc(100% - 32px));
-  display: grid;
-  gap: 8px;
-  padding: 18px;
-  border-radius: var(--radio);
-  background: var(--superficie);
-}
-
-.guia-botones {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }

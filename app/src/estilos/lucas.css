@@ -152,6 +152,41 @@
   gap: 12px;
 }
 
+.tip-activo {
+  border-color: var(--azul);
+}
+
+.tip-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+}
+
+.boton-lo-hago {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 2px solid var(--azul);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--azul);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton-lo-hago[aria-pressed='true'] {
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.tip-acciones details {
+  flex: 1;
+}
+
 .tip h3 {
   font-size: 1.0625rem;
 }

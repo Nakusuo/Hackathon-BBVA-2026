@@ -20,6 +20,19 @@ const PASOS = [
   },
 ]
 
+const ESPACIO_TARJETA = 230
+// Alto de la barra inferior de la banca más un respiro, para no taparla.
+const SOBRE_LA_BARRA = 84
+
+// Debajo de lo señalado si cabe, si no encima, y si lo señalado ocupa casi toda la pantalla, pegada abajo.
+// Siempre se fijan top y bottom: si queda uno del CSS, la tarjeta se aplasta entre los dos.
+function posicionTarjeta(caja) {
+  if (!caja) return {}
+  if (window.innerHeight - caja.bottom >= ESPACIO_TARJETA) return { top: caja.bottom + 16, bottom: 'auto' }
+  if (caja.top >= ESPACIO_TARJETA) return { top: 'auto', bottom: window.innerHeight - caja.top + 16 }
+  return { top: 'auto', bottom: SOBRE_LA_BARRA }
+}
+
 export default function Guia({ alCerrar }) {
   const [paso, setPaso] = useState(0)
   const [caja, setCaja] = useState(null)
@@ -36,7 +49,8 @@ export default function Guia({ alCerrar }) {
   useLayoutEffect(() => {
     const elemento = document.querySelector(`[data-guia="${actual.objetivo}"]`)
     if (!elemento) return undefined
-    elemento.scrollIntoView({ block: 'center' })
+    const esAlto = elemento.getBoundingClientRect().height > window.innerHeight / 2
+    elemento.scrollIntoView({ block: esAlto ? 'start' : 'center' })
     const medir = () => setCaja(elemento.getBoundingClientRect())
     medir()
     window.addEventListener('resize', medir)
@@ -75,7 +89,6 @@ export default function Guia({ alCerrar }) {
   })
 
   const margen = 8
-  const abajo = caja && caja.bottom + 220 < window.innerHeight
 
   return (
     <div className="guia" role="dialog" aria-modal="true" aria-labelledby="guia-titulo">
@@ -93,7 +106,7 @@ export default function Guia({ alCerrar }) {
       <div
         ref={tarjeta}
         className="guia-tarjeta"
-        style={caja ? (abajo ? { top: caja.bottom + 16 } : { bottom: window.innerHeight - caja.top + 16 }) : {}}
+        style={posicionTarjeta(caja)}
       >
         <p className="suave">
           Paso {paso + 1} de {PASOS.length}

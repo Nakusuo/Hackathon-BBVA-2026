@@ -14,6 +14,12 @@
   flex: 1;
 }
 
+.banca-saludo-fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .banca-saludo h1 {
   font-size: 1.375rem;
 }

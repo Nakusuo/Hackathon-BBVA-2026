@@ -13,7 +13,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { enSoles, fechaCorta, fechaDia, fechaLarga, textoDiasEnRojo } from '../formato.js'
+import { conSigno, enSoles, fechaCorta, fechaDia, fechaLarga, textoDiasEnRojo } from '../formato.js'
 import { marcasDelEje } from '../grafico.js'
 
 const PERIODOS = [
@@ -69,7 +69,7 @@ function ListaMovimientos({ titulo, movimientos }) {
 }
 
 export default function QueViene({ cliente }) {
-  const { pronostico, riesgo, proximoIngreso, proximosPagos, saldoHoy } = cliente
+  const { pronostico, riesgo, proximoIngreso, proximosPagos, saldoHoy, ingresos } = cliente
   const [periodo, setPeriodo] = useState('ingreso')
 
   const datos = periodo === 'ingreso' ? pronostico.filter((p) => p.fecha <= proximoIngreso.fecha) : pronostico
@@ -79,7 +79,7 @@ export default function QueViene({ cliente }) {
 
   const movimientos = [
     ...proximosPagos.map((p) => ({ ...p, entra: false })),
-    { id: 'ingreso', fecha: proximoIngreso.fecha, concepto: 'Tu cobro', monto: proximoIngreso.monto, entra: true },
+    ...ingresos.map((i) => ({ ...i, entra: true })),
   ]
     .filter((m) => m.fecha <= ultimoDia)
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
@@ -112,14 +112,18 @@ export default function QueViene({ cliente }) {
               <Warning size={20} weight="fill" aria-hidden="true" />
               <span>
                 {textoDiasEnRojo(riesgo)} podrías quedar en rojo.{' '}
-                <Link className="enlace enlace-claro" to="/lucas/resumen">
+                <Link className="enlace enlace-claro" to="/lucas/resumen#tips">
                   Ver tips
                 </Link>
               </span>
             </p>
           </div>
         ) : (
-          <p>Llegas a tu cobro sin quedar en rojo, incluso en el peor caso.</p>
+          <div className="panel-riesgo">
+            <p className="panel-etiqueta">Peor caso el {fechaDia(cliente.peorDia.fecha)}</p>
+            <p className="panel-cifra">{conSigno(cliente.peorDia.monto)}</p>
+            <p className="panel-aviso">Con tus cambios llegas a tu cobro sin quedar en rojo.</p>
+          </div>
         )}
 
         <p className="solo-lector">{resumen}</p>
@@ -181,7 +185,10 @@ export default function QueViene({ cliente }) {
         <h2 id="movimientos-titulo">Pagos y cobros</h2>
         <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} />
         <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} />
-        <p className="suave">El rango se abre con los días porque tu ingreso varía de un mes a otro.</p>
+        <p className="suave">
+          El rango se abre con los días porque tu gasto varía, y se ensancha en cada cobro porque tus clientes no siempre
+          te pagan lo mismo.
+        </p>
       </section>
     </>
   )

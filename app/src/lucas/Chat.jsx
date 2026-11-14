@@ -1,4 +1,4 @@
-import { PaperPlaneRight, SealCheck } from '@phosphor-icons/react'
+import { Calculator, PaperPlaneRight } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
@@ -26,10 +26,10 @@ function Mensaje({ mensaje }) {
         <span className="solo-lector">Lucas: </span>
         <p>{mensaje.texto}</p>
         {mensaje.cifras.length > 0 && (
-          <ul className="lista-limpia cifras-verificadas" aria-label="Cifras verificadas">
+          <ul className="lista-limpia cifras-verificadas" aria-label="Calculado con tus datos">
             {mensaje.cifras.map((c) => (
               <li key={c.etiqueta}>
-                <SealCheck size={18} weight="fill" aria-hidden="true" />
+                <Calculator size={18} aria-hidden="true" />
                 <span>{c.etiqueta}</span>
                 <strong>{c.valor}</strong>
               </li>
@@ -79,7 +79,7 @@ export default function Chat({ cliente, persona }) {
       </ol>
       <div ref={final} />
 
-      <div className="chips" aria-label="Preguntas sugeridas">
+      <div className="chips" role="group" aria-label="Preguntas sugeridas">
         {PREGUNTAS_SUGERIDAS.map((p) => (
           <button key={p} type="button" className="chip" onClick={() => preguntar(p)}>
             {p}

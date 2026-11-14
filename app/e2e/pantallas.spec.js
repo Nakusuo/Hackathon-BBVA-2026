@@ -20,6 +20,8 @@ for (const { ruta, titulo } of PANTALLAS) {
     page.on('pageerror', (e) => errores.push(e.message))
     page.on('console', (m) => m.type() === 'error' && errores.push(m.text()))
 
+    // Con movimiento reducido las cifras se muestran ya en su valor final: así las capturas no salen a mitad de animación.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
     await page.goto(ruta)
     await expect(page.getByRole('heading', { level: 1, name: titulo })).toBeVisible()
 
@@ -48,6 +50,15 @@ for (const { ruta, titulo } of PANTALLAS) {
   })
 }
 
+test('con movimiento reducido las cifras del resumen salen ya en su valor final', async ({ page }) => {
+  await sinGuia(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/lucas/resumen')
+  const recuadros = page.getByRole('region', { name: 'Cuánto puedes gastar' })
+  await expect(recuadros.locator('.recuadro-cifra [aria-hidden="true"]').first()).toHaveText('S/ 26')
+  await expect(recuadros.locator('.recuadro-cifra [aria-hidden="true"]').nth(1)).toHaveText('S/ 30')
+})
+
 test('lo importante se ve sin bajar: aviso de Lucas en la banca y gasto diario en Lucas', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/banca')
@@ -63,12 +74,19 @@ test('ingreso, banca, Lucas y guía de primera vez', async ({ page }) => {
 
   await page.getByRole('link', { name: /Lucas te avisa/ }).click()
   const guia = page.getByRole('dialog')
-  await expect(guia).toContainText('Paso 1 de 3')
-  await page.screenshot({ path: `capturas/${test.info().project.name}-guia.png` })
-  await guia.getByRole('button', { name: 'Siguiente' }).click()
-  await expect(guia).toContainText('Lo que aprendí de ti')
-  await guia.getByRole('button', { name: 'Siguiente' }).click()
-  await guia.getByRole('button', { name: 'Listo' }).click()
+  const tarjeta = page.locator('.guia-tarjeta')
+  // Cada paso debe verse completo: antes el paso 2 quedaba aplastado en 36 px.
+  for (const [paso, texto] of [[1, 'Lo que puedes gastar'], [2, 'Lo que aprendí de ti'], [3, 'Pregúntame']]) {
+    await expect(guia).toContainText(`Paso ${paso} de 3`)
+    await expect(guia).toContainText(texto)
+    await page.waitForTimeout(150)
+    const caja = await tarjeta.boundingBox()
+    expect(caja.height).toBeGreaterThan(120)
+    expect(caja.y).toBeGreaterThanOrEqual(0)
+    expect(caja.y + caja.height).toBeLessThanOrEqual(page.viewportSize().height)
+    await page.screenshot({ path: `capturas/${test.info().project.name}-guia-${paso}.png` })
+    await guia.getByRole('button', { name: paso === 3 ? 'Listo' : 'Siguiente' }).click()
+  }
   await expect(guia).toBeHidden()
 
   await page.reload()
@@ -83,23 +101,48 @@ test('la banca puede ocultar los montos', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/banca')
   await expect(page.getByText('S/ 1,240')).toBeVisible()
-  await page.getByRole('button', { name: 'Ocultar montos' }).click()
+  const ojo = page.getByRole('button', { name: 'Ocultar montos' })
+  await ojo.click()
   await expect(page.getByText('S/ 1,240')).toBeHidden()
-  await expect(page.getByRole('button', { name: 'Mostrar montos' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(ojo).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('Resumen: confirmar lo aprendido y ver todos los tips', async ({ page }) => {
+test('Resumen: confirmar lo aprendido', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/lucas/resumen')
   const primero = page.locator('.aprendido').first()
   await primero.getByRole('button', { name: 'Sí' }).click()
   await expect(primero).toContainText('Gracias, lo sigo usando.')
+})
 
+test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/resumen')
   const tips = page.getByRole('region', { name: 'Tips para tu día más justo' })
-  await expect(tips).toContainText('evitas 2 días en rojo')
-  await expect(tips.getByRole('heading', { name: /Toma café/ })).toBeHidden()
-  await tips.getByRole('button', { name: 'Ver 1 más' }).click()
-  await expect(tips.getByRole('heading', { name: /Toma café/ })).toBeVisible()
+  await expect(tips).toContainText('Si haces los 3')
+  const botones = tips.getByRole('button', { name: 'Lo hago' })
+  await expect(botones).toHaveCount(3)
+
+  await botones.nth(0).click()
+  await expect(botones.nth(0)).toHaveAttribute('aria-pressed', 'true')
+  await expect(tips).toContainText('Con tu cambio, tu peor caso del domingo 29 pasa de −S/ 60 a −S/ 29')
+
+  await botones.nth(1).click()
+  await botones.nth(2).click()
+  await expect(tips).toContainText('Ya no quedas en rojo antes de cobrar')
+  await expect(page.getByRole('status', { name: 'Aviso de Lucas' })).toContainText('Vas bien')
+  await expect(page.getByText('podrías apartar S/ 150')).toBeVisible()
+
+  await page.getByRole('link', { name: 'Qué viene' }).click()
+  await expect(page.locator('.panel-grafico')).toContainText('Con tus cambios llegas a tu cobro')
+
+  await page.goto('/banca')
+  await expect(page.getByRole('link', { name: /Con tus cambios llegas/ })).toBeVisible()
+
+  await page.goto('/lucas/resumen')
+  await expect(tips.getByRole('button', { name: 'Lo hago' }).first()).toHaveAttribute('aria-pressed', 'true')
+  await tips.getByRole('button', { name: 'Lo hago' }).first().click()
+  await expect(page.getByRole('status', { name: 'Aviso de Lucas' })).toContainText('Lucas te avisa')
 })
 
 test('Gastos compara cada categoría con el promedio', async ({ page }) => {
@@ -115,9 +158,9 @@ test('Qué viene cambia de periodo y muestra los pagos de diciembre', async ({ p
   await sinGuia(page)
   await page.goto('/lucas/que-viene')
   const pagos = page.getByRole('region', { name: 'Pagos y cobros' })
-  await expect(pagos).not.toContainText('Tarjeta de crédito')
+  await expect(pagos).not.toContainText('Pago total de tarjeta')
   await page.getByRole('button', { name: '30 días' }).click()
-  await expect(pagos).toContainText('Tarjeta de crédito')
+  await expect(pagos).toContainText('Pago total de tarjeta')
 })
 
 test('el chat responde con cifras verificadas y no da asesoría', async ({ page }) => {
@@ -126,7 +169,7 @@ test('el chat responde con cifras verificadas y no da asesoría', async ({ page 
   await page.getByRole('button', { name: '¿Puedo gastar S/ 150 en un regalo?' }).click()
   const ultima = page.locator('.mensaje-lucas').last()
   await expect(ultima).toContainText('−S/ 210')
-  await expect(ultima.getByRole('list', { name: 'Cifras verificadas' })).toBeVisible()
+  await expect(ultima.getByRole('list', { name: 'Calculado con tus datos' })).toBeVisible()
 
   await page.getByLabel('Escribe tu pregunta').fill('¿Me conviene comprar dólares?')
   await page.getByRole('button', { name: 'Enviar' }).click()
@@ -177,4 +220,18 @@ test('los botones del selector de periodo caben en una línea', async ({ page })
   await page.goto('/lucas/que-viene')
   const altos = await page.locator('.selector button').evaluateAll((bs) => bs.map((b) => b.getBoundingClientRect().height))
   for (const alto of altos) expect(alto).toBeLessThanOrEqual(40)
+})
+
+test('el botón «?» abre la guía desde cualquier pestaña de Lucas', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/gastos')
+  await page.getByRole('button', { name: 'Ver la guía' }).click()
+  await expect(page).toHaveURL(/lucas\/resumen/)
+  await expect(page.getByRole('dialog')).toContainText('Paso 1 de 3')
+})
+
+test('la guía no aparece sola si la primera entrada a Lucas no es el Resumen', async ({ page }) => {
+  await page.goto('/lucas/chat')
+  await page.getByRole('link', { name: 'Resumen' }).click()
+  await expect(page.getByRole('dialog')).toBeHidden()
 })

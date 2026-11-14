@@ -1,28 +1,35 @@
 // Persona sintética de la demo. Se reemplaza por la API cuando exista el contrato (MG-01).
 import {
-  apartadoSinRojo,
+  ajusteDe,
+  apartadoMaximo,
   diasEnRojo,
   evaluarCambio,
-  evaluarTodos,
   gastoDiarioSeguro,
   gastoVariableDiario,
   peorDia,
+  primerCobro,
   simular,
 } from './motor.js'
 
+// Independiente con recibo por honorarios: cobra de dos clientes y ninguno paga siempre lo mismo.
 export const persona = {
   hoy: '2026-11-14',
   horizonteDias: 30,
   saldoHoy: 1240,
-  ingreso: { fecha: '2026-11-30', monto: 2600, tipo: 'Recibo por honorarios', minimo6m: 1900, maximo6m: 3400 },
+  tipoIngreso: 'Recibo por honorarios',
+  rangoMensual6m: { minimo: 1900, maximo: 3400 },
+  ingresos: [
+    { id: 'cobro-principal', fecha: '2026-11-30', monto: 2000, variacion: 300, concepto: 'Cobro de tu cliente principal' },
+    { id: 'cobro-proyecto', fecha: '2026-12-12', monto: 600, variacion: 400, concepto: 'Cobro de un proyecto aparte' },
+  ],
   gastoBaseDiario: 23,
   banda: { inicial: 25, porDia: 8.6 },
   pagos: [
     { id: 'streamflix', fecha: '2026-11-16', concepto: 'StreamFlix', monto: 39.9 },
-    { id: 'prestamo', fecha: '2026-11-18', concepto: 'Cuota préstamo personal', monto: 210, deuda: true },
+    { id: 'prestamo', fecha: '2026-11-18', concepto: 'Cuota préstamo personal', monto: 210, cuota: true },
     { id: 'musika', fecha: '2026-11-20', concepto: 'MusiKa Plus', monto: 21.9 },
     { id: 'alquiler', fecha: '2026-11-25', concepto: 'Alquiler de cuarto', monto: 420 },
-    { id: 'tarjeta', fecha: '2026-12-01', concepto: 'Tarjeta de crédito', monto: 950, deuda: true },
+    { id: 'tarjeta', fecha: '2026-12-01', concepto: 'Pago total de tarjeta de crédito', monto: 950 },
     { id: 'internet', fecha: '2026-12-05', concepto: 'Internet y celular', monto: 180 },
   ],
   gastosFrecuentes: [
@@ -47,7 +54,7 @@ const CATEGORIAS = [
   { id: 'otros', nombre: 'Otros', promedio3m: 45, ejemplo: 'Farmacia y regalos' },
 ]
 
-const CAMBIOS = [
+export const CAMBIOS = [
   {
     id: 'musika',
     titulo: 'Pausa MusiKa Plus hasta tu próximo cobro',
@@ -76,17 +83,10 @@ const MOVIMIENTOS_RECIENTES = [
   { id: 'm2', fecha: '2026-11-13', concepto: 'Cafetería La Esquina', monto: -5.3, categoria: 'hormiga' },
   { id: 'm3', fecha: '2026-11-12', concepto: 'Supermercado El Ahorro', monto: -86.5, categoria: 'comida' },
   { id: 'm4', fecha: '2026-11-11', concepto: 'Taxi por aplicativo', monto: -14, categoria: 'transporte' },
-  { id: 'm5', fecha: '2026-11-10', concepto: 'Transferencia recibida', monto: 350, categoria: 'ingreso' },
+  { id: 'm5', fecha: '2026-11-10', concepto: 'Cobro de un proyecto aparte', monto: 350, categoria: 'ingreso' },
 ]
 
-const APARTADO_PROPUESTO = 150
-
-const pronostico = simular(persona)
-const peor = peorDia(persona, pronostico)
-const rojo = diasEnRojo(persona, pronostico)
-const recomendaciones = CAMBIOS.map((c) => evaluarCambio(persona, c)).sort((a, b) => b.mejora - a.mejora)
-const conTodos = evaluarTodos(persona, CAMBIOS)
-const gastoDiarioActual = Math.round(gastoVariableDiario(persona))
+const REPETICIONES_APARTADO = 3
 
 const totalPorCategoria = { ...persona.gastoBasePorCategoria, suscripciones: 0 }
 for (const g of persona.gastosFrecuentes) {
@@ -94,71 +94,106 @@ for (const g of persona.gastosFrecuentes) {
 }
 for (const s of persona.suscripciones) totalPorCategoria.suscripciones += s.monto
 
-const cuotasMes = persona.pagos.filter((p) => p.deuda).reduce((s, p) => s + p.monto, 0)
-const pesoDeudas = Math.round((cuotasMes / persona.ingreso.monto) * 100)
+const ingresoMensual = persona.ingresos.reduce((s, i) => s + i.monto, 0)
+const cuotasMes = persona.pagos.filter((p) => p.cuota).reduce((s, p) => s + p.monto, 0)
+const pesoCuotas = Math.round((cuotasMes / ingresoMensual) * 100)
 
-// Mientras no exista el modelo de salud (DI-07), el puntaje de deudas baja en línea recta con el peso de las cuotas.
+// Mientras no exista el modelo de salud (DI-07), el puntaje de deudas baja el doble de rápido que sube el peso de las cuotas.
 const componentesSalud = [
   { nombre: 'Colchón', valor: 35, explicacion: 'Cubre 2 semanas de gastos; lo sano son 3 meses.' },
   {
     nombre: 'Deudas',
-    valor: Math.max(0, 100 - pesoDeudas),
-    explicacion: `Tus cuotas son el ${pesoDeudas} % de lo que cobras.`,
+    valor: Math.max(0, 100 - pesoCuotas * 2),
+    explicacion: `Tus cuotas son el ${pesoCuotas} % de lo que cobras.`,
   },
-  { nombre: 'Regularidad del ingreso', valor: 48, explicacion: 'Tu cobro cambia mucho de un mes a otro.' },
+  { nombre: 'Regularidad del ingreso', valor: 48, explicacion: 'Tus cobros cambian mucho de un mes a otro.' },
   { nombre: 'Control del gasto', valor: 71, explicacion: 'Gastaste menos de lo que entró en 4 de 6 meses.' },
 ]
 
 const delivery = persona.gastosFrecuentes.find((g) => g.id === 'delivery')
 const cafe = persona.gastosFrecuentes.find((g) => g.id === 'cafe')
+const cobro = primerCobro(persona)
+const miles = (n) => `S/ ${n.toLocaleString('es-PE')}`
 
-export const cliente = {
-  hoy: persona.hoy,
-  saldoHoy: persona.saldoHoy,
-  cuenta: { nombre: 'Cuenta sueldo', terminacion: '0001' },
-  tarjeta: { nombre: 'Tarjeta de crédito', terminacion: '0002', pagoMes: 950, vence: '2026-12-01' },
-  movimientosRecientes: MOVIMIENTOS_RECIENTES,
-  proximoIngreso: persona.ingreso,
-  gastoDiarioActual,
-  gastoDiarioSeguro: gastoDiarioSeguro(persona),
-  proximosPagos: persona.pagos,
-  pronostico,
-  riesgo: rojo.length
-    ? { desde: rojo[0], hasta: rojo.at(-1), peorFecha: peor.fecha, peorMonto: peor.banda[0], esperado: peor.esperado }
-    : null,
-  salud: {
-    puntaje: Math.round(componentesSalud.reduce((s, c) => s + c.valor, 0) / componentesSalud.length),
-    componentes: componentesSalud,
-  },
-  aprendido: [
-    {
-      id: 'cobro',
-      dato: `Cobras una vez al mes, a fin de mes, por ${persona.ingreso.tipo.toLowerCase()}.`,
-      fuente: 'Tus últimos 6 cobros',
-    },
-    {
-      id: 'variacion',
-      dato: `Tu cobro va de S/ ${persona.ingreso.minimo6m.toLocaleString('es-PE')} a S/ ${persona.ingreso.maximo6m.toLocaleString('es-PE')}.`,
-      fuente: 'Últimos 6 meses',
-    },
-    {
-      id: 'ritmo',
-      dato: `Fuera de tus pagos fijos gastas unos S/ ${gastoDiarioActual} al día.`,
-      fuente: 'Últimos 30 días',
-    },
-    {
-      id: 'habitos',
-      dato: `Pides delivery ${delivery.vecesMes} veces al mes y vas por café ${cafe.vecesMes} veces.`,
-      fuente: 'Tus compras con tarjeta',
-    },
-  ],
-  categorias: CATEGORIAS.map((c) => ({ ...c, total: Math.round(totalPorCategoria[c.id] * 100) / 100 })).sort(
-    (a, b) => b.total - a.total,
-  ),
-  suscripciones: persona.suscripciones,
-  recomendaciones,
-  conTodos: { peorFecha: conTodos.peor.fecha, peorMonto: conTodos.peor.banda[0], diasEnRojo: conTodos.diasEnRojo.length },
-  apartado: apartadoSinRojo(persona, APARTADO_PROPUESTO) ? { monto: APARTADO_PROPUESTO, cobros: 3 } : null,
+const recomendaciones = CAMBIOS.map((c) => evaluarCambio(persona, c)).sort((a, b) => b.mejora - a.mejora)
+const peorSinCambios = peorDia(persona, simular(persona))
+const conTodosLosCambios = peorDia(persona, simular(persona, ajusteDe(CAMBIOS)))
+
+function riesgoDe(puntos) {
+  const rojo = diasEnRojo(persona, puntos)
+  if (!rojo.length) return null
+  const peor = peorDia(persona, puntos)
+  return { desde: rojo[0], hasta: rojo.at(-1), peorFecha: peor.fecha, peorMonto: peor.banda[0], esperado: peor.esperado }
 }
 
-if (cliente.apartado) cliente.apartado.total = cliente.apartado.monto * cliente.apartado.cobros
+function apartadoDe(ajuste) {
+  const monto = apartadoMaximo(persona, ajuste)
+  if (!monto) return null
+  return { monto, repeticiones: REPETICIONES_APARTADO, total: monto * REPETICIONES_APARTADO, hasta: simular(persona).at(-1).fecha }
+}
+
+// Todo lo que cambia cuando la persona activa tips con «Lo hago» se recalcula aquí, con el mismo motor.
+export function vistaCon(elegidos = []) {
+  const activos = CAMBIOS.filter((c) => elegidos.includes(c.id))
+  const ajuste = ajusteDe(activos)
+  const pronostico = simular(persona, ajuste)
+  const peor = peorDia(persona, pronostico)
+  return {
+    hoy: persona.hoy,
+    saldoHoy: persona.saldoHoy,
+    cuenta: { nombre: 'Cuenta de ahorros', terminacion: '0001' },
+    tarjeta: { nombre: 'Tarjeta de crédito', terminacion: '0002', pagoMes: 950, vence: '2026-12-01' },
+    movimientosRecientes: MOVIMIENTOS_RECIENTES,
+    proximoIngreso: { ...cobro, tipo: persona.tipoIngreso },
+    ingresos: persona.ingresos,
+    gastoDiarioActual: Math.round(gastoVariableDiario(persona, ajuste.frecuencias)),
+    gastoDiarioSeguro: gastoDiarioSeguro(persona, ajuste),
+    proximosPagos: persona.pagos,
+    pronostico,
+    riesgo: riesgoDe(pronostico),
+    riesgoSinCambios: riesgoDe(simular(persona)),
+    peorDia: { fecha: peor.fecha, monto: peor.banda[0], esperado: peor.esperado },
+    elegidos: activos.map((c) => c.id),
+    salud: {
+      puntaje: Math.round(componentesSalud.reduce((s, c) => s + c.valor, 0) / componentesSalud.length),
+      componentes: componentesSalud,
+    },
+    aprendido: [
+      {
+        id: 'cobro',
+        dato: `Cobras de 2 clientes por ${persona.tipoIngreso.toLowerCase()}: el principal a fin de mes y otro a mitad de mes.`,
+        fuente: 'Tus últimos 6 meses de cobros',
+      },
+      {
+        id: 'variacion',
+        dato: `En un mes cobras entre ${miles(persona.rangoMensual6m.minimo)} y ${miles(persona.rangoMensual6m.maximo)}.`,
+        fuente: 'Últimos 6 meses',
+      },
+      {
+        id: 'ritmo',
+        dato: `Fuera de tus pagos fijos gastas unos S/ ${Math.round(gastoVariableDiario(persona))} al día.`,
+        fuente: 'Últimos 30 días',
+      },
+      {
+        id: 'habitos',
+        dato: `Pides delivery ${delivery.vecesMes} veces al mes y vas por café ${cafe.vecesMes} veces.`,
+        fuente: 'Tus compras con tarjeta',
+      },
+    ],
+    categorias: CATEGORIAS.map((c) => ({ ...c, total: Math.round(totalPorCategoria[c.id] * 100) / 100 })).sort(
+      (a, b) => b.total - a.total,
+    ),
+    suscripciones: persona.suscripciones,
+    recomendaciones,
+    conTodos: {
+      peorFecha: conTodosLosCambios.fecha,
+      peorMonto: conTodosLosCambios.banda[0],
+      peorAntes: peorSinCambios.banda[0],
+    },
+    apartado: apartadoDe(ajuste),
+    apartadoConTodos: apartadoDe(ajusteDe(CAMBIOS)),
+    totalCambios: CAMBIOS.length,
+  }
+}
+
+export const cliente = vistaCon()

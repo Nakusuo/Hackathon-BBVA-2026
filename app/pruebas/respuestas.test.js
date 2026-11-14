@@ -36,3 +36,35 @@ test('lo que no entiende lo dice sin inventar cifras', () => {
   assert.match(r.texto, /Todavía no sé/)
   assert.deepEqual(r.cifras, [])
 })
+
+test('lectura de montos: con «S/», con «soles», con punto de miles y sin confundir días', async () => {
+  const { montoEn } = await import('../src/lucas/respuestas.js')
+  assert.equal(montoEn('¿puedo gastar s/ 150?'), 150)
+  assert.equal(montoEn('un regalo de 80 soles'), 80)
+  assert.equal(montoEn('algo de s/ 1.500'), 1500)
+  assert.equal(montoEn('algo de s/ 12.50'), 12.5)
+  assert.equal(montoEn('pagar la tarjeta el 1'), null)
+  assert.equal(montoEn('el 15 gasto 40'), 40)
+})
+
+test('un gasto mayor que el saldo dice que no alcanza, sin decir «Puedes»', () => {
+  const r = preguntar('¿puedo gastar 100000?')
+  assert.match(r.texto, /^No te alcanza/)
+  assert.doesNotMatch(r.texto, /Puedes/)
+})
+
+test('si el peor caso ya está en rojo, nunca responde «Sí, te alcanza»', () => {
+  assert.doesNotMatch(preguntar('¿puedo gastar 5 en un chocolate?').texto, /Sí, te alcanza/)
+})
+
+test('con los tips activos el chat usa ese plan', async () => {
+  const { vistaCon, CAMBIOS } = await import('../src/mocks/cliente.js')
+  const conTips = vistaCon(CAMBIOS.map((c) => c.id))
+  assert.match(responder('¿puedo gastar 5?', conTips, persona).texto, /Sí, te alcanza/)
+  assert.match(responder('¿Llego a mi cobro?', conTips, persona).texto, /^Sí/)
+})
+
+test('preguntar por un ahorro concreto lo comprueba contra los pagos', () => {
+  assert.match(preguntar('¿Puedo ahorrar 30?').texto, /^Sí/)
+  assert.match(preguntar('¿Puedo ahorrar 900?').texto, /^Es mucho/)
+})

@@ -1,13 +1,25 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { cliente } from '../src/mocks/cliente.js'
-import { evaluarCambio, gastoDiarioSeguro, peorDia, simular } from '../src/mocks/motor.js'
+import { CAMBIOS, cliente, persona, vistaCon } from '../src/mocks/cliente.js'
+import {
+  ajusteDe,
+  anchoBanda,
+  apartadoMaximo,
+  apartadoSinRojo,
+  evaluarCambio,
+  evaluarGastoExtra,
+  gastoDiarioSeguro,
+  peorDia,
+  simular,
+} from '../src/mocks/motor.js'
 
 // Las pantallas solo son creíbles si sus cifras no se contradicen: estas pruebas lo vigilan.
 
-test('el aviso apunta al peor día antes del cobro', () => {
-  const minimo = Math.min(...cliente.pronostico.filter((p) => p.fecha < cliente.proximoIngreso.fecha).map((p) => p.banda[0]))
-  assert.equal(cliente.riesgo.peorMonto, minimo)
+const TODOS = CAMBIOS.map((c) => c.id)
+
+test('el aviso apunta al peor día antes del primer cobro', () => {
+  const antesDelCobro = cliente.pronostico.filter((p) => p.fecha < cliente.proximoIngreso.fecha)
+  assert.equal(cliente.riesgo.peorMonto, Math.min(...antesDelCobro.map((p) => p.banda[0])))
   assert.ok(cliente.riesgo.desde <= cliente.riesgo.peorFecha && cliente.riesgo.peorFecha <= cliente.riesgo.hasta)
 })
 
@@ -24,20 +36,52 @@ test('las recomendaciones van de mayor a menor efecto y cada una mejora el peor 
   }
 })
 
-test('con todos los cambios juntos ya no hay días en rojo', () => {
-  assert.equal(cliente.conTodos.diasEnRojo, 0)
-  assert.ok(cliente.conTodos.peorMonto >= 0)
+test('cada tip que se activa con «Lo hago» mejora el peor caso, y con todos ya no hay rojo', () => {
+  let anterior = vistaCon([]).peorDia.monto
+  for (let i = 1; i <= TODOS.length; i++) {
+    const actual = vistaCon(TODOS.slice(0, i)).peorDia.monto
+    assert.ok(actual > anterior, `con ${i} tips`)
+    anterior = actual
+  }
+  const conTodos = vistaCon(TODOS)
+  assert.equal(conTodos.riesgo, null)
+  assert.equal(conTodos.peorDia.monto, cliente.conTodos.peorMonto)
 })
 
-test('el colchón del apartado cuadra con monto por cobros', () => {
-  assert.equal(cliente.apartado.total, cliente.apartado.monto * cliente.apartado.cobros)
+test('activar tips nunca reduce lo que se puede apartar', () => {
+  const sinTips = vistaCon([]).apartado?.monto ?? 0
+  const conTips = vistaCon(TODOS).apartado?.monto ?? 0
+  assert.ok(conTips >= sinTips)
+  assert.equal(cliente.apartadoConTodos.monto, conTips)
+})
+
+test('el apartado propuesto no deja en rojo y S/ 10 más ya sí', () => {
+  const { apartado } = cliente
+  assert.ok(apartadoSinRojo(persona, apartado.monto))
+  assert.ok(!apartadoSinRojo(persona, apartado.monto + 10))
+  assert.equal(apartado.total, apartado.monto * apartado.repeticiones)
+})
+
+test('un ingreso desconocido ensancha la banda el día del cobro', () => {
+  const [cobro] = persona.ingresos
+  const diaAntes = cliente.pronostico.findIndex((p) => p.fecha === cobro.fecha) - 1
+  const antes = anchoBanda(persona, diaAntes, cliente.pronostico[diaAntes].fecha)
+  const enElCobro = anchoBanda(persona, diaAntes + 1, cobro.fecha)
+  assert.equal(Math.round(enElCobro - antes - persona.banda.porDia), cobro.variacion)
+})
+
+test('un gasto extra empeora el peor caso en ese mismo monto', () => {
+  const r = evaluarGastoExtra(persona, 150)
+  assert.equal(r.peorDespues, r.peorAntes - 150)
+  const conTips = evaluarGastoExtra(persona, 150, ajusteDe(CAMBIOS))
+  assert.ok(conTips.peorDespues > r.peorDespues)
 })
 
 const personaMinima = {
   hoy: '2026-01-01',
   horizonteDias: 10,
   saldoHoy: 500,
-  ingreso: { fecha: '2026-01-11', monto: 1000 },
+  ingresos: [{ id: 'cobro', fecha: '2026-01-11', monto: 1000, variacion: 0 }],
   gastoBaseDiario: 20,
   banda: { inicial: 0, porDia: 0 },
   pagos: [{ id: 'luz', fecha: '2026-01-05', monto: 100 }],
@@ -54,4 +98,10 @@ test('sin banda, el gasto seguro es exactamente lo que alcanza hasta el cobro', 
 test('omitir un pago mejora el peor caso en ese mismo monto', () => {
   const r = evaluarCambio(personaMinima, { id: 'x', ajuste: { pagosOmitidos: ['luz'] } })
   assert.equal(r.mejora, 100)
+})
+
+test('sin margen después del cobro no se propone apartar nada', () => {
+  // 300 − 10 días × 20 − 100 de luz = 0 el día del cobro, y el cobro es de 0.
+  const sinMargen = { ...personaMinima, saldoHoy: 300, ingresos: [{ id: 'cobro', fecha: '2026-01-11', monto: 0, variacion: 0 }] }
+  assert.equal(apartadoMaximo(sinMargen), 0)
 })

@@ -1,8 +1,7 @@
 import { CaretLeft, Question } from '@phosphor-icons/react'
-import { useRef, useState } from 'react'
-import { Link, Navigate, NavLink, useParams } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, Navigate, NavLink, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
-import { cliente, persona } from '../mocks/cliente.js'
 import Chat from './Chat.jsx'
 import Gastos from './Gastos.jsx'
 import Guia from './Guia.jsx'
@@ -19,13 +18,27 @@ const SECCIONES = [
 
 export default function EspacioLucas() {
   const { seccion } = useParams()
-  const [guiaAbierta, setGuiaAbierta] = useState(() => !guiaYaVista())
+  const { vista, persona, alternarTip } = useOutletContext()
+  const navegar = useNavigate()
+  const { hash } = useLocation()
+  // Solo se abre sola si la primera entrada es al Resumen, que es donde están sus tres marcas.
+  const [guiaAbierta, setGuiaAbierta] = useState(() => !guiaYaVista() && seccion === 'resumen')
   const botonGuia = useRef(null)
+
+  function abrirGuia() {
+    if (seccion !== 'resumen') navegar('/lucas/resumen')
+    setGuiaAbierta(true)
+  }
 
   function cerrarGuia() {
     setGuiaAbierta(false)
     botonGuia.current?.focus()
   }
+
+  // React Router no baja solo hasta un ancla: los enlaces a #tips llegan aquí.
+  useEffect(() => {
+    if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' })
+  }, [hash, seccion])
 
   if (!SECCIONES.some((s) => s.id === seccion)) return <Navigate to="/lucas/resumen" replace />
 
@@ -35,14 +48,14 @@ export default function EspacioLucas() {
         <div className="lucas-barra">
           <Link to="/banca" className="volver">
             <CaretLeft size={20} aria-hidden="true" />
-            Mi Banca
+            Inicio
           </Link>
           <button
             ref={botonGuia}
             type="button"
             className="icono-boton icono-boton-suave"
             aria-label="Ver la guía"
-            onClick={() => setGuiaAbierta(true)}
+            onClick={abrirGuia}
           >
             <Question size={24} aria-hidden="true" />
           </button>
@@ -64,10 +77,10 @@ export default function EspacioLucas() {
       </header>
 
       <main className="lucas-contenido">
-        {seccion === 'resumen' && <Resumen cliente={cliente} animarEntrada={!guiaAbierta} />}
-        {seccion === 'gastos' && <Gastos cliente={cliente} />}
-        {seccion === 'que-viene' && <QueViene cliente={cliente} />}
-        {seccion === 'chat' && <Chat cliente={cliente} persona={persona} />}
+        {seccion === 'resumen' && <Resumen cliente={vista} alternarTip={alternarTip} animarEntrada={!guiaAbierta} />}
+        {seccion === 'gastos' && <Gastos cliente={vista} />}
+        {seccion === 'que-viene' && <QueViene cliente={vista} />}
+        {seccion === 'chat' && <Chat cliente={vista} persona={persona} />}
       </main>
 
       {guiaAbierta && seccion === 'resumen' && <Guia alCerrar={cerrarGuia} />}
