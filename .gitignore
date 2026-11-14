@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Caché local del BCRP (la serie grabada sí se versiona)
+data/bcrp/cache.json
