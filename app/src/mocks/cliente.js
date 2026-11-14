@@ -4,14 +4,16 @@ const HOY = '2026-11-14'
 const SALDO_HOY = 1240
 const INGRESO = { fecha: '2026-11-30', monto: 2600, tipo: 'Recibo por honorarios' }
 
-const PAGOS = {
-  '2026-11-16': 39.9,
-  '2026-11-18': 210,
-  '2026-11-20': 21.9,
-  '2026-11-25': 420,
-  '2026-12-01': 950,
-  '2026-12-05': 180,
-}
+const PAGOS = [
+  { fecha: '2026-11-16', concepto: 'StreamFlix', tipo: 'Suscripción', monto: 39.9 },
+  { fecha: '2026-11-18', concepto: 'Cuota préstamo personal', tipo: 'Deuda', monto: 210 },
+  { fecha: '2026-11-20', concepto: 'MusiKa Plus', tipo: 'Suscripción', monto: 21.9 },
+  { fecha: '2026-11-25', concepto: 'Alquiler de cuarto', tipo: 'Vivienda', monto: 420 },
+  { fecha: '2026-12-01', concepto: 'Tarjeta de crédito', tipo: 'Deuda', monto: 950 },
+  { fecha: '2026-12-05', concepto: 'Internet y celular', tipo: 'Servicios', monto: 180 },
+]
+
+const PAGO_POR_FECHA = Object.groupBy(PAGOS, (p) => p.fecha)
 
 const GASTO_DIARIO = 30
 
@@ -27,7 +29,8 @@ function construirPronostico() {
   let saldo = SALDO_HOY
   for (let i = 0; i <= 30; i++) {
     const fecha = sumarDias(HOY, i)
-    if (i > 0) saldo -= GASTO_DIARIO + (PAGOS[fecha] ?? 0)
+    const pagosDelDia = (PAGO_POR_FECHA[fecha] ?? []).reduce((s, p) => s + p.monto, 0)
+    if (i > 0) saldo -= GASTO_DIARIO + pagosDelDia
     if (fecha === INGRESO.fecha) saldo += INGRESO.monto
     const ancho = 40 + i * 14
     puntos.push({
@@ -42,18 +45,24 @@ function construirPronostico() {
 const pronostico = construirPronostico()
 const diaRiesgo = pronostico.find((p) => p.banda[0] < 0)
 
+const pagosAntesDelIngreso = PAGOS.filter((p) => p.fecha < INGRESO.fecha).reduce((s, p) => s + p.monto, 0)
+const diasHastaIngreso = pronostico.findIndex((p) => p.fecha === INGRESO.fecha)
+
 export const cliente = {
   hoy: HOY,
   arquetipo: 'Independiente con recibo por honorarios',
   saldoHoy: SALDO_HOY,
   proximoIngreso: INGRESO,
+  // Lo que queda libre al día después de separar los pagos fijos hasta el próximo ingreso.
+  disponibleDiario: Math.floor((SALDO_HOY - pagosAntesDelIngreso) / diasHastaIngreso),
+  proximosPagos: PAGOS,
   salud: {
     puntaje: 58,
     componentes: [
-      { nombre: 'Colchón', valor: 35, explicacion: 'Tu ahorro cubre unas 2 semanas de gastos. Lo sano es 3 meses.' },
-      { nombre: 'Deudas', valor: 62, explicacion: 'Tus cuotas se llevan el 24 % de lo que ganas.' },
-      { nombre: 'Regularidad del ingreso', valor: 48, explicacion: 'En los últimos 6 meses cobraste entre S/ 1,900 y S/ 3,400.' },
-      { nombre: 'Control del gasto', valor: 71, explicacion: 'Gastas menos de lo que entra en 4 de cada 6 meses.' },
+      { nombre: 'Colchón', valor: 35, explicacion: 'Cubre 2 semanas de gastos; lo sano son 3 meses.' },
+      { nombre: 'Deudas', valor: 62, explicacion: 'Tus cuotas son el 24\u00a0% de lo que ganas.' },
+      { nombre: 'Regularidad del ingreso', valor: 48, explicacion: 'Cobraste entre S/\u00a01,900 y S/\u00a03,400 al mes.' },
+      { nombre: 'Control del gasto', valor: 71, explicacion: 'Gastaste menos de lo que entró en 4 de 6 meses.' },
     ],
   },
   segmento: {
@@ -80,7 +89,7 @@ export const cliente = {
       id: 'reco-1',
       titulo: 'Pausa MusiKa Plus hasta tu próximo pago',
       monto: 21.9,
-      efecto: 'Ahorras S/ 21.90 antes del 20 de noviembre.',
+      efecto: 'Antes del cobro del 20 de noviembre.',
       porque: 'No la usaste en 5 semanas y se cobra 10 días antes de tu ingreso, justo cuando tu saldo está más bajo.',
       facilidad: 'Fácil',
     },
@@ -88,15 +97,15 @@ export const cliente = {
       id: 'reco-2',
       titulo: 'Baja RapiFood a 2 pedidos por semana',
       monto: 60,
-      efecto: 'Te quedan unos S/ 60 más al 26 de noviembre.',
+      efecto: 'Más saldo para tu día más justo, el 26 de noviembre.',
       porque: 'Este mes pediste 9 veces, con un promedio de S/ 12.40. Con 2 por semana pasas tu día más justo sin quedar en rojo.',
-      facilidad: 'Media',
+      facilidad: 'Esfuerzo medio',
     },
     {
       id: 'reco-3',
-      titulo: 'Aparta S/ 80 cuando cobres el 30',
+      titulo: 'Aparta una parte cuando cobres el 30',
       monto: 80,
-      efecto: 'En 3 meses tendrías S/ 240 de colchón.',
+      efecto: 'Por quincena. En 3 meses tendrías S/\u00a0240 de colchón.',
       porque: 'Diciembre trae la cuota del 1 y gastos de fin de año. Separar una parte el día que cobras evita usarla sin darte cuenta.',
       facilidad: 'Fácil',
     },

@@ -5,7 +5,7 @@ export function enSoles(monto) {
   const signo = monto < 0 ? '−' : ''
   const absoluto = Math.abs(monto)
   const formato = Number.isInteger(absoluto) ? solesEnteros : solesConCentimos
-  return `${signo}S/ ${formato.format(absoluto)}`
+  return `${signo}S/\u00a0${formato.format(absoluto)}`
 }
 
 const diaLargo = new Intl.DateTimeFormat('es-PE', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -21,6 +21,14 @@ export function fechaLarga(fechaIso) {
 
 export function fechaCorta(fechaIso) {
   return diaCorto.format(aFecha(fechaIso)).replace('.', '')
+}
+
+export function iniciales(nombre) {
+  return nombre
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((palabra) => palabra[0].toUpperCase())
+    .join('')
 }
 
 export function diasEntre(desdeIso, hastaIso) {

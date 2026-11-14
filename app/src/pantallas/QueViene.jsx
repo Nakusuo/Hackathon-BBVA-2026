@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Area,
   CartesianGrid,
@@ -10,89 +11,114 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { diasEntre, enSoles, fechaCorta, fechaLarga } from '../formato.js'
+import AvisoRiesgo from '../componentes/AvisoRiesgo.jsx'
+import { enSoles, fechaCorta, fechaLarga } from '../formato.js'
 
-function DetalleDia({ active, payload }) {
+const PERIODOS = [
+  { id: 'ingreso', nombre: 'Hasta mi ingreso' },
+  { id: 'mes', nombre: '30 días' },
+]
+
+function Globo({ active, payload }) {
   if (!active || !payload?.length) return null
   const punto = payload[0].payload
   return (
-    <div className="tooltip">
+    <div className="globo">
       <strong>{fechaLarga(punto.fecha)}</strong>
-      <p>Lo más probable: {enSoles(punto.esperado)}</p>
-      <p className="suave">
+      <span>Lo más probable: {enSoles(punto.esperado)}</span>
+      <span>
         Entre {enSoles(punto.banda[0])} y {enSoles(punto.banda[1])}
-      </p>
+      </span>
     </div>
   )
 }
 
-export default function QueViene({ cliente }) {
-  const { pronostico, diaRiesgo, proximoIngreso, hoy } = cliente
-  const puntoRiesgo = diaRiesgo && pronostico.find((p) => p.fecha === diaRiesgo.fecha)
-  // Recharts redondea el eje a -1000 por un rojo pequeño y el cero queda perdido; las marcas van a mano.
-  const piso = Math.floor(Math.min(0, ...pronostico.map((p) => p.banda[0])) / 250) * 250
-  const techo = Math.ceil(Math.max(...pronostico.map((p) => p.banda[1])) / 1000) * 1000
-  const marcas = [piso, ...Array.from({ length: techo / 1000 + 1 }, (_, i) => i * 1000)].filter(
-    (v, i, todas) => todas.indexOf(v) === i,
+// Recharts redondea el eje a -1000 por un rojo pequeño y el cero queda perdido; las marcas van a mano.
+function marcasDelEje(datos) {
+  const piso = Math.floor(Math.min(0, ...datos.map((p) => p.banda[0])) / 250) * 250
+  const paso = Math.max(...datos.map((p) => p.banda[1])) > 1500 ? 1000 : 500
+  const techo = Math.ceil(Math.max(...datos.map((p) => p.banda[1])) / paso) * paso
+  const marcas = new Set([piso])
+  for (let v = 0; v <= techo; v += paso) marcas.add(v)
+  return { dominio: [piso, techo], marcas: [...marcas] }
+}
+
+function DiaEnCirculo({ fecha }) {
+  return (
+    <span className="circulo" aria-hidden="true">
+      {Number(fecha.slice(8))}
+    </span>
   )
+}
+
+export default function QueViene({ cliente }) {
+  const { pronostico, diaRiesgo, proximoIngreso, proximosPagos } = cliente
+  const [periodo, setPeriodo] = useState('ingreso')
+
+  const datos =
+    periodo === 'ingreso' ? pronostico.filter((p) => p.fecha <= proximoIngreso.fecha) : pronostico
+  const { dominio, marcas } = marcasDelEje(datos)
+  const puntoRiesgo = diaRiesgo && datos.find((p) => p.fecha === diaRiesgo.fecha)
+  const ultimoDia = datos.at(-1).fecha
+
+  const movimientos = [
+    ...proximosPagos.map((p) => ({ ...p, entra: false })),
+    { fecha: proximoIngreso.fecha, concepto: 'Tu ingreso', tipo: proximoIngreso.tipo, monto: proximoIngreso.monto, entra: true },
+  ]
+    .filter((m) => m.fecha <= ultimoDia)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha))
 
   return (
     <>
       <div className="encabezado-pantalla">
         <h1>Qué viene</h1>
-        <p>Tu saldo de los próximos 30 días, día por día.</p>
+        <p>Tu saldo día por día y lo que entra o sale de tu cuenta.</p>
       </div>
 
+      <AvisoRiesgo riesgo={diaRiesgo} />
+
       <section className="tarjeta" aria-labelledby="pronostico-titulo">
-        <h2 id="pronostico-titulo">
-          {diaRiesgo
-            ? `Tu día más justo es el ${fechaLarga(diaRiesgo.fecha)}`
-            : 'Llegas a tu próximo ingreso sin quedar en rojo'}
-        </h2>
-        {diaRiesgo && (
-          <p>
-            Faltan {diasEntre(hoy, diaRiesgo.fecha)} días. Ese día tu saldo estaría entre{' '}
-            <span className="cifra">{enSoles(diaRiesgo.minimo)}</span> y{' '}
-            <span className="cifra">{enSoles(diaRiesgo.maximo)}</span>. Cobras{' '}
-            <span className="cifra">{enSoles(proximoIngreso.monto)}</span> el {fechaLarga(proximoIngreso.fecha)}.
-          </p>
-        )}
+        <div className="tarjeta-titulo">
+          <h2 id="pronostico-titulo">Tu saldo proyectado</h2>
+          <div className="selector" role="group" aria-label="Periodo">
+            {PERIODOS.map((p) => (
+              <button key={p.id} type="button" aria-pressed={periodo === p.id} onClick={() => setPeriodo(p.id)}>
+                {p.nombre}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="grafico">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={pronostico} margin={{ top: 12, right: 28, bottom: 0, left: 8 }}>
+            <ComposedChart data={datos} margin={{ top: 12, right: 28, bottom: 0, left: 8 }}>
               <CartesianGrid stroke="var(--borde)" vertical={false} />
               <XAxis
                 dataKey="fecha"
                 tickFormatter={fechaCorta}
                 interval="preserveStartEnd"
                 minTickGap={28}
-                tick={{ fill: 'var(--tinta-suave)', fontSize: 14 }}
+                tick={{ fill: 'var(--tinta-suave)', fontSize: 16 }}
                 axisLine={{ stroke: 'var(--borde)' }}
                 tickLine={false}
               />
               <YAxis
                 tickFormatter={enSoles}
-                domain={[piso, techo]}
+                domain={dominio}
                 ticks={marcas}
-                tick={{ fill: 'var(--tinta-suave)', fontSize: 14 }}
+                tick={{ fill: 'var(--tinta-suave)', fontSize: 16 }}
                 axisLine={false}
                 tickLine={false}
-                width={84}
+                width={92}
               />
-              <Tooltip content={<DetalleDia />} />
-              <Area
-                dataKey="banda"
-                stroke="none"
-                fill="var(--banda)"
-                fillOpacity={0.6}
-                isAnimationActive={false}
-              />
+              <Tooltip content={<Globo />} cursor={{ stroke: 'var(--tinta-suave)', strokeDasharray: '4 4' }} />
+              <Area dataKey="banda" stroke="none" fill="var(--banda)" fillOpacity={0.6} isAnimationActive={false} />
               <Line
                 dataKey="esperado"
                 stroke="var(--acento)"
                 strokeWidth={3}
                 dot={false}
+                activeDot={{ r: 6, fill: 'var(--superficie)', stroke: 'var(--acento)', strokeWidth: 3 }}
                 isAnimationActive={false}
               />
               <ReferenceLine y={0} stroke="var(--riesgo)" strokeDasharray="6 4" strokeWidth={2} />
@@ -115,9 +141,28 @@ export default function QueViene({ cliente }) {
           <span className="clave-banda">Rango posible</span>
           <span className="clave-cero">Saldo en cero</span>
         </div>
-        <p className="suave">
+        <p className="suave chico">
           El rango se ensancha con los días porque tus ingresos como independiente varían de un mes a otro.
         </p>
+      </section>
+
+      <section className="tarjeta" aria-labelledby="movimientos-titulo">
+        <h2 id="movimientos-titulo">Pagos e ingresos que vienen</h2>
+        <ul className="lista-limpia">
+          {movimientos.map((m) => (
+            <li key={`${m.fecha}-${m.concepto}`} className="fila">
+              <DiaEnCirculo fecha={m.fecha} />
+              <span className="fila-texto">
+                <span>{m.concepto}</span>
+                <span className="suave">{fechaLarga(m.fecha)}</span>
+              </span>
+              <span className={`fila-monto ${m.entra ? 'entra' : ''}`}>
+                {m.entra ? '+' : '−'}
+                {enSoles(m.monto)}
+              </span>
+            </li>
+          ))}
+        </ul>
       </section>
     </>
   )
