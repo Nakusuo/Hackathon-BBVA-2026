@@ -6,8 +6,8 @@ siempre las aprueba.
 
 import unicodedata
 
-from agent.formato import fecha_larga, soles
-from agent.rag import ACRONIMOS
+from .formato import fecha_larga, soles
+from .rag import ACRONIMOS
 
 CIERRE = "Es una simulación para orientarte, no una asesoría. Tú decides."
 

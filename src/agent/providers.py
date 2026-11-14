@@ -11,8 +11,8 @@ from typing import Protocol
 
 import httpx
 
-from agent import plantillas
-from agent.prompts import mensajes
+from . import plantillas
+from .prompts import mensajes
 
 log = logging.getLogger(__name__)
 

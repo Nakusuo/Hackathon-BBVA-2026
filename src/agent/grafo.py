@@ -9,17 +9,18 @@ from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from agent import plantillas, router
-from agent.juez import juzgar
-from agent.prompts import resumen_para_llm
-from agent.providers import LLMProvider, TemplateProvider, redactar_con_respaldo
-from agent.rag import Buscador, SinEmbeddings
-from agent.tools import HerramientaNoDisponible, Herramientas
+from . import plantillas, router
+from .juez import juzgar
+from .prompts import resumen_para_llm
+from .providers import LLMProvider, TemplateProvider, redactar_con_respaldo
+from .rag import Buscador, SinEmbeddings
+from .tools import HerramientaNoDisponible, Herramientas
 
 log = logging.getLogger(__name__)
 
 MAX_REDACCIONES = 2
 _BLOQUEADAS = set(plantillas.RESPUESTAS_FIJAS)
+_CON_RESUMEN = {"pronostico", "salud", "recos", "simular"}
 
 
 class Estado(TypedDict, total=False):
@@ -37,6 +38,16 @@ class Estado(TypedDict, total=False):
     cifras_detalle: list[tuple[float, str]]
     citas: list[str]
     respuesta: str
+
+
+def datos_a_juzgar(intencion: str, datos: dict) -> dict:
+    """Contra qué se juzga una respuesta, la escriba el LLM o la plantilla.
+
+    En estas intenciones el LLM solo ve el resumen y la plantilla solo usa lo que está en él.
+    Juzgar contra el resumen da a cada cifra su campo correcto: en la serie de 30 días un mismo
+    monto puede ser el máximo de un día y el mínimo de otro (lo vimos con la API de Miguel).
+    """
+    return resumen_para_llm(intencion, datos) if intencion in _CON_RESUMEN else datos
 
 
 def fragmentos_de(datos: dict) -> dict[str, str]:
@@ -105,12 +116,7 @@ def construir(
         return {"borrador": texto, "proveedor": proveedor, "redacciones": e["redacciones"] + 1}
 
     def nodo_juez(e: Estado) -> Estado:
-        # El LLM solo vio el resumen: se le juzga contra eso, no contra la serie completa.
-        vistos = (
-            e["datos"]
-            if e["proveedor"] == "plantilla"
-            else resumen_para_llm(e["intencion"], e["datos"])
-        )
+        vistos = datos_a_juzgar(e["intencion"], e["datos"])
         educacion = e["intencion"] == "educacion"
         v = juzgar(
             e["borrador"],
@@ -131,7 +137,8 @@ def construir(
     def nodo_plantilla(e: Estado) -> Estado:
         datos = e.get("datos", {})
         texto = TemplateProvider().redactar(e["intencion"], datos)
-        v = juzgar(texto, datos, fragmentos=fragmentos_de(datos), revisar_frases=False)
+        vistos = datos_a_juzgar(e["intencion"], datos)
+        v = juzgar(texto, vistos, fragmentos=fragmentos_de(datos), revisar_frases=False)
         return {
             "respuesta": texto,
             "proveedor": "plantilla",

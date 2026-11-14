@@ -49,7 +49,7 @@ def test_en_un_empate_gana_la_cifra_del_mismo_signo():
     r = responder(AGENTE, {"customer_id": "demo-001", "message": "¿Puedo gastar S/ 150?"})
     assert r["figures"] == [
         {"label": "Gasto que consultas", "value": 150.0, "text": "S/ 150"},
-        {"label": "Saldo final", "value": -200.0, "text": "-S/ 200"},
+        {"label": "Saldo final con el gasto", "value": -200.0, "text": "-S/ 200"},
     ]
 
 

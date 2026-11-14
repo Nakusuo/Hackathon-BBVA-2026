@@ -47,6 +47,7 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 - [ ] Michael: repetir la medición con el prompt v4 y con `--simular-con-llm` (CP-SIS-10); pasarle el resultado a Dixon
 - [x] Campo `figures` acordado con Marcela y Miguel
 - [ ] Miguel anota `figures` en `docs/api.md` y lo declara en la respuesta de `/chat`
+- [ ] `/chat` real: Miguel subió un `/chat` de prueba en `feature/backend-fastapi` (respuesta fija, `provider: "mock"`, sin `figures`, `sources` como lista de textos). Cuando lo una, cambiar el cuerpo de su función para llamar a `agent.chat.responder` y ampliar su esquema. Mi versión probada está solo en local (`feature/ia-chat-api`)
 - [x] JF-03 sobre la API de Miguel (`feature/ia-tools`)
 - [ ] JF-03 con el rol `lucas_agente` directo a Postgres o a `estado_cliente` de `ARCHITECTURE.md`, cuando existan (MI-03, `src/nucleo.py`). Hoy las tools pasan por la API
 - [ ] Miguel: agregar `first_risk_date` a `ForecastResponse` (sin eso Lucas no avisa el día en rojo; confirmado con su servidor)
@@ -54,7 +55,8 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 - [x] JF-05 RAG por módulo con el índice FAISS de Diego (`feature/ia-rag`)
 - [ ] JF-05 cargar el índice a pgvector cuando exista MI-02 (Diego dice que se puede desde `docs/rag/indice/`)
 - [ ] JF-09 Memoria con listas cerradas y «olvidar lo que sabes de mí» (espera MI-03)
-- [ ] JF-07 Métricas del agente y latencia en la RTX 3050 de Michael (p95 < 8 s)
+- [x] JF-07 Métricas del agente con plantilla y Ollama (`eval/evaluar_chat.py`, `docs/evaluacion-chat.md`, rama local `feature/ia-eval`): 100 % de intención, cifras, juez, bloqueo y citas con plantilla; 97 % de cifras con Ollama y ninguna inventada
+- [ ] JF-07 repetir con Ollama en la RTX 3050 de Michael (p95 < 8 s) y pasarle la sección a Diego para `EVALUATION.md`
 - [ ] JF-10 / MG-12 Aprendizaje por respuestas (espera MG-04 y DX-02)
 - [ ] Juntar `pyproject.toml` y `requirements-ia.txt` con lo de MI-01
 - [ ] Demo en vivo con Marcela (minuto 2 a 6 del pitch)

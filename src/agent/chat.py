@@ -6,8 +6,8 @@ cada campo de la respuesta.
 
 import uuid
 
-from agent.formato import soles
-from agent.grafo import preguntar
+from .formato import soles
+from .grafo import preguntar
 
 # Nombre que ve el usuario para cada campo de las tools (contrato) y del resumen del LLM.
 ETIQUETAS = {

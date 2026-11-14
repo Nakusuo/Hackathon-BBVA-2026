@@ -65,7 +65,7 @@ def expandir_siglas(consulta: str) -> str:
 def embeber_consulta(texto: str) -> np.ndarray:
     """Vector normalizado de la consulta con el mismo modelo y prefijo con que se indexó."""
     # Import aquí: providers → plantillas → rag sería un import circular.
-    from agent.providers import host_ollama
+    from .providers import host_ollama
 
     try:
         r = httpx.post(

@@ -96,3 +96,32 @@ def test_agente_de_punta_a_punta_con_la_api(pregunta, cifra):
     r = responder(agente, {"customer_id": "demo-001", "message": pregunta})
     assert r["verified"] is True
     assert cifra in r["verified_figures"]
+
+
+def test_cada_cifra_del_pronostico_lleva_su_etiqueta_aunque_se_repita_en_la_serie():
+    # En la API de Miguel el 1 300 es máximo del último día y mínimo de otro día.
+    serie = [
+        {
+            "date": "2026-12-13",
+            "predicted_balance": 1400.0,
+            "lower_bound": 1300.0,
+            "upper_bound": 1500.0,
+        },
+        {
+            "date": "2026-12-14",
+            "predicted_balance": 1200.0,
+            "lower_bound": 1100.0,
+            "upper_bound": 1300.0,
+        },
+    ]
+    pronostico = {"horizon_days": 30, "confidence_level": 0.8, "forecast": serie}
+
+    class Tools(HerramientasAPI):
+        def get_forecast(self, customer_id):
+            return pronostico
+
+    agente = construir(Tools(cliente=httpx.Client()), [TemplateProvider()], espera_s=0)
+    r = responder(agente, {"customer_id": "demo-001", "message": "¿Llego a fin de mes?"})
+    etiquetas = {f["text"]: f["label"] for f in r["figures"]}
+    assert etiquetas["S/ 1 100"] == "Saldo mínimo probable"
+    assert etiquetas["S/ 1 300"] == "Saldo máximo probable"
