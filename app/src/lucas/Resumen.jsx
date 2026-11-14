@@ -223,7 +223,7 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
           <span className="bento-titulo">Tu salud</span>
           <span className="suave">
             {salud.puntaje}, {nivelDeSalud(salud.puntaje)}
-            {faltanCambios && salud.puntaje !== conTodos.salud && ` · ${conTodos.salud} con los tips`}
+            {faltanCambios && salud.puntaje !== conTodos.salud && `. Si cumples los tips, ${conTodos.salud}`}
           </span>
         </Link>
         <Link to={`/lucas/chat?q=${encodeURIComponent(PREGUNTAS_SUGERIDAS[0])}`} className="bento-bloque">

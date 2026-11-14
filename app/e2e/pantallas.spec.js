@@ -168,7 +168,7 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   const aviso = page.getByRole('status', { name: 'Aviso de Lucas' })
   await expect(tips.locator('.impacto')).toContainText('Días en rojo 2 → 0')
   const salud = page.getByRole('link', { name: /Tu salud/ })
-  await expect(salud).toContainText('55, vas regular · 63 con los tips')
+  await expect(salud).toContainText('56, vas regular. Si cumples los tips, 63')
   const botones = tips.getByRole('button', { name: 'Lo hago' })
   await expect(botones).toHaveCount(3)
   await expect(tips.locator('.tip').nth(0)).toContainText('Evitas 1 día en rojo')
@@ -188,7 +188,7 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   await expect(aviso).toContainText('Vas bien')
   await expect(page.getByText('podrías apartar S/ 150')).toBeVisible()
   await expect(salud).toContainText('63, vas regular')
-  await expect(salud).not.toContainText('con los tips')
+  await expect(salud).not.toContainText('Si cumples')
 
   await page.getByRole('link', { name: 'Qué viene' }).click()
   await expect(page.locator('.panel-grafico')).toContainText('Con tus cambios llegas a tu cobro')
