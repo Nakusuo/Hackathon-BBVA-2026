@@ -24,6 +24,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Jueces técnicos de las ramas de los demás | — | Dixon `feature/datos-diagramas-v2`: CAMBIOS, no unir (el doc ya está idéntico en `develop` por un commit directo; el diagrama mermaid no compila, el ERD contradice ARCHITECTURE). Jeffrey PR #5: CAMBIOS (el juez de cifras ignoraba el signo). Miguel `feature/backend-fastapi`: CAMBIOS (signo de `expense` contra el mock, simulador sin tope, al forecast le faltan `first_risk_date`/`model`/`sample_only`, cifras escritas en el código, `rate` como texto). Los jueces de mi rama y de Diego se cortaron sin veredicto. Nakusuo/Marcela |
 | 2026-11-14 | Arreglos en la rama de Jeffrey (con su PR #5) | `feature/ia-jeffrey-actividades` | Commits `ed58864` y `6c35ff4`, subidos al PR #5: el juez rechaza «S/ 310 a favor» con saldo −310, redondeo solo a decena (≥100) o centena (≥1 000), prohibidas «préstamo», sugerir crédito y «sin riesgo», router manda «tipo de cambio» y «cambio del dólar» a fx, versiones fijas de `ollama` y `google-genai`, licencia del Banco Mundial corregida. 173/173 pytest y ruff limpio. Nakusuo/Marcela |
 | 2026-11-14 | Ramas nuevas revisadas | — | Diego subió `feature/ml-segmentos-pronostico` (152 archivos, ~24 500 líneas: ML, agente propio en `src/agente_analitico`, RAG, BCRP, puntos). No choca con `develop`, front ni backend, **sí con Jeffrey** (`.gitignore` y `docs/rag/fuentes.csv`) y duplica su trabajo: mismos PDFs con otros nombres, dos catálogos de fuentes, dos agentes con juez, dos `src/bcrp/`. Las historias de usuario que mencionó un compañero ya estaban en `develop` (commit de Michael a las 13:42). Nakusuo/Marcela |
+| 2026-11-14 | Rediseño móvil (en curso) | `feature/front-rediseno-movil` | Limpieza de código sin uso. Manrope en todo el front. Diurno por defecto y «Modo oscuro» con interruptor en Más → Preferencias (variables por tema, `--azul-texto` para contraste). Lucas como mascota propia en SVG (créditos a @aokulova en Preferencias). Login con arcos azules y tarjeta de vidrio. Resumen sin sobrecarga: panel con la cifra del día, aviso de una línea, tips en carrusel con «Días en rojo 2 → 0» y «Apartas S/ 40 → S/ 150», y bloques que abren Lo aprendido, Salud y Chat. Gastos en gráfico circular (5 categorías + Otros) con detalle aparte. Pestañas con barra deslizante. 29 pruebas de funciones y 52 de Playwright en verde |
 
 ## Lo que acordamos
 
@@ -65,6 +66,9 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 6. Decidir con Miguel y Diego qué significa `expense` en el simulador (gasto nuevo o recorte).
 
 ## Lo que falta
+
+- [ ] Rediseño móvil (`feature/front-rediseno-movil`): pasar al estilo nuevo la banca (tarjeta con volumen, accesos en bento, 3 movimientos con «Ver todo»), Qué viene (gráfico según ui-ux-pro-max, sin sobrecarga) y Chat; revisar Ingreso en oscuro; luego jueces (técnico, producto, cumplimiento), push y PR a `develop`
+- [ ] Juez de producto: seguimiento del tip elegido («Pediste RapiFood 1 de 4 veces») para volver mañana; salud que se mueva con los tips o en segundo plano
 
 - [x] Segunda ronda de jueces sobre `feature/front-banca-lucas`: APRUEBA, APRUEBA (~63) y CUMPLE CON RIESGOS. Nakusuo/Marcela
 - [x] Push de `feature/front-banca-lucas` y PR #6 unido a `develop`; PR #3 cerrado porque su contenido entró con el #6. Nakusuo/Marcela
