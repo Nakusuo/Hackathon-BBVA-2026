@@ -1,4 +1,25 @@
+import { readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
+
+const mock = (nombre) => readFileSync(new URL(`../../data/sample/mocks/${nombre}.json`, import.meta.url), 'utf-8')
+const RUTAS_API = {
+  '/api/v1/customers/demo-001/health': 'health',
+  '/api/v1/customers/demo-001/forecast': 'forecast',
+  '/api/v1/customers/demo-001/recommendations': 'recommendations',
+  '/api/v1/customers/demo-001/events': 'events',
+  '/api/v1/fx': 'fx',
+  '/api/v1/simulations': 'simulation',
+}
+
+// Las pruebas no dependen de que FastAPI esté levantada: la API responde con los JSON del contrato.
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/v1/**', (ruta) => {
+    const nombre = RUTAS_API[new URL(ruta.request().url()).pathname]
+    return nombre
+      ? ruta.fulfill({ contentType: 'application/json', body: mock(nombre) })
+      : ruta.fulfill({ status: 404, contentType: 'application/json', body: '{"detail":"No existe"}' })
+  })
+})
 
 const PANTALLAS = [
   { ruta: '/ingresar', titulo: 'Ingresa a tu banca' },
@@ -354,3 +375,33 @@ for (const { ruta, frase } of [
     await expect(boton).toBeFocused()
   })
 }
+
+test('con la API arriba no aparece ningún aviso de datos', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/resumen')
+  await expect(page.getByText('Puedes gastar al día')).toBeVisible()
+  await expect(page.locator('.estado-datos')).toHaveCount(0)
+})
+
+test('si la API se cae, Lucas lo dice y las cifras y «Lo hago» siguen funcionando', async ({ page }) => {
+  await sinGuia(page)
+  const errores = []
+  page.on('pageerror', (e) => errores.push(e.message))
+  await page.route('**/api/v1/**', (ruta) => ruta.fulfill({ status: 503, body: 'caída' }))
+  await page.goto('/lucas/resumen')
+  await expect(page.getByRole('status').filter({ hasText: 'No llegaron tus datos del servidor' })).toBeVisible()
+  await expect(page.locator('.hero-cifra [aria-hidden="true"]')).toHaveText('S/ 26')
+  const primerTip = page.getByRole('region', { name: 'Tips para tu día más justo' }).getByRole('button', { name: 'Lo hago' }).first()
+  await primerTip.click()
+  await expect(primerTip).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('status', { name: 'Aviso de Lucas' })).toContainText('−S/ 29')
+  expect(errores).toEqual([])
+})
+
+test('si la API tarda demasiado, Lucas pasa a los datos guardados sin quedarse cargando', async ({ page }) => {
+  await sinGuia(page)
+  await page.route('**/api/v1/**', () => {})
+  await page.goto('/lucas/resumen')
+  await expect(page.getByText('Puedes gastar al día')).toBeVisible()
+  await expect(page.getByRole('status').filter({ hasText: 'No llegaron tus datos del servidor' })).toBeVisible({ timeout: 8000 })
+})

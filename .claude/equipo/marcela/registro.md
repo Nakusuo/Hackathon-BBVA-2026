@@ -7,6 +7,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 
 | Fecha | Tarea | Rama | Qué quedó |
 |---|---|---|---|
+| 2026-11-14 | MG-01 + MC-02 Front conectado a la API | `feature/front-api` | Capa única `app/src/api/` (fetch con 4 s de espera, validación del contrato, respaldo a `data/sample/mocks/`, aviso si no llegan los datos) y proxy de Vite a FastAPI. Motor movido a `app/src/motor/`: decidí «motor manda, API detrás» porque la API describe a otra persona. Sitio para la ✓ sin mostrarla. tras el rebase sobre develop con el PR #13: 67/67 unitarias y 92/92 e2e, probado con la API real y caída a 1366×768 y 390 px. Juez técnico APRUEBA, juez producto CAMBIOS 3,0 (menores aplicados). 5 pendientes del PR #10 en estado.md para Miguel |
 | 2026-11-14 | MC-01 Esqueleto de la UI | `feature/front-esqueleto` | App React + Recharts en `app/`. Pantallas Cómo estás, Qué viene (gráfico con banda y día de riesgo) y Qué hacer (tarjetas con «¿Por qué?»), aviso anticipado arriba. Datos sintéticos en `app/src/mocks/`. Probado en claro y oscuro, 1366×768 y celular (390 px). Sin push todavía |
 | 2026-11-14 | MC-01 Rediseño con referencias + Playwright | `feature/front-esqueleto` | Barra lateral oscura con píldora activa (abajo y flotante en celular), tarjeta principal «Puedes gastar S/ 34 al día», aviso de Lucas, anillo de salud por componentes, filas con iniciales, selector «Hasta mi ingreso / 30 días», lista de pagos que vienen, montos destacados en Qué hacer. 21 pruebas de Playwright en verde (claro, oscuro, celular) |
 

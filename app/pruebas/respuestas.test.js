@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { PREGUNTAS_SUGERIDAS, responder } from '../src/lucas/respuestas.js'
-import { cliente, persona } from '../src/mocks/cliente.js'
-import { evaluarGastoExtra } from '../src/mocks/motor.js'
+import { cliente, persona } from '../src/motor/cliente.js'
+import { evaluarGastoExtra } from '../src/motor/motor.js'
 
 const NBSP = ' '
 const preguntar = (texto) => responder(texto, cliente, persona)
@@ -65,7 +65,7 @@ test('si el peor caso ya está en rojo, nunca responde «Sí, te alcanza»', () 
 })
 
 test('con los tips activos el chat usa ese plan', async () => {
-  const { vistaCon, CAMBIOS } = await import('../src/mocks/cliente.js')
+  const { vistaCon, CAMBIOS } = await import('../src/motor/cliente.js')
   const conTips = vistaCon(CAMBIOS.map((c) => c.id))
   assert.match(responder('¿puedo gastar 5?', conTips, persona).texto, /Sí, te alcanza/)
   assert.match(responder('¿Llego a mi cobro?', conTips, persona).texto, /^Sí/)

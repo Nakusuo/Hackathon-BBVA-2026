@@ -1,4 +1,4 @@
-// Sustituto del pronóstico (DI-06) y del recomendador (MG-04) mientras no exista la API (MG-01).
+// Sustituto del pronóstico (DI-06) y del recomendador (MG-04) hasta que la API devuelva cifras de la misma persona.
 // Todas las cifras de las pantallas salen de aquí para que nunca se contradigan entre sí.
 
 function sumarDias(fechaIso, dias) {

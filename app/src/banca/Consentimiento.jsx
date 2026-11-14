@@ -3,7 +3,7 @@ import { motion } from 'motion/react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import FondoIngreso from '../componentes/FondoIngreso.jsx'
 import Mascota from '../componentes/Mascota.jsx'
-import { personaPorId } from '../mocks/personas.js'
+import { personaPorId } from '../motor/personas.js'
 import { SUAVE } from '../movimiento.js'
 import { darPermiso, personaGuardada } from '../sesion.js'
 
