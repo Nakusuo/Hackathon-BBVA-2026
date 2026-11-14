@@ -32,7 +32,20 @@ El arquetipo es **solo para evaluar**. Nunca entra como variable a un modelo.
 5. Se registra qué datos usó cada recomendación (trazabilidad).
 6. Lenguaje de «simulación» y «orientación», nunca de asesoría.
 7. Si Lucas menciona un producto, es un **tipo genérico** («cuenta con apartados»), nunca un producto real ni con marca, y solo si ayuda a la meta del usuario y pasa las reglas 1 a 3.
-8. Los avisos son pocos y útiles: solo cuando la probabilidad de quedar en rojo supera el umbral. Nada de notificaciones de relleno.
+8. Los avisos son pocos y útiles (máximo 3 por semana). Nada de notificaciones de relleno.
+9. Inversión solo como educación (tipos, riesgo, plazo) y simulación con tasa supuesta visible. Nunca «invierte en X» ni rentabilidad prometida.
+10. Productos de ahorro a plazo o inversión solo con colchón ≥ 3 meses y sin deuda cara.
+11. El catálogo de ofertas y promociones es **ficticio o genérico** (`data/catalogo_ofertas.json`). Nunca productos, nombres ni promociones reales de BBVA ni de otro banco. En el pitch: «se conecta al catálogo del banco que integre a Lucas».
+12. La memoria del usuario es solo suya (RLS), se puede ver y borrar, y nunca justifica ofrecer crédito a quien no pasa la regla 1.
+
+## Perfil de ahorro y gasto
+
+| | Gasta poco | Gasta mucho |
+|---|---|---|
+| **Ahorra** | Ahorrador firme → promociones, ahorro e inversión (con idoneidad) | Ahorra pero se le escapa → hormiga y suscripciones |
+| **No ahorra** | Ingreso justo → colchón mínimo, Sueldo Lucas | Gastador → metas de ahorro, límites, avisos de riesgo |
+
+Meta del producto: que el usuario suba de cuadrante.
 
 Visión de compañero, fidelización y atracción: [vision-companero.md](vision-companero.md).
 

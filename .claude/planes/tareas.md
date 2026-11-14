@@ -57,15 +57,16 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **DX-01** Diccionario de datos v1 (`data/dictionary.md`) junto con Michael y Diego: tablas, columnas, tipos, etiquetas. *Hecho:* los tres lo aprueban. Rama `feature/datos-diccionario`
 - [ ] **MG-01** Contrato de la API (`docs/api.md`) junto con Marcela y Jeffrey: endpoints y JSON de ejemplo en `data/sample/mocks/`. *Hecho:* los tres lo aprueban. Rama `feature/backend-contrato`
 - [ ] **MC-01** Decidir la UI a las 11:30 (React + Recharts o Streamlit) y esqueleto que navega las 6 pantallas vacías. *Hecho:* se abre en el navegador. Rama `feature/front-esqueleto`
-- [ ] **JF-01** Instalar Ollama con un modelo pequeño y uno de embeddings; anotar versiones en `PROMPTS.md`. Con el agente `investigador`, elegir 3 a 5 manuales públicos para el RAG y revisar su licencia. Rama `feature/ia-setup`
+- [ ] **JF-01** Instalar Ollama con un modelo pequeño y uno de embeddings; anotar versiones en `PROMPTS.md`. Con el agente `investigador`, buscar 1 o 2 PDFs públicos por cada módulo del RAG (salud financiera, ahorro, deudas, inversión básica, seguros, derechos) y revisar su licencia. Rama `feature/ia-setup`
 - [ ] **DI-01** Lista de variables por cliente y firma de las funciones de baseline (`src/models/baselines.py` con tests vacíos). Rama `feature/ml-baselines`
 
 ## Bloque 2 · Sábado 12:00–15:00 · Base que funciona
 
-- [ ] **DX-02** Generador v1: clientes + transacciones, 4 arquetipos, quincena, `--seed`. *Hecho:* genera en < 1 min; test «misma semilla = mismo resultado». Rama `feature/datos-generador`
+- [ ] **DX-02** Generador v1 **estratificado**: cuotas fijas por arquetipo × perfil de ahorro × perfil de gasto; perfiles por bootstrap desde distribuciones calibradas; transacciones por reglas; quincena; `--seed`. *Hecho:* genera en < 1 min; test «misma semilla = mismo resultado»; test «ningún estrato vacío». Rama `feature/datos-generador`
+- [ ] **DX-11** Con el agente `investigador`: ¿se pueden usar los microdatos de la ENAHO (INEI) como base del bootstrap? Licencia, variables útiles, tiempo de preparación. Informe en `.claude/investigacion/enaho.md`. *No bloquea a DX-02.*
 - [ ] **DX-03** Calendario: grati, CTS, feriados, campaña escolar, Día de la Madre, 28 de julio, Cyber Wow, Navidad, con subida de gasto. *Depende:* DX-02
 - [ ] **DX-04** Texto: glosas por comercio y canal, y mensajes con etiqueta de sentimiento (plantillas variadas). *Depende:* DX-02
-- [ ] **MI-03** `db/init.sql`: esquemas `seguro` y `app`, roles `lucas_app`, `lucas_agente`, `lucas_admin`, RLS, pgcrypto, extensión vector. *Hecho:* test «lucas_agente no puede leer deuda_total». Rama `feature/arq-db-seguridad`
+- [ ] **MI-03** `db/init.sql`: esquemas `seguro` y `app`, roles `lucas_app`, `lucas_agente`, `lucas_admin`, RLS, pgcrypto, extensión vector, tablas de memoria (`app.metas`, `app.memoria`, `app.respuestas_reco`). *Hecho:* tests «lucas_agente no puede leer deuda_total» y «un cliente no ve la memoria de otro». Rama `feature/arq-db-seguridad`
 - [ ] **MG-02** Ingesta: validación Pydantic, dedup y carga a Postgres. `make data` completo. *Depende:* DX-02, MI-03. Rama `feature/backend-ingesta`
 - [ ] **MG-03** FastAPI con los endpoints del contrato devolviendo los mocks. `make run`. *Depende:* MG-01. Rama `feature/backend-api`
 - [ ] **MC-02** Pantallas Cómo estás y Qué viene (gráfico con banda) usando mocks. *Depende:* MG-01. Rama `feature/front-estado-pronostico`
@@ -81,6 +82,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **DI-05** K-Prototypes: k por silueta y estabilidad, cluster por cliente guardado en Postgres, descripción de cada segmento en palabras. Rama `feature/ml-segmentos`
 - [ ] **DI-06** Pronóstico v1 + banda bootstrap + día de riesgo; MAE frente al baseline. Rama `feature/ml-pronostico`
 - [ ] **DI-07** Salud 0–100 con componentes y test de monotonicidad. Rama `feature/ml-salud`
+- [ ] **DI-13** Matriz ahorro × gasto encima de los clusters: umbrales (baseline) frente a perfil derivado de K-Prototypes; estabilidad mes a mes y acuerdo con las etiquetas sembradas. *Depende:* DI-05. Rama `feature/ml-perfil-ahorro`
 - [ ] **MG-04** Recomendador v1: candidatos por reglas, puntaje impacto × facilidad, ajuste por segmento, reglas de seguridad con un test cada una. *Depende:* DI-05, DI-07. Rama `feature/backend-recomendador`
 - [ ] **MG-05** Motor de eventos v1: ingreso, grati/CTS, fecha de calendario, gasto frecuente, riesgo; máximo 3 avisos por semana. Con tests. *Depende:* DI-06. Rama `feature/backend-eventos`
 - [ ] **MG-06** Conectar los endpoints a los modelos reales (fuera mocks). *Depende:* DI-05, DI-06, DI-07
@@ -97,12 +99,15 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 
 ## Bloque 4 · Sábado 19:00–23:00 · Demo completa
 
-- [ ] **JF-05** RAG: cargar manuales a pgvector, nodo RAG con citas, el juez valida que cada cita exista. Rama `feature/ia-rag`
+- [ ] **JF-05** RAG por módulos: PDFs en `docs/rag/<modulo>/` con `fuentes.csv`; fragmentos con su módulo en pgvector; el agente busca solo en el módulo que toca; el juez valida que cada cita exista. Rama `feature/ia-rag`
 - [ ] **JF-06** 30 preguntas fijas y 10 adversas (inyección, «compra dólares», «transfiere») en `tests/agent/`. Rama `feature/ia-tests`
 - [ ] **MG-07** Endpoints de simulador y Sueldo Lucas (con Diego). Rama `feature/backend-simulador`
-- [ ] **MG-08** Ofertas de tipos genéricos por necesidad + idoneidad; precision@3 frente a «lo más popular». Rama `feature/backend-ofertas`
+- [ ] **MG-08** Ofertas: `data/catalogo_ofertas.json` con productos y promociones ficticias o genéricas; reglas por necesidad, cuadrante de la matriz e idoneidad (inversión solo con colchón ≥ 3 meses y sin deuda cara); precision@3 frente a «lo más popular». Rama `feature/backend-ofertas`
+- [ ] **MG-11** Metas de ahorro: aporte por quincena que no deja en rojo, proyección a fin de año con la banda del pronóstico y probabilidad de cumplir; frente a la regla del 10 %. Con Diego. *Depende:* DI-06. Rama `feature/backend-metas`
+- [ ] **JF-09** Memoria del usuario: nodo que lee memoria al inicio y guarda al final (metas, preferencias, resumen de la conversación); endpoint «olvidar lo que sabes de mí». Usa las tablas de MI-03. Rama `feature/ia-memoria`
 - [ ] **MC-05** Simulador con controles deslizantes y banda que se mueve; formulario «agregar ingreso o gasto» que recalcula. Rama `feature/front-simulador`
 - [ ] **MC-06** Chat con cifras marcadas ✓ y fuentes del RAG. Rama `feature/front-chat`
+- [ ] **MC-11** Pantalla Metas (crear meta, aporte por quincena, proyección a diciembre) y botones «útil / no me sirve» en cada recomendación; opción «olvidar lo que sabes de mí». Rama `feature/front-metas`
 - [ ] **DI-08** Pronóstico global frente a global + cluster frente a uno por cluster; MAE por segmento. Rama `feature/ml-por-segmento`
 - [ ] **DI-09** Clasificador de glosa TF-IDF frente a diccionario; F1 por categoría. Rama `feature/ml-glosa`
 - [ ] **MI-06** Demo de seguridad: script que muestra a `lucas_agente` bloqueado por Postgres; documentarlo. Rama `feature/arq-demo-seguridad`
@@ -126,6 +131,8 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **DI-11** Sentimiento con modelo preentrenado frente a léxico, medido en las 100 frases.
 - [ ] **DI-12 / MG-10 / MC-08** Lucas en 5 preguntas: modelo de asignación (Diego), endpoint (Miguel), pantalla (Marcela).
 - [ ] **JF-08** BCRP: tipo de cambio e inflación con caché y serie grabada de respaldo.
+- [ ] **JF-10 / MG-12** Aprendizaje por respuestas: pesos por tipo de recomendación y segmento que suben o bajan con «útil / no me sirve»; simulación con `prob_acepta_reco` frente al recomendador sin memoria.
+- [ ] **DX-12** Si DX-11 dio luz verde: base semilla del bootstrap desde la ENAHO y regenerar datos (`make data`); comparar métricas antes y después.
 - [ ] **MC-09** Pulido: claro y oscuro, 1366×768, celular, checklist anti-slop de `reglas/calidad-codigo.md`.
 - [ ] **TODOS-02** Prueba de evolución si la anuncian (protocolo del plan, sección 8).
 - [ ] **TODOS-03** Pasar el agente `juez-producto` y aplicar los 3 cambios que más suben la nota.

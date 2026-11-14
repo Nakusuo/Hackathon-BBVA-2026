@@ -31,6 +31,14 @@ Regla: **cada técnica se compara con una alternativa sencilla**. Los resultados
 | F2 Sueldo Lucas | Monto quincenal estable según banda baja del ingreso esperado | Apartar 10 % fijo / no hacer nada | Días en rojo simulados, colchón a 3 meses |
 | A1 Lucas en 5 preguntas | Prior del perfil parecido + respuestas (arranque en frío) | Promedio de toda la población | MAE con 0, 1 y 3 meses de historia |
 | F3 Plan grati/CTS | Reparto sugerido con impacto en el puntaje | Gasto como mes normal | Cambio del puntaje y de la deuda simulada |
+| Matriz ahorro × gasto | Perfil derivado de K-Prototypes | Umbrales fijos | Estabilidad mes a mes, acuerdo con etiquetas sembradas |
+| Metas de ahorro | Aporte quincenal con banda del pronóstico | 10 % fijo | Probabilidad de cumplir a fin de año, días en rojo |
+| Ofertas por cuadrante | Necesidad + cuadrante + idoneidad | Lo más popular para todos | Precision@3 sobre necesidades sembradas, 0 violaciones de idoneidad |
+| Memoria y aprendizaje | Pesos que se ajustan con «útil / no me sirve» | Recomendador sin memoria | Tasa simulada de aceptación |
+| RAG por módulos | Búsqueda filtrada por módulo | Búsqueda en todos los documentos | % de citas válidas, exactitud en preguntas fijas |
+| Datos sin sesgo | Generación estratificada + bootstrap | Generación libre | Proporción por estrato, ningún estrato vacío |
+
+Todas las métricas se reportan con **intervalo de confianza por bootstrap por cliente**.
 
 ## Particiones sin fuga
 

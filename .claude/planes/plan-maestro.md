@@ -21,6 +21,10 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 | Un agente con tools | **Un agente LangGraph** con nodos: router, herramientas (nuestros modelos), RAG, BCRP, redacción y **juez** | Cero cifras inventadas, con fuentes |
 | Recomendador igual para todos | **Segmento + comportamiento individual + reglas de seguridad**, con ofertas de tipos de producto genéricos según necesidad | Fidelización responsable |
 | Sin nombres | **6 personas con roles y microtareas** ([tareas.md](tareas.md)) | Trabajo en paralelo |
+| Recomendaciones según la situación del momento | **Lucas aprende del usuario**: perfil de ahorro y gasto, metas con proyección a fin de año, memoria de metas, preferencias y respuestas a cada recomendación | Mejorar, no solo informar |
+| Segmentos sin nombre de negocio | **Matriz ahorro × gasto** (ahorrador/no ahorrador × gasta mucho/gasta poco) encima de los clusters | Segmentos que el banco entiende |
+| Datos generados solo por reglas | **Generación estratificada** + **bootstrap** de perfiles para que ningún segmento quede sub o sobrerrepresentado | Evitar sesgo |
+| RAG con manuales sueltos | **RAG por módulos**: salud financiera, ahorro, deudas, inversión básica, seguros y derechos del usuario | Educación que acompaña cada recomendación |
 
 **Se descarta:** segunda base NoSQL (Postgres con JSONB la cubre), GraphRAG, deep learning entrenado desde cero, multimodal, varios agentes, ubicación exacta.
 
@@ -42,6 +46,7 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 - **Fidelización:** avisos a tiempo y ahorro medible hacen que el cliente vuelva.
 - **Atracción:** «Lucas en 5 preguntas» da valor a quien todavía no es cliente.
 - **Oferta responsable:** tipos de producto genéricos solo cuando hay una necesidad detectada y pasan las reglas de idoneidad.
+- **Camino de crecimiento:** quien gasta de más recibe metas de ahorro; cuando ya ahorra, Lucas le muestra promociones y productos de ahorro e inversión del catálogo del banco. El cliente crece con el banco y eso lo fideliza.
 
 ### Criterios de éxito
 
@@ -52,6 +57,8 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 5. Banda más ancha para independientes que para dependientes, manteniendo cobertura.
 6. Avisos: mejor precision que «avisar en cada evento», con máximo 3 por semana.
 7. Ofertas: mejor precision@3 sobre necesidades sembradas que «lo más popular para todos».
+8. Metas: mayor probabilidad simulada de llegar a la meta de fin de año que la regla fija del 10 %.
+9. Aprendizaje: con la memoria de respuestas, la tasa simulada de recomendaciones aceptadas sube frente a un recomendador sin memoria.
 
 ---
 
@@ -73,9 +80,15 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 | D10 | Agente LangGraph: tools sobre nuestros modelos, RAG con pgvector, nodo juez, fallback a plantillas | Jeffrey |
 | D11 | UI interactiva: Cómo estás, Qué viene, Qué hacer, Avisos, Chat, Evidencia | Marcela |
 | D12 | Panel Evidencia + EVALUATION.md | Diego + Marcela |
+| D13 | Perfil de ahorro y gasto (matriz 2×2) y **metas de ahorro** con proyección a fin de año | Diego + Miguel |
+| D14 | **Memoria del usuario**: metas, preferencias, resúmenes de conversación y respuesta a cada recomendación (útil / no me sirve) | Jeffrey + Michael |
+| D15 | **RAG por módulos** con PDFs públicos de educación financiera y metadatos (fuente, licencia, módulo, nivel) | Jeffrey + Dixon |
 
 ### DEBERÍA
 - Lucas en 5 preguntas (arranque en frío por cluster). *Prioridad alta.*
+- Aprendizaje por respuestas: el ranking de recomendaciones se ajusta con lo que el usuario aceptó o rechazó.
+- Catálogo de ofertas y promociones para ahorradores (configurable, ver sección 5).
+- Bootstrap de perfiles desde microdatos públicos de la ENAHO (INEI), si la licencia y el tiempo lo permiten.
 - Sentimiento de mensajes con modelo preentrenado en español (ajusta tono y urgencia).
 - Tipo de cambio e indicadores del BCRP con caché y respaldo grabado.
 - Plata del negocio y plata de la casa.
@@ -99,7 +112,8 @@ NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ub
 │ generator/ (semilla) → validación Pydantic → PostgreSQL                  │
 │   esquema seguro: clientes, deudas  (roles, RLS, pgcrypto)               │
 │   esquema app: transacciones, glosas, mensajes, avisos (JSONB)           │
-│   pgvector: fragmentos de manuales públicos para el RAG                  │
+│   pgvector: fragmentos de manuales públicos para el RAG (por módulo)     │
+│   memoria: metas, preferencias, resúmenes y respuestas a recomendaciones │
 │ bcrp_service (API → caché → último valor → serie grabada)                │
 └───────────────────────────────────┬──────────────────────────────────────┘
 ┌──────────────────────── 2. ANALÍTICA / IA ───────────────────────────────┐
@@ -109,7 +123,8 @@ NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ub
 │ events: detector de eventos → candidatos → puntaje → filtros → límite    │
 │ recommender: segmento + comportamiento → impacto × facilidad → seguridad │
 │ agent (LangGraph):                                                       │
-│   router → tools (modelos) / RAG / BCRP → redacción (Ollama) → juez      │
+│   memoria → router → tools (modelos) / RAG / BCRP → redacción → juez     │
+│   → guarda en memoria lo aprendido (metas, preferencias, respuestas)     │
 │   juez: cifras en salida de tools + citas reales → si no, plantilla      │
 └───────────────────────────────────┬──────────────────────────────────────┘
 ┌──────────────────────── 3. INTERACCIÓN ──────────────────────────────────┐
@@ -133,8 +148,23 @@ NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ub
 
 Generador propio con semilla fija (`--seed`), ~500 clientes × 12 meses, calibrado con cifras públicas verificadas. No hay dataset peruano público a nivel de transacción.
 
+### Cómo evitamos el sesgo
+1. **Generación estratificada:** se fija cuántos clientes hay en cada combinación de arquetipo × perfil de ahorro × perfil de gasto, para que ningún grupo quede vacío o domine. Las proporciones se reportan en `QUALITY.md`.
+2. **Bootstrap de perfiles:** las variables de cada cliente (ingreso, gasto, deuda, colchón) se obtienen remuestreando con reemplazo desde una base de perfiles semilla y agregando un ruido pequeño. La base semilla, en orden de preferencia:
+   - microdatos públicos de la **ENAHO (INEI)**, que traen ingreso y gasto reales de hogares peruanos (DEBERÍA: revisar licencia y tiempo de preparación);
+   - si no da el tiempo, distribuciones paramétricas calibradas con las cifras públicas verificadas.
+3. Las **transacciones** se generan por reglas a partir de cada perfil (quincena, calendario, recurrentes, escenarios difíciles).
+4. **Bootstrap para la evaluación:** todas las métricas se reportan con intervalo de confianza por bootstrap por cliente.
+
+Ojo: remuestrear datos sintéticos no les quita el sesgo que ya traen; por eso la base semilla debe venir de datos públicos reales cuando sea posible.
+
 ### Tabla `seguro.clientes`
-`customer_id`, `rango_edad`, `region` (Lima, norte, sur, centro, oriente), `tipo_trabajo`, `frecuencia_ingreso`, `personas_a_cargo`, `deuda_total`, `n_creditos`, `cuota_mensual`, `tcea_promedio`, `colchon_meses`, `antiguedad_cliente_meses`, `meta_ahorro`, `paga_en_usd`, `necesidad_oculta` (etiqueta), `arquetipo` (etiqueta).
+`customer_id`, `rango_edad`, `region` (Lima, norte, sur, centro, oriente), `tipo_trabajo`, `frecuencia_ingreso`, `personas_a_cargo`, `deuda_total`, `n_creditos`, `cuota_mensual`, `tcea_promedio`, `colchon_meses`, `antiguedad_cliente_meses`, `meta_ahorro`, `paga_en_usd`, `necesidad_oculta` (etiqueta), `perfil_ahorro_real` y `perfil_gasto_real` (etiquetas), `prob_acepta_reco` (etiqueta oculta para simular respuestas), `arquetipo` (etiqueta).
+
+### Tablas de memoria (esquema `app`, con RLS por cliente)
+- `app.metas`: `customer_id`, `nombre`, `monto_objetivo`, `fecha_objetivo`, `aporte_quincenal`, `estado`.
+- `app.memoria`: `customer_id`, `tipo` (preferencia, hecho, resumen), `contenido` (JSONB), `embedding` (vector), `fecha`.
+- `app.respuestas_reco`: `customer_id`, `reco_id`, `tipo_reco`, `respuesta` (aceptó, ignoró, no me sirve), `fecha`.
 
 ### Tabla `app.transacciones`
 `customer_id`, `transaction_id`, `fecha_hora`, `monto` (>0), `moneda`, `tipo`, `categoria`, `comercio` (ficticio), `glosa` (texto), `canal`, `saldo`, `es_recurrente` (etiqueta), `es_atipico` (etiqueta).
@@ -174,6 +204,46 @@ Pronóstico: walk-forward (entrena 1–9, valida 10, test 11–12). Recurrentes,
 | Arranque en frío (DEBERÍA) | Asignación a cluster con 5 respuestas | Promedio poblacional | MAE con 0, 1 y 3 meses de historia |
 | Agente | LangGraph + tools + RAG + juez | Respuestas por plantilla | % cifras verificadas, % citas válidas, exactitud en 30 preguntas, bloqueo adverso |
 
+### Lucas aprende del usuario
+
+**Perfil de ahorro y gasto (matriz 2×2).** Se calcula con la tasa de ahorro y la intensidad de gasto frente a su ingreso, y se pone encima de los clusters K-Prototypes para darles un nombre que se entiende:
+
+| | Gasta poco | Gasta mucho |
+|---|---|---|
+| **Ahorra** | *Ahorrador firme*: promociones y productos de ahorro e inversión del catálogo | *Ahorra pero se le escapa*: bajar gasto hormiga y suscripciones |
+| **No ahorra** | *Ingreso justo*: colchón mínimo y Sueldo Lucas | *Gastador*: metas de ahorro, límites por categoría, avisos de riesgo |
+
+Baseline de la matriz: umbrales fijos. Métrica: estabilidad del perfil mes a mes y acuerdo con las etiquetas sembradas.
+
+**Camino de crecimiento.** El objetivo es que el usuario suba de cuadrante:
+- *Gastador* → Lucas propone una meta: «Si apartas S/ 120 por quincena, en diciembre tendrás S/ 1 680». La proyección usa el pronóstico y su banda, no una cuenta lineal.
+- Al cumplir metas → pasa a *ahorrador* → Lucas muestra contenidos del módulo de inversión del RAG y ofertas del catálogo según idoneidad.
+
+**Metas de ahorro.** El usuario crea una meta o Lucas la sugiere. Se calcula el aporte por quincena que no lo deja en rojo y la probabilidad de llegar a la fecha (simulación con la banda del pronóstico). Baseline: ahorrar el 10 % fijo.
+
+**Catálogo de ofertas y promociones.** Archivo configurable (`data/catalogo_ofertas.json`) con tipos de producto y promociones **ficticias o genéricas** (depósito a plazo, cuenta de ahorro con meta, promociones en categorías donde el usuario ya gasta). En el pitch: «se conecta al catálogo real del banco que integre a Lucas». Solo se muestra a quien pasa la idoneidad (colchón ≥ 3 meses y sin deuda cara para productos de inversión).
+
+**Memoria del usuario.** Dos memorias distintas:
+1. **Memoria de conocimiento (RAG):** PDFs públicos, iguales para todos.
+2. **Memoria del usuario:** metas, preferencias («no me hables de inversión»), resúmenes de conversaciones y respuestas a cada recomendación. Se guarda en Postgres con RLS: solo la ve ese usuario. Hay un botón «olvidar lo que sabes de mí».
+
+El agente lee la memoria del usuario antes de responder y guarda lo nuevo al final. Las cifras siguen saliendo de los modelos, nunca de la memoria.
+
+**Aprendizaje por respuestas (DEBERÍA).** Cada recomendación tiene «útil / no me sirve». El ranking sube los tipos de recomendación que el usuario acepta y baja los que rechaza (pesos por tipo y segmento, estilo bandit simple). Con datos sintéticos se simulan las respuestas con `prob_acepta_reco` y se compara frente al recomendador sin memoria. Se dice que es simulado.
+
+### RAG por módulos
+
+| Módulo | Para qué lo usa Lucas | Fuentes candidatas (licencia por revisar) |
+|---|---|---|
+| Salud financiera | Explicar el puntaje y sus componentes | Material de educación financiera de la SBS |
+| Ahorro | Acompañar metas y colchón | SBS, BCRP |
+| Deudas y crédito | TCEA, costo real de cuotas, sobreendeudamiento | SBS, Indecopi |
+| Inversión básica | Para *ahorradores*: tipos de instrumentos, riesgo y plazo, sin recomendar uno | SMV, BCRP |
+| Seguros | Qué cubre cada tipo | SBS |
+| Derechos del usuario | Reclamos, transparencia de tasas | Indecopi, SBS |
+
+Cada PDF va en `docs/rag/<modulo>/` con un `fuentes.csv`: título, institución, enlace, fecha de consulta, licencia, nivel (básico/intermedio). Cada fragmento lleva su módulo para que el agente busque solo en el que toca. Sin licencia clara, no entra.
+
 ### Reglas de seguridad (globales)
 1. Nada de crédito a colchón < 1 mes o deuda alta.
 2. Nunca «compra/vende dólares»; el tipo de cambio solo como contexto de pagos propios en USD.
@@ -181,6 +251,9 @@ Pronóstico: walk-forward (entrena 1–9, valida 10, test 11–12). Recurrentes,
 4. Toda recomendación u oferta: acción, impacto en S/, por qué, supuestos, confianza, «tú decides».
 5. Productos solo como tipos genéricos, nunca reales ni con marca.
 6. Máximo 3 avisos por semana.
+7. Inversión solo como educación (tipos, riesgo, plazo) y simulación con tasa supuesta y visible; nunca «invierte en X» ni rentabilidad prometida.
+8. Ofertas de inversión o ahorro a plazo solo con colchón ≥ 3 meses y sin deuda cara.
+9. La memoria del usuario se puede ver y borrar; nunca se usa para ofrecer crédito a quien no pasa la regla 1.
 
 ---
 
@@ -193,9 +266,13 @@ Pronóstico: walk-forward (entrena 1–9, valida 10, test 11–12). Recurrentes,
 5. **Qué hacer:** 3 tarjetas con «¿por qué?», **Sueldo Lucas** y simulador: la banda se mueve y el día de riesgo desaparece.
 6. **En vivo:** se agrega «gratificación de julio» → salta el aviso con reparto propuesto (se viene el 28) → todo se recalcula.
 7. **Chat:** «¿llego a fin de mes si gasto S/ 150 en un regalo?» → cifras ✓; «¿qué es la TCEA?» → respuesta con fuente del RAG.
-8. **Seguridad:** el agente intenta leer un dato sensible y Postgres lo bloquea.
-9. **Atracción:** alguien sin historial responde 5 preguntas y ve su pronóstico.
-10. **Evidencia:** cada técnica frente a su baseline.
+8. **Metas:** el usuario es *gastador*; Lucas propone «S/ 120 por quincena = S/ 1 680 en diciembre» con su probabilidad. Marca una reco como «no me sirve» y la siguiente cambia (memoria).
+9. **Contraste:** se cambia a un *ahorrador firme*; Lucas le muestra el módulo de inversión básica y una promoción del catálogo.
+10. **Seguridad:** el agente intenta leer un dato sensible y Postgres lo bloquea.
+11. **Atracción:** alguien sin historial responde 5 preguntas y ve su pronóstico.
+12. **Evidencia:** cada técnica frente a su baseline.
+
+Si el tiempo de demo no alcanza, se quitan los pasos 9 y 11.
 
 Accesibilidad: contraste AA, texto ≥ 16 px, no depender solo del color, incertidumbre en palabras.
 
@@ -227,14 +304,14 @@ Protocolo: leer el cambio → escenario en el generador → test que falla → a
 ├── .env.example  Makefile  requirements.txt  docker-compose.yml
 ├── db/              # init.sql: esquemas, roles, RLS, pgcrypto, pgvector
 ├── data/            # generator.py, dictionary.md, QUALITY.md, sample/
-├── docs/rag/        # manuales públicos con su licencia
+├── docs/rag/        # <modulo>/*.pdf + fuentes.csv (fuente, licencia, nivel)
 ├── src/
 │   ├── ingest/      # validación, dedup, carga a Postgres
 │   ├── engine/      # categorías, glosa, recurrentes, calendario
 │   ├── models/      # segment, health, forecast, sentiment
 │   ├── events/      # detector de eventos y avisos
-│   ├── recommender/ # recos, ofertas, reglas de seguridad
-│   ├── agent/       # LangGraph: nodos, tools, rag, juez, providers
+│   ├── recommender/ # recos, metas, ofertas, catálogo, reglas de seguridad
+│   ├── agent/       # LangGraph: nodos, tools, rag, memoria, juez, providers
 │   ├── bcrp/
 │   └── api/         # FastAPI
 ├── app/             # UI

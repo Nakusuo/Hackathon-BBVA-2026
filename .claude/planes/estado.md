@@ -28,6 +28,10 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 | 2026-11-14 | Un agente LangGraph con tools sobre nuestros modelos, RAG en pgvector y nodo juez | Sin cifras inventadas, con fuentes |
 | 2026-11-14 | Motor de eventos (ingreso, grati/CTS, calendario, gasto, riesgo), máximo 3 avisos por semana | Lucas habla primero sin hacer spam |
 | 2026-11-14 | Ofertas solo de tipos genéricos, por necesidad e idoneidad | Fidelización responsable |
+| 2026-11-14 | Lucas aprende del usuario: matriz ahorro × gasto, metas a fin de año, memoria del usuario en Postgres, «útil / no me sirve» | Mejorar al usuario y fidelizarlo |
+| 2026-11-14 | Ofertas y promociones desde un catálogo ficticio configurable, no productos reales de BBVA | Bases: prohibido aparentar producto oficial |
+| 2026-11-14 | Datos: generación estratificada + bootstrap de perfiles; ENAHO como base semilla si la licencia lo permite | Evitar sesgo |
+| 2026-11-14 | RAG por módulos (salud, ahorro, deudas, inversión básica, seguros, derechos) con fuentes y licencia | Educación ligada a cada recomendación |
 | 2026-11-14 | Descartado: NoSQL, GraphRAG, deep learning desde cero, multimodal, varios agentes, ubicación exacta | Sin puntos extra y riesgo de tiempo |
 | 2026-11-14 | Gitflow simplificado; flujo investigador, codificador y jueces; revisión cruzada en parejas | Control y verificación |
 | — | UI: React + Recharts o Streamlit (Marcela decide a las 11:30) | — |
