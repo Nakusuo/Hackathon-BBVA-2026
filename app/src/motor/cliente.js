@@ -80,6 +80,19 @@ function seguimientoDe(definicion, cambio) {
   return { tipo: 'pausa', comercio: pago.concepto, fecha: pago.fecha }
 }
 
+// Cada tip se mide sobre los otros ya elegidos; el orden de las tarjetas se fija con su efecto por sí solo,
+// para que no salten al elegir.
+function recomendacionesCon(definicion, activos) {
+  const p = definicion.persona
+  const solos = definicion.cambios.map((c) => ({ cambio: c, mejora: evaluarCambio(p, c).mejora }))
+  return solos
+    .sort((a, b) => b.mejora - a.mejora)
+    .map(({ cambio }) => ({
+      ...evaluarCambio(p, cambio, activos.filter((a) => a.id !== cambio.id)),
+      seguimiento: seguimientoDe(definicion, cambio),
+    }))
+}
+
 // Todo lo que cambia con la persona elegida o con los tips activados con «Lo hago» se recalcula aquí.
 // `pagosExtra` son gastos de prueba (la bandeja de avisos los usa para mostrar cómo se mueve el riesgo).
 export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra = []) {
@@ -130,9 +143,7 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
       .map((c) => ({ ...c, total: Math.round((totales[c.id] ?? 0) * 100) / 100 }))
       .sort((a, b) => b.total - a.total),
     suscripciones: p.suscripciones,
-    recomendaciones: cambios
-      .map((c) => ({ ...evaluarCambio(p, c), seguimiento: seguimientoDe(definicion, c) }))
-      .sort((a, b) => b.mejora - a.mejora),
+    recomendaciones: recomendacionesCon(definicion, activos),
     conTodos: {
       peorFecha: peorConTodos.fecha,
       peorMonto: peorConTodos.banda[0],

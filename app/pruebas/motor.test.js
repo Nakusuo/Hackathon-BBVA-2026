@@ -136,9 +136,33 @@ test('la salud sube con cada día en rojo que se evita y es el promedio de sus p
   assert.match(conTodos.componentes.at(-1).explicacion, /sin quedar en rojo/)
 })
 
-test('«evitas N días en rojo» de cada tip cuadra con el pronóstico de ese tip solo', () => {
-  for (const r of cliente.recomendaciones) {
-    assert.equal(r.diasEvitados, cliente.diasEnRojo - vistaCon([r.id]).diasEnRojo, r.id)
+test('«evitas N días en rojo» de un tip por elegir se cumple al elegirlo, con cualquier selección previa', () => {
+  const selecciones = [
+    [],
+    ['delivery'],
+    ['musika'],
+    ['cafe'],
+    ['delivery', 'musika'],
+    ['delivery', 'cafe'],
+    ['musika', 'cafe'],
+  ]
+  for (const elegidos of selecciones) {
+    const vista = vistaCon(elegidos)
+    for (const r of vista.recomendaciones.filter((t) => !elegidos.includes(t.id))) {
+      assert.equal(r.diasEvitados, vista.diasEnRojo - vistaCon([...elegidos, r.id]).diasEnRojo, `${elegidos} + ${r.id}`)
+    }
   }
-  assert.equal(cliente.recomendaciones.find((r) => r.id === 'cafe').diasEvitados, 0)
+  // El caso que vio el juez: con RapiFood y MusiKa queda 1 día, y el café es el que lo quita.
+  const dos = vistaCon(['delivery', 'musika'])
+  assert.equal(dos.diasEnRojo, 1)
+  assert.equal(dos.recomendaciones.find((r) => r.id === 'cafe').diasEvitados, 1)
+})
+
+test('las tarjetas de tips no cambian de orden al elegir', () => {
+  const orden = cliente.recomendaciones.map((r) => r.id)
+  for (const elegidos of [['cafe'], TODOS])
+    assert.deepEqual(
+      vistaCon(elegidos).recomendaciones.map((r) => r.id),
+      orden,
+    )
 })

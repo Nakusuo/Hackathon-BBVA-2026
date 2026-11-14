@@ -61,7 +61,8 @@ function Tip({ tip, activo, alAlternar }) {
       <p className="cifra cifra-azul">
         +{enSoles(tip.mejora)} el {fechaCorta(tip.fechaPeorDia)}
       </p>
-      {tip.diasEvitados > 0 && (
+      {/* Solo en los tips por elegir: medido sobre lo ya elegido, cada «Evitas» se cumple al tocar «Lo hago». */}
+      {!activo && tip.diasEvitados > 0 && (
         <p className="tip-evita">
           Evitas {tip.diasEvitados === 1 ? '1 día' : `${tip.diasEvitados} días`} en rojo
         </p>

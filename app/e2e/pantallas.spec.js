@@ -179,7 +179,10 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   await expect(aviso).toContainText('−S/ 29')
   await expect(tips.locator('.tip').nth(0)).toContainText('Llevas 0 de 2 veces en RapiFood hasta el 30 nov')
 
+  await expect(tips.locator('.tip').nth(0)).not.toContainText('Evitas')
   await botones.nth(1).click()
+  await expect(tips.locator('.impacto')).toContainText('Días en rojo 1 → 0')
+  await expect(tips.locator('.tip').nth(2)).toContainText('Evitas 1 día en rojo')
   await botones.nth(2).click()
   await expect(tips.locator('.impacto')).toContainText('Días en rojo 0')
   await expect(aviso).toContainText('Vas bien')

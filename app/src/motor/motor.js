@@ -82,10 +82,12 @@ export function gastoDiarioSeguro(persona, ajuste = {}) {
   return Math.floor(bajo)
 }
 
-export function evaluarCambio(persona, cambio) {
-  const sinCambio = simular(persona)
+// Se mide sobre los otros tips ya elegidos: así «+S/» y «Evitas N días» de cada tarjeta se pueden sumar
+// y nunca prometen un día menos en rojo que luego no llega.
+export function evaluarCambio(persona, cambio, otrosElegidos = []) {
+  const sinCambio = simular(persona, ajusteDe(otrosElegidos))
   const antes = peorDia(persona, sinCambio)
-  const despues = simular(persona, cambio.ajuste)
+  const despues = simular(persona, ajusteDe([...otrosElegidos, cambio]))
   const peorDespues = despues.find((p) => p.fecha === antes.fecha)
   return {
     ...cambio,
