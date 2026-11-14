@@ -476,10 +476,11 @@ generada por el agente conversacional.
 
 ### Pendientes
 
-- Confirmar con Jeffrey el esquema definitivo.
-- Confirmar el manejo de conversation_id.
+- Dueño del endpoint: propuesta, Miguel lo expone y llama a `agent.chat.responder` de Jeffrey.
+- Campos que el front ya consume (PR #16): `figures` `[{label, value, unit, text}]` con `unit` en `PEN`, `percent`, `months`, `days` o `score`, y `sources` `[{id, title, url}]` (acepta también `titulo` y `enlace`). Con `verified` distinto de `true` el front no muestra `answer` y responde con su plantilla.
+- Unificar `provider`: el mock dice `template` y el agente `plantilla`.
+- Confirmar que el texto libre del usuario nunca se envía a Gemini (ISO 27001, 8.12).
 - Definir autenticación y permisos con Michael.
-- Acordar cómo representar citas del RAG.
 
 **Mocks:** `chat-request.json`, `chat.json`. `verified: true` en el ejemplo no demuestra verificación real; Jeffrey debe definir el criterio, la procedencia de `sources` y el comportamiento ante error del proveedor. También debe acordarse quién implementa `/chat`.
 
@@ -561,7 +562,7 @@ Ejemplo **propuesto** de error (confirmar compatibilidad con el manejador FastAP
 | Decisión | Quién valida | Estado |
 |---|---|---|
 | Rutas, parámetros, paginación y campos requeridos por las pantallas | Marcela + Miguel | Aprobado |
-| Contrato `/chat`, `conversation_id`, `verified`, `sources` y dueño del endpoint | Jeffrey + Miguel | Aprobado |
+| Contrato `/chat`, `conversation_id`, `verified`, `sources` y dueño del endpoint | Jeffrey + Miguel | Aprobada la base; quedan los pendientes de la sección 12 |
 | Contratos de score, cuadrantes, segmentos y confianza | Diego + Miguel | Aprobado |
 | Serie diaria de 30 días, bandas y definición de riesgo | Diego + Miguel | Aprobado |
 | Reglas de simulación, recurrencia y Sueldo Lucas | Diego + Marcela + Miguel | Aprobado |

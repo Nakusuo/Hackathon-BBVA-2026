@@ -112,7 +112,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **MG-11** Metas de ahorro: aporte por quincena que no deja en rojo, proyección a fin de año con la banda del pronóstico y probabilidad de cumplir; frente a la regla del 10 %. Con Diego. *Depende:* DI-06. Rama `feature/backend-metas`
 - [ ] **JF-09** Memoria del usuario: nodo que lee memoria al inicio y guarda al final (metas, preferencias y resumen, todo con valores de listas cerradas; nunca texto libre del usuario); endpoint «olvidar lo que sabes de mí». Usa las tablas de MI-03. Rama `feature/ia-memoria`
 - [ ] **MC-05** Simulador con controles deslizantes y banda que se mueve; formulario «agregar ingreso o gasto» que recalcula. Rama `feature/front-simulador`
-- [ ] **MC-06** Chat con cifras marcadas ✓ y fuentes del RAG. Rama `feature/front-chat`
+- [ ] **MC-06** Chat con cifras marcadas ✓ y fuentes del RAG. Rama `feature/front-chat` — Nakusuo/Marcela, PR #16, 2026-11-14: el front ya muestra ✓, fuentes y respaldo a plantillas; falta el endpoint `/chat` para probarlo con el agente real
 - [ ] **MC-11** Pantalla Metas (crear meta, aporte por quincena, proyección a diciembre) y botones «útil / no me sirve» en cada recomendación; opción «olvidar lo que sabes de mí». Rama `feature/front-metas`
 - [ ] **DI-08** Pronóstico global frente a global + cluster frente a uno por cluster; MAE por segmento. Rama `feature/ml-por-segmento`
 - [ ] **DI-09** Clasificador de glosa TF-IDF frente a diccionario; F1 por categoría. Rama `feature/ml-glosa`
