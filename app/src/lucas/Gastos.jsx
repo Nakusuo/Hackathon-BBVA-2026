@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { Cell, Pie, PieChart } from 'recharts'
 import { enSolesRedondo } from '../formato.js'
-import { diferenciaConPromedio, partesDelGrafico, UMBRAL } from './categorias.js'
+import { diferenciaConPromedio, partesDelGrafico, porcentajes, UMBRAL } from './categorias.js'
 
 const SERIES = [
   'var(--serie-1)',
@@ -21,6 +21,7 @@ export default function Gastos({ cliente }) {
   const promedio = categorias.reduce((s, c) => s + c.promedio3m, 0)
   const diferencia = Math.round(total - promedio)
   const partes = partesDelGrafico(categorias)
+  const porcentaje = porcentajes(partes)
   const enSuscripciones = suscripciones.reduce((s, x) => s + x.monto, 0)
 
   return (
@@ -64,7 +65,7 @@ export default function Gastos({ cliente }) {
           >
             <span className="leyenda-punto" style={{ background: SERIES[i] }} aria-hidden="true" />
             <span className="leyenda-nombre">{p.nombre}</span>
-            <span className="suave">{Math.round((p.total / total) * 100)} %</span>
+            <span className="suave">{porcentaje[i]} %</span>
             <span className="cifra">{enSolesRedondo(p.total)}</span>
             {diferenciaConPromedio(p) > 0 && (
               <span className="sube" title="Más que tu promedio">
