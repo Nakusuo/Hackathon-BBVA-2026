@@ -1,0 +1,140 @@
+# Microtareas del equipo
+
+Cada tarea dura entre 30 y 90 minutos. Si una se alarga más de 2 horas, se avisa y se parte.
+Comandos para todo: [comandos.md](comandos.md). Plan completo: [plan-maestro.md](plan-maestro.md).
+
+## Equipo
+
+| Código | Persona | Rol | Revisa los PR de |
+|---|---|---|---|
+| DI | Diego | Analítica IA | Jeffrey |
+| MG | Miguel | Backend | Michael |
+| JF | Jeffrey | IA Engineer (agente) | Diego |
+| MC | Marcela | Frontend | Dixon |
+| MI | Michael | Arquitectura de sistema | Miguel |
+| DX | Dixon | Arquitectura de datos y diagramas | Marcela |
+
+## Cómo nos avisamos
+
+**Cada vez que terminas una tarea**, mandas al grupo:
+
+```
+[LISTO] DI-06 Pronóstico v1
+Rama: feature/ml-pronostico   PR: #12
+Probar: make test
+Resultado: MAE 312 vs baseline 455
+Desbloquea: MG-06, JF-03
+Revisa: Jeffrey
+```
+
+**Si estás trabado más de 20 minutos:**
+
+```
+[BLOQUEO] MG-02 Ingesta
+Qué pasa: falla la carga de glosas con tildes
+Necesito: a Dixon (generador)
+```
+
+**Cada hora en punto**, una línea por persona: `DI: en DI-05, termino 16:30, sin bloqueos`.
+
+**Checkpoints de 10 minutos (todos):** 12:00, 15:00, 19:00, 23:00, domingo 10:00 y 12:00. Se revisa: qué está hecho, qué bloquea, qué se recorta.
+
+**Testing en equipo:**
+1. Quien termina corre `make check` y abre el PR a `develop`.
+2. Su revisor baja la rama, corre `make check` y prueba lo que dice «Probar».
+3. Si el cambio se ve en la demo, también corre el flujo completo con `make e2e`.
+4. Con aprobación, el autor une el PR y avisa `[MERGE] DI-06 en develop`.
+5. Todos hacen `git pull` en develop cuando ven un `[MERGE]`.
+
+Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
+
+---
+
+## Bloque 1 · Sábado 11:00–12:00 · Contratos (para trabajar en paralelo)
+
+- [ ] **MI-01** Esqueleto del repo: carpetas del plan, `requirements.txt`, `.env.example`, `Makefile` con objetivos vacíos, config de ruff y pytest. *Hecho:* `make check` corre en verde. **Entra a develop antes de las 11:45.** Rama `feature/arq-esqueleto`
+- [ ] **MI-02** `docker-compose.yml` con Postgres 16 + pgvector y `make db`. *Hecho:* `make db` levanta y `make psql` conecta. Rama `feature/arq-docker`
+- [ ] **DX-01** Diccionario de datos v1 (`data/dictionary.md`) junto con Michael y Diego: tablas, columnas, tipos, etiquetas. *Hecho:* los tres lo aprueban. Rama `feature/datos-diccionario`
+- [ ] **MG-01** Contrato de la API (`docs/api.md`) junto con Marcela y Jeffrey: endpoints y JSON de ejemplo en `data/sample/mocks/`. *Hecho:* los tres lo aprueban. Rama `feature/backend-contrato`
+- [ ] **MC-01** Decidir la UI a las 11:30 (React + Recharts o Streamlit) y esqueleto que navega las 6 pantallas vacías. *Hecho:* se abre en el navegador. Rama `feature/front-esqueleto`
+- [ ] **JF-01** Instalar Ollama con un modelo pequeño y uno de embeddings; anotar versiones en `PROMPTS.md`. Con el agente `investigador`, elegir 3 a 5 manuales públicos para el RAG y revisar su licencia. Rama `feature/ia-setup`
+- [ ] **DI-01** Lista de variables por cliente y firma de las funciones de baseline (`src/models/baselines.py` con tests vacíos). Rama `feature/ml-baselines`
+
+## Bloque 2 · Sábado 12:00–15:00 · Base que funciona
+
+- [ ] **DX-02** Generador v1: clientes + transacciones, 4 arquetipos, quincena, `--seed`. *Hecho:* genera en < 1 min; test «misma semilla = mismo resultado». Rama `feature/datos-generador`
+- [ ] **DX-03** Calendario: grati, CTS, feriados, campaña escolar, Día de la Madre, 28 de julio, Cyber Wow, Navidad, con subida de gasto. *Depende:* DX-02
+- [ ] **DX-04** Texto: glosas por comercio y canal, y mensajes con etiqueta de sentimiento (plantillas variadas). *Depende:* DX-02
+- [ ] **MI-03** `db/init.sql`: esquemas `seguro` y `app`, roles `lucas_app`, `lucas_agente`, `lucas_admin`, RLS, pgcrypto, extensión vector. *Hecho:* test «lucas_agente no puede leer deuda_total». Rama `feature/arq-db-seguridad`
+- [ ] **MG-02** Ingesta: validación Pydantic, dedup y carga a Postgres. `make data` completo. *Depende:* DX-02, MI-03. Rama `feature/backend-ingesta`
+- [ ] **MG-03** FastAPI con los endpoints del contrato devolviendo los mocks. `make run`. *Depende:* MG-01. Rama `feature/backend-api`
+- [ ] **MC-02** Pantallas Cómo estás y Qué viene (gráfico con banda) usando mocks. *Depende:* MG-01. Rama `feature/front-estado-pronostico`
+- [ ] **JF-02** Esqueleto LangGraph: router → tool falsa → redacción → juez → respuesta, con `TemplateProvider`. *Hecho:* test de punta a punta del grafo. Rama `feature/ia-grafo`
+- [ ] **DI-02** Variables por cliente calculadas desde transacciones, con test. *Depende:* DX-02. Rama `feature/ml-features`
+- [ ] **DI-03** Baselines: promedio móvil de saldo, «mismo comercio ≥ 3 veces», diccionario de glosas. Con tests. *Depende:* DI-02
+
+**Checkpoint 15:00:** `make data` y `make run` funcionan en develop.
+
+## Bloque 3 · Sábado 15:00–19:00 · Primer flujo de punta a punta
+
+- [ ] **DI-04** Recurrentes y duplicadas v1; F1 frente al baseline. Rama `feature/ml-recurrentes`
+- [ ] **DI-05** K-Prototypes: k por silueta y estabilidad, cluster por cliente guardado en Postgres, descripción de cada segmento en palabras. Rama `feature/ml-segmentos`
+- [ ] **DI-06** Pronóstico v1 + banda bootstrap + día de riesgo; MAE frente al baseline. Rama `feature/ml-pronostico`
+- [ ] **DI-07** Salud 0–100 con componentes y test de monotonicidad. Rama `feature/ml-salud`
+- [ ] **MG-04** Recomendador v1: candidatos por reglas, puntaje impacto × facilidad, ajuste por segmento, reglas de seguridad con un test cada una. *Depende:* DI-05, DI-07. Rama `feature/backend-recomendador`
+- [ ] **MG-05** Motor de eventos v1: ingreso, grati/CTS, fecha de calendario, gasto frecuente, riesgo; máximo 3 avisos por semana. Con tests. *Depende:* DI-06. Rama `feature/backend-eventos`
+- [ ] **MG-06** Conectar los endpoints a los modelos reales (fuera mocks). *Depende:* DI-05, DI-06, DI-07
+- [ ] **JF-03** Tools del agente: `get_health`, `get_forecast`, `get_recos`, `simulate`, `get_segment`, con el rol `lucas_agente`. *Depende:* MG-03. Rama `feature/ia-tools`
+- [ ] **JF-04** Nodo juez: verificador de cifras con tolerancia, reintento y plantilla; tests con respuestas trampa. Rama `feature/ia-juez`
+- [ ] **MC-03** Pantallas Qué hacer (tarjetas con «¿por qué?») y Avisos (bandeja). Rama `feature/front-recos-avisos`
+- [ ] **MC-04** Conectar la UI a la API real. *Depende:* MG-06
+- [ ] **MI-04** Makefile completo: `data`, `db`, `test`, `check` (ruff + tests), `eval`, `run`, `e2e`. Rama `feature/arq-makefile`
+- [ ] **MI-05** `make e2e`: genera muestra → carga → llama a cada endpoint → valida respuestas. Middleware de latencia por endpoint. Rama `feature/arq-e2e`
+- [ ] **DX-05** Escenarios difíciles: ingresos irregulares, duplicadas, cambio de patrón, faltantes, atípicos y necesidades ocultas sembradas. Rama `feature/datos-escenarios`
+- [ ] **DX-06** Diagramas v1 (Mermaid): arquitectura en 3 capas, flujo de datos, grafo del agente. En `ARCHITECTURE.md`. Rama `feature/docs-diagramas`
+
+**Checkpoint 19:00:** todo el equipo corre el flujo de la demo en develop. Si no funciona, se aplica el orden de recorte del plan.
+
+## Bloque 4 · Sábado 19:00–23:00 · Demo completa
+
+- [ ] **JF-05** RAG: cargar manuales a pgvector, nodo RAG con citas, el juez valida que cada cita exista. Rama `feature/ia-rag`
+- [ ] **JF-06** 30 preguntas fijas y 10 adversas (inyección, «compra dólares», «transfiere») en `tests/agent/`. Rama `feature/ia-tests`
+- [ ] **MG-07** Endpoints de simulador y Sueldo Lucas (con Diego). Rama `feature/backend-simulador`
+- [ ] **MG-08** Ofertas de tipos genéricos por necesidad + idoneidad; precision@3 frente a «lo más popular». Rama `feature/backend-ofertas`
+- [ ] **MC-05** Simulador con controles deslizantes y banda que se mueve; formulario «agregar ingreso o gasto» que recalcula. Rama `feature/front-simulador`
+- [ ] **MC-06** Chat con cifras marcadas ✓ y fuentes del RAG. Rama `feature/front-chat`
+- [ ] **DI-08** Pronóstico global frente a global + cluster frente a uno por cluster; MAE por segmento. Rama `feature/ml-por-segmento`
+- [ ] **DI-09** Clasificador de glosa TF-IDF frente a diccionario; F1 por categoría. Rama `feature/ml-glosa`
+- [ ] **MI-06** Demo de seguridad: script que muestra a `lucas_agente` bloqueado por Postgres; documentarlo. Rama `feature/arq-demo-seguridad`
+- [ ] **MI-07** Instalar desde cero en la laptop de la demo siguiendo solo el README; anotar lo que falte. 
+- [ ] **DX-07** `QUALITY.md` generado por script y calibración con cifras públicas (con el agente `investigador`). Rama `feature/datos-calidad`
+- [ ] **TODOS-01** Cada persona escribe 17 frases reales sobre plata (alegría, preocupación, neutras) para el set de 100 de sentimiento. Dixon las junta en `data/eval/frases.csv`.
+
+**Checkpoint 23:00:** demo completa, aunque fea. Se decide qué DEBERÍA entra el domingo.
+
+## Bloque 5 · Domingo 08:00–10:00 · Evidencia
+
+- [ ] **DI-10** `make eval` → `EVALUATION.md` con intervalos y pruebas con perturbaciones. Rama `feature/ml-eval`
+- [ ] **JF-07** Métricas del agente (% cifras verificadas, % citas válidas, exactitud, bloqueo adverso) en `EVALUATION.md`. Rama `feature/ia-eval`
+- [ ] **MC-07** Panel Evidencia con los resultados de `make eval`. Rama `feature/front-evidencia`
+- [ ] **MG-09** Manejo de errores y timeouts; tests de la API. Rama `feature/backend-robustez`
+- [ ] **MI-08** Pasar el agente `juez-cumplimiento`; `git grep` de secretos; corregir lo bloqueante. Rama `fix/arq-cumplimiento`
+- [ ] **DX-08** README v1 y guion del pitch v1. Rama `feature/docs-readme-pitch`
+
+## Bloque 6 · Domingo 10:00–12:00 · DEBERÍA y pulido
+
+- [ ] **DI-11** Sentimiento con modelo preentrenado frente a léxico, medido en las 100 frases.
+- [ ] **DI-12 / MG-10 / MC-08** Lucas en 5 preguntas: modelo de asignación (Diego), endpoint (Miguel), pantalla (Marcela).
+- [ ] **JF-08** BCRP: tipo de cambio e inflación con caché y serie grabada de respaldo.
+- [ ] **MC-09** Pulido: claro y oscuro, 1366×768, celular, checklist anti-slop de `reglas/calidad-codigo.md`.
+- [ ] **TODOS-02** Prueba de evolución si la anuncian (protocolo del plan, sección 8).
+- [ ] **TODOS-03** Pasar el agente `juez-producto` y aplicar los 3 cambios que más suben la nota.
+
+**12:00 congelamiento:** no entran funcionalidades nuevas.
+
+## Bloque 7 · Domingo 12:00 en adelante · Entrega
+
+- [ ] **MI-09** Rama `release/entrega`, `make check` y `make e2e` en verde, merge a `main` y etiqueta `v1.0-entrega`.
+- [ ] **DX-09** `ARCHITECTURE.md` final con diagramas y `PROMPTS.md` revisado con Jeffrey.
+- [ ] **MC-10 / DX-10** Video de respaldo de la demo (3 a 4 min) y capturas en `demo/`.
+- [ ] **TODOS-04** 3 ensayos cronometrados (10:00 exactos) y simulacro de preguntas del jurado.

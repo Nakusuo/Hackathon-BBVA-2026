@@ -1,30 +1,36 @@
 # Estado del proyecto
 
-Actualizar al terminar cada tarea y en cada checkpoint (10 min: qué está hecho, qué bloquea, qué se recorta).
+Actualizar en cada checkpoint (12:00, 15:00, 19:00, 23:00, dom 10:00 y 12:00).
+El avance tarea por tarea se marca en [tareas.md](tareas.md).
 
 ## Equipo y roles
 
-| Rol | Persona | Subagente |
-|---|---|---|
-| Datos | — | `datos` |
-| ML / Analítica | — | `ml-analitica` |
-| IA / Chat | — | `ia-chat` |
-| Backend | — | `backend` |
-| Frontend / UX | — | `frontend-ux` |
-| PM / Pitch | — | `pitch-docs` |
-| Investigación | — | `investigador` |
-| Verificación | — | `juez-tecnico`, `juez-producto`, `juez-cumplimiento` |
+| Persona | Rol | Agentes de apoyo | Revisa a |
+|---|---|---|---|
+| Diego | Analítica IA | `ml-analitica` | Jeffrey |
+| Miguel | Backend | `backend` | Michael |
+| Jeffrey | IA Engineer (agente) | `ia-chat` | Diego |
+| Marcela | Frontend | `frontend-ux` | Dixon |
+| Michael | Arquitectura de sistema | `backend`, `juez-cumplimiento` | Miguel |
+| Dixon | Arquitectura de datos y diagramas | `datos`, `pitch-docs` | Marcela |
+
+Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto`.
 
 ## Decisiones tomadas
 
 | Fecha | Decisión | Motivo |
 |---|---|---|
-| 2026-11-14 | Problema principal: liquidez a 30 días | Bases piden un problema y una población |
-| 2026-11-14 | Datos: generador propio + DuckDB, calibrado con cifras públicas | No hay dataset peruano a nivel transacción |
-| 2026-11-14 | LLM intercambiable: Ollama → API opcional → plantillas | BBVA no da claves; demo offline |
-| 2026-11-14 | Lucas como compañero bancario: avisos anticipados y Sueldo Lucas pasan a DEBE; Lucas en 5 preguntas a DEBERÍA alta | Indicación del juez: fidelización, atracción, nada cosmético |
-| 2026-11-14 | Gitflow simplificado y flujo investigador, codificador y jueces | Control del avance y verificación |
-| — | UI: Streamlit o React + Recharts (decidir en la 1.ª hora y no cambiar) | — |
+| 2026-11-14 | Problema principal: liquidez a 30 días | Bases: un problema, una población |
+| 2026-11-14 | Lucas como compañero bancario: avisos anticipados, Sueldo Lucas, Lucas en 5 preguntas | Indicación del juez: fidelización y atracción |
+| 2026-11-14 | PostgreSQL único (esquemas seguro/app, RLS, pgcrypto, JSONB, pgvector). Sin NoSQL ni DuckDB | Seguridad demostrable, una sola base |
+| 2026-11-14 | Texto: glosa de movimientos (clasificación) y mensajes (sentimiento con modelo preentrenado) | NLP ligado a decisiones |
+| 2026-11-14 | K-Prototypes pasa a DEBE; pronóstico global vs por segmento vs baseline | Personalización medible |
+| 2026-11-14 | Un agente LangGraph con tools sobre nuestros modelos, RAG en pgvector y nodo juez | Sin cifras inventadas, con fuentes |
+| 2026-11-14 | Motor de eventos (ingreso, grati/CTS, calendario, gasto, riesgo), máximo 3 avisos por semana | Lucas habla primero sin hacer spam |
+| 2026-11-14 | Ofertas solo de tipos genéricos, por necesidad e idoneidad | Fidelización responsable |
+| 2026-11-14 | Descartado: NoSQL, GraphRAG, deep learning desde cero, multimodal, varios agentes, ubicación exacta | Sin puntos extra y riesgo de tiempo |
+| 2026-11-14 | Gitflow simplificado; flujo investigador, codificador y jueces; revisión cruzada en parejas | Control y verificación |
+| — | UI: React + Recharts o Streamlit (Marcela decide a las 11:30) | — |
 
 ## Respuestas de la organización
 
@@ -37,52 +43,19 @@ Actualizar al terminar cada tarea y en cada checkpoint (10 min: qué está hecho
 | Prueba de evolución | — |
 | Modelos/dependencias descargados de antemano | — |
 
-## Avance del MVP
+## Checkpoints
 
-### DEBE
-- [ ] D1 Generador de datos sintéticos (calendario PE + escenarios difíciles)
-- [ ] D2 Motor: categorías, fijo/variable, gasto hormiga, recurrentes
-- [ ] D3 Salud financiera 0–100 con componentes
-- [ ] D4 Pronóstico 30 días + banda + «día de riesgo»
-- [ ] D5 Recomendador híbrido (3 acciones con impacto, por qué, límites, confianza)
-- [ ] D6 Simulador «qué pasaría si»
-- [ ] D7 Chat con tools + verificador + fallback
-- [ ] D8 Panel Evidencia (baseline vs modelo, cobertura, % verificado)
-- [ ] F1 Avisos anticipados del día de riesgo (fidelización)
-- [ ] F2 Sueldo Lucas: monto quincenal estable para ingresos irregulares (fidelización)
-
-### DEBERÍA
-- [ ] A1 Lucas en 5 preguntas: pronóstico sin historial (atracción, prioridad alta)
-- [ ] A2 Plata del negocio y plata de la casa (atracción)
-- [ ] F4 Resumen de la quincena con cambios del puntaje
-- [ ] Perfiles K-Prototypes
-- [ ] Detector de suscripciones duplicadas
-- [ ] Formulario «agrega un gasto o meta» con recálculo en vivo
-- [ ] Tipo de cambio BCRP con caché y respaldo
-- [ ] Pantalla de consentimiento + «explícamelo fácil»
-
-### PODRÍA
-- [ ] F3 Plan de grati y CTS
-- [ ] Explicación contrafactual
-- [ ] Alerta de movimiento atípico
-- [ ] Prueba de equipo rojo en vivo
-
-## Hitos del cronograma
-
-| Hito | Cuándo | Estado |
-|---|---|---|
-| Repo con estructura, `.env.example`, esquema acordado | Sáb, 1.ª hora | — |
-| `make data` funciona; UI navega las 5 pantallas | Sáb mañana | — |
-| Primer flujo de punta a punta | Sáb tarde | — |
-| Demo completa (aunque fea) | Sáb noche | — |
-| EVALUATION.md con números reales | Dom temprano | — |
-| Congelamiento de código | Dom mediodía | — |
-| 3 ensayos del pitch (10:00 min) | Dom tarde | — |
-
-**Regla de recorte:** si a mitad del día 1 el flujo de punta a punta no funciona, se recorta todo lo «Debería».
+| Hora | Meta | Estado | Notas |
+|---|---|---|---|
+| Sáb 12:00 | Contratos listos, esqueleto en develop | — | |
+| Sáb 15:00 | `make data` y `make run` funcionan | — | |
+| Sáb 19:00 | Primer flujo de punta a punta | — | |
+| Sáb 23:00 | Demo completa | — | |
+| Dom 10:00 | EVALUATION.md con números reales | — | |
+| Dom 12:00 | Congelamiento | — | |
 
 ## Bloqueos y recortes
 
-| Fecha | Qué | Acción |
+| Fecha y hora | Qué | Acción |
 |---|---|---|
 | — | — | — |

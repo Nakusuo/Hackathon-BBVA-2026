@@ -17,7 +17,9 @@ Indicación del juez: Lucas debe ser **el compañero bancario** del cliente. Se 
 | Carpeta / archivo | Contenido | Cuándo leerlo |
 |---|---|---|
 | [planes/plan-maestro.md](planes/plan-maestro.md) | Plan completo: alcance, arquitectura, cronograma, pitch | Antes de decidir alcance o arquitectura |
-| [planes/estado.md](planes/estado.md) | Avance real: qué está hecho, qué falta, qué se recortó | Al empezar cada tarea; actualizar al terminarla |
+| [planes/tareas.md](planes/tareas.md) | Microtareas por persona, dependencias y formato de avisos | Al empezar y terminar cada tarea |
+| [planes/comandos.md](planes/comandos.md) | Comandos fijos: Git, PR, revisión, make, Docker | Siempre que haya que tocar el repo |
+| [planes/estado.md](planes/estado.md) | Equipo, decisiones, checkpoints y bloqueos | En cada checkpoint |
 | [planes/verificaciones.md](planes/verificaciones.md) | Veredictos de los jueces | Antes de unir una rama; anotar cada veredicto |
 | [reglas/vision-companero.md](reglas/vision-companero.md) | Lucas como compañero bancario: fidelización, atracción e ideas priorizadas | Antes de decidir qué construir o cómo presentarlo |
 | [reglas/bases-hackathon.md](reglas/bases-hackathon.md) | Criterios del jurado, pesos y prohibiciones | Antes de cualquier decisión que afecte la evaluación |
@@ -36,7 +38,7 @@ Indicación del juez: Lucas debe ser **el compañero bancario** del cliente. Se 
 2. **Cada técnica tiene su baseline sencillo** y se mide contra él. Sin baseline no entra.
 3. **Datos 100 % sintéticos**, con semilla fija. Nunca nombres, DNI, teléfonos, cuentas ni marcas reales.
 4. **Sin marca ni colores de BBVA.** Lucas es marca propia. Decimos «podría integrarse», nunca «es de BBVA».
-5. **Funciona offline**: Ollama local o plantillas. El FX tiene serie grabada de respaldo.
+5. **Funciona offline**: Ollama local o plantillas, Postgres en Docker local. El BCRP tiene serie grabada de respaldo.
 6. **No es asesoría**: nunca «compra dólares», nunca prometer rentabilidad, nunca ejecutar operaciones. «Tú decides».
 7. **MoSCoW estricto**: primero el flujo de punta a punta; los «Debería» se recortan si el núcleo no funciona.
 8. **Compañero, no chatbot**: cada pantalla o idea debe mejorar una decisión real. Si es solo decoración, fuera.
@@ -58,4 +60,4 @@ Indicación del juez: Lucas debe ser **el compañero bancario** del cliente. Se 
 - Commits pequeños y frecuentes, en español, sin coautor ni atribución a IA. No hacer push sin preguntar.
 - Secretos solo en `.env` (está en `.gitignore`); `.env.example` con valores ficticios.
 - Cuando se decida algo importante, anotarlo en [planes/estado.md](planes/estado.md) (sección «Decisiones»).
-- Comandos objetivo: `make data` · `make test` (< 1 min) · `make eval` · `make run`.
+- Comandos del equipo: [planes/comandos.md](planes/comandos.md). Microtareas: [planes/tareas.md](planes/tareas.md).

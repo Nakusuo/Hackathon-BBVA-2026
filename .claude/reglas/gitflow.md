@@ -13,7 +13,7 @@ Gitflow simplificado para 2 días. Lo siguen las personas y todos los agentes.
 | `release/entrega` | Congelamiento del domingo a mediodía | `develop` | `main` y `develop` |
 | `hotfix/<tema>` | Arreglo urgente sobre lo entregado | `main` | `main` y `develop` |
 
-Roles válidos en el nombre: `datos`, `ml`, `ia`, `backend`, `front`, `docs`.
+Roles válidos en el nombre: `datos`, `ml`, `ia`, `backend`, `front`, `arq`, `docs`.
 Ejemplos: `feature/datos-generador`, `feature/ml-pronostico-banda`, `fix/ia-verificador-decimales`.
 
 ## Reglas
@@ -25,7 +25,8 @@ Ejemplos: `feature/datos-generador`, `feature/ml-pronostico-banda`, `fix/ia-veri
 5. Actualizar la rama con `develop` antes de pedir el PR (`git pull --rebase origin develop`).
 6. Prohibido `git push --force` sobre `main` y `develop`.
 7. Etiquetas en cada checkpoint que funcione: `v0.1-flujo`, `v0.2-demo`, `v1.0-entrega`.
-8. Los agentes **no hacen push ni abren PR sin permiso** de una persona del equipo.
+8. Las personas suben sus ramas `feature/` cuando quieran. Los agentes de Claude **no hacen push ni abren PR sin permiso** de una persona del equipo.
+9. Cada PR lo revisa la pareja asignada en `../planes/tareas.md` además del juez.
 
 ## Commits
 
@@ -33,11 +34,11 @@ Ejemplos: `feature/datos-generador`, `feature/ml-pronostico-banda`, `fix/ia-veri
 - Tipos: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`.
 - Ejemplos: `feat(forecast): agrega banda por bootstrap`, `test(recommender): cubre regla de crédito con colchón bajo`.
 - Sin coautor ni atribución a IA.
-- Nunca commitear `.env`, datos grandes generados ni `data/lucas.duckdb` (solo `data/sample/`).
+- Nunca commitear `.env`, datos grandes generados ni volcados de la base (solo `data/sample/`).
 
 ## Comandos de inicio de tarea
 
-```fish
+```bash
 git switch develop
 git pull
 git switch -c feature/<rol>-<tema>
@@ -45,7 +46,7 @@ git switch -c feature/<rol>-<tema>
 
 ## Al terminar una tarea
 
-```fish
+```bash
 make test
 git add <archivos>
 git commit -m "feat(area): qué cambia"
