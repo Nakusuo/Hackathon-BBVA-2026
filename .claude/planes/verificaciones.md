@@ -4,6 +4,7 @@ Una fila por veredicto de un juez. Lo más reciente arriba.
 
 | Fecha y hora | Rama o módulo | Juez | Veredicto | Pendientes |
 |---|---|---|---|---|
+| 2026-11-14 | feature/docs-demo-guion (tras PR #13 y #15) | juez-cumplimiento | CUMPLE (3.ª revisión) | Plan B al día con la capa `src/api`: las cifras siguen del motor local y la API solo cambia el aviso de datos (texto y 4 s iguales al código). Frase del apartado igual a la pantalla. Capturas regeneradas. Pidió Nakusuo/Marcela |
 | 2026-11-14 | feature/docs-demo-guion (demo/GUION.md) | juez-producto | APRUEBA (2.ª revisión) | ~108 palabras, unos 43 s de voz; cada cifra dicha está a la vista (+S/ 31, +S/ 22, +S/ 19, +S/ 12, S/ 150). Captura del tip 2 deslizado aplicada después. Pendiente: cronometrar 3 ensayos. Pidió Nakusuo/Marcela |
 | 2026-11-14 | feature/docs-demo-guion (demo/GUION.md) | juez-cumplimiento | CUMPLE (2.ª revisión) | Plan B honesto (el front no llama a la API ni al LLM; el chat usa plantillas), Banco Vértice ficticio, «podría integrarse», sin cifras públicas ni de retención. Opcional aplicado: «no es asesoría» dicho en voz. Pidió Nakusuo/Marcela |
 | 2026-11-14 | feature/docs-demo-guion (demo/GUION.md) | juez-producto | CAMBIOS | ~184 palabras para 60 s; el aviso (−S/ 29, −S/ 7) y el +S/ 12 quedaban fuera de pantalla; frases técnicas. Pidió Nakusuo/Marcela |

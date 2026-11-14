@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { conSigno, enSoles, textoDiasEnRojo } from '../src/formato.js'
-import { vistaCon } from '../src/mocks/cliente.js'
-import { PERSONA_INICIAL } from '../src/mocks/personas.js'
+import { vistaCon } from '../src/motor/cliente.js'
+import { PERSONA_INICIAL } from '../src/motor/personas.js'
 
 // Recorre demo/GUION.md paso a paso. Las cifras esperadas salen del mismo motor que usa la app,
 // así que si el motor cambia, esta prueba avisa que el guion quedó viejo.
@@ -111,9 +111,11 @@ test('guion de 60 s: banca → aviso → «Lo hago» → sin rojo → apartar', 
   // Paso 5: lo que puede apartar al cobrar.
   await page.getByRole('link', { name: 'Resumen' }).click()
   const apartado = tips.locator('.tip').last()
-  await apartado.scrollIntoViewIfNeeded()
+  // Centrada, para que la barra inferior no tape el total que se dice en voz alta.
+  await apartado.evaluate((tarjeta) => tarjeta.scrollIntoView({ block: 'center', inline: 'center' }))
   await expect(apartado).toContainText(`podrías apartar ${cifras.apartado}`)
   await expect(apartado).toContainText(cifras.apartadoTotal)
-  await expect(apartado.getByRole('heading', { level: 3 })).toBeInViewport()
+  await expect(apartado.getByRole('heading', { level: 3 })).toBeInViewport({ ratio: 1 })
+  await expect(apartado.locator('p', { hasText: cifras.apartadoTotal })).toBeInViewport({ ratio: 1 })
   await captura('05-apartar')
 })
