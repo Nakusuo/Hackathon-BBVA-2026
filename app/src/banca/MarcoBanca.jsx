@@ -1,6 +1,7 @@
 import { ArrowsLeftRight, CreditCard, DotsThreeOutline, House } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useDatosApi } from '../api/useDatosApi.js'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import { vistaCon } from '../motor/cliente.js'
 import { personaPorId } from '../motor/personas.js'
@@ -25,6 +26,7 @@ export default function MarcoBanca() {
   const [elegidos, setElegidos] = useState(leerElegidos)
   const vista = useMemo(() => vistaCon(elegidos, personaId), [elegidos, personaId])
   const persona = personaPorId(personaId).persona
+  const datosApi = useDatosApi()
 
   function elegirPersona(id) {
     if (id === personaId) return
@@ -67,7 +69,17 @@ export default function MarcoBanca() {
     <div className="exterior">
       <div className="marco">
         <Outlet
-          context={{ avisarSinDemo, vista, persona, alternarTip, personaId, elegirPersona, permiso, retirarPermisoActual }}
+          context={{
+            avisarSinDemo,
+            vista,
+            persona,
+            alternarTip,
+            personaId,
+            elegirPersona,
+            permiso,
+            retirarPermisoActual,
+            datosApi,
+          }}
         />
 
         <nav className="barra-inferior" aria-label="Menú principal">

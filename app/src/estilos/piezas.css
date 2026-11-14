@@ -383,7 +383,27 @@ details[open] summary::after {
 }
 
 .facil-cerrar {
+
+/* Va sobre el contenido, no como cinta de color: es información, no una alerta de plata. */
+.estado-datos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--superficie);
+  color: var(--tinta-suave);
+}
+
+.cifra-verificada {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+
+.marca-verificada {
+  color: var(--bien);
 }
