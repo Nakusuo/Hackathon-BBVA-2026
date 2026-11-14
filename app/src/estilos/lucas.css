@@ -397,10 +397,6 @@
   margin: 0;
 }
 
-.aviso-corto .boton {
-  grid-column: 2;
-}
-
 .boton-chico {
   min-height: 44px;
   padding: 0 18px;
