@@ -1,0 +1,73 @@
+' Regenerar: java -jar plantuml.jar -charset UTF-8 -tsvg docs/diagramas/casos-uso.puml
+@startuml casos-uso
+!pragma layout smetana
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor<<debería>> #FFFFFF
+  BorderStyle<<debería>> dashed
+}
+
+title Lucas · Diagrama de casos de uso
+
+actor "Cliente" as Cliente <<abstracto>>
+actor "Independiente" as Independiente
+actor "Formal" as Formal
+actor "Comisionista\no mixto" as Mixto
+actor "Persona\nsin historial" as Prospecto
+actor "Banco que\nintegra a Lucas" as Banco
+
+Cliente <|-- Independiente
+Cliente <|-- Formal
+Cliente <|-- Mixto
+
+actor "Motor LLM\n(Ollama · plantillas)" as LLM <<sistema>>
+actor "BCRP\n(tipo de cambio)" as BCRP <<sistema>>
+
+rectangle "Lucas" {
+  usecase "CU-01\nConsultar mi estado\nfinanciero" as CU01
+  usecase "CU-02\nConsultar pronóstico\na 30 días" as CU02
+  usecase "CU-03\nRecibir avisos\nanticipados" as CU03
+  usecase "CU-04\nObtener\nrecomendaciones" as CU04
+  usecase "CU-05\nSimular un cambio" as CU05
+  usecase "CU-06\nRegistrar un\nmovimiento" as CU06
+  usecase "CU-07\nConversar con Lucas" as CU07
+  usecase "CU-08\nGestionar meta\nde ahorro" as CU08
+  usecase "CU-09\nControlar mis datos" as CU09
+  usecase "CU-10\nProbar Lucas sin\nser cliente" as CU10
+  usecase "CU-11\nEvaluar impacto\ny evidencia" as CU11
+  usecase "CU-12\nValidar sesión" as CU12
+
+  usecase "Ver resumen\nde quincena" as EXT22 <<debería>>
+  usecase "Separar negocio\ny casa" as EXT25 <<debería>>
+}
+
+Cliente --> CU01
+Cliente --> CU02
+Cliente --> CU03
+Cliente --> CU04
+Cliente --> CU05
+Cliente --> CU06
+Cliente --> CU07
+Cliente --> CU08
+Cliente --> CU09
+Prospecto --> CU10
+Banco --> CU11
+
+CU07 --> LLM
+CU03 --> BCRP
+
+CU01 ..> CU12 : <<include>>
+CU02 ..> CU12 : <<include>>
+CU03 ..> CU12 : <<include>>
+CU04 ..> CU12 : <<include>>
+CU05 ..> CU12 : <<include>>
+CU06 ..> CU12 : <<include>>
+CU07 ..> CU12 : <<include>>
+CU08 ..> CU12 : <<include>>
+CU09 ..> CU12 : <<include>>
+CU07 ..> CU05 : <<include>>
+
+EXT22 ..> CU01 : <<extend>>
+EXT25 ..> CU01 : <<extend>>
+
+@enduml
