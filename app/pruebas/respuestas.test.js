@@ -186,3 +186,8 @@ test('preguntar por campañas sin decir para qué lista los rubros, sin cifras',
 test('un «sí» sin campaña ofrecida no inventa una', () => {
   assert.match(preguntar('sí').texto, /Todavía no sé/)
 })
+
+test('un plazo en semanas o días es la fecha, no el precio de la meta', () => {
+  const r = charla(['quiero ir al concierto, la entrada está 450', 'quiero juntarlo a futuro, la venta es en 4 semanas'])
+  assert.match(r[1].texto, /^Tu entrada cuesta S\/.450\. Para el 12 dic de 2026/)
+})

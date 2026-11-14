@@ -1,5 +1,5 @@
 // Respuestas por plantilla: respaldo cuando el agente (JF-02) no está o no contesta. Toda cifra sale del motor, nunca del texto.
-import { apartadoSinRojo, evaluarGastoExtra } from '../motor/motor.js'
+import { apartadoSinRojo, evaluarGastoExtra, sumarDias } from '../motor/motor.js'
 import { conSigno, diasEntre, enSoles, enSolesRedondo, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
 import { leerTipoCambio } from '../api/contrato.js'
 import { RESPALDO } from '../api/respaldo.js'
@@ -182,13 +182,20 @@ function sumarMeses(fechaIso, meses) {
 const ANIO = /\b(?:para|en|hasta|del)\s+(?:el\s+)?(?:ano\s+)?(20\d\d)\b(?!\s*(soles|dolares|mil))/
 const NUMERO_PALABRA = { un: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, ocho: 8, diez: 10, doce: 12 }
 
-// «fin de año», «diciembre», «en 6 meses», «en 2 años», «para 2027». Sin fecha devuelve null.
+// «en 4 semanas», «dentro de 10 días», «en 6 meses», «en 2 años».
+const PLAZO = /\b(?:en|dentro de)\s+(\d+|un|una|dos|tres|cuatro|cinco|seis|ocho|diez|doce)\s+(dias?|semanas?|mes|meses|ano|anos)\b/
+const PLAZOS = new RegExp(PLAZO.source, 'g')
+
+// «fin de año», «diciembre», «en 4 semanas», «en 6 meses», «para 2027». Sin fecha devuelve null.
 export function fechaDeMeta(texto, hoy) {
   if (/\b(fin de (ano|anio)|fin del (ano|anio)|diciembre|navidad)\b/.test(texto)) return finDeAnio(hoy)
-  const plazo = texto.match(/\ben\s+(\d+|un|una|dos|tres|cuatro|cinco|seis|ocho|diez|doce)\s+(mes|meses|ano|anos)\b/)
+  const plazo = texto.match(PLAZO)
   if (plazo) {
     const n = NUMERO_PALABRA[plazo[1]] ?? Number(plazo[1])
-    return sumarMeses(hoy, plazo[2].startsWith('mes') ? n : n * 12)
+    const unidad = plazo[2]
+    if (unidad.startsWith('dia')) return sumarDias(hoy, n)
+    if (unidad.startsWith('semana')) return sumarDias(hoy, n * 7)
+    return sumarMeses(hoy, unidad.startsWith('mes') ? n : n * 12)
   }
   const anio = texto.match(ANIO)
   if (anio && anio[1] >= hoy.slice(0, 4)) return `${anio[1]}-12-31`
@@ -198,7 +205,7 @@ export function fechaDeMeta(texto, hoy) {
 // El monto de la meta sin confundirlo con el plazo («en 6 meses», «para 2027») y leyendo «14 mil».
 export function montoDeMeta(texto) {
   const sinPlazo = texto
-    .replace(/\ben\s+\d+\s+(mes|meses|ano|anos)\b/g, ' ')
+    .replace(PLAZOS, ' ')
     .replace(new RegExp(ANIO.source, 'g'), ' ')
     .replace(/\$\s*(?=\d)/g, ' ')
   const enMiles = sinPlazo.match(/(\d[\d.,]*)\s*mil\b/)
