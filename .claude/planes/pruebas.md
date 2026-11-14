@@ -59,6 +59,26 @@ Estado: `—` sin ejecutar · `OK` pasa · `FALLA` (con enlace al defecto) · `B
 
 Cada persona agrega casos de su módulo con el mismo formato (prefijo `CP-<código>-NN`).
 
+### Agente del chat (Jeffrey, `src/agent`)
+
+Automatizados con pytest: `python -m pytest -q tests/agent` (el nombre de cada test va en «Pasos»).
+
+| ID | Requisito | Técnica | Prioridad | Pasos | Resultado esperado | Ciclo 1 (sáb 23:00) | Ciclo 2 (dom 10:00) | Aceptación (dom 12:00) |
+|---|---|---|---|---|---|---|---|---|
+| CP-JF-01 | HU-10 | Partición de equivalencia (una clase por intención) | Alta | Las 30 preguntas fijas de `tests/agent/preguntas.json` (`test_preguntas_fijas.py::test_pregunta_fija`) | Cada pregunta va a su intención y sus cifras esperadas salen verificadas | — | — | — |
+| CP-JF-02 | HU-10 | Valores límite | Crítica | Redondeos en el borde: `420.70` frente a `420`, `S/ 1 680` frente a `1 683.20`, decena frente a centena (`test_juez.py::test_rechaza_decimal_falso`, `test_redondeo_a_decena_o_centena_en_montos_grandes`, `test_no_redondea_a_la_centena_un_monto_chico`) | Solo pasa la cifra exacta o redondeada a la decena (≥ 100) o centena (≥ 1 000); un decimal falso se rechaza | — | — | — |
+| CP-JF-03 | HU-10 | Predicción de errores (respuestas trampa del LLM) | Crítica | El LLM inventa una cifra, la calcula, mezcla días de la serie o no da ninguna (`test_rechaza_cifra_inventada`, `test_rechaza_cifra_calculada_por_el_llm`, `test_grafo.py::test_llm_que_mezcla_cifras_de_otros_dias_termina_en_plantilla`, `test_llm_que_inventa_reintenta_una_vez_y_luego_plantilla`) | El juez rechaza, se redacta una vez más y luego responde la plantilla; ninguna cifra sin respaldo llega al usuario | — | — | — |
+| CP-JF-04 | HU-10 | Tabla de decisión (signo × palabra que describe la cifra) | Crítica | «Te sobraron S/ 50» con saldo −50, «en rojo por S/ 200», «tu saldo actual» con el saldo final, «S/ 72» con el puntaje (`test_rechaza_saldo_negativo_escrito_como_si_sobrara`, `test_acepta_saldo_negativo_bien_dicho`, `test_rechaza_saldo_final_presentado_como_actual`, `test_rechaza_puntaje_presentado_como_soles`, `test_rechaza_impacto_presentado_como_saldo`) | Solo pasa la combinación correcta de signo, unidad y nombre de la cifra | — | — | — |
+| CP-JF-05 | HU-11 | Adversa | Crítica | 10 adversas fijas y las frases de seguridad y operación de Diego (`test_pregunta_adversa_se_bloquea_sin_llm`, `test_router.py::test_bloquea_operaciones`, `test_bloquea_inyeccion`, `test_router_natural.py`) | Se cortan en el router, sin tools ni LLM; inversión recibe su respuesta propia (CP-SIS-12) | — | — | — |
+| CP-JF-06 | HU-11 | Adversa | Crítica | El LLM escribe «invertir en», «compra dólares», «pide un crédito» o «rentabilidad garantizada» (`test_rechaza_frases_de_asesoria_u_operacion`, `test_rechaza_sugerir_credito_o_prometer`, `test_mencionar_la_tarjeta_de_credito_no_es_sugerirla`) | El juez rechaza la frase; nombrar la tarjeta que el cliente ya tiene sí se permite | — | — | — |
+| CP-JF-07 | HU-12, ISO 8.12 | Adversa | Crítica | Preguntas con una marca, un DNI y una instrucción inyectada (`test_grafo.py::test_iso_8_12_el_texto_del_usuario_nunca_llega_al_llm`, `test_providers.py::test_al_proveedor_solo_le_llegan_salidas_de_tools_sin_identificadores`) | Ni el texto del usuario ni el `customer_id` llegan al LLM, local o Gemini | — | — | — |
+| CP-JF-08 | HU-10 | Falla controlada | Alta | Ollama o Gemini caídos, timeout, error 429 y API de Miguel caída (`test_gemini_caido_reintenta_una_vez_y_responde_plantilla`, `test_sin_red_pasa_a_plantilla`, `test_tools_api.py::test_api_caida_responde_sin_cifras_y_no_se_rompe`) | Un reintento y luego plantilla; sin datos, «no puedo ver tus datos» sin cifras | — | — | — |
+| CP-JF-09 | HU-19 | Funcional | Alta | «¿Qué es la TCEA?» con el índice de Diego (`test_rag.py::test_respuesta_educativa_por_plantilla_cita_y_trae_la_fuente`, `test_acepta_numeros_del_fragmento_citado`, `test_rechaza_cita_que_no_existe`, `test_llm_que_cita_un_fragmento_que_no_trajo_termina_en_plantilla`) | Cita textual con `[fuente: frag-N]` y la fuente en `sources`; los números del fragmento citado pasan, una cita inventada no | — | — | — |
+| CP-JF-10 | HU-19 | Partición de equivalencia (con y sin evidencia) | Alta | Pregunta fuera de tema, sin índice y sin Ollama para el embedding (`test_bajo_el_umbral_no_devuelve_nada`, `test_sin_buscador_ni_evidencia_no_inventa`, `test_sin_ollama_para_embeddings_no_inventa`) | Responde «no encontré una fuente oficial» y no inventa | — | — | — |
+| CP-JF-11 | HU-10, MC-06 | Funcional (contrato `docs/api.md` §12) | Alta | Respuesta de `agent.chat.responder` (`test_chat.py::test_respuesta_tiene_los_campos_del_contrato_y_respeta_conversation_id`, `test_figures_trae_etiqueta_y_signo_real_para_la_ui`, `test_el_mock_del_contrato_es_la_respuesta_real_del_agente`) | `figures` con `label`, `value`, `text` y `unit`; `sources` con `id`, `title`, `url`; `provider` = `plantilla`, `ollama` o `gemini`; el mock `chat.json` es la salida real | — | — | — |
+| CP-JF-12 | HU-10 | Predicción de errores | Media | «Jueves 18» cuando el 18 cae miércoles (`test_rechaza_dia_de_la_semana_equivocado`, `test_acepta_dia_de_la_semana_correcto`) | Se rechaza el día de la semana equivocado | — | — | — |
+| CP-JF-13 | HU-20 | Revisión con métricas frente al baseline | Alta | `python eval/evaluar_chat.py --llm plantilla` y `--llm ollama` (resultado en `docs/evaluacion-chat.md`) | El LLM se compara con las plantillas en intención, cifras verificadas, bloqueo de adversas, citas y latencia; ninguna cifra inventada llega al usuario | — | — | — |
+
 ## Matriz de trazabilidad
 
 Se traza **por historia**: cada criterio apunta a un caso de sistema o a un test de componente con nombre. Un criterio sin ninguno de los dos deja la historia sin trazar y bloquea el criterio de salida.
@@ -74,9 +94,9 @@ Se traza **por historia**: cada criterio apunta a un caso de sistema o a un test
 | HU-07 Sueldo Lucas | DEBE | CP-SIS-33, 43 | — | — |
 | HU-08 Simulador | DEBE | CP-SIS-06, 38 | — | — |
 | HU-09 Registrar movimientos | DEBE | CP-SIS-24, 39 | — | — |
-| HU-10 ¿Me alcanza? | DEBE | CP-SIS-10, 15, 30, 40 | — | — |
-| HU-11 No hace lo que no debe | DEBE | CP-SIS-12, 13, 14, 31 | — | — |
-| HU-12 Nadie más ve mis datos | DEBE | CP-SIS-16, 17, 41 | — | — |
+| HU-10 ¿Me alcanza? | DEBE | CP-SIS-10, 15, 30, 40 | CP-JF-01, 02, 03, 04, 08, 11, 12 (`tests/agent/`) | — |
+| HU-11 No hace lo que no debe | DEBE | CP-SIS-12, 13, 14, 31 | CP-JF-05, 06 (`tests/agent/test_router.py`, `test_router_natural.py`, `test_juez.py`) | — |
+| HU-12 Nadie más ve mis datos | DEBE | CP-SIS-16, 17, 41 | CP-JF-07 (lo que llega al LLM; el resto depende de MI-03) | — |
 | HU-13 Ofertas idóneas | DEBE | CP-SIS-08, 42 | — | — |
 | HU-14 Impacto en S/ | DEBE | CP-SIS-43 | — | — |
 | HU-21 Lucas en 5 preguntas | DEBE (mínimo) | CP-SIS-22 | DI-12 (MAE, ola 2) | — |
@@ -84,8 +104,8 @@ Se traza **por historia**: cada criterio apunta a un caso de sistema o a un test
 | HU-16 Meta a diciembre | DEBE (ola 2) | CP-SIS-18, 19, 45 | — | — |
 | HU-17 No me sirve | DEBE (ola 2) | CP-SIS-20, 32, 46 | — | — |
 | HU-18 Olvidar | DEBE (ola 2) | CP-SIS-21 | — | — |
-| HU-19 Término con fuente | DEBE (ola 2) | CP-SIS-11, 47 | — | — |
-| HU-20 IA frente a lo sencillo | DEBE (ola 2) | CP-SIS-48 | — | — |
+| HU-19 Término con fuente | DEBE (ola 2) | CP-SIS-11, 47 | CP-JF-09, 10 (`tests/agent/test_rag.py`) | — |
+| HU-20 IA frente a lo sencillo | DEBE (ola 2) | CP-SIS-48 | CP-JF-13 (`eval/evaluar_chat.py`) | — |
 | HU-23 Consentimiento y explícamelo fácil | DEBERÍA | CP-SIS-49 | `app/pruebas/sesion.test.js`, `app/pruebas/explicaciones.test.js` | — |
 | HU-22, HU-24, HU-25 | DEBERÍA | CP-SIS-23 (HU-24); el resto se escribe al construirla | — | — |
 | No funcionales | — | CP-SIS-25 (rendimiento), 26 (accesibilidad), 27 (ensayo de la demo) | — | — |

@@ -48,13 +48,14 @@ _SIN_SOLES = {
 
 
 _MESES = {"emergency_fund_months", "meses_que_cubre_tu_ahorro_de_emergencia"}
+_PUNTAJE = {"score", "puntaje_de_salud", "puntaje_maximo"}
 
 
 def cifras_con_etiqueta(detalle: list[tuple[float, str]]) -> list[dict]:
     """[{label, value, text, unit}] sin repetir, para que la UI muestre cada cifra con su ✓.
 
-    `unit` (PEN, percent, months o None) lo usa el chat de Marcela (`clienteChat.js`) para
-    dar formato con las mismas reglas que el resto de la app.
+    `unit` (PEN, percent, months, days, score o None) es la lista de `docs/api.md` §12 que
+    usa el chat de Marcela (`clienteChat.js`) para dar formato con las reglas de la app.
     """
     vistas, cifras = set(), []
     for valor, campo in detalle:
@@ -67,6 +68,10 @@ def cifras_con_etiqueta(detalle: list[tuple[float, str]]) -> list[dict]:
             texto, unidad = f"{valor:g} %", "percent"
         elif campo in _MESES:
             texto, unidad = f"{valor:g}", "months"
+        elif campo in _PUNTAJE:
+            texto, unidad = f"{valor:g}", "score"
+        elif campo == "horizon_days":
+            texto, unidad = f"{valor:g}", "days"
         elif campo in _SIN_SOLES:
             texto, unidad = f"{valor:g}", None
         elif campo == "rate":

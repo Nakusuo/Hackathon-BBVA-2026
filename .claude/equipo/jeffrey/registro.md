@@ -21,6 +21,7 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 | 2026-11-14 | Correcciones de la medición en rama nueva | `feature/ia-medicion-rtx` | Las correcciones de la medición de Michael no alcanzaron a entrar al PR #5. Van sobre `develop` y se combinan con la regla de signo de Marcela (se queda la suya, que es más completa, y se le suma «S/ 200 te faltaron»). 210 tests en verde |
 | 2026-11-14 | JF-03 Tools sobre la API de Miguel | `feature/ia-tools` | `HerramientasAPI` llama a los endpoints del contrato (`/health`, `/forecast`, `/recommendations`, `POST /simulations`, `/fx`); `simulate` devuelve también lo que pidió. Si la API cae, el agente responde «no puedo ver tus datos» sin cifras (CP-SIS-15). Probado de punta a punta contra el servidor real de `feature/backend-fastapi`: todo verificado. El juez ahora acepta montos que FastAPI manda como texto (`"rate": "3.75"`). `python -m agent --api URL`. 222 tests en verde |
 | 2026-11-14 | JF-05 RAG con el avance de Diego (y cierre de JF-04) | `feature/ia-rag` | Por pedido de Diego se reutiliza su índice (`docs/rag/indice/`, idéntico al de su rama para que no choquen) y su configuración (densa + filtro de módulo, umbral 0,70, siglas). Nueva intención «educación» con módulo por lista cerrada de temas; responde la plantilla con cita textual, fuente y aviso si la guía es de EE. UU.; sin evidencia dice «no encontré una fuente». El juez acepta citas de los fragmentos traídos y los números del fragmento citado. `/chat` llena `sources`. Probado con embeddings reales: ~2,3 s. 242 tests en verde |
+| 2026-11-14 | Pendientes de `/chat` (`docs/api.md` §12), requirements y TODOS-05 | `feature/ia-tools` | `unit: "score"` para el puntaje; `provider` queda en `plantilla` y `data/sample/mocks/chat.json` es la respuesta real del agente (con test); test explícito de ISO 8.12 (el texto del usuario nunca llega al LLM); `langgraph`, `pypdf` y `ruff` alineados con Diego; 13 casos `CP-JF` en `pruebas.md` y la columna de tests de componente de HU-10, 11, 12, 19 y 20. 354 tests en verde |
 
 ## Lo que acordamos
 
@@ -36,6 +37,7 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 | 2026-11-14 | `qwen2.5:3b` y no 1.5b | El 1.5b inventó cifras en 2 de 5 preguntas |
 | 2026-11-14 | Contrato `/chat` y `/fx` con Miguel | `docs/api.md`, secciones 11 y 12 |
 | 2026-11-14 | Usar parte del avance de Diego para ir a la par: su índice y configuración del RAG en mi agente (Diego) | Evitar hacer dos veces el mismo RAG |
+| 2026-11-14 | `provider` del contrato queda en `plantilla` (no `template`) | Es lo que usan el agente, `PROMPTS.md` y las métricas; nadie leía el mock |
 | 2026-11-14 | Las preguntas de educación las responde la plantilla con cita textual | El 3b no citó y metió cifras ajenas en 4 de 4 intentos |
 
 ## Lo que falta

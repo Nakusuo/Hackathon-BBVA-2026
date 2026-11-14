@@ -64,7 +64,7 @@ def test_salud_trae_unidad_de_meses_para_el_colchon():
     colchon = next(f for f in r["figures"] if f["label"] == "Meses que cubre tu colchón")
     assert colchon["unit"] == "months"
     puntaje = next(f for f in r["figures"] if f["label"] == "Puntaje de salud")
-    assert puntaje["unit"] is None
+    assert puntaje["unit"] == "score"
 
 
 def test_sin_conversation_id_se_crea_uno():
@@ -98,3 +98,14 @@ def test_fx_contrato_marca_el_respaldo():
         "is_stale": True,
     }
     assert fx_contrato({**grabada, "origen": "api"})["is_fallback"] is False
+
+
+def test_el_mock_del_contrato_es_la_respuesta_real_del_agente():
+    # data/sample/mocks/chat.json se generó con el agente; si el agente cambia, se regenera.
+    import json
+    from pathlib import Path
+
+    mocks = Path(__file__).resolve().parents[2] / "data" / "sample" / "mocks"
+    pedido = json.loads((mocks / "chat-request.json").read_text(encoding="utf-8"))
+    esperado = json.loads((mocks / "chat.json").read_text(encoding="utf-8"))
+    assert responder(AGENTE, pedido) == esperado
