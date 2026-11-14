@@ -210,6 +210,22 @@ test('Gastos compara cada categoría con el promedio', async ({ page }) => {
   await expect(categorias).toContainText('Como siempre')
 })
 
+test('MusiKa se pausa desde Suscripciones y queda elegida en los tips', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/gastos-detalle')
+  const suscripciones = page.getByRole('region', { name: 'Suscripciones' })
+  const pausar = suscripciones.getByRole('button', { name: 'Pausar hasta tu cobro' })
+  await expect(pausar).toHaveCount(1)
+  await expect(suscripciones.locator('.fila').filter({ hasText: 'MusiKa' })).toContainText('+S/ 22 el 29 nov')
+  await pausar.click()
+  await expect(pausar).toHaveAttribute('aria-pressed', 'true')
+
+  await page.goto('/lucas/resumen')
+  const tip = page.locator('.tip').filter({ hasText: 'Pausa MusiKa' })
+  await expect(tip.getByRole('button', { name: 'Lo hago' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(tip).toContainText('antes del 20 nov')
+})
+
 test('Qué viene cambia de periodo y muestra los pagos de diciembre', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/lucas/que-viene')

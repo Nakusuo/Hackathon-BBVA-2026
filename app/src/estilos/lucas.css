@@ -153,6 +153,14 @@
   font-weight: 700;
 }
 
+.suscripcion-accion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 8px;
+}
+
 .seguimiento {
   display: grid;
   gap: 6px;
