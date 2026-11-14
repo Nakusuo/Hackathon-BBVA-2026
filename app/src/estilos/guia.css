@@ -1,0 +1,37 @@
+/* Lo que señala la guía queda debajo de la cabecera fija de Lucas, no escondido detrás. */
+[data-guia] {
+  scroll-margin-top: 180px;
+}
+
+.guia {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.guia-foco {
+  position: fixed;
+  border-radius: var(--radio);
+  outline: 3px solid var(--foco);
+  box-shadow: 0 0 0 9999px color-mix(in srgb, var(--tinta) 60%, transparent);
+  pointer-events: none;
+}
+
+.guia-tarjeta {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(400px, calc(100% - 32px));
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.guia-botones {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

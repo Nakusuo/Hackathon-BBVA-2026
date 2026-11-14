@@ -1,0 +1,10 @@
+{
+  "customer_id": "demo-002",
+  "answers": {
+    "monthly_income": 1800.0,
+    "monthly_expenses": 1300.0,
+    "current_savings": 500.0,
+    "monthly_debt_payment": 150.0,
+    "income_stability": "stable"
+  }
+}

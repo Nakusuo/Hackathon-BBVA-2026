@@ -1,0 +1,29 @@
+# Exposicion de cada departamento a lluvias por encima de lo normal durante El Nino costero 2026-2027.
+# Fuente: Comision ENFEN, comunicados oficiales 17 a 20 de 2026 (texto en docs/fuentes/enfen), consulta 2026-11-14. El 20 es del 13 de noviembre de 2026.
+version: 1
+vigente_hasta: "2027-07-31"
+fuente:
+  comunicado_20: "El Nino costero, iniciado en marzo de 2026, se mantendria con magnitud extraordinaria hasta febrero de 2027 y se debilitaria progresivamente hasta julio de 2027. Lluvias de noviembre 2026 a enero 2027 por encima de lo normal en la costa norte, sierra norte occidental, costa central y sierra central occidental, mas intensas en la costa norte. Para el verano de 2027, por encima de lo normal a lo largo de toda la costa. Caudales superiores a lo normal en Tumbes, Chira, Piura, La Leche y Jequetepeque (Tumbes y Piura muy superiores) y, desde enero de 2027, hacia la costa centro y sur en Chillon, Rimac, Lurin, Pisco e Ica. Lluvias de normales a inferiores en la sierra sur oriental, sierra centro oriental y la Amazonia; Titicaca por debajo de lo normal."
+  comunicado_19: "Lluvias de noviembre 2026 a enero 2027 por encima de lo normal en la costa norte, sierra occidental, costa central y sierra central occidental, con episodios de moderada a fuerte intensidad. Caudales superiores a lo normal en Tumbes, Chira, Piura, La Leche y Jequetepeque, y desde diciembre hacia la costa central (cuencas de Chillon, Rimac y Lurin). Lluvias de normales a inferiores en la sierra sur oriental, sierra centro oriental y la Amazonia; mas acentuado en Titicaca."
+  comunicado_17: "Costa norte, costa central y valles de la vertiente occidental andina norte con precipitaciones superiores a lo normal; episodios de lluvia de moderada a fuerte intensidad principalmente en la costa norte."
+niveles:
+  alta:
+    departamentos: [Tumbes, Piura, Lambayeque, La Libertad]
+    estado: parcial
+    motivo: "Costa norte y cuencas Tumbes, Chira, Piura, La Leche y Jequetepeque nombradas por el ENFEN. La asignacion de La Libertad por Jequetepeque es inferencia del equipo."
+  media:
+    departamentos: [Lima, Callao, Ica]
+    estado: parcial
+    motivo: "Costa central y cuencas Chillon, Rimac, Lurin, Pisco e Ica nombradas por el ENFEN (comunicados 19 y 20)."
+  posible:
+    departamentos: [Cajamarca, Ancash, Arequipa, Moquegua, Tacna]
+    estado: supuesto
+    motivo: "Sierra norte y central occidental con lluvias sobre lo normal, y 'toda la costa' en el verano de 2027 (comunicado 20); los departamentos exactos son supuesto del equipo."
+  baja:
+    motivo: "Resto del pais: lluvias de normales a inferiores o sin senal en los comunicados (sierra sur oriental, sierra centro oriental, Amazonia, Titicaca)."
+acciones_prevencion:
+  - "Revisar el techo y las canaletas de la vivienda y reparar filtraciones antes de las lluvias."
+  - "Tener un fondo de emergencia para al menos un mes de gastos."
+  - "Guardar documentos importantes en un lugar alto y en copia digital."
+  - "Conocer la ruta de evacuacion y el punto de encuentro de la zona."
+  - "Asegurar la vivienda y los bienes de valor y revisar si hay un seguro que los cubra."

@@ -1,0 +1,51 @@
+# Preguntas escritas a mano para evaluar la recuperacion del RAG. "doc" es un fragmento del nombre del documento que debe aparecer entre los k primeros.
+# "fuera" son preguntas que el indice no puede responder: el filtro de relevancia debe rechazarlas.
+con_respuesta:
+  - {q: "¿Hasta cuando se mantendria El Nino costero segun el ENFEN?", doc: "enfen_comunicado", modulo: fenomeno_el_nino}
+  - {q: "¿Que rios tendran caudales superiores a lo normal por El Nino?", doc: "enfen_comunicado", modulo: fenomeno_el_nino}
+  - {q: "¿Habra lluvias por encima de lo normal en la costa norte este verano?", doc: "enfen_comunicado", modulo: fenomeno_el_nino}
+  - {q: "¿En que zonas se esperan lluvias inferiores a lo normal por El Nino?", doc: "enfen_comunicado", modulo: fenomeno_el_nino}
+  - {q: "¿Cual es el estado del sistema de alerta del ENFEN?", doc: "enfen_comunicado", modulo: fenomeno_el_nino}
+  - {q: "¿Que hago si me atrase en el pago de mis cuentas?", doc: "cfpb_folleto_atrasado", modulo: deudas}
+  - {q: "¿Como puedo armar un plan para pagar mis deudas?", doc: "cfpb_plan_accion_deudas", modulo: deudas}
+  - {q: "¿Como funciona el credito y que debo revisar antes de pedirlo?", doc: "cfpb_folleto_credito", modulo: deudas}
+  - {q: "¿Que informacion debe darme la entidad financiera sobre el costo de un credito?", doc: "sbs_res_3274", modulo: deudas}
+  - {q: "¿Que es la tasa de costo efectivo anual y donde debe informarse?", doc: "sbs_res_3274", modulo: deudas}
+  - {q: "¿Que derechos tengo para reclamar a mi banco?", doc: "sbs_res_3274", modulo: deudas}
+  - {q: "¿Que consentimiento necesita una empresa para usar mis datos personales?", doc: "ds_016_2024_jus", modulo: derechos}
+  - {q: "¿Puedo pedir que borren mis datos personales?", doc: "ds_016_2024_jus", modulo: derechos}
+  - {q: "¿Que es el derecho de acceso a mis datos personales?", doc: "ds_016_2024_jus", modulo: derechos}
+  - {q: "¿Como armo un presupuesto mensual?", doc: "cfpb_su_dinero", modulo: salud_financiera}
+  - {q: "¿Como fijo una meta de ahorro y la cumplo?", doc: "cfpb_su_dinero", modulo: salud_financiera}
+  - {q: "¿Como lleva un registro de mis gastos?", doc: "cfpb_su_dinero", modulo: salud_financiera}
+  - {q: "¿Cuales son las buenas practicas de proteccion al consumidor financiero?", doc: "banco_mundial", modulo: derechos}
+  - {q: "¿Que es la politica nacional de inclusion financiera del Peru?", doc: "mef_plan", modulo: contexto}
+  - {q: "¿Cuales son los objetivos del plan de inclusion financiera?", doc: "mef_plan", modulo: contexto}
+  # Calendario laboral, consumidor y tarjetas (fuentes agregadas el 2026-11-14). "doc" puede ser una lista: vale cualquiera de los documentos que de verdad responden.
+  - {q: "¿Cuando debe depositar mi empleador la CTS y que pasa si el ultimo dia es inhabil?", doc: ["tuo_cts", "mtpe_guia_cts"], modulo: laboral}
+  - {q: "¿Como se calcula la remuneracion computable de la CTS cuando recibo gratificaciones?", doc: ["tuo_cts", "mtpe_guia_cts"], modulo: laboral}
+  - {q: "¿Hasta que fecha puedo retirar el 100 % de mi CTS?", doc: "ley_32322", modulo: laboral}
+  - {q: "¿Que porcentaje de mi CTS puedo retirar libremente de forma permanente?", doc: "ley_32322", modulo: laboral}
+  - {q: "¿En que fechas se pagan las gratificaciones y a cuanto equivalen?", doc: "mtpe_guia_gratificaciones", modulo: laboral}
+  - {q: "¿Cuanto es la bonificacion extraordinaria si estoy en EsSalud y si estoy en una EPS?", doc: ["mtpe_guia_gratificaciones", "ley_30334"], modulo: laboral}
+  - {q: "¿Las gratificaciones tienen descuentos o aportes del trabajador?", doc: ["mtpe_guia_gratificaciones", "ley_30334"], modulo: laboral}
+  - {q: "¿Para que sirve la compensacion por tiempo de servicios?", doc: ["tuo_cts", "mtpe_guia_cts"], modulo: laboral}
+  - {q: "¿Que derechos tengo como consumidor frente a un proveedor que me da informacion enganosa?", doc: "ley_29571", modulo: derechos}
+  - {q: "¿Como se aplica el pago que hago a mi tarjeta de credito: primero el minimo y luego que deuda?", doc: "sbs_res_6523", modulo: deudas}
+  - {q: "¿Que debe mostrar el estado de cuenta de mi tarjeta sobre el pago minimo?", doc: "sbs_res_6523", modulo: deudas}
+  # Preguntas compuestas: cada parte vive en un documento distinto, vale cualquiera de los que responden alguna parte
+  - {q: "¿Que es la TCEA y que derechos tengo si me atraso en un pago?", doc: ["sbs_res_3274", "cfpb_folleto_atrasado", "sbs_res_6523"], modulo: deudas}
+  - {q: "¿Cuando me cae la gratificacion y cuanto es la bonificacion extraordinaria?", doc: ["mtpe_guia_gratificaciones", "ley_30334"], modulo: laboral}
+  - {q: "¿Hasta cuando puedo retirar toda mi CTS y para que sirve?", doc: ["ley_32322", "tuo_cts", "mtpe_guia_cts"], modulo: laboral}
+fuera:
+  - "¿Cual es el horario de atencion de mi banco los sabados?"
+  - "¿Cuantos goles metio Peru en la ultima eliminatoria?"
+  - "¿Como tramito mi pasaporte biometrico?"
+  - "¿Cual es la capital de Francia?"
+  - "Dame una receta de lomo saltado"
+  - "¿Quien gano el mundial de futbol de 2018?"
+  - "¿Cuanto cuesta un iPhone nuevo?"
+  - "¿Como se programa un algoritmo de ordenamiento en Python?"
+  - "¿Cual es la distancia de la Tierra a la Luna?"
+  - "Explicame la teoria de la relatividad"
+  - "¿Cuales son los mejores destinos de playa en Brasil?"

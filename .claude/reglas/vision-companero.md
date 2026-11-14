@@ -41,7 +41,7 @@ Cada idea reutiliza el motor (pronóstico, simulador, recomendador) y tiene mét
 
 | # | Idea | Qué hace | Baseline | Métrica | Prioridad |
 |---|---|---|---|---|---|
-| A1 | **Lucas en 5 preguntas** | Alguien sin historial responde 5 datos (tipo de ingreso, frecuencia, gastos fijos, deudas, colchón) y recibe su pronóstico usando lo aprendido de perfiles parecidos | Promedio de toda la población | MAE con 0, 1 y 3 meses de historia | DEBERÍA (alta) |
+| A1 | **Lucas en 5 preguntas** | Alguien sin historial responde 5 datos (tipo de ingreso, frecuencia, gastos fijos, deudas, colchón) y recibe su pronóstico usando lo aprendido de perfiles parecidos | Promedio de toda la población | MAE con 0, 1 y 3 meses de historia | DEBE versión mínima (ola 1); comparación de MAE DEBERÍA |
 | A2 | **Plata del negocio y plata de la casa** | Separa gastos del negocio y del hogar para independientes, un segmento poco atendido | Diccionario de comercios | F1 por categoría | DEBERÍA |
 
 ### Impacto (para todos)
@@ -69,7 +69,7 @@ Que la persona **actúe** según el aviso. Con datos sintéticos no se puede pro
 
 ## Cómo se ve en la demo (atractivo para el público)
 
-1. Arranca un independiente: llega un **aviso** «el jueves 27 podrías quedar en rojo».
+1. Arranca un independiente: llega un **aviso** «el jueves podrías quedar en rojo», 3 a 7 días antes.
 2. Lucas propone su **Sueldo Lucas**: «usa S/ 1 200 por quincena; aparta S/ 380 de este pago».
 3. El simulador mueve la banda y el día de riesgo desaparece.
 4. Cambio de público: alguien **sin historial** responde 5 preguntas y ve su pronóstico.

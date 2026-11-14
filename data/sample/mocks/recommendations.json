@@ -1,0 +1,58 @@
+{
+  "customer_id": "demo-001",
+  "currency": "PEN",
+  "recommendations": [
+    {
+      "id": "rec-001",
+      "action": "Reducir gastos en delivery",
+      "estimated_impact": 120.0,
+      "impact_period": "monthly",
+      "reason": "Los gastos simulados en delivery son recurrentes.",
+      "data_used": [
+        "transactions"
+      ],
+      "assumptions": [
+        "Reducir dos pedidos de S/ 15 por semana",
+        "Considerar cuatro semanas por mes"
+      ],
+      "confidence": "media",
+      "disclaimer": "Esta es una simulación. Tú decides.",
+      "impact_type": "expense_reduction"
+    },
+    {
+      "id": "rec-002",
+      "action": "Revisar suscripciones poco utilizadas",
+      "estimated_impact": 35.0,
+      "impact_period": "monthly",
+      "reason": "Se identificó una suscripción mensual de S/ 35.",
+      "data_used": [
+        "transactions",
+        "recurring_expenses"
+      ],
+      "assumptions": [
+        "Cancelar una suscripción de S/ 35 mensuales"
+      ],
+      "confidence": "media",
+      "disclaimer": "Esta es una simulación. Tú decides.",
+      "impact_type": "expense_reduction"
+    },
+    {
+      "id": "rec-003",
+      "action": "Apartar una cantidad pequeña para emergencias",
+      "estimated_impact": 80.0,
+      "impact_period": "monthly",
+      "reason": "El cliente tiene un colchón de emergencia limitado.",
+      "data_used": [
+        "financial_health",
+        "forecast"
+      ],
+      "assumptions": [
+        "Apartar S/ 20 por semana",
+        "El pronóstico permite ese ahorro sin saldo negativo"
+      ],
+      "confidence": "media",
+      "disclaimer": "Esta es una simulación. Tú decides.",
+      "impact_type": "savings_allocation"
+    }
+  ]
+}
