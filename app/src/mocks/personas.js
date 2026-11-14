@@ -12,6 +12,7 @@ const independiente = {
     horizonteDias: 30,
     saldoHoy: 1240,
     tipoIngreso: 'Recibo por honorarios',
+    ingresoMensual: 2600,
     rangoMensual6m: { minimo: 1900, maximo: 3400 },
     ingresos: [
       { id: 'cobro-principal', fecha: '2026-11-30', monto: 2000, variacion: 300, concepto: 'Cobro de tu cliente principal' },
@@ -101,6 +102,8 @@ const formal = {
     horizonteDias: 30,
     saldoHoy: 1610,
     tipoIngreso: 'Sueldo por quincena',
+    // El horizonte de 30 días solo ve una quincena; el peso de las cuotas se mide contra el mes completo.
+    ingresoMensual: 2600,
     ingresos: [
       { id: 'quincena-fin', fecha: '2026-11-30', monto: 1300, variacion: 0, concepto: 'Quincena de tu empleador' },
     ],

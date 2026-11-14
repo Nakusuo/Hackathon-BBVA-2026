@@ -272,7 +272,7 @@ test('consentimiento: «Ahora no» deja la banca sin Lucas, y aceptar vuelve a d
   await expect(permiso).toContainText('Datos sintéticos')
   await expect(permiso).toContainText('Qué uso')
   await expect(permiso).toContainText('Para qué')
-  await expect(permiso).toContainText('Más → Privacidad')
+  await expect(permiso).toContainText('Más → Preferencias → Privacidad')
   await page.getByRole('button', { name: 'Ahora no' }).click()
 
   await expect(page).toHaveURL(/banca/)

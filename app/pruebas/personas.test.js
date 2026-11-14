@@ -67,3 +67,11 @@ test('cambiar de persona cambia las cifras de la banca y de Lucas', () => {
 test('una persona desconocida cae en la de la demo y no rompe', () => {
   assert.equal(vistaCon([], 'no-existe').personaId, 'independiente')
 })
+
+test('el peso de las cuotas se mide contra el ingreso del mes, no solo contra los cobros del horizonte', () => {
+  const deudas = (id) => vistaCon([], id).salud.componentes.find((c) => c.nombre === 'Deudas')
+  // Formal: S/ 180 de cuota frente a 2 quincenas de S/ 1,300 = 7 %; el horizonte solo ve una quincena.
+  assert.match(deudas('formal').explicacion, /el 7 %/)
+  assert.equal(deudas('formal').valor, 86)
+  assert.match(deudas('independiente').explicacion, /el 8 %/)
+})

@@ -11,7 +11,7 @@ const PUNTOS = [
   {
     Icono: Database,
     titulo: 'Qué uso',
-    texto: 'Tus movimientos de cuenta y tarjeta de los últimos 12 meses, tus pagos programados y tus cobros.',
+    texto: 'Tus movimientos de cuenta y tarjeta de los últimos 12 meses, tus pagos programados, tus cobros y un perfil resumido: tipo de ingreso y nivel de deuda.',
   },
   {
     Icono: Target,
@@ -22,12 +22,12 @@ const PUNTOS = [
     Icono: ShieldCheck,
     titulo: 'Lo que no hago',
     texto:
-      'No muevo tu plata ni hago operaciones. Si el chat usa un servicio externo, solo recibe resultados de cálculos: nunca tu nombre, tu DNI ni tus movimientos.',
+      'No muevo tu plata ni hago operaciones. Si se activa Gemini de Google para el chat (viene apagado), solo recibe resultados de cálculos: nunca tu nombre, tu DNI ni lo que escribes.',
   },
   {
     Icono: ArrowCounterClockwise,
     titulo: 'Puedes retirarlo',
-    texto: 'Cuando quieras, en Más → Privacidad. Lucas se apaga y borra los tips que elegiste.',
+    texto: 'Cuando quieras, en Más → Preferencias → Privacidad. Lucas se apaga y borra los tips que elegiste.',
   },
 ]
 
@@ -90,7 +90,8 @@ export default function Consentimiento() {
         </div>
         <p className="suave permiso-pie">
           Lucas da orientación con simulaciones, no asesoría: tú decides. Alineado con la Ley 29733 de Protección de
-          Datos Personales.
+          Datos Personales: el responsable de tus datos es el banco que integre a Lucas, y ante él pides acceso,
+          rectificación, cancelación u oposición.
         </p>
       </motion.section>
     </main>

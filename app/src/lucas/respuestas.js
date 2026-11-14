@@ -125,10 +125,10 @@ function cuantoAhorrar(cliente, persona, monto) {
     }
   }
   return {
-    texto: `Cuando cobres el ${cobro}, podrías apartar ${enSoles(apartado.monto)}. Lo comprobé con tus pagos hasta el ${fechaCorta(apartado.hasta)} y no te deja en rojo. Si lo repites ${apartado.repeticiones} meses, juntarías ${enSoles(apartado.total)}.`,
+    texto: `Cuando cobres el ${cobro}, podrías apartar ${enSoles(apartado.monto)}. Lo comprobé con tus pagos hasta el ${fechaCorta(apartado.hasta)} y no te deja en rojo. Si lo repites en tus próximos ${apartado.repeticiones} cobros, juntarías ${enSoles(apartado.total)}.`,
     cifras: [
       { etiqueta: 'Apartado por cobro', valor: enSoles(apartado.monto) },
-      { etiqueta: `Si lo repites ${apartado.repeticiones} meses`, valor: enSoles(apartado.total) },
+      { etiqueta: `En tus próximos ${apartado.repeticiones} cobros`, valor: enSoles(apartado.total) },
     ],
   }
 }

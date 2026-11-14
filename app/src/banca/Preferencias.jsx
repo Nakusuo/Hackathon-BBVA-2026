@@ -32,7 +32,7 @@ function Privacidad() {
         </span>
       </div>
       <p className="suave">
-        Lucas usa tus movimientos, pagos y cobros solo para calcular tu pronóstico y sus tips. En esta demo los datos son
+        Lucas usa tus movimientos, pagos, cobros y un perfil resumido solo para calcular tu pronóstico y sus tips. En esta demo los datos son
         sintéticos.
       </p>
       {permiso && !confirmando && (

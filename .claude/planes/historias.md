@@ -264,7 +264,7 @@ Se cumplen siempre; no se repiten en cada historia.
 - Módulos: D11 · Palanca: P2 · Prioridad: DEBERÍA
 - **Dado** el primer ingreso, **entonces** ve qué datos se usan, que son sintéticos y cómo revocar.
 - **Dado** el botón «explícamelo fácil», **entonces** la pantalla se explica sin cifras nuevas.
-- *Falta caso de sistema.*
+- Casos: CP-SIS-49
 
 ### HU-24 · Ver el tipo de cambio de mis pagos en dólares
 
@@ -287,4 +287,4 @@ Se cumplen siempre; no se repiten en cada historia.
 
 ## Huecos de trazabilidad
 
-Ninguna historia DEBE sin caso. Las DEBERÍA HU-22, HU-23 y HU-25 escriben su caso al empezar a construirse.
+Ninguna historia DEBE sin caso. Las DEBERÍA HU-22 y HU-25 escriben su caso al empezar a construirse.

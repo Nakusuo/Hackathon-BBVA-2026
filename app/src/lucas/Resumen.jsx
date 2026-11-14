@@ -74,7 +74,7 @@ function Apartado({ cliente }) {
             El {fechaCorta(proximoIngreso.fecha)} podrías apartar {enSoles(apartado.monto)}
           </h3>
           <p className="suave">
-            No te deja en rojo hasta el {fechaCorta(apartado.hasta)}. En {apartado.repeticiones} meses juntarías{' '}
+            No te deja en rojo hasta el {fechaCorta(apartado.hasta)}. Si lo repites en tus próximos {apartado.repeticiones} cobros, juntarías{' '}
             {enSoles(apartado.total)}.
           </p>
         </>

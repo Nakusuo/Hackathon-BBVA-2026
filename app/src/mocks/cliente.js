@@ -25,9 +25,8 @@ function totalesPorCategoria(p) {
 // Mientras no exista el modelo de salud (DI-07), el puntaje de deudas baja el doble de rápido que sube el peso de las cuotas.
 function componentesSalud(definicion) {
   const p = definicion.persona
-  const ingresoMensual = p.ingresos.reduce((s, i) => s + i.monto, 0)
   const cuotas = p.pagos.filter((pago) => pago.cuota).reduce((s, pago) => s + pago.monto, 0)
-  const peso = Math.round((cuotas / ingresoMensual) * 100)
+  const peso = Math.round((cuotas / p.ingresoMensual) * 100)
   const [colchon, ...resto] = definicion.salud
   return [
     colchon,

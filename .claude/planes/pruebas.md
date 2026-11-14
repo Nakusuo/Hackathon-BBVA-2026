@@ -54,6 +54,7 @@ Estado: `—` sin ejecutar · `OK` pasa · `FALLA` (con enlace al defecto) · `B
 | CP-SIS-45 | HU-16 | Metamórfica | Alta | Con un *gastador*, comparar el pronóstico sin meta y con el aporte propuesto | Recibe meta con aporte, monto a diciembre y probabilidad; los días en rojo con meta no superan los de sin meta (criterio según A7) | — | — | — |
 | CP-SIS-46 | HU-17 | Funcional | Alta | En el chat: «no me hables de inversión»; abrir Qué hacer | `app.memoria` tiene `excluir_tipo_reco = inversion`; Qué hacer no muestra recos de inversión | — | — | — |
 | CP-SIS-47 | HU-19 | Funcional | Media | Chat: una pregunta cuya mejor fuente es una guía del CFPB | La respuesta muestra la fuente con la etiqueta «contexto: EE. UU.» | — | — | — |
+| CP-SIS-49 | HU-23 | Funcional y adversa (ISO 5.34, 8.10) | Media | Ingresar como independiente: «Ahora no», luego abrir Lucas desde el menú y aceptar; activar un tip y retirar el permiso en Preferencias → Privacidad; cambiar a la formal; abrir «Explícamelo fácil» en Resumen y Qué viene con las dos personas | Sin permiso la banca funciona y Lucas no muestra cifras; al aceptar vuelve a la sección pedida; el retiro pide confirmación, apaga Lucas y borra los tips; el permiso de una persona no vale para otra; la explicación incluye «peor caso» y solo repite cifras de la pantalla | — | — | — |
 | CP-SIS-48 | HU-20 | Revisión con lista de chequeo | Alta | Abrir el panel Evidencia | Cada técnica de la tabla del plan (§5) aparece con métrica, baseline e intervalo; el impacto en S/ va primero; la sección de perturbaciones muestra también los resultados que empeoran | — | — | — |
 
 Cada persona agrega casos de su módulo con el mismo formato (prefijo `CP-<código>-NN`).
@@ -85,7 +86,8 @@ Se traza **por historia**: cada criterio apunta a un caso de sistema o a un test
 | HU-18 Olvidar | DEBE (ola 2) | CP-SIS-21 | — | — |
 | HU-19 Término con fuente | DEBE (ola 2) | CP-SIS-11, 47 | — | — |
 | HU-20 IA frente a lo sencillo | DEBE (ola 2) | CP-SIS-48 | — | — |
-| HU-22 a HU-25 | DEBERÍA | CP-SIS-23 (HU-24); el resto se escribe al construirla | — | — |
+| HU-23 Consentimiento y explícamelo fácil | DEBERÍA | CP-SIS-49 | `app/pruebas/sesion.test.js`, `app/pruebas/explicaciones.test.js` | — |
+| HU-22, HU-24, HU-25 | DEBERÍA | CP-SIS-23 (HU-24); el resto se escribe al construirla | — | — |
 | No funcionales | — | CP-SIS-25 (rendimiento), 26 (accesibilidad), 27 (ensayo de la demo) | — | — |
 
 ## Resumen por ciclo

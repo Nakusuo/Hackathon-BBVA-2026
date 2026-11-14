@@ -46,7 +46,8 @@ export default function EspacioLucas() {
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' })
   }, [hash, seccion])
 
-  // Sin permiso no se calcula ni se muestra nada de Lucas: primero se pide, y luego se vuelve aquí.
+  // Sin permiso no se muestra nada de Lucas: primero se pide, y luego se vuelve aquí. Con la API, el servidor también
+  // tendrá que negar `/yo/...` sin permiso; hoy el cálculo local sigue corriendo aunque no se muestre.
   if (!permiso) return <Navigate to="/consentimiento" replace state={{ volver: pathname }} />
   if (!SECCIONES.some((s) => s.id === seccion) && !DETALLES[seccion]) return <Navigate to="/lucas/resumen" replace />
 

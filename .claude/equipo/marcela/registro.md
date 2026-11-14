@@ -28,6 +28,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Arreglo y unión de mi rama | `develop` | juez-tecnico pidió el contraste de la gráfica de Qué viene en modo oscuro: `--grafico-linea`, `--grafico-banda` y `--foco` propias por tema (línea 11.7:1, banda 3.1:1). npm test 29/29, Playwright 52/52, capturas en claro y oscuro. PR #8 unido con merge (sin borrar la rama, porque otra sesión sigue en ella). La 2.ª revisión APRUEBA, con 6 opcionales. Nakusuo/Marcela |
 | 2026-11-14 | Unión de las ramas de Diego y Miguel por pedido mío | `develop` | Diego (PR #9): se trajo develop a su rama y se resolvieron los choques (`.gitignore` con las líneas de los dos; `docs/rag/fuentes.csv` con el formato de Diego porque su RAG lo lee; la lista de Jeffrey pasó a `docs/rag/fuentes_agente.csv`). Miguel (PR #10) con el veredicto CAMBIOS pendiente. Con todo junto: 386 pruebas de Python pasan (24 se saltan porque piden Ollama o datos). Dixon no se une: su documento ya estaba igual en `develop`. Nakusuo/Marcela |
 | 2026-11-14 | Rediseño móvil (en curso) | `feature/front-rediseno-movil` | Limpieza de código sin uso. Manrope en todo el front. Diurno por defecto y «Modo oscuro» con interruptor en Más → Preferencias (variables por tema, `--azul-texto` para contraste). Lucas como mascota propia en SVG (créditos a @aokulova en Preferencias). Login con arcos azules y tarjeta de vidrio. Resumen sin sobrecarga: panel con la cifra del día, aviso de una línea, tips en carrusel con «Días en rojo 2 → 0» y «Apartas S/ 40 → S/ 150», y bloques que abren Lo aprendido, Salud y Chat. Gastos en gráfico circular (5 categorías + Otros) con detalle aparte. Pestañas con barra deslizante. 29 pruebas de funciones y 52 de Playwright en verde |
+| 2026-11-14 | Consentimiento, selector de persona y «explícamelo fácil» (HU-23, HU-03) | `feature/front-consentimiento-persona` | Consentimiento como segundo paso del ingreso, por persona, con «Ahora no» y retiro en Más → Preferencias → Privacidad (borra los tips). Persona independiente o formal con quincena en el ingreso y en Preferencias: todas las cifras salen del mismo motor y la banda del formal es angosta (S/ 110 frente a S/ 308 el día antes del cobro). «Explícamelo fácil» en Resumen y Qué viene, con «peor caso» y sin cifras nuevas. 57 unitarias y 86 e2e en claro y oscuro, a 1366×768 y 390 px. `PW_PUERTO` para no chocar con otra carpeta en el 5174. Jueces: producto CAMBIOS → resueltos; cumplimiento CUMPLE CON RIESGOS. Sin push |
 
 ## Lo que acordamos
 
@@ -95,6 +96,9 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [ ] Juntar `npm run dev` con `make run` cuando Michael tenga el Makefile (MI-01)
 - [ ] MC-02 completar Cómo estás y Qué viene con los datos del contrato
 - [ ] MC-03 Avisos (bandeja) · MC-05 Simulador · MC-06 Chat · MC-11 Metas · MC-07 Evidencia
-- [ ] Pantalla de consentimiento (datos sintéticos, qué se usa, se puede revocar)
-- [ ] Botón «explícamelo fácil» (regla de negocio de la UI)
-- [ ] Selector de persona (independiente / formal con quincena) para la demo
+- [x] Pantalla de consentimiento (datos sintéticos, qué se usa, se puede revocar). Nakusuo/Marcela
+- [x] Botón «explícamelo fácil» (regla de negocio de la UI). Nakusuo/Marcela
+- [x] Selector de persona (independiente / formal con quincena) para la demo. Nakusuo/Marcela
+- [ ] Push de `feature/front-consentimiento-persona` y PR a `develop` (falta permiso)
+- [ ] Con la API: elegir persona = `POST /sesion`; retirar permiso llama a «olvidar» y el servidor niega `/yo/...` sin permiso (juez-cumplimiento)
+- [ ] Demo: dar el permiso de las dos personas antes de empezar, para que el cambio de persona del paso 9 no pida otro paso
