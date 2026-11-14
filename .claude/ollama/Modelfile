@@ -1,0 +1,4 @@
+# Claude Code envía un prompt de sistema de ~25k tokens: con el contexto por defecto
+# de Ollama (4096) responde vacío y con 24k dice «Prompt is too long».
+FROM qwen2.5:3b
+PARAMETER num_ctx 32768

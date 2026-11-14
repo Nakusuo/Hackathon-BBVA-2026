@@ -133,6 +133,15 @@ ollama list                 # modelos descargados
 ollama pull <modelo>        # bajar el modelo acordado (ver PROMPTS.md)
 ```
 
+Claude Code con el modelo local (sin red ni cuota de Anthropic):
+
+```powershell
+.\.claude\ollama\claude-ollama.ps1                 # sesión interactiva
+.\.claude\ollama\claude-ollama.ps1 -p "pregunta"   # una sola respuesta
+```
+
+La primera vez crea `qwen2.5-claude:3b` (el mismo `qwen2.5:3b` con 32k de contexto; con menos, Claude Code no cabe). En la RTX 3050 queda ~80 % en GPU y tarda ~50 s por respuesta. Un modelo de 3B sirve para tareas de un paso (leer, crear o editar un archivo); para tareas de varios pasos usar el `claude` normal. Antes de la demo, `ollama stop qwen2.5-claude:3b` para dejar la GPU libre a Lucas.
+
 ## 10. Pedir ayuda a los agentes de Claude Code
 
 Dentro del repo, en Claude Code:
