@@ -44,7 +44,10 @@ export default function Salud({ cliente }) {
           })}
         </ul>
       </div>
-      <p className="suave">Es el promedio de las 4 partes. Sube cuando eliges tips que te sacan del rojo.</p>
+      <p className="suave">
+        Es el promedio de las 4 partes. Cálculo provisional mientras llega el modelo de salud: «Control del gasto» resta
+        30 puntos por cada día en rojo que se proyecta antes de tu cobro.
+      </p>
     </section>
   )
 }
