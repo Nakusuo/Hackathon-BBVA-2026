@@ -16,7 +16,7 @@ import psutil  # noqa: E402
 
 from src.agente_analitico.repositorio import Repositorio  # noqa: E402
 from src.comun.rutas import MODELOS  # noqa: E402
-from src.models import recomendador as REC  # noqa: E402
+from src.models import programa_puntos as PP, recomendador as REC  # noqa: E402
 
 # Supuestos del equipo, todos visibles. La entidad que integre Lucas los reemplaza por los suyos.
 SUPUESTOS_VALOR = {
@@ -54,8 +54,11 @@ def medir() -> dict:
     t = time.time()
     pron.predecir(repo.origen)
     t_pred = time.time() - t
+    t = time.time()
+    repo.serie["modelo"].predecir(repo.origen)   # los 30 dias de un cliente (saldo esperado y banda al 80 % de cada dia)
+    t_ser = time.time() - t
     parar[0] = True
-    return {"clientes": n, "carga_modelos_y_datos_s": round(carga, 1), "contexto_por_cliente_ms": round(1000 * t_ctx / n, 2), "recomendaciones_por_cliente_ms": round(1000 * t_rec / n, 2),
+    return {"clientes": n, "serie_diaria_30_dias_ms_por_cliente": round(1000 * t_ser / max(len(repo.origen), 1), 3), "carga_modelos_y_datos_s": round(carga, 1), "contexto_por_cliente_ms": round(1000 * t_ctx / n, 2), "recomendaciones_por_cliente_ms": round(1000 * t_rec / n, 2),
             "recomendaciones_por_segundo": round(n / t_rec, 0), "pico_memoria_gb": round(pico[0] / 1e9, 2), "pronostico_30d_filas": len(repo.origen), "pronostico_30d_ms_por_cliente": round(1000 * t_pred / max(len(repo.origen), 1), 3)}
 
 
@@ -84,7 +87,8 @@ def valor() -> dict:
                               "aviso": "atribuye al programa toda la comision del consumo y todo el margen de lo apartado: es un techo, no una prediccion"},
             "lectura_conservadora": {"fondeo_adicional_por_usuario_al_anio": fondeo_lucas, "costo_de_puntos_por_usuario_al_anio": t["costo_anual"],
                                      "neto_por_usuario_sin_mas_consumo": fondeo_lucas - t["costo_anual"], "mas_consumo_necesario_para_pagarse": uplift_necesario, "sensibilidad": sens,
-                                     "nota": "retencion, mora evitada y venta cruzada idonea no se valoran sin un piloto con grupo de control"}}
+                                     "nota": "retencion, mora evitada y venta cruzada idonea no se valoran sin un piloto con grupo de control"},
+            "proyeccion_a_futuro": PP.proyeccion_multianual(t, fondeo_lucas)}
 
 
 if __name__ == "__main__":

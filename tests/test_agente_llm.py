@@ -97,7 +97,7 @@ def test_la_misma_pregunta_con_los_mismos_datos_no_se_paga_dos_veces(agente):
     api = ApiFalsa()
     app, cid, responder = agente(api)
     primera, segunda = responder(app, cid, PREGUNTA), responder(app, cid, PREGUNTA)
-    assert len(api.recibido) == 1 and segunda["proveedor"] == "cache" and segunda["respuesta"] == primera["respuesta"]
+    assert len(api.recibido) == 1 and segunda["proveedor"] in ("faq", "cache") and segunda["respuesta"] == primera["respuesta"]   # primero las preguntas frecuentes (misma pregunta de concepto), luego la cache por pregunta y datos
 
 
 def test_una_respuesta_con_codigo_no_se_guarda_en_la_cache(agente):

@@ -1,0 +1,857 @@
+{
+ "procedencia": {
+  "modelo": "gemini-3.5-flash-lite",
+  "generado_el": "2026-11-14",
+  "por_clase_pedidas": 35,
+  "clases": {
+   "positivo": "alivio, un logro o una buena noticia sobre su plata (cobro, ahorro, deuda pagada, ventas buenas)",
+   "neutro": "una consulta o un pedido informativo sobre sus movimientos, fechas o metas, sin carga emocional",
+   "preocupado": "incertidumbre o inquietud por no llegar a cubrir sus gastos, sin desesperacion (todavia hay margen)",
+   "negativo": "angustia, desesperacion, enojo o una crisis de plata que ya ocurrio (sin plata, sin trabajo, servicio cortado, deudas que ahogan)"
+  },
+  "huella_de_las_instrucciones": "1ed292fcee4b",
+  "nota": "Escrito por un modelo de lenguaje sin ver el lexico, las plantillas del generador ni las frases a mano; etiquetado en una pasada ciega aparte. No es un set anotado por personas."
+ },
+ "frases": [
+  {
+   "texto": "Oe al fin pude cancelar la tarjetita que me jugaba en contra, que descanso",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Ayer la venta estuvo fuertisima, mi mercaderia se fue al toque",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Pase por fin al cajero y ya cobre mi quincena completa, ahora si a comer rico",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Mano, junte misichitas monedas y ya tengo mi chanchito pa la emergencia",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Por fin termine de pagarle al cholo prestamista, ya no me duele la cabeza",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Hoy dia si hice buena caja en el puesto, dios mediante se repite",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Me llego un dinerito extra que no esperaba, que gran bendicion",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Sali recontra libre de deudas este mes, que alegria",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Mi propina de hoy estuvo gordita, ya puedo comprar los viveres",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Ya me depositaron lo de la chamba nueva, que alivio tan grande",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Al fin logre separar mi platita pal recibo de la luz y el agua",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Vendi todititas mis empanadas antes del mediodia, que tal negocio",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Oe sobrino, cancelamos la libreta de la bodega y tamos a cero",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Guarde mi sencillo en el chanchito y ni lo voy a tocar",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Que rico se siente dormir sabiendo que no le debo un sol a nadie",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Me caida a pelo este billetito pa las zapatillas del chibolo",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Pagué la cuota de la moto y ya estoy al dia, que paz",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Hoy si nos fue bien en la constru, patron contento y pago al toque",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Junte para mi tanque de gas con pura venta del dia, bien ahi",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Ya me liberaron la CTS, ahora si respiro tranquilo",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Me pagaron la comision que me tenian retenida hace semanas",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Mi cliente me adelanto la mitad del trabajo, con eso ya salvo la semana",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Por fin salio el prestamo para arreglar mi techito, que alivio",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Cobre una chambita atrasada que daba por perdida, que sorpresa",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Mis ahorritos ya crecieron un poquito mas, pasito a pasito",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Ya cancelé la tanda que me tocaba este mes, que peso de encima",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "La feria estuvo buenaza, saque pa la comida y sobró",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Me hicieron un yapeo por un encargo y ya tengo pa el pasaje",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Pude juntar pa la matricula del colegio sin pedir prestado",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Sali de una buena chamba extra y el billete llego al instante",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Por fin compre mercaderia al contado y me desconto el proveedor",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Que alivio tan grande pagar la letra del banco a tiempo",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Vendi la antiguedad que tenia guardada y ya tengo mi colchon",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Me salio una cachuelita y con eso pago la luz",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Junte mi platita y ya nadie me cobra intereses, toy libre",
+   "clase_pedida": "positivo",
+   "clase_etiquetada_a_ciegas": "positivo",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, dime cuanto llevo gastado en pasajes esta semana que no me acuerdo bien",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Tio, una consultita, como hago para revisar mis consumos del mercado de ayer?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Oye, pasame el dato de como veo lo que me queda en la cuenta",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Disculpa, quiero saber que dia me toca pagar la luz este mes",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Jefe, una duda, donde veo la platita que junte para mi meta?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, me ayudas a chequear mis ultimos movimientos del chanchito?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Buenas tardes, como reviso el historico de mis ventas de la semana pasada?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Una consulta rapida, cual es la fecha limite para completar mi ahorro?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Amigo, dime como veo el resumen de todo lo que gaste en gasolina",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, quiero saber si ya se registro el deposito que hice ayer en la tarde",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Oye, donde se puede ver cuanto me falta para llegar a la meta de la moto?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Disculpa la molestia, como reviso el detalle de mis compras con tarjeta?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hermano, pasame la voz de como veo mis gastos hormiga del mes",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, una pregunta, que dia exacto empieza el nuevo periodo de ahorro?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Jefe, me podria indicar como ver mis ultimas recargas de celular?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Buenas, quiero chequear el estado de mi chanchito para la mercaderia",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Oye, como le hago para ver los movimientos de la quincena pasada?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Disculpa, donde sale reflejado el monto que abone para el terreno?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, una duda, como veo el reporte de mis ingresos de estos dias?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Tio, dime como puedo consultar la fecha de mi proximo aporte",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Buenas tardes, donde se revisa el detalle de los pagos que hice?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Oye, quiero saber cuanto llevo ahorrado hasta el dia de hoy",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, como hago para ver el historial de transferencias que recibi?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Disculpa, me puedes decir como consultar mis consumos en restaurantes?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hermano, donde veo la fecha en que cree mi meta de fin de año?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, una consulta, como reviso los movimientos de mi negocio en la app?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Jefe, dime donde sale el resumen de lo que gaste en herramientas",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Buenas, quiero ver el avance de mi ahorro para las vacacionecitas",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Oye, como consulto el dia exacto que hice el ultimo retiro?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Disculpa la molestia, donde veo la lista de todos mis gastos fijos?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, una preguntita, como reviso mis movimientos de ayer por la noche?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Tio, pasame el dato de como ver cuanto tengo en mi alcancia virtual",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Buenas tardes, como hago para saber la fecha de mi proximo cobro?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Oye, donde se consulta el reporte de mis entradas y salidas?",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "Hola, quiero chequear el detalle de los pagos que hice por QR",
+   "clase_pedida": "neutro",
+   "clase_etiquetada_a_ciegas": "neutro",
+   "consenso": true
+  },
+  {
+   "texto": "oy dia estuvo flojo el negocio, ojala la proxima semana repunte para pagar todo",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "creo que este mes las cuentas van a estar justas, hay que gastar menos en chusches",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "ta que la luz vino caraza, ojala alcance para la canasta basica",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "los pasajes subieron un cacho y ya siento que no rinde la semana",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "si sigue asi la venta tendre que ajustar un poco el mercadito",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "mi viejo me pidio prestado y ahora dudo si llego a fin de mes",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "creo que se viene un mes medio apretado, pero confio en que salimos",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "el gas ya va a pedir cambio y justo ando misio con el sobrante",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "las cosas estan subiendo fuerte en el mercado, habra que buscar ofertas nomas",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "tengo miedo de no juntar para la mensualidad del chibolo esta vez",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "la entrada estuvo baja hoy, ojala mañana se mueva mejor la calle",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "complicado pinta el panorama para pagar la tarjeta a tiempo",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "apenas guarde algo hoy, ojala no salga ninguna emergencia imprevista",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "la semana pasada gasté de mas y ahora estoy contando cada sencillo",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "toca estirar la plata como chicle para que aguante hasta el cobro",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "medio preocupado porque el alquiler esta cerca y falta completar",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "no hay mucha mercaderia y eso me preocupa para las cuentas",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "el taller esta lento y eso significa menos sencillo para la casa",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "hay que cocinar mas en casa porque comer afuera ya no da",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "me falta un poco para redondear el presupuesto, ire a cachuelear algo",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "los pedidos bajaron un toque y ya me pongo a pensar en los recibos",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "el agua vino mas cara y eso descuadra mis calculos",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "ojala que la propina de los clientes ayude a completar el pozo",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "andando con cuidado con los gastos porque la plata vuela rapido",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "si el clima sigue asi de malo, la venta baja y se complica",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "tengo ahi mis ahorritos pero duele tener que tocarlos",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "creo que tendre que dejar de lado algunos gustitos este mes",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "los repuestos estan carisimos y eso me asusta para el mantenimiento",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "la quincena se ve flaca y hay hartas deudas pendientes",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "hay que hacer magia con lo poco que queda en la billetera",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "un poco pensativo con el saldo del banco, esta mas bajo de lo normal",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "esperando que me paguen ese trabajito para estar mas tranquilo",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "la papa y el pollo por las nubes, asi no se puede ahorrar nada",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "veremos como nos va estos dias, ojala la suerte acompañe al bolsillo",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "no es para alarmarse pero si toca medir cada sol que sale",
+   "clase_pedida": "preocupado",
+   "clase_etiquetada_a_ciegas": "preocupado",
+   "consenso": true
+  },
+  {
+   "texto": "Oe tíos, me cortaron la luz y nadie me da chamba, ya no sé qué hacer.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Pucha madre, el chch de la renta me está botando porque llevo tres semanas sin vender nada.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Mano, toy con cero soles y mi viejita necesita sus pastillas urgente, la verdad q me quiero morir.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "La tia del mercado me gritó hoy día por la deuda, que vergüenza dios mio.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Ya fue, vendí mi herramienta de trabajo para comer hoy, mañana Dios dirá.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Se me cayó el negocio ambulante y la municipalidad me quitó toda la mercadería, toy misio total.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Csm, el banco ya me mandó carta notarial y no tengo ni para el pasaje del carro.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Ptm mi motokar se rompió y no hay plata ni para el mecánico, se acabó la plata.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "La dueña del cuarto vino a cobrar y tuve que hacerme el ausente, que desgracia.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "No hay arroz, no hay gas, mis hijos lloran de hambre y yo aquí con los bolsillos vacíos.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Que cólera con este gobierno, uno chambea duro y al final ni para el almuerzo alcanza.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Oe hermano, me robaron mi celular donde tenía mis ahorros, estoy en la calle.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Toy con una depre fuerte, las deudas me ahogan y el teléfono suena todo el día puro cobrador.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Mi cliente grande me canceló el contrato y ahora cómo pago lo que debo en la bodega.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Se me acumuló el agua, la luz y el gas, estoy fregado, no sé de dónde sacar.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Qué frustración dios, mi sueldo de profe no cubre ni la mitad de lo que debemos.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Me duele la panza de pura pura ansiedad por la tarjeta de crédito.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Al fondo hay sitio de problemas en mi casa, el alquiler subió y yo sin chamba fija.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Pucha mi bodeguita ya no vende ni un caramelo, voy a tener que cerrar y deber.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Salí a hacer taxi todo el día y apenas saqué para un pan, qué horrible está la calle.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Los intereses del gota a gota me están matando en vida, ya no duermo pensando en eso.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Me botaron del taller donde chambeaba y tengo dos hijos que mantener, auxilio.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "La luz ya fue, estoy a puras velas y con el estómago vacío.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Se rompió la tubería y el gasfitero cobra carísimo, ¿de dónde chuscha voy a sacar?",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Ya no aguanto esta presión, siento que voy a colapsar con tanta letra vencida.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Mi esposa se fue a la tienda a fiar y le negaron, qué humillación tan grande carajo.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Todo sube de precio menos mi jornal, estoy hasta el cuello y hundiéndome.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Me robaron la billetera con la raya de la semana, no tengo ni para regresar a mi jato.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Ptm mi viejo está enfermo y no hay un sol para llevarlo al posta, qué impotencia.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Se viene el fin de mes y la cuenta del banco está en negativo, maldita sea.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Tuve que empeñar mi alianza de matrimonio porque no había qué comer hoy.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "El recibo de la luz vino carísimo y la bodega está vacía, estoy con los nervios de punta.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Me duele la cabeza de tanto pensar en cómo pagar la pensión del colegio.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Qué rabia da ver que trabajas como burro y sigues más endeudado que antes.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  },
+  {
+   "texto": "Hermano, estoy seco, no hay un pisco de plata ni para viajar a buscar trabajo.",
+   "clase_pedida": "negativo",
+   "clase_etiquetada_a_ciegas": "negativo",
+   "consenso": true
+  }
+ ]
+}

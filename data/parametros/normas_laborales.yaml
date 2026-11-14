@@ -50,7 +50,15 @@ libre_disposicion:
   porcentaje_permanente: 0.5           # articulo 42 del DL 650 segun la Ley 32322
   enfermedad_terminal_o_cancer: 1.0
   dias_para_avisar_vencimiento: 60
-  nota_proyectos: "Hay proyectos de ley para ampliar el plazo, pero todavia no son ley: por ahora solo rige lo que dice la Ley 32322."
+  nota_proyectos: "Hay un proyecto de ley en el Congreso para ampliar ese plazo; se esta evaluando y todavia no es ley: por ahora solo rige lo que dice la Ley 32322."
+  proyecto_en_evaluacion:   # nota periodistica (nivel B, no entra al RAG); se cita solo como estado del tramite, nunca como regla
+    expediente: "Proposicion Legislativa 799-2026-2031-CD"
+    presentado_el: "2026-11-09"
+    plazo_propuesto: "2028-12-31"
+    porcentaje_propuesto: 1.0
+    estado: "presentado; la nota no menciona dictamen, aprobacion ni promulgacion"
+    fuente: "El Peruano, nota 308663 (9 de noviembre de 2026): https://elperuano.pe/noticia/308663--congreso-proponen-ampliar-libre-disponibilidad-de-la-cts-hasta-diciembre-de-2028"
+    verificado_el: "2026-11-14"
   evidencia:
     - {doc: "laboral/ley_32322_cts_libre_disposicion.txt", frase: "por única vez y hasta el 31 de diciembre del 2026"}
     - {doc: "laboral/ley_32322_cts_libre_disposicion.txt", frase: "disponer libremente del 100% de los depósitos"}

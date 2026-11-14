@@ -11,6 +11,7 @@ from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
+from src.agente_analitico import faq as FAQ
 from src.agente_analitico import proveedores as PV
 from src.agente_analitico import traduccion as TR
 from src.agente_analitico.juez_llm import juzgar
@@ -112,6 +113,16 @@ class Estado(TypedDict, total=False):
 
 
 FINANZAS = r"plata|dinero|gast|ahorr|cuenta|saldo|sueldo|ingres|deuda|pago|banco|cuota|meta|financ|econom|colch|cr[eé]dito|tarjeta|tasa|nivel|puntos|beneficio|ni[ñn]o|lluvia|alcanza|cobro|rojo|presupuesto|reclam|derechos|datos personales|recomend"
+
+
+def _termina_en_oracion_completa(txt: str) -> bool:
+    """Un texto del LLM debe cerrar con puntuacion final. Un corte por el tope de tokens deja la ultima palabra a medias («...que eleg»)."""
+    return txt.rstrip()[-1:] in tuple(".!?…)»\"”*")
+
+
+def _filtra_el_prompt(txt: str) -> bool:
+    """El LLM nunca debe nombrar la seccion interna del prompt (en mayusculas, como la recibe): «lo que dicen los DATOS» revela como esta armado el agente."""
+    return re.search(r"\bDATOS\b", txt) is not None
 
 
 def _ruta_cache() -> str:
@@ -473,6 +484,11 @@ def construir_grafo(repo, buscador=None, modo: str = "agente_unico", usar_juez_l
         datos_txt = _datos_texto(est)
         tono = N.ficha(est["ctx"]["nivel"])["tono"]
         pregunta = est.get("pregunta") or f"Aviso proactivo: {est.get('evento')}"
+        if cadena and est["intencion"] in FAQ.INTENCIONES and est.get("rag_estado") == "correcto":   # pregunta de concepto ya respondida y verificada: se reutiliza sin gastar tokens
+            hit = FAQ.buscar(est["pregunta"], est["ctx"]["nivel"])
+            if hit:
+                return {"borrador": hit["respuesta"], "rag": hit["fragmentos"], "proveedor": "faq", "usar_plantilla": False, "intentos": est["intentos"] + 1,
+                        "trazas": est["trazas"] + [f"redactar:faq({hit['origen']})"]}
         clave = hashlib.sha256(f"{PV.SISTEMA}|{pregunta}|{datos_txt}|{tono}|{est.get('feedback', '')}".encode()).hexdigest()[:24]
         cache = _cache_cargar()
         if clave in cache and cadena:  # misma pregunta con los mismos datos: no se vuelve a pagar
@@ -495,6 +511,10 @@ def construir_grafo(repo, buscador=None, modo: str = "agente_unico", usar_juez_l
             return {"veredicto": {"ok": True, "nota": "plantilla"}, "trazas": est["trazas"]}
         txt = est["borrador"]
         v = verificar(txt, _permitidos(est))
+        if v["ok"] and not _termina_en_oracion_completa(txt):   # un borrador cortado a la mitad se rechaza igual que uno con una cifra inventada
+            v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["respuesta cortada: no termina en una oracion completa"]}
+        if v["ok"] and _filtra_el_prompt(txt):
+            v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["filtra el nombre interno de la seccion de datos del prompt"]}
         jl = {}
         if v["ok"] and usar_juez_llm:
             jl = juzgar(_datos_texto(est), txt, usar_gemini=est.get("proveedor") == "gemini")
@@ -518,6 +538,7 @@ def construir_grafo(repo, buscador=None, modo: str = "agente_unico", usar_juez_l
         if "tu decides" not in txt.lower():
             txt += " Tu decides."
         v = verificar(txt, _permitidos(est))
+        FAQ.registrar(est, txt)   # cuenta la consulta y, si la respuesta es de concepto y reutilizable, la guarda para la proxima persona
         citas = [{"titulo": r["titulo"], "pagina": r["pagina"], "documento": r["documento"], "enlace": r.get("enlace", ""), "licencia_nivel": r["licencia_nivel"]} for r in est.get("rag", [])]
         return {"respuesta": txt, "citas": citas, "veredicto": {**est.get("veredicto", {}), "cifras_verificadas_final": v["cifras_verificadas"], "cifras_sin_respaldo_final": v["cifras_sin_respaldo"]},
                 "trazas": est["trazas"] + ["finalizar"]}

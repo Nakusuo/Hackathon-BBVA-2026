@@ -119,6 +119,8 @@ def construir_origenes(s: Series, clientes: pd.DataFrame, contexto: pd.DataFrame
             "ev_ahora": np.tile(ev_max[t], b), "ev_horizonte": np.tile(np.array([ev_max[x + 1:x + 1 + H].mean() for x in t]), b),
             "y_saldo": y_saldo.ravel(), "y_net_n": ((y_saldo - saldo_t) / escala).ravel(), "y_min": y_min.ravel(), "y_dia": y_dia.ravel(),
         }
+        for h in range(1, H + 1):   # flujo neto normalizado hasta cada dia del horizonte: objetivo de la serie diaria (src/models/serie_diaria.py)
+            cols[f"y_net_n_h{h}"] = ((fut[:, :, h - 1] - saldo_t) / escala).ravel()
         filas.append(pd.DataFrame(cols))
     df = pd.concat(filas, ignore_index=True)
     df["fecha"] = fechas[df["dia_idx"].to_numpy()]

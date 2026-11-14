@@ -1,6 +1,6 @@
 """Comparativa de modelos para la presentacion: para cada problema, los candidatos que se midieron, cual se eligio y por que, con una tabla y una grafica.
 Todo sale de models/*.json (nada escrito a mano): las cifras de la explicacion se toman de los mismos archivos que la grafica, asi no se pueden desalinear.
-Salidas: docs/comparativa_modelos.md, docs/comparativa_modelos.csv, docs/figuras/comparativa_modelos.png (panel general) y docs/figuras/comparativa/<problema>.png (una por diapositiva).
+Salidas: docs/comparativa_modelos.md, docs/comparativa_modelos.csv, docs/presentacion/modelos/comparativa_modelos.png (panel general) y docs/presentacion/modelos/<problema>.png (una por diapositiva).
 Uso: python eval/comparativa_modelos.py"""
 import csv
 import json
@@ -33,7 +33,8 @@ def _media_horizonte(PM: dict, modelo: str, clave: str) -> float:
 
 
 def problemas() -> list[dict]:
-    M, PM, C, IM, AG, R = J("metricas.json"), J("metricas_pronostico_mensual.json"), J("metricas_clasificacion.json"), J("metricas_impacto.json"), J("metricas_agente_plantillas.json"), J("metricas_rag.json")
+    M, PM, C, IM, AG, R, SD = (J("metricas.json"), J("metricas_pronostico_mensual.json"), J("metricas_clasificacion.json"), J("metricas_impacto.json"), J("metricas_agente_plantillas.json"), J("metricas_rag.json"),
+                               J("metricas_serie_diaria.json"))
     P = []
     # 1. Segmentacion -------------------------------------------------------------------------------------------------------------------------------
     seg = M["segmentacion"]
@@ -52,7 +53,7 @@ def problemas() -> list[dict]:
                   por_que=(f"Error de {lg['mae_rel_ingreso']:.2f} veces el ingreso mensual frente a {ma['mae_rel_ingreso']:.2f} del promedio móvil y {es['mae_rel_ingreso']:.2f} del perfil estructural ({1 - lg['mae_rel_ingreso'] / ma['mae_rel_ingreso']:.0%} menos error que el promedio móvil). "
                            f"La banda al 80 % cubre {lg['cobertura_80']:.3f} de los casos (objetivo 0.80) con una banda más angosta ({lg['ancho_rel']:.2f} frente a {ma['ancho_rel']:.2f}); el promedio móvil cubre solo {ma['cobertura_80']:.3f}. "
                            f"Hiperparámetros con Optuna ({M['pronostico']['optuna']['_n_trials']} pruebas) y calibración conformal por segmento, validado en 2024 a 2025 sin haberlo visto al entrenar."),
-                  limite="Está calibrado en el día 30. Una serie diaria con banda al 80 % para cada uno de los 30 días no está entrenada ni validada."))
+                  limite="Datos sintéticos, un solo corte temporal (2024 a 2025). La serie de los 30 días (problema 14) parte de este mismo modelo: su último punto es este pronóstico."))
     # 3. Alerta de saldo en rojo ---------------------------------------------------------------------------------------------------------------------
     rj = M["pronostico"]["rojo_30d_anticipacion"]
     P.append(dict(slug="03_alerta_rojo", titulo="Alerta de saldo en rojo a 30 días", metrica="PR-AUC (evento raro)", mejor="mayor", fmt=".3f", fuente="metricas.json",
@@ -104,21 +105,30 @@ def problemas() -> list[dict]:
                   limite="Los atípicos son sembrados por el generador: en datos reales la precisión será distinta y hay que revisarla con casos etiquetados por analistas."))
     # 9. Sentimiento ---------------------------------------------------------------------------------------------------------------------------------
     sn = C["sentimiento"]
-    P.append(dict(slug="10_sentimiento", titulo="Sentimiento de los mensajes", metrica="F1 en frases escritas a mano", mejor="mayor", fmt=".3f", fuente="metricas_clasificacion.json",
-                  candidatos=[("Léxico (provisional)", sn["escritas_a_mano"]["lexico_f1"]), ("TF-IDF + regresión logística", sn["escritas_a_mano"]["tfidf_lr_f1"])], elegido=0,
-                  por_que=(f"Sin ganador definitivo. El modelo entrenado aprende las plantillas del generador (F1 {sn['plantillas_futuras']['tfidf_lr_f1']:.2f} contra {sn['plantillas_futuras']['lexico_f1']:.2f} del léxico) pero cae a {sn['escritas_a_mano']['tfidf_lr_f1']:.2f} "
-                           f"con {sn['escritas_a_mano']['n']} frases escritas a mano, donde el léxico llega a {sn['escritas_a_mano']['lexico_f1']:.2f}. Se toma el léxico como referencia hasta tener un set independiente."),
-                  limite=f"Solo {sn['escritas_a_mano']['n']} frases escritas a mano: el resultado es indicativo. Además el texto no mejora el pronóstico (ver comparación de texto en docs/EVALUACION_ANALITICA.md), así que el sentimiento no está en producción."))
+    SI = J("metricas_sentimiento_independiente.json")
+    li, ti = SI["lexico"], SI["tfidf_lr"]
+    P.append(dict(slug="10_sentimiento", titulo="Sentimiento de los mensajes", metrica="F1 macro en frases de un set independiente", mejor="mayor", fmt=".3f", fuente="metricas_sentimiento_independiente.json",
+                  candidatos=[("TF-IDF + regresión logística", ti["f1_macro"]), ("Léxico de palabras", li["f1_macro"]), ("Clase más frecuente (azar)", SI["exactitud_de_la_clase_mayoritaria"])], elegido=0,
+                  nota="Con las 24 frases escritas por quien armó el léxico, el léxico llega a 0.92: ese número estaba inflado y ya no se usa.",
+                  por_que=(f"En {SI['frases_con_consenso']} frases nuevas (escritas sin ver el léxico ni las plantillas) el modelo entrenado obtiene F1 macro {ti['f1_macro']:.2f} (IC95 {ti['ic95'][0]:.2f} a {ti['ic95'][1]:.2f}) y el léxico {li['f1_macro']:.2f} "
+                           f"({li['ic95'][0]:.2f} a {li['ic95'][1]:.2f}), apenas sobre el azar ({SI['exactitud_de_la_clase_mayoritaria']:.2f}). La medición anterior con {sn['escritas_a_mano']['n']} frases a mano favorecía al léxico "
+                           f"({sn['escritas_a_mano']['lexico_f1']:.2f}) porque las escribió la misma persona que armó el léxico: no era independiente. El modelo entrenado generaliza mejor, aunque con {ti['f1_macro']:.2f} sigue siendo débil."),
+                  limite=(f"El set lo escribió y etiquetó un modelo de lenguaje en dos pasadas ciegas (coincidieron {SI['coincidencia_generacion_vs_etiquetado_ciego']:.0%}, lo que muestra que las clases son separables, no que las etiquete bien una persona). "
+                          f"El sentimiento no está en producción: el texto no mejora el pronóstico y ninguna respuesta del agente depende de él.")))
     # 10. Politica de ahorro -------------------------------------------------------------------------------------------------------------------------
     t, dl = IM["tabla"], IM["diferencias"]["lucas_vs_nada"]
-    rj_l, rj_n, rj_f, rj_a = (t[k]["dias_en_rojo_por_cliente_mes"] for k in ("lucas", "nada", "diez_fijo", "diez_fijo_ajustado"))
+    rj_l, rj_n, rj_f, rj_a, rj_la, rj_g = (t[k]["dias_en_rojo_por_cliente_mes"] for k in ("lucas", "nada", "diez_fijo", "diez_fijo_ajustado", "lucas_mas_ahorro_ajustado", "lucas_ahorro_guiado"))
+    mes = {k: t[k]["colchon_final_meses_de_ingreso"] for k in t}
+    dv = IM["diferencias"]["lucas_mas_ahorro_ajustado_vs_diez_fijo_ajustado"]
     P.append(dict(slug="11_politica_de_ahorro", titulo="Política de ahorro (reproducción contrafactual)", metrica="Días en rojo por cliente al mes", mejor="menor", fmt=".2f", fuente="metricas_impacto.json",
-                  candidatos=[("Lucas (alerta + Sueldo Lucas)", rj_l), ("No hacer nada", rj_n), ("Apartar 10 % fijo, ajustado", rj_a)], elegido=0,
-                  nota=f"No se muestra «apartar 10 % fijo sin ajustar»: {rj_f:.1f} días en rojo al mes (aparta aunque no haya saldo).",
-                  por_que=(f"Es la única política que reduce los días en rojo: {rj_l:.2f} por cliente al mes frente a {rj_n:.2f} sin hacer nada ({1 - rj_l / rj_n:.0%} menos; {dl['dias_rojo_evitados_por_cliente_mes']['media']:.2f} días evitados, IC95 {dl['dias_rojo_evitados_por_cliente_mes']['ic95'][0]:.2f} a {dl['dias_rojo_evitados_por_cliente_mes']['ic95'][1]:.2f}) "
-                           f"y deja S/ {dl['colchon_adicional_soles']['media']:.0f} más de colchón (IC95 {dl['colchon_adicional_soles']['ic95'][0]:.0f} a {dl['colchon_adicional_soles']['ic95'][1]:.0f}). "
-                           f"Apartar un 10 % fijo sin ajustar deja {rj_f:.1f} días en rojo al mes; con el ajuste solo iguala a no hacer nada ({rj_a:.2f})."),
-                  limite=f"El 10 % fijo ajustado forma más colchón ({t['diez_fijo_ajustado']['colchon_final_meses_de_ingreso']:.1f} meses frente a {t['lucas']['colchon_final_meses_de_ingreso']:.1f} de Lucas): Lucas gana en días en rojo, no en colchón. Es un hallazgo abierto. Reproducción sobre datos sintéticos."))
+                  candidatos=[("Lucas + ahorro automático", rj_la), ("Lucas solo (alerta + Sueldo Lucas)", rj_l), ("No hacer nada", rj_n), ("Apartar 10 % fijo, ajustado", rj_a)], elegido=0,
+                  nota=f"No se muestran las que aparta sin recortar el gasto: 10 % fijo {rj_f:.1f} y ahorro guiado por el excedente {rj_g:.1f} días en rojo al mes.",
+                  por_que=(f"Es la política recomendada: Lucas evita días en rojo ({rj_l:.2f} por cliente al mes frente a {rj_n:.2f} sin hacer nada, {1 - rj_l / rj_n:.0%} menos; {dl['dias_rojo_evitados_por_cliente_mes']['media']:.2f} días evitados, "
+                           f"IC95 {dl['dias_rojo_evitados_por_cliente_mes']['ic95'][0]:.2f} a {dl['dias_rojo_evitados_por_cliente_mes']['ic95'][1]:.2f}) y sumarle el ahorro automático forma colchón: {mes['lucas_mas_ahorro_ajustado']:.1f} meses de ingreso frente a {mes['diez_fijo_ajustado']:.1f} del 10 % ajustado, "
+                           f"que no evita ningún día en rojo ({rj_a:.2f}). Con el mismo supuesto, Lucas + ahorro gana en las dos cosas: S/ {dv['colchon_adicional_soles']['media']:.0f} más de colchón (IC95 {dv['colchon_adicional_soles']['ic95'][0]:.0f} a {dv['colchon_adicional_soles']['ic95'][1]:.0f}) "
+                           f"y {dv['dias_rojo_evitados_por_cliente_mes']['media']:.2f} días en rojo menos al mes. Lucas solo forma {mes['lucas']:.1f} meses de colchón porque no obliga a apartar: por eso el producto combina Sueldo Lucas con metas de ahorro."),
+                  limite=(f"Las dos políticas ajustadas suponen que el gasto baja en lo que se aparta, sin costo y con adopción total: es un techo ideal. Sin ese supuesto apartar un monto bloqueado empeora la caja ({rj_f:.1f} días en rojo el 10 % fijo, {rj_g:.1f} el ahorro guiado por el excedente), "
+                          f"y por eso Lucas usa una reserva que se puede usar y metas voluntarias. Reproducción sobre datos sintéticos.")))
     # 11. Agente -------------------------------------------------------------------------------------------------------------------------------------
     u, m = AG["agente_unico"]["resumen"], AG["multiagente"]["resumen"]
     P.append(dict(slug="12_agente", titulo="Arquitectura del agente", metrica="Ruteo correcto", mejor="mayor", fmt=".3f", fuente="metricas_agente_plantillas.json",
@@ -136,6 +146,16 @@ def problemas() -> list[dict]:
                   por_que=(f"Con filtro de módulo, denso e híbrido empatan en recall@4 ({rc[ks[0][0]]['recall@4']:.3f}); partir las preguntas y MMR no mejoraron nada medible. Se mantiene el denso porque el filtro de relevancia (umbral 0.70) se calibra sobre su similitud: "
                            f"acepta {round(cu['con_respuesta_aceptadas'] * fr['n_con_respuesta'])} de {fr['n_con_respuesta']} preguntas con respuesta y rechaza {round(cu['fuera_rechazadas'] * fr['n_fuera'])} de {fr['n_fuera']} ajenas (AUC {fr['auc']:.3f})."),
                   limite=f"Con {rc[ks[0][0]]['n']} preguntas, una sola mueve el recall {1 / rc[ks[0][0]]['n']:.3f}: diferencias de una pregunta no son concluyentes. La expansión de siglas se motivó por un fallo de esta misma evaluación, así que ese caso no es prueba independiente."))
+    # 14. Serie diaria del pronostico ----------------------------------------------------------------------------------------------------------------
+    sdr, rec, mv3 = SD["serie_diaria"], SD["linea_base_recta_al_dia_30"], SD["linea_base_promedio_movil_3_meses"]
+    inter, anc = SD["en_dias_intermedios_no_entrenados"], SD["en_horizontes_entrenados"]
+    P.append(dict(slug="14_serie_diaria", titulo="Pronóstico día por día (30 días con banda al 80 %)", metrica="Error medio / ingreso mensual (promedio de los 30 días)", mejor="menor", fmt=".2f", fuente="metricas_serie_diaria.json",
+                  candidatos=[("LightGBM por horizontes + banda por día", sdr["mae_rel_medio"]), ("Recta al día 30", rec["mae_rel_medio"]), ("Promedio móvil de 3 meses", mv3["mae_rel_medio"])], elegido=0,
+                  por_que=(f"Error de {sdr['mae_rel_medio']:.2f} veces el ingreso mensual frente a {rec['mae_rel_medio']:.2f} de la recta hacia el día 30 y {mv3['mae_rel_medio']:.2f} del promedio móvil ({1 - sdr['mae_rel_medio'] / mv3['mae_rel_medio']:.0%} menos que el promedio móvil). "
+                           f"Entrena los mismos cuantiles en los días 5, 10, 15, 20 y 25, interpola y recalibra la banda día por día con datos que no usó para entrenar: la cobertura de la banda al 80 % se mide en cada uno de los 30 días y queda entre {sdr['cobertura_minima']:.3f} y {sdr['cobertura_maxima']:.3f} "
+                           f"(media {sdr['cobertura_media']:.3f}), mientras que la recta cubre {rec['cobertura_media']:.3f} y el promedio móvil {mv3['cobertura_media']:.3f}. El día 30 es exactamente el pronóstico validado del problema 2."),
+                  limite=(f"Los días entre horizontes se interpolan, no se entrenan: se verificaron igual (cobertura {inter['cobertura_media']:.3f} en los días intermedios frente a {anc['cobertura_media']:.3f} en los entrenados). Un solo corte temporal, datos sintéticos; "
+                          f"cobertura por tipo de trabajo entre 0.78 y 0.84 en los días 7, 15 y 30 (ver models/metricas_serie_diaria.json).")))
     return P
 
 
@@ -175,7 +195,7 @@ def dibujar(ax, p: dict, tam: int = 10, completo: bool = False) -> None:
 
 
 def guardar_figuras(P: list[dict]) -> None:
-    os.makedirs(os.path.join(DOCS, "figuras", "comparativa"), exist_ok=True)
+    os.makedirs(os.path.join(DOCS, "presentacion", "modelos"), exist_ok=True)
     plt.rcParams["hatch.linewidth"] = 1.4
     for p in P:   # una imagen por problema, para pegar en una diapositiva
         fig, ax = plt.subplots(figsize=(9.2, 4.9), dpi=200, facecolor=SUPERFICIE)
@@ -184,7 +204,7 @@ def guardar_figuras(P: list[dict]) -> None:
         fig.subplots_adjust(left=0.30, right=0.97, top=0.78, bottom=0.2 if not p.get("nota") else 0.27)
         if p.get("nota"):
             fig.text(0.01, 0.075, "\n".join(textwrap.wrap(p["nota"], 120)), fontsize=9, color=TINTA_2)
-        fig.savefig(os.path.join(DOCS, "figuras", "comparativa", f"{p['slug']}.png"), facecolor=SUPERFICIE)
+        fig.savefig(os.path.join(DOCS, "presentacion", "modelos", f"{p['slug']}.png"), facecolor=SUPERFICIE)
         plt.close(fig)
     columnas = 4
     filas = int(np.ceil((len(P) + 1) / columnas))
@@ -203,7 +223,7 @@ def guardar_figuras(P: list[dict]) -> None:
     for ax in axs[len(P) + 1:]:
         ax.axis("off")
     fig.subplots_adjust(left=0.1, right=0.985, top=0.95, bottom=0.03, hspace=0.62, wspace=0.85)
-    fig.savefig(os.path.join(DOCS, "figuras", "comparativa_modelos.png"), facecolor=SUPERFICIE)
+    fig.savefig(os.path.join(DOCS, "presentacion", "modelos", "comparativa_modelos.png"), facecolor=SUPERFICIE)
     plt.close(fig)
 
 
@@ -215,8 +235,8 @@ def escribir_documentos(P: list[dict]) -> None:
     texto = ("# Comparativa de modelos: qué se midió, qué se eligió y por qué\n\n"
              "Generado por `eval/comparativa_modelos.py` solo a partir de `models/*.json`. Datos sintéticos con semilla fija. En negrita, el modelo elegido en cada problema. "
              "Cada fila trae también el límite de la comparación: lo que no demuestra.\n\n"
-             "![Comparativa de modelos](figuras/comparativa_modelos.png)\n\n"
-             "Una imagen por problema para las diapositivas: `docs/figuras/comparativa/`.\n\n"
+             "![Comparativa de modelos](presentacion/modelos/comparativa_modelos.png)\n\n"
+             "Una imagen por problema para las diapositivas: `docs/presentacion/modelos/`.\n\n"
              "| Problema | Métrica | Resultados (elegido en negrita) | Elegido | Por qué se eligió | Límite |\n|---|---|---|---|---|---|\n" + "\n".join(filas) + "\n"
              f"\n<!-- huella_metricas: {huella(METRICAS)} (la puerta de calidad compara esta huella con la de las metricas actuales) -->\n")
     with open(os.path.join(DOCS, "comparativa_modelos.md"), "w", encoding="utf-8") as f:
@@ -234,7 +254,7 @@ def main() -> None:
     P = problemas()
     guardar_figuras(P)
     escribir_documentos(P)
-    print(f"{len(P)} problemas comparados -> docs/comparativa_modelos.md, .csv y docs/figuras/")
+    print(f"{len(P)} problemas comparados -> docs/comparativa_modelos.md, .csv y docs/presentacion/")
     for p in P:
         print(f"  {p['titulo']}: elegido {p['candidatos'][p['elegido']][0]} ({p['candidatos'][p['elegido']][1]:{p['fmt']}}) de {len(p['candidatos'])}")
 

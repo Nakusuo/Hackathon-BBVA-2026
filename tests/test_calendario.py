@@ -104,7 +104,10 @@ def test_la_alerta_de_vencimiento_solo_salta_dentro_de_los_60_dias():
 
 def test_un_proyecto_de_ley_no_cambia_la_regla_vigente():
     ld = CL.libre_disposicion(date(2027, 3, 1))   # aunque exista un proyecto para ampliar el plazo, la ley vigente dice 50 %
-    assert ld["porcentaje_libre_hoy"] == 0.5 and "todavia no son ley" in ld["nota_proyectos"]
+    assert ld["porcentaje_libre_hoy"] == 0.5 and "todavia no es ley" in ld["nota_proyectos"] and "se esta evaluando" in ld["nota_proyectos"]
+    pr = ld["proyecto_en_evaluacion"]   # el proyecto se cita como estado del tramite: nunca cambia el porcentaje ni la fecha vigentes
+    assert pr["plazo_propuesto"] == "2028-12-31" and pr["verificado_el"] and "elperuano.pe/noticia/308663" in pr["fuente"]
+    assert ld["vigente_hasta"] == "2026-12-31" and CL.libre_disposicion(date(2026, 12, 31))["porcentaje_libre_hoy"] == 1.0
 
 
 def test_las_reglas_piden_revision_pasado_el_plazo():

@@ -15,7 +15,14 @@ SUPUESTOS = {
     "umbral_alerta_p_rojo": 0.25,
     "asignacion_sueldo_lucas": 0.95,            # parte del ingreso medio de 90 dias que Lucas libera por dia
     "umbral_irregular_cv": 0.40,                # desde aqui se recomienda Sueldo Lucas
+    "dias_de_gasto_que_deben_quedar_en_caja_para_apartar": 7,   # ahorro guiado: solo aparta si despues de apartar quedan al menos estos dias de gasto en la caja
+    "fraccion_del_excedente_que_se_aparta": 0.5,                # ahorro guiado: del excedente estructural (neto medio de 90 dias) se aparta esta fraccion cada dia
 }
+# Politicas que combinan lo de Lucas con apartar el 10 % automaticamente (la misma fraccion que el baseline "diez_fijo").
+# "lucas_mas_ahorro_ajustado": mismo supuesto ideal que el baseline ajustado (el gasto baja en el monto apartado, adopcion total): comparacion de igual a igual.
+# "lucas_ahorro_guiado": supuesto realista: el apartado sale de la caja SIN recortar el gasto y queda bloqueado, pero se aparta del EXCEDENTE ESTRUCTURAL (la mitad del neto medio de
+# los ultimos 90 dias, solo si es positivo), el dia en que el pronostico no avisa de riesgo y la caja conserva N dias de gasto (el ahorro lo gobierna el excedente, no una fraccion ciega del ingreso).
+POLITICAS_LUCAS = ("lucas", "lucas_mas_ahorro_ajustado", "lucas_ahorro_guiado")
 
 
 def flujos_especiales(tx: pd.DataFrame, s: Series) -> tuple[np.ndarray, np.ndarray]:
@@ -39,15 +46,18 @@ def _correr(s: Series, d0: int, d1: int, politica: str, acepta: np.ndarray, horm
     B = len(s.ids)
     ing, gas = s.ing.astype(float), s.gas.astype(float)
     cs = np.concatenate([np.zeros((B, 1)), np.cumsum(ing, 1)], 1)
+    cg = np.concatenate([np.zeros((B, 1)), np.cumsum(gas, 1)], 1)   # gasto acumulado (ya con los recortes de la politica): da el gasto diario medio de los ultimos 30 dias
     saldo = s.saldo[:, d0 - 1].astype(float).copy()
     reserva = np.zeros(B)
     dias_rojo = np.zeros(B)
     costo = np.zeros(B)
-    if politica == "lucas":
+    ahorro = np.zeros(B)   # apartado automatico de las politicas compuestas
+    es_lucas = politica in POLITICAS_LUCAS
+    if es_lucas:
         gas = gas - acepta[:, 0:1] * sdup - acepta[:, 1:2] * sup["recorte_hormiga"] * hormiga
         if alertas is not None:  # aviso anticipado del pronostico: durante la alerta se recorta el gasto hormiga restante
             gas = gas - acepta[:, 3:4] * alertas * sup["recorte_hormiga_en_alerta"] * hormiga
-    sueldo = (politica == "lucas") & irregular
+    sueldo = es_lucas & irregular
     for d in range(d0, d1 + 1):
         entra = ing[:, d]
         gasto_dia = gas[:, d]
@@ -56,7 +66,18 @@ def _correr(s: Series, d0: int, d1: int, politica: str, acepta: np.ndarray, horm
             if politica == "diez_fijo_ajustado":  # aparta el 10 % y recorta del gasto ese mismo monto: la caja diaria no cambia
                 gasto_dia = gasto_dia - sup["fraccion_apartada_10_fijo"] * entra
             entra = (1 - sup["fraccion_apartada_10_fijo"]) * entra
-        elif politica == "lucas":
+        elif es_lucas:
+            if politica == "lucas_mas_ahorro_ajustado":   # se aparta y el gasto baja en lo mismo: la caja diaria no cambia
+                ahorro += sup["fraccion_apartada_10_fijo"] * entra
+            elif politica == "lucas_ahorro_guiado":   # se aparta de la caja sin recortar el gasto, solo si no hay alerta y el dia cierra sin rojo
+                excedente = np.maximum(((cs[:, d] - cg[:, d]) - (cs[:, max(d - 90, 0)] - cg[:, max(d - 90, 0)])) / 90, 0.0)   # neto medio diario de los ultimos 90 dias, si es positivo
+                aparta = sup["fraccion_del_excedente_que_se_aparta"] * excedente
+                sin_alerta = (alertas[:, d] == 0) if alertas is not None else np.ones(B, bool)
+                gasto_medio = (cg[:, d] - cg[:, max(d - 30, 0)]) / 30
+                holgura = sup["dias_de_gasto_que_deben_quedar_en_caja_para_apartar"] * gasto_medio
+                aparta = np.where(sin_alerta & (saldo + entra - gasto_dia - aparta >= holgura), aparta, 0.0)
+                ahorro += aparta
+                entra = entra - aparta
             activo = sueldo & (acepta[:, 2] == 1)
             reserva += np.where(activo, entra, 0.0)
             media90 = (cs[:, d] - cs[:, max(d - 90, 0)]) / 90
@@ -64,13 +85,13 @@ def _correr(s: Series, d0: int, d1: int, politica: str, acepta: np.ndarray, horm
             reserva -= libera
             entra = np.where(activo, libera, entra)
         saldo = saldo + entra - gasto_dia
-        if politica == "lucas":  # el apartado de Sueldo Lucas se puede usar para cubrir un hueco; el 10 % fijo del baseline queda bloqueado
+        if es_lucas:  # el apartado de Sueldo Lucas se puede usar para cubrir un hueco; el 10 % fijo del baseline queda bloqueado
             cubre = np.minimum(reserva, np.maximum(-saldo, 0.0))
             saldo += cubre
             reserva -= cubre
         dias_rojo += saldo < 0
         costo += np.maximum(-saldo, 0.0) * sup["tasa_mensual_por_cubrir_el_hueco"] / 30
-    return {"dias_rojo": dias_rojo, "colchon": np.maximum(saldo, 0.0) + reserva, "costo_hueco": costo}
+    return {"dias_rojo": dias_rojo, "colchon": np.maximum(saldo, 0.0) + reserva + ahorro, "costo_hueco": costo}
 
 
 def simular(s: Series, clientes: pd.DataFrame, features: pd.DataFrame, tx: pd.DataFrame, desde: str, hasta: str, semilla: int = 0, repeticiones: int = 5,
@@ -93,10 +114,17 @@ def simular(s: Series, clientes: pd.DataFrame, features: pd.DataFrame, tx: pd.Da
             alertas[c, t + 1:t + 1 + sup["dias_de_alerta"]] = 1.0
     rng = np.random.default_rng(semilla)
     res = {}
-    for pol in ("nada", "diez_fijo", "diez_fijo_ajustado", "lucas"):
+    sorteos_lucas = []
+    for pol in ("nada", "diez_fijo", "diez_fijo_ajustado", "lucas") + POLITICAS_LUCAS[1:]:
         reps = []
-        for r in range(repeticiones if pol == "lucas" else 1):
-            acepta = (rng.random((len(s.ids), 4)) < p_acepta[:, None]).astype(int)
+        for r in range(repeticiones if pol in POLITICAS_LUCAS else 1):
+            if pol == "lucas":
+                acepta = (rng.random((len(s.ids), 4)) < p_acepta[:, None]).astype(int)
+                sorteos_lucas.append(acepta)
+            elif pol in POLITICAS_LUCAS:   # los mismos sorteos que "lucas": la unica diferencia es el ahorro automatico
+                acepta = sorteos_lucas[r]
+            else:
+                acepta = (rng.random((len(s.ids), 4)) < p_acepta[:, None]).astype(int)
             reps.append(_correr(s, d0, d1, pol, acepta, hormiga, sdup, irregular, sup, alertas))
         res[pol] = {k: np.mean([x[k] for x in reps], axis=0) for k in reps[0]}
     def pm(x, mask=None):
@@ -109,7 +137,7 @@ def simular(s: Series, clientes: pd.DataFrame, features: pd.DataFrame, tx: pd.Da
     rng2 = np.random.default_rng(semilla + 1)
     n = len(s.ids)
     dif = {}
-    for pol in ("diez_fijo", "diez_fijo_ajustado", "lucas"):
+    for pol in ("diez_fijo", "diez_fijo_ajustado") + POLITICAS_LUCAS:
         for ref in ("nada", "diez_fijo_ajustado"):
             if pol == ref:
                 continue

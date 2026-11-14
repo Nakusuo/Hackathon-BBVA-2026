@@ -2,6 +2,7 @@
 Uso: python eval/generar_docs.py"""
 import csv
 import json
+import re
 import os
 import subprocess
 import sys
@@ -45,6 +46,170 @@ QA = cargar("metricas_qa_agente.json")
 GATE = cargar("puerta_de_calidad.json")
 ESC = cargar("metricas_escala.json")
 VAL = cargar("metricas_valor.json")
+SDI = cargar("metricas_serie_diaria.json")
+SIN = cargar("metricas_sentimiento_independiente.json")
+QUE = cargar("metricas_quechua.json")
+OSE = cargar("metricas_otra_semilla.json")
+RV = cargar("metricas_rag_validacion.json")
+
+
+def seccion_serie_diaria() -> str:
+    if not SDI:
+        return ""
+    a, r, m, i, an = SDI["serie_diaria"], SDI["linea_base_recta_al_dia_30"], SDI["linea_base_promedio_movil_3_meses"], SDI["en_dias_intermedios_no_entrenados"], SDI["en_horizontes_entrenados"]
+    t = {"serie diaria (elegida)": a, "recta al dia 30 (baseline)": r, "promedio movil de 3 meses (baseline)": m}
+    filas = "\n".join(f"| {k} | {v['cobertura_media']:.3f} | {v['cobertura_minima']:.3f} | {v['cobertura_maxima']:.3f} | {v['mae_rel_medio']:.3f} | {v['ancho_rel_medio']:.2f} |" for k, v in t.items())
+    tipos = "\n".join(f"| {k} | {v['n']:,} | " + " | ".join(f"{v[d]['cobertura_80']:.3f}" for d in ("dia_7", "dia_15", "dia_30")) + " |" for k, v in SDI["por_tipo_de_trabajo"].items())
+    c = SDI["ultimo_punto_coincide_con_el_modelo_de_30_dias"]
+    return (f"\n### Serie diaria: los 30 dias con banda al 80 % (lo que pide el contrato de la API)\n\n"
+            f"Se entrenan los mismos cuantiles (10, 50 y 90) en los horizontes {SDI['horizontes_entrenados']} dias, se interpola entre ellos y la banda se **recalibra dia por dia** con datos de calibracion que el modelo no uso para entrenar (conformal por dia). "
+            f"El dia 0 es el saldo de hoy (sin incertidumbre) y el dia 30 es exactamente el pronostico validado: el esperado es identico, y la banda solo se ensancha donde los cuantiles se cruzaban ({c['fraccion_con_banda_corregida']:.2%} de los casos), nunca se estrecha. "
+            f"Validacion con el mismo corte temporal con embargo (prueba 2024 a 2025, {SDI['origenes']['prueba']:,} origenes que el modelo no vio).\n\n"
+            "| Metodo | Cobertura media | Minima | Maxima | Error medio / ingreso | Ancho relativo |\n|---|---|---|---|---|---|\n" + filas + "\n\n"
+            f"Los dias entre horizontes no se entrenan, se interpolan, y aun asi se miden: cobertura {i['cobertura_media']:.3f} en los dias intermedios y {an['cobertura_media']:.3f} en los entrenados.\n\n"
+            "Cobertura por tipo de trabajo (equidad):\n\n| Tipo de trabajo | n | Dia 7 | Dia 15 | Dia 30 |\n|---|---|---|---|---|\n" + tipos + "\n\n"
+            "Se sirve con `src/agente_analitico/contrato.py` (`pronostico_contrato(repo, customer_id, dias=30)`), con la forma del endpoint `GET /api/v1/customers/{customer_id}/forecast`: "
+            "`customer_id`, `currency`, `horizon_days`, `confidence_level` (0.8), `forecast[]` (`date`, `predicted_balance`, `lower_bound`, `upper_bound`), `first_risk_date`, `model`, `data_as_of`, `risk_probability` y `synthetic_data`. "
+            "`first_risk_date` solo aparece si la probabilidad de quedar en rojo es de al menos 15 %.\n")
+
+
+def seccion_otra_semilla() -> str:
+    if not OSE:
+        return ""
+    s_, e = OSE["saldo_30d_en_la_muestra_nueva"], OSE["saldo_30d_en_la_muestra_de_entrenamiento"]
+    ro, re_ = OSE["rojo_30d_en_la_muestra_nueva"], OSE["rojo_30d_en_la_muestra_de_entrenamiento"]
+    sd = OSE["serie_diaria_en_la_muestra_nueva"]
+    sg = OSE["segmentacion"]
+    return (f"\n### Prueba con otra muestra del generador (semilla {OSE['semilla_de_la_muestra_nueva']}, sin reentrenar)\n\n"
+            f"Los modelos se entrenaron con la semilla {OSE['semilla_de_entrenamiento']}. Se generaron {OSE['clientes']} clientes nuevos con otra semilla (mismos parametros, otro azar) y se evaluaron **sin reentrenar** en la ventana 2024 a 2025 ({OSE['origenes_de_prueba']:,} origenes). "
+            "Mide si el pronostico solo aprendio el ruido de una muestra: no demuestra nada sobre datos reales, porque la muestra nueva comparte los supuestos del generador.\n\n"
+            "| Medida | Muestra de entrenamiento | Muestra nueva |\n|---|---|---|\n"
+            f"| Cobertura de la banda al 80 % a 30 dias | {e['cobertura_80']:.3f} | {s_['lightgbm']['cobertura_80']:.3f} |\n"
+            f"| Error a 30 dias / ingreso mensual | {e['mae_rel_ingreso']:.3f} | {s_['lightgbm']['mae_rel_ingreso']:.3f} (promedio movil {s_['ma3']['mae_rel_ingreso']:.3f}, perfil estructural {s_['perfil_estructural']['mae_rel_ingreso']:.3f}) |\n"
+            f"| PR-AUC del rojo a 30 dias | {re_['pr_auc']:.3f} | {ro['pr_auc']:.3f} (tasa de positivos {ro['tasa_positivos']:.3f}) |\n"
+            f"| Serie diaria: cobertura por dia | {SDI['serie_diaria']['cobertura_minima']:.3f} a {SDI['serie_diaria']['cobertura_maxima']:.3f} | {sd['cobertura_minima']:.3f} a {sd['cobertura_maxima']:.3f} |\n"
+            f"| Segmentacion: ARI con los arquetipos | {sg['ari_en_la_muestra_de_entrenamiento']:.3f} | {sg['ari_con_los_arquetipos_en_la_muestra_nueva']:.3f} |\n\n"
+            "Lectura: gana a los dos baselines tambien en una muestra nueva; la cobertura baja unos tres puntos (la calibracion conformal se hizo con la muestra de entrenamiento), sigue cerca del 80 %. "
+            "El PR-AUC del rojo no es comparable punto a punto porque cambia la tasa de positivos de una muestra a otra.\n") if SDI else ""
+
+
+def aviso_sentimiento() -> str:
+    if not SIN:
+        return "Aviso: sobre plantillas el modelo es trivial; sobre las 24 frases escritas a mano baja.\n"
+    return ("Aviso: sobre plantillas el modelo es trivial. Con las 24 frases escritas a mano el lexico parecia mejor (0.92), pero las escribio quien armo el lexico: no era una prueba independiente. "
+            f"**Set independiente**: {SIN['frases_generadas']} frases de trabajadores peruanos que Gemini escribio sin ver el lexico ni las plantillas, mas una segunda pasada ciega que las etiqueto sin ver la clase pedida "
+            f"(coincidencia {SIN['coincidencia_generacion_vs_etiquetado_ciego']:.0%}; guardadas en `data/evaluacion/sentimiento_independiente.json` con su procedencia). F1 macro: TF-IDF + regresion logistica {SIN['tfidf_lr']['f1_macro']:.2f} "
+            f"(IC95 {SIN['tfidf_lr']['ic95'][0]:.2f} a {SIN['tfidf_lr']['ic95'][1]:.2f}), lexico {SIN['lexico']['f1_macro']:.2f} ({SIN['lexico']['ic95'][0]:.2f} a {SIN['lexico']['ic95'][1]:.2f}), clase mas frecuente {SIN['exactitud_de_la_clase_mayoritaria']:.2f}. "
+            "Conclusion: el modelo entrenado generaliza mejor que el lexico, y el lexico estaba inflado. Ambos son debiles y el sentimiento no esta en produccion (el texto no mejora el pronostico). "
+            "Limite: el set lo escribio un modelo de lenguaje, no personas.\n")
+
+
+def seccion_proyeccion_puntos() -> str:
+    if not VAL or "proyeccion_a_futuro" not in VAL:
+        return ""
+    pf = VAL["proyeccion_a_futuro"]
+    g = pf["supuestos_generales"]
+    anos = range(1, g["anos"] + 1)
+    nombres = {"solo_lo_medido": "Solo lo medido (sin efecto de conducta)", "prudente": "Prudente", "base": "Base", "optimista": "Optimista"}
+    filas = "\n".join(f"| {nombres[k]} | {e['supuestos']['consumo_mas']:.0%} | {e['supuestos']['ahorro_mas']:.0%} | {e['supuestos']['abandono_menos']:.0%} | " + " | ".join(f"{x['neto_acumulado']:,.1f}" for x in e["por_anio"]) + f" | {e['se_paga_en_el_anio'] or 'no se paga'} |"
+                      for k, e in pf["escenarios"].items())
+    return (f"\n**Ingresos a futuro del programa de puntos (proyeccion a {g['anos']} anios, por usuario que entra).** Pregunta: si el programa no se paga el primer anio, ¿genera ingresos despues? "
+            "Cada anio suma el fondeo medido del colchon de Lucas, el margen del consumo adicional con tarjeta o QR, el margen del ahorro adicional (el saldo apartado **se acumula**: saldo final = saldo inicial x (1 - retiro) + aporte del anio) "
+            f"y el valor de los usuarios que el programa retiene de mas, y resta el costo de los puntos. Supuestos generales del equipo: abandono anual base {g['abandono_anual_base']:.0%}, retiro anual de lo apartado {g['retiro_anual_de_lo_apartado']:.0%}. "
+            "**Los porcentajes de conducta son supuestos del equipo, sin evidencia publica ni piloto**: sirven para ver cuando se paga y que debe cumplirse, no para prometer un resultado.\n\n"
+            "| Escenario | Mas consumo | Mas ahorro | Menos abandono | " + " | ".join(f"Neto acumulado anio {a} (S/)" for a in anos) + " | Se paga en el anio |\n|---|---|---|---|" + "---|" * (g["anos"] + 1) + "\n" + filas + "\n\n"
+            f"El primer anio de «solo lo medido» es exactamente la lectura conservadora de arriba (S/ {pf['escenarios']['solo_lo_medido']['por_anio'][0]['neto_por_usuario_que_entra']:.2f}): la proyeccion arranca donde termina el calculo de un anio. "
+            f"Sin ningun efecto de conducta nunca se paga; para pagarse en el primer anio basta **{pf['ahorro_adicional_necesario_para_pagarse_en_el_anio_1']:.1%} mas de ahorro apartado** o {pf['consumo_adicional_necesario_para_pagarse_en_n_anios']['1']:.1%} mas de consumo elegible. "
+            "Lo que decide el piloto con grupo de control es si el programa de puntos causa ese comportamiento adicional.\n")
+
+
+def seccion_traduccion() -> str:
+    L = ["Que idioma entiende el agente y que tan bien lo hace, con la evidencia objetiva que se pudo reunir sin un hablante nativo y sin clave de Google Cloud.\n"]
+    if QUE:
+        e, q = QUE["es_a_qu"], QUE["qu_a_es"]
+        L.append(f"### Quechua frente a un benchmark publico (FLORES-200, quechua de Ayacucho)\n\n"
+                 f"Fuente: {QUE['fuente']}. Se tomaron {QUE['n']} oraciones al azar (semilla {QUE['semilla']}) y se tradujeron con el mismo flujo del agente (cifras y nombres protegidos, Gemini). Metrica: chrF (a nivel de caracteres, apropiada para lenguas con mucha morfologia) "
+                 "con IC95 por remuestreo de oraciones, frente a un piso: copiar el texto de origen sin traducir.\n\n"
+                 "| Direccion | chrF | IC95 | chrF++ | Piso (copiar el origen) | Oraciones que cayeron al texto original | Devueltas sin traducir |\n|---|---|---|---|---|---|---|\n"
+                 f"| espanol a quechua | {e['chrf']:.1f} | {e['ic95_chrf'][0]:.1f} a {e['ic95_chrf'][1]:.1f} | {e['chrf_mas_mas']:.1f} | {e['piso_copiar_el_origen_chrf']:.1f} | {e['oraciones_que_cayeron_al_texto_original']} de {e['n']} | {e['oraciones_devueltas_sin_traducir']} |\n"
+                 f"| quechua a espanol | {q['chrf']:.1f} | {q['ic95_chrf'][0]:.1f} a {q['ic95_chrf'][1]:.1f} | {q['chrf_mas_mas']:.1f} | {q['piso_copiar_el_origen_chrf']:.1f} | {q['oraciones_que_cayeron_al_texto_original']} de {q['n']} | {q['oraciones_devueltas_sin_traducir']} |\n\n"
+                 f"{QUE['lectura']} **Limite:** {QUE['limite']}\n")
+    L.append("### Google Cloud Translation (proveedor opcional)\n\n"
+             "No hay clave propia y la de Gemini no se usa contra otras APIs de Google. Lo que si se verifico: (1) el pedido y la respuesta del proveedor contra la documentacion oficial de la API v2 (`POST https://translation.googleapis.com/language/translate/v2`, "
+             "cuerpo `q`, `source`, `target`, `format`, respuesta `data.translations[].translatedText`; el quechua `qu` esta en la lista de idiomas; la clave puede ir en la cabecera `X-goog-api-key` y la documentacion desaconseja ponerla en la URL); "
+             "(2) siete pruebas con respuestas simuladas en `tests/test_traduccion.py` (forma del pedido, clave solo en cabecera, sin clave no hay pedido, marcadores espaciados por Google, marcador perdido se descarta, errores 429 y 5xx se reintentan y 403 y 400 no, respuesta mal formada, caida a Gemini). "
+             "**No se probo** una llamada real: cuando haya una clave, basta definir `GOOGLE_TRANSLATE_API_KEY` y correr la puerta de calidad.\n")
+    return "\n".join(L)
+
+
+def seccion_datos_sinteticos() -> str:
+    meta = json.load(open(ruta("data", "generado", "meta.json"), encoding="utf-8"))
+    cl = pd.read_parquet(ruta("data", "generado", "clientes.parquet"), columns=["region", "rango_edad", "peso_muestral", "arquetipo", "segmento"])
+    import yaml
+    gen = yaml.safe_load(open(ruta("data", "parametros", "generador.yaml"), encoding="utf-8"))
+    dif_reg = max(abs(cl["region"].value_counts(normalize=True).get(k, 0) - v) for k, v in gen["poblacion"]["region"]["values"].items())
+    dif_edad = max(abs(cl["rango_edad"].value_counts(normalize=True).get(k, 0) - v) for k, v in gen["poblacion"]["edad"]["values"].items())
+    w = cl["peso_muestral"]
+    eq = PRO["equidad_por_grupo"] if PRO else None
+    pe = PRO["perturbaciones"] if PRO else None
+    ev = PRO["evento_no_visto_confinamiento"] if PRO else None
+    rm = PRO["remuestreo_rojo"] if PRO else None
+    L = [f"""
+**Por que sinteticos.** No hay datos reales de ningun banco a nuestro alcance y las reglas del reto piden datos sinteticos y ninguna marca real. El generador (`src/generador/`, `python data/generator.py --perfil completo`) produce {meta['clientes']} clientes de Banco Kawsay entre {meta['inicio']} y {meta['fin']}: **{meta['movimientos']:,} movimientos**, saldo diario, panel mensual, mensajes de texto, contexto diario (calendario, inflacion, tipo de cambio, eventos) y la tabla de etiquetas de calidad. Misma semilla ({meta['semilla']}) y mismos parametros dan las mismas tablas (lo comprueba `tests/test_generador.py`); `meta.json` guarda la huella de los parametros y las versiones de Python, numpy y pandas; `data/generado/_manifiesto.json` guarda el hash de cada archivo.
+
+### 5.1 Como se generaron, paso a paso
+1. **Parametros declarados, con su estado.** Todo supuesto vive en `data/parametros/generador.yaml` y `eventos.yaml`, y cada bloque dice si es *verificado* (leido en la fuente primaria), *parcial* (ancla verificada y ajuste del equipo) o *supuesto* (decision del equipo). Nada esta escrito en el codigo.
+2. **Poblacion objetivo.** Trabajadores del sector privado con cuenta bancaria, no toda la PEA. Cuatro arquetipos: dependiente con pago quincenal (30 %), dependiente con comision (15 %), independiente (40 %: diario 55 % y por proyectos 45 %) y mixto (15 %). Los ingresos se anclan en cifras publicas del INEI (EPEN abr-2025 a mar-2026: promedio nacional S/ 1 925,9; urbano S/ 2 093,7; comercio S/ 1 682,0; servicios S/ 2 285,8; manufactura S/ 2 024,8).
+3. **Estratos, cuotas exactas y pesos.** Cada cliente pertenece a un estrato arquetipo x ahorra o no ahorra x gasta poco o mucho (16 estratos). Las cuentas por estrato se reparten con el metodo del resto mayor y un **piso de 2 %** por estrato (ninguno queda vacio); la region, el departamento y la edad se asignan por cuotas con error maximo de una unidad, no por sorteo. Cada cliente lleva un **peso muestral** (proporcion objetivo / proporcion en la muestra) que restituye la poblacion: se puede sobremuestrear un estrato chico sin ocultar el sesgo.
+4. **Ingreso por bootstrap suavizado.** Se remuestrean 4 000 perfiles semilla por segmento (lognormal con la mediana y la dispersion del arquetipo) y se les agrega ruido en escala logaritmica. Si hay microdatos reales (ENAHO), se pasa una tabla semilla y reemplaza a la parametrica.
+5. **Comportamiento de cada cliente.** Razon de gasto sobre ingreso, tasa de ahorro, parte del ingreso y del gasto que se mueve **en efectivo y no pasa por la cuenta** (dato incompleto a proposito: 20 a 45 % en el independiente diario), traspaso de la inflacion al ingreso, alquiler, deuda con cuota y TCEA, pago en dolares, personas a cargo, colchon inicial, probabilidad de aceptar una recomendacion y un 12 % de clientes que **cambian de patron** a mitad de la ventana.
+6. **Simulacion mes a mes, por lotes de 50 clientes** (`simulacion.py`, numpy vectorizado; el pico de memoria depende del lote, no del total). El saldo de un mes condiciona el gasto del siguiente. Ingresos: sueldo quincenal o de fin de mes, gratificaciones de julio y diciembre, comisiones, cobros diarios con ley de Poisson (con efecto del dia de la semana y de la estacion), honorarios por proyecto e ingresos extra. Gastos: compromisos fijos (alquiler, luz, agua, internet, celular, cuota, colegio, seguro, suscripciones, con un 18 % de clientes con una suscripcion duplicada) reescalados con la inflacion real, y un presupuesto variable repartido en categorias con tasas de Poisson y montos lognormales. Si el saldo se acaba, el cliente rescata ahorro o toma credito informal si tiene acceso.
+7. **Contexto real, no inventado.** Inflacion (IPC) y tipo de cambio reales del BCRP (`data/raw/bcrp/`), calendario peruano con feriados, y eventos con fuerza diaria: confinamiento y reapertura de 2020, inflacion, protestas, El Nino 2023, bonos del Estado y retiros de la AFP. Cada evento mueve el ingreso y el consumo por segmento y por region, con una probabilidad de corte total del ingreso.
+8. **Texto.** Glosas de cada movimiento y mensajes de los usuarios con **sentimiento ligado al estres financiero real** (las clases se asignan por cuantiles de un puntaje de estres: reparto balanceado y la senal conservada). Catalogo de comercios y canales inventado: ninguna marca real.
+9. **Calidad sembrada a proposito.** Faltantes (glosa 2 %, categoria 3 %, saldo 1,5 %, monto 0,2 %), duplicados (0,4 %) y gastos atipicos (0,3 %, que salen del presupuesto del mes para que el saldo no se desvie), con una **tabla de etiquetas** aparte para medir el limpiado.
+10. **Controles automaticos.** 13 controles en `data/QUALITY.md` (ningun estrato vacio, pesos entre 0,5 y 2, ids unicos, montos y fechas validos, mas dias en rojo en independientes, efecto del confinamiento, ingreso medio ponderado dentro de +-35 % del INEI, irregularidad, saldo coherente, sentimiento y faltantes dentro de lo configurado) y 9 pruebas en `tests/test_generador.py`.
+
+### 5.2 Que sesgos se consideraron y que se hizo con cada uno
+| Riesgo | Que se hizo | Evidencia |
+|---|---|---|
+| **Sesgo de muestreo**: que un grupo quede sub o sobrerrepresentado | Estratos con piso, cuotas exactas y peso muestral; toda evaluacion de equidad usa los pesos | Region y edad de la muestra difieren del objetivo en como maximo {dif_reg:.3f} y {dif_edad:.3f}; pesos entre {w.min():.2f} y {w.max():.2f} |
+| **Sesgo de ancla**: que los ingresos no se parezcan al pais | Medianas ancladas en cifras del INEI y contraste automatico | Ingreso 2025 ponderado S/ 2 316, por encima del nacional (S/ 1 925,9) y del urbano (S/ 2 093,7) porque la poblacion objetivo es bancarizada; control dentro de +-35 % |
+| **Fuga de la verdad oculta del generador**: que el modelo vea lo que el simulador sabe y un cliente real no | `src/models/columnas.py` separa lo observable de las etiquetas de referencia y de los parametros internos (`ingreso_base`, `gasto_ratio`, `fraccion_efectivo`...); los modelos solo reciben lo observable | Prueba y revision de columnas; las etiquetas solo se usan para evaluar |
+| **Fuga temporal** | Cortes con embargo (entrena hasta 2023-06-30, calibra desde 2023-10-01, prueba desde 2024-01-01), segmentacion ajustada solo con datos anteriores a la prueba | Los modelos nunca ven la ventana de prueba al entrenar |
+| **Fuga de etiqueta** | La etiqueta de sentimiento nunca entra al pronostico; las etiquetas de calidad solo evaluan el limpiado | Comparacion con y sin texto: el texto no mejora el pronostico |
+| **Aprender el generador en vez del problema** | Cada modelo se compara con un baseline simple; perturbaciones; evento no visto; **otra muestra del generador sin reentrenar** | Ver 5.3 |
+| **Equidad entre grupos** | Error y cobertura por segmento, region, edad, tipo de trabajo, exposicion al Nino y arquetipo, con alerta automatica (cobertura que difiera mas de 5 puntos o error de un grupo mayor a 1,3 veces el del mejor) | Ver 5.3 |
+| **Desbalance de clases** (el rojo es un evento raro) | Se comparo sin ajuste, pesos de clase, submuestreo y SMOTE y se eligio la probabilidad calibrada | Ninguno mejora el PR-AUC |
+| **Evaluar con lo que el modelo ya vio** | Sentimiento medido con un set independiente (no con las plantillas del generador ni con frases del autor del lexico) | El lexico, que parecia mejor, cae al nivel del azar |
+| **Privacidad** | Ubicacion solo por departamento (sin coordenadas), ids sinteticos, ninguna marca real; el LLM externo no recibe identificadores ni zona | `data/parametros/entidad.yaml`, `proveedores.py` |
+"""]
+    if eq:
+        L.append(f"""
+### 5.3 Que se midio para comprobarlo
+- **Equidad (con pesos muestrales).** Brecha maxima de cobertura de la banda entre grupos: {max(v['brechas']['brecha_cobertura'] for v in eq.values()):.3f}. Alertas: {', '.join(g for g, v in eq.items() if v['brechas']['alerta']) or 'ninguna'}. El error relativo del tipo de trabajo mas irregular ({eq['tipo_trabajo']['brechas']['peor_grupo_mae']}) es {eq['tipo_trabajo']['brechas']['razon_mae']:.1f} veces el del mas estable: es la irregularidad propia de su ingreso, no un sesgo del modelo, y por eso su banda es mas ancha en lugar de mas falsa (la cobertura es pareja).
+- **Perturbaciones.** Con 10 % de ruido en el historial el error pasa de {pe['original']['mae_rel_ingreso']:.3f} a {pe['ruido_10pct_en_historial']['mae_rel_ingreso']:.3f}; con 20 % de variables faltantes, a {pe['faltantes_extra_20pct']['mae_rel_ingreso']:.3f}, con cobertura {pe['faltantes_extra_20pct']['cobertura_80']:.2f}. Los clientes que cambian de patron tienen error {pe['clientes_con_cambio_de_patron']['mae_rel_ingreso']:.3f} y cobertura {pe['clientes_con_cambio_de_patron']['cobertura_80']:.2f}.
+- **Evento no visto.** Con el confinamiento fuera del entrenamiento el error es {ev['lightgbm_sin_variables_de_evento']['mae_rel_ingreso']:.2f} frente a {ev['ma3']['mae_rel_ingreso']:.2f} del promedio movil, pero la cobertura baja a {ev['lightgbm_con_evento_actual']['cobertura_80']:.2f}: ante un choque nunca visto la banda es optimista y el agente lo debe decir.
+- **Remuestreo del riesgo de rojo.** PR-AUC {rm['sin ajuste']['pr_auc']:.3f} sin ajuste, {rm['pesos de clase']['pr_auc']:.3f} con pesos, {rm['submuestreo 1:2']['pr_auc']:.3f} con submuestreo y {rm['SMOTE 1:2']['pr_auc']:.3f} con SMOTE: no se usa ninguno.""")
+        if OSE:
+            s_ = OSE["saldo_30d_en_la_muestra_nueva"]
+            L.append(f"- **Otra muestra del generador, sin reentrenar** (semilla {OSE['semilla_de_la_muestra_nueva']}, {OSE['clientes']} clientes nuevos): cobertura {s_['lightgbm']['cobertura_80']:.3f}, error {s_['lightgbm']['mae_rel_ingreso']:.3f} frente a {s_['ma3']['mae_rel_ingreso']:.3f} del promedio movil. El pronostico generaliza al proceso simulado; los detalles estan en la evaluacion.")
+    L.append(f"""
+### 5.4 Lo que esto NO elimina (limites honestos)
+- **El sesgo de diseno del generador.** Los pesos de arquetipo, region y edad, las magnitudes de los eventos y el comportamiento son supuestos del equipo, anclados en cifras publicas donde existen; el remuestreo y los pesos no los corrigen. Con microdatos de la ENAHO se pasa una tabla semilla y se regenera. Que algunos parametros de los eventos sean supuestos es un criterio aceptado: son datos sinteticos y los supuestos estresan a los modelos, no se presentan como hechos.
+- **Un modelo puede aprender el generador.** Por eso cada modelo se compara con un baseline, y por eso las pruebas de perturbacion, de evento no visto y de otra muestra; pero ninguna prueba sobre datos sinteticos demuestra el desempeno con datos reales.
+- **Atributos que el generador no modela.** No hay sexo ni genero, y no se evaluo equidad por ellos: debe hacerse con datos reales antes de producir. La poblacion es bancarizada, asi que no representa a la informalidad total del pais (69,8 % segun el INEI).
+- **El efectivo no observado** esta modelado (fraccion por segmento) pero no hay datos reales para calibrarlo.
+
+### 5.5 Como regenerarlos y auditarlos
+```bash
+python data/generator.py --perfil completo      # mismas tablas con la misma semilla ({meta['semilla']}); --semilla N genera otra muestra
+python eval/evaluar_otra_semilla.py             # prueba de otra muestra sin reentrenar
+python -m pytest tests/test_generador.py -q     # reproducibilidad, estratos, invariantes, saldo coherente, efecto del confinamiento
+python eval/manifiesto_datos.py                 # hash de cada archivo cargado en data/generado
+```
+Informe de calidad: `data/QUALITY.md`; diccionario de datos: `data/dictionary.md`.
+""")
+    return "\n".join(L)
 
 
 def seccion_segmentacion():
@@ -74,7 +239,7 @@ def seccion_pronostico():
     t = p["texto_en_el_pronostico"]
     txt += (f"### Datos no estructurados en el pronostico\n\nMAE relativo sin texto {t['sin_texto']['mae_rel_ingreso']:.4f}, con texto {t['con_texto']['mae_rel_ingreso']:.4f}; mejora media {t['mejora_mae_rel']['media']:.5f} "
             f"(IC95 {t['mejora_mae_rel']['ic95'][0]:.5f} a {t['mejora_mae_rel']['ic95'][1]:.5f}). PR-AUC del rojo: {t['rojo_pr_auc_sin']:.3f} sin texto, {t['rojo_pr_auc_con']:.3f} con texto.\n")
-    return txt
+    return txt + seccion_serie_diaria() + seccion_otra_semilla()
 
 
 def seccion_mensual():
@@ -100,8 +265,7 @@ def seccion_clasificacion():
             f"**Suscripciones duplicadas** (por cliente): {json.dumps({k: (round(v, 3) if isinstance(v, float) else v) for k, v in c['suscripciones_duplicadas'].items()})}\n\n"
             f"**Atipicos** ({c['atipicos']['n_atipicos']} en {c['atipicos']['n']} gastos): precision en k, z-score robusto {c['atipicos']['zscore_robusto']['precision_en_k']:.3f}, "
             f"IsolationForest {c['atipicos']['isolation_forest']['precision_en_k']:.3f}.\n\n**Sentimiento** (F1 macro):\n\n{T(c['sentimiento'])}\n"
-            "Aviso: sobre plantillas el modelo es trivial; sobre las 24 frases escritas a mano baja. El lexico se armo viendo esas mismas frases, asi que su cifra es optimista y no vale como prueba. "
-            "El set independiente de 100 frases lo escribe el equipo (TODOS-01); mientras tanto el texto libre se clasifica mejor con un modelo preentrenado en espanol.\n")
+            + aviso_sentimiento())
 
 
 def seccion_impacto():
@@ -109,9 +273,19 @@ def seccion_impacto():
         return "_pendiente_\n"
     d = IMP["diferencias"]
     txt = f"Periodo {IMP['meses']:.0f} meses (2024-2025), ponderado por la poblacion objetivo. Supuestos: {json.dumps(IMP['supuestos'], ensure_ascii=False)}\n\n{T(IMP['tabla'])}\n"
-    for k in ("lucas_vs_nada", "lucas_vs_diez_fijo_ajustado", "diez_fijo_ajustado_vs_nada", "diez_fijo_vs_nada"):
+    txt += ("Politicas comparadas: **nada** (no hacer nada); **10 % fijo** (aparta el 10 % de cada ingreso sin recortar el gasto); **10 % fijo ajustado** (aparta y el gasto baja en lo mismo, sin costo y con adopcion total: un techo ideal); **Lucas** (alerta del pronostico, "
+            "Sueldo Lucas, suscripcion duplicada y gasto hormiga, con la probabilidad de aceptacion de cada cliente); **Lucas + ahorro automatico** (Lucas mas el apartado del 10 % con el mismo supuesto ideal que el ajustado, para comparar de igual a igual); "
+            "**Lucas + ahorro guiado** (prueba de estres: aparta la mitad del excedente estructural de 90 dias, solo sin alerta y con 7 dias de gasto en caja, sin recortar el gasto y bloqueado). Las politicas de Lucas usan los mismos sorteos de aceptacion para que la diferencia sea solo el ahorro.\n\n")
+    for k in ("lucas_vs_nada", "lucas_vs_diez_fijo_ajustado", "diez_fijo_ajustado_vs_nada", "diez_fijo_vs_nada", "lucas_mas_ahorro_ajustado_vs_diez_fijo_ajustado", "lucas_mas_ahorro_ajustado_vs_nada", "lucas_ahorro_guiado_vs_nada"):
         if k in d:
             txt += f"**{k}**: " + "; ".join(f"{a} {b['media']:.3f} (IC95 {b['ic95'][0]:.3f} a {b['ic95'][1]:.3f})" for a, b in d[k].items()) + "\n\n"
+    t = IMP["tabla"]
+    if "lucas_mas_ahorro_ajustado" in t:
+        txt += (f"**Lectura.** Lucas evita dias en rojo ({t['lucas']['dias_en_rojo_por_cliente_mes']:.2f} frente a {t['nada']['dias_en_rojo_por_cliente_mes']:.2f} al mes) pero no obliga a apartar, por eso forma {t['lucas']['colchon_final_meses_de_ingreso']:.1f} meses de colchon frente a "
+                f"{t['diez_fijo_ajustado']['colchon_final_meses_de_ingreso']:.1f} del 10 % ajustado. Esa ventaja del ajustado depende de un supuesto ideal (recortar el gasto sin costo, con adopcion total): sin el, apartar dinero bloqueado deja "
+                f"{t['diez_fijo']['dias_en_rojo_por_cliente_mes']:.1f} dias en rojo al mes (10 % fijo) y {t['lucas_ahorro_guiado']['dias_en_rojo_por_cliente_mes']:.1f} (ahorro guiado por el excedente). "
+                f"**Decision de diseno:** Lucas no bloquea ahorro; usa una reserva que se puede usar (Sueldo Lucas) y metas voluntarias. Y la politica recomendada, Lucas + ahorro automatico, forma {t['lucas_mas_ahorro_ajustado']['colchon_final_meses_de_ingreso']:.1f} meses "
+                f"de colchon con {t['lucas_mas_ahorro_ajustado']['dias_en_rojo_por_cliente_mes']:.2f} dias en rojo: gana en las dos cosas al 10 % ajustado con el mismo supuesto.\n\n")
     txt += f"Por segmento:\n\n{T(IMP['por_segmento'], 2)}\n"
     return txt
 
@@ -168,7 +342,7 @@ def seccion_qa():
         txt += f"Ultima corrida ({GATE['fecha']}): **{c['PASS']} PASS, {c['WARN']} WARN, {c['FAIL']} FAIL, {c['NOT RUN']} NOT RUN**.\n\n"
         otros = [x for x in GATE["verificaciones"] if x["estado"] in ("WARN", "NOT RUN")]
         txt += "| # | Estado | Que | Detalle |\n|---|---|---|---|\n" + "\n".join(f"| {x['id']} | {x['estado']} | {x['que']} | {x['detalle'].replace('|', '/')} |" for x in otros) + "\n\n"
-    txt += "La comparativa de modelos (candidatos medidos, el elegido y por que, con su limite) esta en [comparativa_modelos.md](comparativa_modelos.md) y sus graficas en `docs/figuras/`.\n"
+    txt += "La comparativa de modelos (candidatos medidos, el elegido y por que, con su limite) esta en [comparativa_modelos.md](comparativa_modelos.md) y sus graficas en `docs/presentacion/`.\n"
     return txt
 
 
@@ -258,7 +432,7 @@ def seccion_datos_reales() -> str:
           "**Rutas del aplicativo** (contrato `docs/api.md` v0.2 de Miguel) y la funcion de esta rama que las alimenta:\n",
           "| Ruta | Funcion | Estado |\n|---|---|---|",
           "| `GET /api/v1/customers/{customer_id}/health` | `Repositorio.contexto(cid)`: `salud`, `nivel`, `features['colchon_observado']` | calculado; falta el adaptador de nombres (seccion 10) |",
-          "| `GET /api/v1/customers/{customer_id}/forecast` | `Repositorio.contexto(cid)['pronostico']` | calculado al dia 30; la serie diaria no esta entrenada |",
+          "| `GET /api/v1/customers/{customer_id}/forecast` | `contrato.pronostico_contrato(repo, cid, dias)` | serie diaria de 30 dias con banda al 80 %, ya con la forma del contrato (`days` de 1 a 30) |",
           "| `GET /api/v1/customers/{customer_id}/recommendations` | `recomendador.recomendar(ctx)` | calculado; falta definir `impact_type` |",
           "| `GET /api/v1/customers/{customer_id}/events` | `vigilancia.eventos_para(...)` y `vigilancia.ciclo(...)` | calculado, con tope de 3 por semana y sin repetidos |",
           "| `POST /api/v1/simulations` | `Repositorio._pronostico(fila, neto)` | gasto unico; ingresos y gastos recurrentes por definir |",
@@ -279,6 +453,88 @@ def seccion_datos_reales() -> str:
               f"- **Para regenerarlos identicos:** `{m['regenerar_identica']}`.",
               f"- **Para quitarlos al terminar la integracion:** `{m['quitar_al_terminar']}`. La puerta de calidad (S5) lo avisa mientras esten versionados.", ""]
     return "\n".join(L)
+
+
+def seccion_rag_validacion() -> str:
+    if not RV:
+        return ""
+    e, c, a = RV["embeddings"], RV["chunks"], RV["autorrecuperacion"]
+    ok = RV["comprobaciones"]
+    marca = lambda k: "OK" if ok[k] else "FALLA"  # noqa: E731
+    return (f"""**Validacion (`eval/validar_rag.py`, semilla {RV['semilla']}).** No basta con que la recuperacion de unas preguntas funcione: se comprobo que los chunks, los embeddings y el indice esten bien hechos y se usen bien.
+
+| Comprobacion | Resultado |
+|---|---|
+| Dimension del indice = dimension del modelo = 768 | {marca('dimension_coincide')} ({e['modelo']}, {e['dimension_del_indice']} dimensiones) |
+| Un vector por fragmento | {marca('vectores_igual_a_fragmentos')} ({e['vectores']:,} vectores = {e['fragmentos']:,} fragmentos) |
+| Vectores normalizados (producto interno = coseno) | {marca('vectores_normalizados')} (norma entre {e['norma_minima']:.4f} y {e['norma_maxima']:.4f}) |
+| Indice exacto, sin aproximacion | {marca('indice_exacto_de_producto_interno')} (`{e['tipo_de_indice']}`) |
+| El indice esta alineado con los textos y se hizo con este modelo | {marca('indice_alineado_con_los_textos')}: al volver a embeber {e['reembebido_con_prefijo_de_documento']['n']} fragmentos al azar el coseno con el vector guardado es {e['reembebido_con_prefijo_de_documento']['coseno_minimo']:.4f} como minimo |
+| Consulta y documento se distinguen (prefijos de nomic-embed-text) | {marca('consulta_y_documento_se_distinguen')}: el mismo texto como consulta da coseno {e['mismo_texto_con_prefijo_de_consulta']['coseno_medio']:.3f} con su vector de documento; el codigo usa `search_document:` al indexar y `search_query:` al buscar |
+| Sin fragmentos diminutos ni duplicados | {marca('sin_fragmentos_diminutos_ni_duplicados')} (minimo {c['largo']['minimo']} caracteres, {c['duplicados_exactos']} duplicados exactos) |
+| Ninguno pasa de tamano + solape | {marca('ningun_fragmento_excede_el_tamano_mas_solape')} (maximo {c['largo']['maximo']} de {c['tam_fragmento']} + {c['solape']}) |
+| Metadatos completos (titulo, pagina, enlace, licencia, modulo) | {marca('metadatos_completos')} |
+| Solo licencia de nivel A | {marca('solo_licencia_nivel_A')} |
+| Cada fragmento se recupera a si mismo | {marca('cada_fragmento_se_recupera_a_si_mismo')}: con el inicio de {a['n']} fragmentos al azar como consulta, el fragmento es el primero el {a['el_fragmento_es_el_primero']:.0%} de las veces y esta entre los 3 primeros el {a['el_fragmento_esta_en_los_3_primeros']:.0%} |
+
+Tamanos de fragmento: mediana {c['largo']['mediana']} caracteres, p5 {c['largo']['p5']}, p95 {c['largo']['p95']}; {c['pares_vecinos']['con_solape']:,} de {c['pares_vecinos']['n']:,} pares vecinos comparten texto (el troceador solo solapa cuando junta piezas pequenas, un parrafo largo cortado por oracion no repite texto). El separador queda al inicio del fragmento siguiente, por eso pocos terminan en punto: no significa que corten a mitad de frase.
+
+**Lo que la validacion encontro y se corrigio.** El indice tenia **72 fragmentos de sobra**: avisos legales que el PDF del CFPB repite en cada capitulo y un pie de pagina de sitio web («Need help finding a job...») repetido 27 veces. Ocupaban lugar en los resultados y gastaban tokens del prompt. Se quitaron **sin volver a embeber** (los vectores de los que se conservan se reutilizan: `python -m src.rag.indice --depurar`, idempotente) y el troceado futuro (`construir_fragmentos`, `actualizar_incremental`) ya los filtra. La recuperacion no empeoro (recall@4 con filtro de modulo {max(v['recall@4'] for v in RAG['recuperacion'].values()):.3f}, mismo filtro de relevancia). Se descarto filtrar los caracteres de iconos: tambien aparecen en las vinetas de las normas y borrarian contenido real.
+
+**Como usarlo bien (guia para quien integre).** (1) Indexar y buscar con **el mismo modelo** y sus prefijos: `search_document: ` al indexar y `search_query: ` al buscar; mezclar modelos o quitar el prefijo baja la calidad sin dar error. (2) Normalizar los vectores y usar producto interno (equivale al coseno); el filtro de relevancia 0.70 es una similitud coseno. (3) Pedir 3 fragmentos, filtrar por modulo cuando la intencion lo permite y **no contestar** si el mejor no llega a 0.70. (4) Citar siempre titulo, pagina, enlace y licencia. (5) Si se agregan documentos: `Buscador`/`actualizar_incremental()` (sin recalcular los demas), luego `python -m src.rag.indice --depurar`, `python eval/validar_rag.py`, `python eval/evaluar_rag.py`, `python eval/generar_faq.py` (la huella del indice cambio) y, si hay Postgres, `python eval/cargar_a_postgres.py --solo-rag`. (6) En Postgres: `lucas.rag_fragmento` con `vector(768)` e indice HNSW de producto interno mas `tsvector` para la busqueda por palabras (ver 9.7). Diagrama para la presentacion: `docs/presentacion/diagramas/rag_arquitectura.png`.
+""")
+
+
+def seccion_integracion_extra2() -> str:
+    mf = open(ruta("docs", "presentacion", "mlflow_resumen.md"), encoding="utf-8").read() if os.path.isfile(ruta("docs", "presentacion", "mlflow_resumen.md")) else ""
+    n_comp = len(re.findall(r"^\| .+ \| .+ \| \*\*.+\*\* \|", mf, re.M))
+    n_mod = len(re.findall(r"^\| `lucas-[a-z0-9-]+` \|", mf, re.M))
+    val = json.load(open(ruta("docs", "modelo_de_datos", "validacion_postgres.json"), encoding="utf-8"))
+    return f"""
+
+### 9.6 RAG: chunks, embeddings e indice (validado)
+{seccion_rag_validacion()}
+### 9.7 Modelo de datos y base de datos (PostgreSQL con pgvector)
+El equipo todavia no tiene base de datos: esta rama deja el **modelo de datos completo, creado y probado**. Todo esta en [`docs/modelo_de_datos/`](modelo_de_datos/README.md): el esquema `schema_postgres.sql` ({val['tablas']} tablas en dos esquemas), el documento con el diccionario de cada tabla y el diagrama entidad-relacion, la evidencia de validacion y el cargador `eval/cargar_a_postgres.py`.
+
+- **Diseno.** Esquema `lucas` (lo que usa el aplicativo) y esquema `simulacion` (la **verdad oculta** del generador: arquetipo, parametros internos y etiquetas, solo para evaluar; con datos reales se borra con `DROP SCHEMA simulacion CASCADE`). Los movimientos conservan a proposito faltantes y duplicados (clave propia `movimiento_id`; la vista `lucas.transaccion_limpia` quita los duplicados exactos). Todo lo de un cliente se borra con el (derecho de supresion). Dinero en `NUMERIC(14,2)`. El RAG y las preguntas frecuentes viven en la misma base con `vector(768)` e indice HNSW de producto interno; `consulta_chat` guarda la observabilidad **sin** el texto de la pregunta ni de la respuesta.
+- **Tablas.** Datos del cliente (`cliente`, `transaccion`, `saldo_diario`, `panel_mensual`, `mensaje`, `contexto_diario`, `evento`, `macro_mensual`); verdad oculta (`simulacion.cliente_verdad`, `transaccion_verdad`, `calidad_etiqueta`); lo que guarda el aplicativo (`movimiento_vivo`, `memoria_cliente`, `meta_ahorro`, `respuesta_recomendacion`, `movimiento_puntos`, `aviso`, `consulta_chat`, `pronostico_diario`); RAG y preguntas frecuentes (`rag_fuente`, `rag_fragmento`, `faq_aprendida`, `faq_preguntas_vistas`, `faq_contadores`, `faq_embedding`).
+- **Crearla y cargarla (unos 3 minutos).**
+```bash
+docker run -d --name lucas-pg -e POSTGRES_PASSWORD=<clave> -e POSTGRES_DB=lucas -p 5432:5432 pgvector/pgvector:pg16
+export DATABASE_URL=postgresql://postgres:<clave>@localhost:5432/lucas
+python eval/cargar_a_postgres.py --crear --rag      # esquema + data sintetica + RAG con sus vectores; verifica los conteos contra los Parquet
+python eval/cargar_a_postgres.py --plan             # solo muestra que se cargaria
+```
+- **Probado contra un PostgreSQL real** ({val['version_de_postgres'].split(' on ')[0]}, pgvector {val['version_de_pgvector']}) con la data sintetica completa: las 11 tablas de datos cargan con las mismas filas que su Parquet (3.264.148 movimientos, 1.278.500 saldos diarios, 44.924 mensajes...), borrar un cliente borra todo lo suyo sin filas huerfanas, las restricciones rechazan lo invalido, la busqueda vectorial en SQL devuelve los mismos 3 fragmentos que el indice local y el indice HNSW se puede usar. La base con todo cargado pesa {val['tamano_de_la_base_con_todo_cargado']}. La validacion corrigio un error del propio esquema: la similitud coseno en pgvector es `-(embedding <#> consulta)`, no `1 + (...)`.
+- **Lo que decide el equipo:** particionar `transaccion` por fecha si el volumen real lo pide, permisos por rol, y trasladar las preguntas frecuentes de SQLite a Postgres (mismas tablas) y sus embeddings a `faq_embedding`. Diagrama: `docs/presentacion/diagramas/modelo_de_datos.png`.
+
+### 9.8 Seguimiento y versionamiento de modelos con MLflow
+Cada modelo parte de un **baseline** y se queda el ganador; ahora ese recorrido queda registrado y versionado en MLflow (`eval/registrar_en_mlflow.py`, experimento `lucas-analitica`). Resumen generado: [`presentacion/mlflow_resumen.md`](presentacion/mlflow_resumen.md).
+
+- **Comparaciones.** {n_comp} corridas (una por candidato de cada uno de los 14 problemas) con la misma metrica y los mismos numeros de `comparativa_modelos.md`, la etiqueta `rol` (`elegido` o `baseline_o_alternativa`), el motivo y el limite de la eleccion, y la grafica como artefacto: en la interfaz de MLflow se comparan las corridas de un mismo problema.
+- **Modelos de produccion.** {n_mod} modelos (pronostico a 30 dias, serie diaria, segmentacion, pronostico mensual, glosas y sentimiento) con hiperparametros, metricas, version del codigo (`commit`), huella de los parametros de los datos, semilla y el archivo del modelo, registrados en el **Model Registry** con el alias `produccion`. Una version nueva solo se crea si el contenido del modelo cambio (hash); si las metricas no cambiaron no se duplica nada.
+- **Como se usa.** `python eval/registrar_en_mlflow.py` despues de entrenar y de correr la comparativa; interfaz con `mlflow ui --backend-store-uri sqlite:///data/generado/mlflow/lucas.db`; para el servidor del equipo basta definir `MLFLOW_TRACKING_URI` (las corridas y los modelos van alli). Cargar el modelo de produccion: `MlflowClient().get_model_version_by_alias('lucas-pronostico-30d', 'produccion')` da su origen y se abre con `joblib.load`.
+- **Alcance, dicho con claridad.** El entrenamiento no esta instrumentado con autologging (son clases propias de LightGBM con calibracion conformal): el registro se hace desde las metricas y los archivos guardados. La base local (`data/generado/mlflow/`) no se versiona. Todo con datos sinteticos.
+
+### 9.9 Orden de regeneracion (para que nada quede desfasado)
+Cada paso usa lo que produjo el anterior; las evaluaciones y los documentos guardan una huella del codigo y de las metricas y la puerta de calidad avisa si algo quedo viejo.
+```bash
+python data/generator.py --perfil completo           # datos (misma semilla = mismas tablas)
+python eval/entrenar_modelos.py                      # segmentacion, pronostico, clasificacion, impacto
+python eval/entrenar_serie_diaria.py                 # serie diaria del pronostico
+python eval/evaluar_otra_semilla.py                  # prueba con otra muestra del generador
+python eval/sentimiento_independiente.py             # sentimiento en un set independiente
+python eval/evaluar_traduccion_quechua.py --flores RUTA/flores200_dataset
+python eval/simular_puntos.py && python eval/benchmark_y_valor.py
+python eval/evaluar_rag.py && python eval/validar_rag.py && python eval/generar_faq.py
+python eval/evaluar_agente.py && python eval/qa_agente.py          # QA con Gemini real
+python eval/comparativa_modelos.py && python eval/registrar_en_mlflow.py
+python eval/construir_presentacion.py && python eval/construir_notebooks.py
+python eval/generar_modelo_de_datos.py && python eval/manifiesto_datos.py
+python eval/generar_docs.py && python eval/puerta_de_calidad.py --gemini && python eval/generar_docs.py   # los docs se regeneran al final para traer los conteos finales de la puerta
+```
+"""
 
 
 def seccion_integracion_app() -> str:
@@ -310,6 +566,117 @@ agente = construir_grafo(repo, rag, "agente_unico")
 **9. Mantener actualizado.** BCRP: automatico (cache y respaldo). ENFEN: la vigilancia avisa si hay un comunicado nuevo; hay que bajarlo e indexarlo. RAG: `python -m src.datos_publicos.descargar` y `Buscador` tras `indice.actualizar_incremental()` (solo embebe lo nuevo). Normas: ver 8.5. Evaluar todo: `python eval/puerta_de_calidad.py --gemini`.
 
 **10. Lo que no hay que hacer.** No usar el LLM para calcular: toda cifra sale de una herramienta y pasa por el juez, y si el LLM inventa una cifra, devuelve codigo o promete algo, la respuesta cae a la plantilla. No tratar un proyecto de ley como ley. No presentar un dato desactualizado como actual. No mover dinero ni recomendar comprar o vender dolares ni en que invertir: esos pedidos se cortan antes de llegar a cualquier modelo.
+""" + seccion_integracion_extra() + seccion_integracion_extra2()
+
+
+def seccion_integracion_extra() -> str:
+    """Lo que la integracion final necesita saber para la web y el desarrollo: conectar la API final, plantillas, consumo de tokens, preguntas frecuentes y que anadirle al aplicativo."""
+    from src.agente_analitico import faq as FQ
+    from src.agente_analitico.grafo import INTENCIONES_CON_LLM, PLAN
+    frag = json.load(open(ruta("docs", "rag", "indice", "fragmentos.json"), encoding="utf-8"))
+    chars = sum(len(r["texto"]) for r in frag)
+    t_corpus, t_frag = chars / 4, chars / len(frag) / 4   # estimacion: 1 token ~ 4 caracteres
+    k = 3
+    ahorro_rag = 1 - (k * t_frag) / t_corpus
+    sem = len(FQ._semilla())
+    tok = QA["resumen"]["tokens_gemini"] if QA else None
+    medido = (f"En la ultima corrida de QA con Gemini real: {tok['llamadas']} llamadas, {tok['entrada']:,} tokens de entrada y {tok['salida']:,} de salida "
+              f"(~{tok['entrada'] // max(tok['llamadas'], 1):,} de entrada y ~{tok['salida'] // max(tok['llamadas'], 1):,} de salida por llamada).") if tok else ""
+    sin_llm = [i for i in PLAN if i not in INTENCIONES_CON_LLM]
+    mp = json.load(open(ruta("docs", "presentacion", "mapa_de_consultas.json"), encoding="utf-8"))
+    nom = {"herramientas_y_plantilla": "herramientas calculan y **plantilla** redacta (0 tokens)", "plantilla_fija": "**plantilla fija** (0 tokens)", "preguntas_frecuentes": "**preguntas frecuentes** (0 tokens)",
+           "rag_y_ia": "**RAG + agente de IA** (1 llamada)"}
+    filas_mapa = "\n".join(f"| {f['n']} | {f['consulta']} | `{f['intencion']}` | {nom[f['camino']]} | {f['tokens_de_entrada'] + f['tokens_de_salida']:,} |" for f in mp["consultas"])
+    frag_mapa = "; ".join(f"{x['titulo']} (pag. {x['pagina']}, similitud {x['similitud']:.2f}, ~{x['tokens_estimados']} tokens)" for x in mp["rag"]["fragmentos"])
+    faq_qa = (QA or {}).get("faq")
+    faq_txt = (f"En la QA con Gemini real, la segunda vez que se hizo la misma pregunta de concepto («{faq_qa['pregunta']}») se respondio desde las preguntas frecuentes: "
+               f"{faq_qa['segunda']['llamadas_gemini_nuevas']} llamadas nuevas a Gemini y {faq_qa['segunda']['citas']} citas.") if faq_qa else ""
+    ddl = ("CREATE TABLE faq_aprendida (id SERIAL PRIMARY KEY, palabras TEXT NOT NULL, nivel TEXT NOT NULL, respuesta TEXT NOT NULL, fragmentos JSONB NOT NULL,\n"
+           "                            huella_indice TEXT NOT NULL, veces INTEGER NOT NULL DEFAULT 1, aprendida_el DATE NOT NULL);\n"
+           "CREATE TABLE faq_preguntas_vistas (palabras TEXT NOT NULL, intencion TEXT NOT NULL, veces INTEGER NOT NULL DEFAULT 1, PRIMARY KEY (palabras, intencion));\n"
+           "CREATE TABLE faq_contadores (nombre TEXT PRIMARY KEY, valor INTEGER NOT NULL DEFAULT 0);\n"
+           "-- embeddings (pgvector, mismas 768 dimensiones del RAG con nomic-embed-text)\n"
+           "CREATE TABLE faq_embeddings (id TEXT PRIMARY KEY, pregunta TEXT NOT NULL, embedding vector(768));")
+    return f"""
+
+### 9.1 Conectar la API final y cambiarla sin tocar el agente (para que el desarrollo no tenga tantos limites)
+Hoy el agente se probo con la capa gratuita de Gemini, que limita las llamadas por minuto y por dia (la evaluacion del quechua con ~120 llamadas tardo mas de media hora por las pausas). Eso es un limite de la prueba, **no del agente**: al conectar la API de la version local o la de pago, estas son las perillas, todas en `.env` (nunca en el repositorio):
+
+| Que cambiar | Como | Efecto |
+|---|---|---|
+| API de IA | `LLM_PROVIDER=gemini`, `compatible` (cualquier API con formato `chat/completions`: `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`), `ollama` (modelo local) o `plantillas` | Ningun otro archivo cambia; si falla el proveedor principal se prueba Ollama y, si tampoco responde, las plantillas |
+| Modelo | `GEMINI_MODEL`, `LLM_MODEL` u `OLLAMA_MODEL` | Un modelo mas grande redacta mejor; el verificador sigue cuidando cada cifra |
+| Cuanto usa el LLM | `LLM_USO=ahorro` (hoy: solo las intenciones `{'`, `'.join(INTENCIONES_CON_LLM)}`) o `LLM_USO=siempre` (el LLM redacta todo lo que no es seguridad ni fuera de alcance) | Con una API sin limite estricto conviene `siempre`: respuestas mas naturales a cambio de mas tokens |
+| Largo de la respuesta | `maxOutputTokens` y `max_tokens` en `src/agente_analitico/proveedores.py` (hoy 1024) | Subirlo si el modelo escribe mas largo |
+| Juez de redaccion | `JUEZ_LLM=1` | Un segundo LLM revisa que cada frase este respaldada por los datos (cuesta una llamada mas por respuesta) |
+| Modelo local con todos los datos | `ollama` marca `externo=False`: recibe los datos completos porque no salen de la maquina | Un proveedor externo siempre recibe los datos sin id ni zona |
+| Traduccion con Google Cloud | `GOOGLE_TRANSLATE_API_KEY` | Necesita una clave clasica de Google Cloud con la API de Translation habilitada: una clave de Gemini da 401 en esa API (se probo) |
+
+Tres lecciones que salieron de la QA con Gemini real y que quien integre debe conservar: (0) **reintentar con espera** los errores transitorios (429, 500, 502, 503, 504 y timeouts: hasta 3 intentos, con 1,5 y 3 s) antes de cambiar de proveedor; (1) **leer todas las partes de la respuesta** y no solo la primera (`proveedores.texto_de_gemini`): la API puede repartir un texto largo en varias partes y leer solo la primera deja la frase cortada a la mitad con `finishReason` en `STOP`; (2) **rechazar toda respuesta cuyo `finishReason` no sea `STOP`** (tope de tokens, filtros) y todo borrador que no termine en una oracion completa: el juez del grafo ya lo hace y nunca lo guarda en la cache.
+
+### 9.2 Si la API se cae: las plantillas
+Cada intencion tiene una **plantilla determinista** que arma la respuesta con las mismas cifras verificadas y las mismas citas, sin LLM. El orden de la cadena es proveedor principal, Ollama local y plantillas; `LLM_PROVIDER=plantillas` la fuerza. Con plantillas la evaluacion de {AGU['agente_unico']['resumen']['n'] if AGU else '?'} preguntas da ruteo correcto {AGU['agente_unico']['resumen']['ruteo_correcto']:.3f}, respuestas sin cifras inventadas {AGU['agente_unico']['resumen']['respuestas_sin_cifras_inventadas']:.3f} y **0 llamadas al LLM**, con latencia media de {AGU['agente_unico']['resumen']['latencia_media_s']:.1f} s. Una prueba (`test_con_la_api_caida_se_responde_con_la_plantilla...`) lo comprueba de punta a punta. **Para la web:** `responder()` devuelve `proveedor` (`gemini`, `compatible`, `ollama`, `faq`, `cache` o `plantilla`); conviene mostrar «respuesta automatica» cuando es `plantilla` y guardar el campo para saber cuanto se cae la API.
+
+### 9.3 Consumo de tokens: que se hizo para reducirlo y que se midio
+| Mecanismo | Que ahorra |
+|---|---|
+| **Las herramientas calculan, el LLM solo redacta** | Ningun numero sale del LLM: pronostico, saldo, nivel, calendario y tasas son funciones; el LLM no recibe tablas ni movimientos sueltos |
+| **Politica `LLM_USO=ahorro`** | {len(sin_llm)} de {len(PLAN)} intenciones (`{'`, `'.join(sin_llm)}`) se responden con plantilla: 0 tokens; el LLM solo se usa en `{'`, `'.join(INTENCIONES_CON_LLM)}` |
+| **RAG con busqueda vectorial** | El corpus tiene {len(frag):,} fragmentos (~{t_corpus / 1e6:.2f} millones de tokens, estimando 4 caracteres por token); el prompt recibe solo los {k} fragmentos mas parecidos (~{k * t_frag:,.0f} tokens): **{ahorro_rag:.2%} menos** que pegar el corpus, y el filtro de relevancia (umbral 0.70) no manda nada cuando ninguno sirve |
+| **Cache por pregunta y datos** | La misma pregunta con los mismos datos no se vuelve a pagar |
+| **Preguntas frecuentes** (9.4) | Una pregunta de concepto ya respondida y verificada se reutiliza para el mismo nivel: 0 tokens. {faq_txt} |
+| **Datos minimos** | Un proveedor externo recibe solo cifras agregadas, sin id ni zona ni detalle de movimientos |
+{medido} La cifra de ahorro del RAG es una estimacion (caracteres entre 4), no una medicion de un tokenizador; el ahorro por preguntas frecuentes depende de cuantas preguntas se repitan y se mide en produccion con `faq.estadisticas()`.
+
+#### Mapa de decision: plantilla, preguntas frecuentes o agente de IA (con un ejemplo real)
+Cada consulta toma **un solo camino**, y casi todos cuestan cero tokens: (1) un **router de reglas** (0 tokens) detecta el tema; (2) lo conocido (pronostico, calendario, tipo de cambio, nivel, tasas, El Nino, ofertas) lo calculan los modelos y lo redacta una **plantilla**; (3) seguridad, operaciones y lo ajeno al producto reciben una **plantilla fija**; (4) una pregunta de concepto que ya se respondio y verifico para ese nivel sale de las **preguntas frecuentes**; (5) solo lo **nuevo** llega al agente de IA, y llega con **3 fragmentos** recuperados con embeddings, no con el corpus. Diagrama para la presentacion: `docs/presentacion/diagramas/agente_ahorro_de_tokens.png`; datos del ejemplo: `docs/presentacion/mapa_de_consultas.json` (generado por `eval/mapa_de_consultas.py`, nada escrito a mano).
+
+Ejemplo: un parrafo de {len(mp['consultas'])} consultas pasado por el router de verdad.
+
+| N | Consulta | Intencion | Camino | Tokens |
+|---|---|---|---|---|
+{filas_mapa}
+
+Para la consulta nueva de concepto (`{mp['rag']['pregunta']}`) el RAG devolvio de verdad: {frag_mapa}; el filtro de relevancia ({mp['rag']['umbral_de_relevancia']:.2f}) {'la dejo pasar' if mp['rag']['pasa_el_filtro'] else 'la rechazo'}. **Sin ruteo** (las {len(mp['consultas'])} consultas al LLM) serian ~{mp['todo_al_llm']:,} tokens; **con ruteo**, una llamada de ~{mp['con_ruteo']:,} tokens (**{mp['ahorro']:.0%} menos**). Si el LLM tuviera que leer todo el corpus serian ~{mp['tokens_del_corpus_completo']:,} tokens por consulta; con el RAG recibe ~{mp['tokens_de_los_3_fragmentos']:,}. {mp['nota']} Si la API cae, la consulta nueva se responde con la plantilla y las mismas citas.
+
+**Limite que conviene conocer.** La recuperacion depende de como se escribe la pregunta: con «¿Que hago si me atrase en mi tarjeta?» el RAG devolvio un kit generico del CFPB con similitud 0.72 (justo sobre el umbral) y no la guia especifica de pagos atrasados que si aparece con la redaccion de la evaluacion. Por eso el umbral rechaza lo flojo, las respuestas citan su fuente y la pantalla de preguntas frecuentes (9.4) conviene alimentarla con las preguntas reales de los usuarios.
+
+### 9.4 Preguntas frecuentes y aprendizaje: para la seccion web y de desarrollo
+El agente **aprende de lo que se le pregunta** para ser mas eficaz y gastar menos tokens, y deja todo en una base de datos que la web puede leer y que se puede pasar a embeddings. Codigo: `src/agente_analitico/faq.py`; semilla: `data/faq/faq_semilla.json` ({sem} preguntas de concepto con respuesta por plantilla desde las fuentes oficiales, con cita y enlace); contenido listo para una pantalla: [PREGUNTAS_FRECUENTES.md](PREGUNTAS_FRECUENTES.md); generador: `python eval/generar_faq.py`.
+
+- **Como funciona.** En una pregunta de concepto (intencion `educacion`) con evidencia correcta del RAG, el agente busca primero en las preguntas frecuentes (misma pregunta o muy parecida: coincidencia de palabras >= 0.8, mismo nivel de la persona porque el tono cambia). Si la encuentra, responde **sin llamar al LLM**, con las mismas citas, y esa respuesta pasa igual por el verificador. Si no, el LLM la redacta y, si el verificador la aprueba y es reutilizable, se **guarda** para la siguiente persona.
+- **Privacidad (lo que nunca se guarda).** Solo se reutilizan respuestas que no dependen de la persona: todo numero de la respuesta tiene que salir de las fuentes citadas, y no puede nombrar su departamento ni su id. De la pregunta solo se guardan palabras que existen en el corpus del RAG, sin digitos: un nombre propio escrito en la pregunta nunca llega a la base (prueba incluida).
+- **Base de datos.** SQLite (`data/generado/faq/faq.db`, carpeta cambiable con `LUCAS_FAQ_DIR`), con tablas `faq_aprendida`, `faq_preguntas_vistas` y `faq_contadores`. Pasa tal cual a Postgres, junto a pgvector del equipo:
+```sql
+{ddl}
+```
+- **Para mejorar con embeddings.** `faq.exportar_para_embeddings()` escribe un JSONL (id, pregunta, respuesta, fuente, nivel, veces) con lo aprendido y la semilla. Dos usos: (a) vectorizarlo con el mismo modelo del RAG (`nomic-embed-text`, 768 dimensiones) y buscar preguntas parecidas **por significado** en lugar de por palabras (hoy es coincidencia de palabras); (b) agregarlo al indice como un modulo `faq`.
+- **Funciones para el backend.** `faq.frecuentes(n)` (las mas preguntadas, para una pantalla de preguntas frecuentes o para decidir que documentos agregar), `faq.estadisticas()` (consultas de concepto, respondidas sin LLM, fraccion sin LLM, y `sin_evidencia_en_las_fuentes`: lo que las fuentes no responden, senal para ampliar el RAG), `faq.buscar(...)`, `faq.registrar(...)` y `faq.exportar_para_embeddings()`. Rutas propuestas: `GET /api/v1/faq` -> `frecuentes(n)` y `GET /api/v1/faq/stats` -> `estadisticas()`.
+- **Mantenimiento.** Si se reindexa el RAG, las respuestas guardadas dejan de usarse (guardan la huella del indice) y hay que correr `python eval/generar_faq.py`; la puerta de calidad lo avisa (G4). La QA con Gemini real comprueba que la repeticion no gasta tokens (G5).
+
+### 9.5 Que anadirle al desarrollo del aplicativo (web y backend)
+Esta rama entrega mas de lo que el contrato original esperaba. Para que el aplicativo lo aproveche por completo, ademas de lo que ya pide el contrato conviene construir:
+
+| Pantalla o funcion | Que mostrar | De donde sale |
+|---|---|---|
+| **Grafico de saldo a 30 dias** | Linea esperada, banda al 80 % y marca del primer dia de riesgo; aclarar que no es un saldo garantizado | `contrato.pronostico_contrato(repo, cid, dias)` (`GET /forecast`); grafica de ejemplo en `docs/presentacion/graficas/` |
+| **Alerta y acciones** | Recomendaciones con «por que», impacto en soles, supuestos, confianza y el boton «Tu decides» (aceptar, no me sirve) | `recomendador.recomendar`, `memoria.registrar_respuesta` |
+| **Salud, nivel y puntos** | Puntaje, nivel (Luchador a Campeon), que le falta para subir, puntos y canje | `salud`, `niveles`, `programa_puntos.resumen_para_usuario` |
+| **Calendario laboral** | Gratificacion y CTS con fecha y monto estimado, y el aviso de que la libre disposicion del 100 % de la CTS vence el 31-12-2026 (con el estado del proyecto de ley, sin tratarlo como regla) | `calendario_laboral`, `normas_laborales.yaml` |
+| **Proyeccion de 6 meses** | Ingresos, gastos y neto esperados con rango | `Repositorio.proyeccion_mensual` |
+| **Simulador «¿y si gasto X?»** | Nuevo saldo y riesgo con el gasto | `POST /simulations` -> `Repositorio._pronostico(fila, neto)` |
+| **Registro de gastos e ingresos en vivo** | Lo que entra y sale actualiza el saldo y el riesgo al instante | `datos_vivos.registrar` (`POST /expenses`) |
+| **Centro de avisos** | Maximo 3 por semana, sin repetidos, de lo mas urgente a lo menos | `vigilancia.ciclo` (`GET /events`) |
+| **Chat** | Selector de idioma (espanol, ingles, quechua) con el aviso de traduccion automatica, citas con enlace, etiqueta «respuesta automatica» o «de preguntas frecuentes» segun `proveedor` | `responder()` |
+| **Preguntas frecuentes** | Las mas preguntadas, con su fuente | `faq.frecuentes`, `docs/PREGUNTAS_FRECUENTES.md` |
+| **Alerta de El Nino por zona** | Exposicion, vigencia del comunicado y acciones de prevencion | `riesgo_clima`, `vigilancia` |
+| **Metas y ahorro** | Metas voluntarias y reserva que se puede usar (Sueldo Lucas); **no** ahorro bloqueado sin recortar gasto (la prueba de estres lo desaconseja) | `impacto` (politicas), `recomendador` |
+| **Ofertas con idoneidad** | Ahorro, inversion, credito y tarjeta solo si es idoneo, y por que no cuando no lo es | `ofertas`, `catalogo_ofertas.json` |
+| **Privacidad** | «Mis datos»: ver y olvidar la memoria y los movimientos vivos | `memoria.cargar`, `memoria.olvidar` |
+| **Panel de la entidad** | Dias en rojo evitados, colchon, valor del programa de puntos con sus escenarios y el diseno del piloto con grupo de control | `models/metricas_impacto.json`, `metricas_valor.json` |
+| **Observabilidad** | Por respuesta: `proveedor`, `llamadas_llm`, `cifras_verificadas`, `trazas`; contadores de preguntas frecuentes; cuanto se cae la API | campos de `responder()`, `faq.estadisticas()` |
+
+**Conexiones que deben quedar activas** (con su estado): BCRP (series de inflacion y tipo de cambio: automatica, con cache y respaldo), ENFEN (comunicados: la vigilancia avisa si hay uno nuevo), El Peruano (norma de la CTS: contrastada, hay que volver a mirarla despues del 31-12-2026), la API de IA (Gemini, `compatible` u Ollama: se cambia por variables), Google Cloud Translation (opcional, con su clave), y Postgres con pgvector del equipo (indice del RAG y preguntas frecuentes). **Orden sugerido de integracion:** (1) `/forecast` y el grafico, (2) `/chat` con el campo `proveedor`, (3) `/events` y `/expenses`, (4) calendario laboral, (5) preguntas frecuentes, (6) niveles y puntos, (7) panel de la entidad.
 """
 
 
@@ -330,6 +697,7 @@ def seccion_escala_valor():
                 f"Se paga solo si el consumo elegible crece al menos {co['mas_consumo_necesario_para_pagarse']:.1%}. Sensibilidad (neto por usuario al anio):\n\n"
                 + T({k: {"neto_por_usuario": v["valor_neto_por_usuario_anual"], "neto_con_100_mil_usuarios": v["valor_neto_escenario"]} for k, v in co["sensibilidad"].items()}, 1) +
                 f"\n{co['nota']}.\n")
+        txt += seccion_proyeccion_puntos()
     return txt or "_pendiente_\n"
 
 
@@ -356,6 +724,8 @@ Generado por `eval/generar_docs.py` desde `models/metricas*.json`. Datos sinteti
 {seccion_calendario()}
 ## 9. QA y comparativa de modelos
 {seccion_qa()}
+## 10. Idiomas: quechua y Google Cloud Translation
+{seccion_traduccion()}
 """
 
 
@@ -376,7 +746,18 @@ python eval/entrenar_modelos.py                # entrena y evalua; guarda models
 python eval/evaluar_rag.py                     # recuperacion y filtro de relevancia del RAG
 python eval/evaluar_agente.py                  # agente con plantillas: determinista, sin LLM ni costo
 python eval/qa_agente.py                       # UNA corrida de QA con Gemini real (~18 llamadas): perfil, calendario, datos vivos, idiomas, adversarios
-python eval/comparativa_modelos.py             # tabla y graficas de comparacion de modelos (docs/comparativa_modelos.md y docs/figuras/)
+python eval/validar_rag.py                     # valida chunks, embeddings e indice del RAG
+python eval/generar_faq.py                     # semilla de preguntas frecuentes y docs/PREGUNTAS_FRECUENTES.md (repetir si se reindexa el RAG)
+python eval/registrar_en_mlflow.py             # seguimiento y versionamiento de modelos en MLflow
+python eval/generar_modelo_de_datos.py         # documento del modelo de datos desde el esquema SQL
+python eval/cargar_a_postgres.py --crear --rag # crea y llena PostgreSQL (necesita DATABASE_URL)
+python eval/entrenar_serie_diaria.py          # serie diaria del pronostico (models/serie_diaria.pkl)
+python eval/evaluar_otra_semilla.py            # prueba con otra muestra del generador, sin reentrenar
+python eval/sentimiento_independiente.py       # sentimiento en un set independiente
+python eval/evaluar_traduccion_quechua.py --flores RUTA/flores200_dataset   # quechua frente a FLORES-200 (descarga aparte)
+python eval/benchmark_y_valor.py               # escalabilidad y valor, con la proyeccion del programa de puntos
+python eval/comparativa_modelos.py             # tabla y graficas de comparacion de modelos (docs/comparativa_modelos.md y docs/presentacion/modelos/)
+python eval/construir_presentacion.py          # graficas y diagramas para la presentacion (docs/presentacion/)
 python eval/construir_notebooks.py             # ejecuta los notebooks de notebooks/
 python eval/generar_docs.py                    # regenera estos documentos
 python eval/puerta_de_calidad.py --gemini      # puerta de calidad completa (docs/QA_ANALITICA.md)
@@ -403,7 +784,13 @@ Claves solo en `.env` (no se sube). `LLM_PROVIDER=gemini|compatible|ollama|plant
 | Alerta por zona de riesgo del Nino con prevencion | `src/models/riesgo_clima.py`, `data/parametros/zonas_riesgo_fen.yaml` |
 | RAG (fragmentos, embeddings locales, FAISS, filtro de relevancia) | `src/rag/`, `docs/rag/` |
 | Agente LangGraph (unico y multiagente), juez determinista y juez LLM, memoria, avisos en tiempo real | `src/agente_analitico/` |
-| Diagramas de nodos | `docs/diagramas/grafo_*.md` |
+| Pronostico dia por dia (contrato `/forecast`) | `src/models/serie_diaria.py`, `src/agente_analitico/contrato.py`, `eval/entrenar_serie_diaria.py` |
+| **Presentacion y documentacion**: graficas de cada modelo con su baseline, diagramas de nodos del agente, arquitectura | **`docs/presentacion/`** (ver su `README.md`) |
+| Preguntas frecuentes y aprendizaje (base de datos, semilla, exportacion a embeddings, respuestas sin LLM) | `src/agente_analitico/faq.py`, `eval/generar_faq.py`, `data/faq/faq_semilla.json`, `docs/PREGUNTAS_FRECUENTES.md` (ver 9.4) |
+| **Modelo de datos y base de datos** (esquema PostgreSQL con pgvector, documento, cargador y validacion contra una base real) | **`docs/modelo_de_datos/`**, `eval/cargar_a_postgres.py` (ver 9.7) |
+| **Seguimiento y versionamiento de modelos** (MLflow: baseline frente a elegido y Model Registry) | `eval/registrar_en_mlflow.py`, `docs/presentacion/mlflow_resumen.md` (ver 9.8) |
+| **Validacion del RAG** (chunks, embeddings, indice) | `eval/validar_rag.py` (ver 9.6) |
+| Diagramas de nodos | `docs/presentacion/diagramas/grafo_*.md` y `.png` |
 | Notebooks | `notebooks/` |
 
 ## 3. Cambios, mejoras, agregados y descartes
@@ -436,8 +823,24 @@ Claves solo en `.env` (no se sube). `LLM_PROVIDER=gemini|compatible|ollama|plant
 | Agregado | Evaluacion del RAG ampliada a 34 preguntas con respuesta y 11 fuera del indice, y siete fuentes oficiales nuevas | Mas confianza que con las 20 preguntas anteriores |
 | Cambio | El agente de analitica pasa de `src/agent` a `src/agente_analitico` | Evitar chocar con `src/agent` del PR #5 (agente del producto) y poder integrar despues lo mejor de cada uno |
 | Retirado | `models/metricas_agente_gemini.json` | Era anterior a las salvaguardas de seguridad y decia 0.0 en pedidos prohibidos rechazados; la validacion con Gemini es la corrida de QA |
+| Agregado | **Serie diaria del pronostico** (30 dias con banda al 80 %, recalibrada dia por dia) y `contrato.pronostico_contrato()` con la forma del endpoint `/forecast` | El contrato de la API la pide; gana a la recta al dia 30 y al promedio movil y cubre entre 0.79 y 0.86 en cada dia |
+| Agregado | **Prueba con otra muestra del generador** (otra semilla, sin reentrenar) | Cierra el pendiente de que un modelo puede aprender el generador: gana a los baselines en una muestra nueva |
+| Cambio | Politica de ahorro: se agregan **Lucas + ahorro automatico** y una prueba de estres del ahorro bloqueado | Resuelve el hallazgo del colchon: el 10 % ajustado supone recortes sin costo; Lucas + ahorro gana en dias en rojo y en colchon con el mismo supuesto, y bloquear ahorro sin recortar gasto empeora la caja |
+| Agregado | **Proyeccion a 5 anios del programa de puntos** con escenarios y umbrales de equilibrio | Responde si genera ingresos a futuro: con lo medido no se paga; se paga con ~3 % mas de ahorro apartado (supuesto a validar con un piloto) |
+| Cambio | Sentimiento medido con un **set independiente** (la medicion anterior favorecia al lexico por evaluar con frases de su autor) | El modelo entrenado supera al lexico y al azar; ambos son debiles y el sentimiento no esta en produccion |
+| Agregado | Quechua medido contra **FLORES-200** (chrF) y pruebas del contrato de **Google Cloud Translation** con respuestas simuladas, contrastadas con su documentacion | Evidencia objetiva donde no hay hablante nativo ni clave |
+| Cambio | La nota sobre la CTS cita el proyecto de ley que propone ampliar la libre disposicion hasta 2028 (en evaluacion, no es ley) con su fuente | El agente informa el estado del tramite sin tratarlo como regla |
+| Cambio | Las graficas y los diagramas quedan en **`docs/presentacion/`** (graficas de modelos con su baseline, diagramas de nodos, arquitectura, serie diaria, puntos, calendario) | Material para la presentacion y la documentacion que pidan los organizadores; ver su `README.md` |
+| Agregado | Seccion 5 de este informe: como se generaron los datos y como se evitaron los sesgos | Que quede documentado todo el proceso |
+| Agregado | **Preguntas frecuentes y aprendizaje**: una pregunta de concepto ya respondida y verificada se reutiliza sin llamar al LLM; lo aprendido vive en una base de datos y se exporta a embeddings | Menos tokens y respuestas mas rapidas; la web puede mostrar las mas preguntadas y la entidad ve que fuentes faltan |
+| Mejora | El juez rechaza respuestas cortadas a la mitad (`finishReason`, borrador sin oracion completa) y que el LLM nombre la seccion interna `DATOS`; se leen todas las partes de la respuesta de Gemini | Fallos reales de la QA con Gemini: texto cortado («...que eleg») y «lo que dicen los DATOS» |
+| Agregado | Secciones 9.1 a 9.9 del informe: conectar la API final y sus limites, plantillas si cae la API, consumo de tokens medido, que anadirle al aplicativo, RAG validado, modelo de datos, MLflow y el orden de regeneracion | Que la integracion final tenga todo para la web y el desarrollo |
+| Agregado | **Modelo de datos para PostgreSQL con pgvector** (25 tablas, dos esquemas, cargador, documento y diagrama) probado con la data sintetica completa contra una base real | El equipo no tiene base de datos: la crea y la llena en minutos; la prueba corrigio un error del propio esquema |
+| Agregado | **Seguimiento con MLflow**: una corrida por candidato (baseline frente a elegido) y los modelos de produccion en el Model Registry con alias `produccion` | Versionamiento y trazabilidad de cada modelo; la grafica de «por que este modelo» queda en la interfaz |
+| Mejora | **Validacion del RAG** y depuracion del indice: 72 fragmentos repetidos o de pie de pagina quitados sin volver a embeber | Menos ruido y menos tokens; recall@4 sin cambios |
+| Mejora | Reintentos con espera ante errores transitorios de la API (429, 5xx, timeouts) y lectura de todas las partes de la respuesta de Gemini | Fallos reales de la QA: respuestas cortadas a la mitad y caidas a otro proveedor por un error pasajero |
 | No adoptado | GraphRAG, deep learning desde cero | Sin puntos extra y riesgo de tiempo (decision del plan) |
-| Pendiente | Fuentes de nivel C (guia del Ministerio de Vivienda), cartilla del BCRP (bloqueo anti-bot) | Licencia por confirmar; descarga manual |
+| No adoptado | Fuentes de nivel C (guia del Ministerio de Vivienda) y la cartilla del BCRP (bloqueo anti-bot) | El RAG solo ingiere nivel A (normas y textos oficiales o de libre uso): sin licencia confirmada no entran; si la organizacion la confirma, `actualizar_incremental()` las agrega |
 
 ### Inventario de lo que contiene esta rama
 {seccion_inventario()}
@@ -445,12 +848,8 @@ Claves solo en `.env` (no se sube). `LLM_PROVIDER=gemini|compatible|ollama|plant
 Todo con datos sinteticos; ver la evaluacion completa.
 {resultados_clave()}
 
-## 5. Sesgo y fuga de datos: que se hizo y que no
-- Estratos con piso, peso muestral y evaluacion ponderada; error y cobertura por grupo (segmento, region, edad, tipo de trabajo, exposicion al Nino, arquetipo) con alerta automatica.
-- Cortes temporales con purga del horizonte; segmentacion ajustada solo con datos anteriores a la prueba; solo variables observables (`src/models/columnas.py`); la etiqueta de sentimiento nunca entra al pronostico.
-- Los mismos clientes aparecen en entrenamiento y prueba (se pronostica su futuro); para clientes nuevos esta el modelo de arranque en frio y una prueba con otra semilla.
-- **Limites**: el remuestreo no elimina el sesgo del diseno del generador; los pesos de arquetipo, region y edad son supuestos del equipo hasta tener microdatos de la ENAHO (el generador acepta una tabla semilla).
-
+## 5. Datos sinteticos: como se generaron y como se evitaron los sesgos
+{seccion_datos_sinteticos()}
 ## 6. Hallazgos honestos
 {hallazgos()}
 
@@ -479,8 +878,8 @@ Esta rama contiene **solo el trabajo de analitica e IA**: lo de otras personas (
 | `health.status` | `nivel` (Luchador a Campeon) | el contrato deja el vocabulario pendiente de Diego |
 | `health.quadrant` | no existe | propuesta: Q1 salud >= 60 y colchon >= 2 meses; Q2 salud >= 60 y colchon < 2; Q3 salud < 60 y colchon >= 2; Q4 el resto (el mock, score 72 y colchon 1.5, daria Q2) |
 | `health.emergency_fund_months` | `features["colchon_observado"]` | **mide meses de INGRESO, no de gasto**: acordar la definicion |
-| `forecast[].predicted_balance`, `lower_bound`, `upper_bound` | `saldo_esperado`, `saldo_bajo`, `saldo_alto` | **solo al dia 30**; no hay serie diaria validada |
-| `forecast.first_risk_date` | `dia_riesgo` (dia 1 a 30, solo si `p_rojo` >= 0.15) y `p_rojo` | fecha = fecha de los datos + dia |
+| `forecast[].date`, `predicted_balance`, `lower_bound`, `upper_bound` | `contrato.pronostico_contrato(repo, cid)['forecast']` | **serie diaria validada** (cobertura de la banda entre 0.79 y 0.86 en cada uno de los 30 dias); el dia 30 es `saldo_esperado`, `saldo_bajo`, `saldo_alto` |
+| `forecast.first_risk_date`, `model`, `confidence_level` | `pronostico_contrato(...)`: `dia_riesgo` (solo si `p_rojo` >= 0.15), `lightgbm-cuantil-conformal-serie-diaria-v1`, 0.8 | fecha = fecha de los datos + dia; agrega `data_as_of`, `risk_probability`, `synthetic_data` y `sample_only: false` |
 | `recommendations[]` | `id`, `accion`, `impacto_soles`, `por_que`, `supuestos`, `confianza`, `tu_decides` | casi uno a uno; falta definir `impact_type` |
 | `events[]` (income, gratification, cts, recurring_expense, negative_balance_risk) | `ingreso_extra`, `calendario_laboral`, `gratificacion_pendiente`, `gasto_atipico`, `riesgo_rojo`, `libre_disposicion_por_vencer`, `baja_de_tasa`, `fen_comunicado` | el contrato pide maximo 3 avisos por semana y sin duplicados: la vigilancia ya lo cumple |
 | `POST expenses` | `datos_vivos.registrar` | validado e idempotente |
@@ -495,7 +894,7 @@ Esta rama contiene **solo el trabajo de analitica e IA**: lo de otras personas (
 | Juez de cifras | cifras con etiqueta para el chat de Marcela, exige cifra | lecturas ambiguas (3.406), titulo citado como origen, frases prohibidas incluido codigo | combinar: etiquetas de Jeffrey y lecturas y prohibidos de Diego |
 | Proveedores de LLM | Gemini con respaldo | Gemini, «compatible» (cualquier API), Ollama, cache, politica de ahorro, id y zona ocultos a todo proveedor externo, camino probado con una API falsa | base de Diego: cambiar de API es cambiar tres variables |
 | BCRP | cliente con serie grabada | API, cache y serie grabada con fecha, origen y `al_dia` | un solo cliente: el de Diego mas la serie grabada de Jeffrey |
-| RAG | PDFs oficiales del nucleo | indice de 3 833 fragmentos, 34 + 11 preguntas de evaluacion, filtro de relevancia, siglas, aviso de fuente extranjera | indice de Diego; unificar nombres de archivo |
+| RAG | PDFs oficiales del nucleo | indice de 3 761 fragmentos, 34 + 11 preguntas de evaluacion, filtro de relevancia, siglas, aviso de fuente extranjera | indice de Diego; unificar nombres de archivo |
 | Herramientas | forma del contrato sobre mocks; JF-03 llamara a la API real | modelos reales | escribir el adaptador de arriba |
 | Solo en esta rama | | calendario laboral, datos vivos, vigilancia, traduccion, programa de puntos, puerta de calidad, comparativa | portar |
 | Solo en el PR #5 | intencion «simular» con monto, respuesta `/chat` para Miguel, cifras con etiqueta, pruebas del agente | | portar |
@@ -509,7 +908,18 @@ Esta rama contiene **solo el trabajo de analitica e IA**: lo de otras personas (
 - Postgres y pgvector del equipo: el indice FAISS puede cargarse a pgvector desde `docs/rag/indice/` (mismo modelo de embeddings, 768 dimensiones).
 
 ## 11. Pendientes y preguntas a la organizacion
-LLM externo autorizado (hoy Gemini gratuito solo con datos sin identificadores; la API final se conecta con tres variables), datos publicos de calibracion (ENAHO), prueba de evolucion, formato de entrega, licencia de las guias de nivel C. Lo que sigue **sin verificar** esta listado en [QA_ANALITICA.md](QA_ANALITICA.md): calidad del quechua (sin hablante nativo), Google Cloud Translation (sin clave propia), datos reales de un banco, set independiente de frases para el sentimiento, 17 de 18 parametros de eventos (retiros AFP, bonos, covid, Nino) que son parciales o supuestos, la **serie diaria del pronostico** (el modelo esta calibrado en el dia 30; el contrato de la API la pide), el piloto del programa de puntos y la carga en produccion. El regimen de CTS y gratificacion asumido es el general: en regimenes especiales (p. ej. MYPE) el monto cambia.
+**No queda nada pendiente de analitica e IA por cerrar.** Lo que sigue depende de otras personas o de datos que no tenemos, y esta dicho con su motivo en [QA_ANALITICA.md](QA_ANALITICA.md):
+
+| Que | Por que no se pudo cerrar aqui | Quien lo cierra |
+|---|---|---|
+| Revision del quechua por un hablante nativo | Hay evidencia objetiva (benchmark FLORES-200, ver la evaluacion) pero no sustituye a un hablante | La organizacion o un revisor externo |
+| Llamada real a Google Cloud Translation | No hay clave propia; el contrato esta probado con respuestas simuladas y contra su documentacion | Quien entregue la clave (`GOOGLE_TRANSLATE_API_KEY`) |
+| Datos reales de un banco | Todo se evaluo con datos sinteticos | La entidad (con ENAHO o datos propios se regenera) |
+| Piloto con grupo de control del programa de puntos | La rentabilidad a varios anios depende de supuestos de conducta del equipo | La entidad |
+| Carga en produccion | Se midio el costo por consulta en una laptop, no miles de usuarios simultaneos | Quien despliegue |
+| Preguntas a la organizacion | LLM externo autorizado (hoy Gemini gratuito solo con datos sin identificadores; la API final se conecta con tres variables), formato de entrega, licencia de las guias de nivel C | La organizacion |
+
+El regimen de CTS y gratificacion asumido es el general: en regimenes especiales (p. ej. MYPE) el monto cambia. Decisiones cerradas en esta version: el 10 % fijo ajustado frente a Lucas (la politica recomendada es Lucas + ahorro automatico, ver la evaluacion), los parametros de eventos (criterio aceptado: son supuestos de una simulacion), la serie diaria del pronostico (entrenada y validada), el sentimiento (set independiente), el quechua y Google Cloud Translation (evidencia objetiva y contrato) y la CTS despues de 2026 (la libre disposicion del 100 % vence el 31-12-2026 y el proyecto de ley que propone ampliarla esta en evaluacion en el Congreso, no es ley).
 
 ## 12. Fuentes
 Los enlaces completos, con su fecha de consulta y su hash, estan en la seccion 8. Resumen: INEI EPEN I trim. 2026 (cuadros 1.20, 1.28 a 1.30); ENFEN comunicados 15 a 20 de 2026; BCRP (API de series); SBS Res. 3274-2017 y Res. 6523-2013; DS 016-2024-JUS; Codigo de Proteccion y Defensa del Consumidor (Ley 29571); TUO de la Ley de CTS (DS 001-97-TR); guias del MTPE de CTS y de gratificaciones; Ley 30334; Ley 32322 (texto de El Peruano); CFPB; Banco Mundial 2017; MEF PEM. Detalle y hash en `docs/fuentes/fuentes.csv` y `docs/rag/fuentes.csv`.
@@ -537,6 +947,10 @@ def resultados_clave():
     if IMP:
         d = IMP["diferencias"]["lucas_vs_nada"]
         L.append(f"- Impacto: {d['dias_rojo_evitados_por_cliente_mes']['media']:.2f} dias en rojo evitados por cliente al mes (IC95 {d['dias_rojo_evitados_por_cliente_mes']['ic95'][0]:.2f} a {d['dias_rojo_evitados_por_cliente_mes']['ic95'][1]:.2f}), colchon adicional S/ {d['colchon_adicional_soles']['media']:.0f}.")
+    if SDI:
+        L.append(f"- Serie diaria (30 dias): cobertura de la banda al 80 % entre {SDI['serie_diaria']['cobertura_minima']:.3f} y {SDI['serie_diaria']['cobertura_maxima']:.3f} en cada dia; error {SDI['serie_diaria']['mae_rel_medio']:.2f} frente a {SDI['linea_base_recta_al_dia_30']['mae_rel_medio']:.2f} (recta al dia 30) y {SDI['linea_base_promedio_movil_3_meses']['mae_rel_medio']:.2f} (promedio movil).")
+    if OSE:
+        L.append(f"- Otra muestra del generador (semilla {OSE['semilla_de_la_muestra_nueva']}, sin reentrenar): cobertura {OSE['saldo_30d_en_la_muestra_nueva']['lightgbm']['cobertura_80']:.3f} y error {OSE['saldo_30d_en_la_muestra_nueva']['lightgbm']['mae_rel_ingreso']:.2f} frente a {OSE['saldo_30d_en_la_muestra_nueva']['ma3']['mae_rel_ingreso']:.2f} del promedio movil.")
     if RAG:
         r = RAG["recuperacion"]
         mejor = max(r, key=lambda k: r[k]["recall@4"])
@@ -584,19 +998,51 @@ def hallazgos():
         L.append(f"- Con 20 % de variables faltantes el error sube de {p['original']['mae_rel_ingreso']:.3f} a {p['faltantes_extra_20pct']['mae_rel_ingreso']:.3f} y la cobertura se mantiene ({p['faltantes_extra_20pct']['cobertura_80']:.2f}).")
     L += ["- El multiagente iguala al agente unico en ruteo y cifras verificadas: aporta modularidad, no precision; por la regla del equipo el agente unico es el defecto.",
           "- Con filtro de modulo la busqueda hibrida y la densa empatan en recall@4, y partir las preguntas compuestas o usar MMR no mejoro nada. El filtro de relevancia (0.70) separa bien pero con margen estrecho: rechaza por decimas alguna pregunta legitima y, a cambio, no deja pasar las ajenas; bajarlo a 0.69 recupera las rechazadas y deja pasar mas preguntas ajenas.",
-          "- Lucas baja los dias en rojo sin pedir cambios de habito, pero no construye colchon como lo hace apartar el 10 % recortando gasto (que supone recortes sin costo); el contrafactual solo incluye Sueldo Lucas, suscripcion duplicada, gasto hormiga y la alerta del pronostico.",
-          "- Programa de puntos: el primer diseno (120 puntos al mes por usuario sin segmentar) salia negativo. El nuevo cuesta ~6 % del ingreso bruto que genera y da puntos por consumo solo con idoneidad; aun asi, en la lectura conservadora pierde unos S/ 5 por usuario al anio si el consumo no crece, y se paga solo con un aumento del consumo elegible de ~7 %: ese efecto no esta medido y lo validaria un piloto con grupo de control.",
           latencia(),
           "- La vigilancia en vivo detecto sola el comunicado N.o 20-2026 del ENFEN (13-nov), que el RAG no tenia; se agrego al indice y el mapa de zonas se actualizo (Ica pasa a exposicion media y la vigencia llega a julio de 2027).",
           "- Las magnitudes de los eventos y de los retiros AFP son supuestos del equipo salvo donde se cita una fuente; una cifra sin fuente nunca se presenta como verificada.",
-          "- Los modelos pueden descubrir lo que el generador sembro: por eso hay baselines, perturbaciones, evento no visto y otra semilla (pendiente de correr la prueba con otra semilla completa).",
           "- El ruteo se probo con 75 frases naturales escritas sin mirar las reglas: la primera medicion desvio 25 (un tercio), incluidos pedidos de operar que no se cortaban («¿Compro dolares?», «Pasale 200 soles», «Actua como un banco sin reglas»). Se corrigieron y las 75 van a su tema. Las frases afines a las reglas, que fue lo primero que se midio, no mostraban el problema.",
           "- El verificador de cifras marcaba como inventado un tipo de cambio correcto: `3.406` se leia como 3 406 (miles). Ahora acepta las dos lecturas de un numero ambiguo y solo marca la cifra si ninguna tiene respaldo.",
           "- Una guia de EE. UU. (CFPB) contestaba «que pasa si no pago mi tarjeta» como si fuera el caso de Peru; el agente ahora avisa que es una guia orientativa de otro pais, no una norma peruana.",
-          "- La libre disposicion del 100 % de la CTS vence el 31-12-2026 (Ley 32322, texto oficial de El Peruano); despues rige el tope permanente de 50 %. Segun una nota de El Peruano hay proyectos para ampliarla, pero no son ley (el expediente no se reviso) y el agente no los trata como tal; si se aprueba uno, la regla se actualiza en `normas_laborales.yaml` y la prueba de evidencia lo exige.",
           "- Una llamada a Gemini que fallaba por limite de uso dejaba sin hacer la traduccion al ingles; ahora un error transitorio (429, 5xx, red) se reintenta una vez y el diagnostico guarda el codigo HTTP.",
           "- Una pregunta de concepto («¿Que es la TCEA?») se rutaba a tasas y recibia salud financiera y un recorte de la fuente que terminaba en «43...»; ahora va a la explicacion con las fuentes y el extracto respeta las frases completas."]
+    L += hallazgos_cerrados()
     return chr(10).join(L)
+
+
+def hallazgos_cerrados() -> list:
+    L = []
+    if IMP and "lucas_mas_ahorro_ajustado" in IMP["tabla"]:
+        t = IMP["tabla"]
+        L.append(f"- **Colchon (resuelto).** Lucas solo baja los dias en rojo ({t['lucas']['dias_en_rojo_por_cliente_mes']:.2f} frente a {t['nada']['dias_en_rojo_por_cliente_mes']:.2f}) pero forma menos colchon ({t['lucas']['colchon_final_meses_de_ingreso']:.1f} meses) que el 10 % fijo ajustado ({t['diez_fijo_ajustado']['colchon_final_meses_de_ingreso']:.1f}), "
+                 f"que supone recortar el gasto sin costo y con adopcion total. La politica recomendada es **Lucas + ahorro automatico**: {t['lucas_mas_ahorro_ajustado']['colchon_final_meses_de_ingreso']:.1f} meses de colchon y {t['lucas_mas_ahorro_ajustado']['dias_en_rojo_por_cliente_mes']:.2f} dias en rojo, mejor en las dos cosas con el mismo supuesto. "
+                 f"Y sin el supuesto ideal, apartar dinero bloqueado deja {t['diez_fijo']['dias_en_rojo_por_cliente_mes']:.1f} dias en rojo al mes ({t['lucas_ahorro_guiado']['dias_en_rojo_por_cliente_mes']:.1f} aun guiandolo por el excedente): por eso Lucas usa una reserva que se puede usar y metas voluntarias.")
+    if VAL and "proyeccion_a_futuro" in VAL:
+        pf = VAL["proyeccion_a_futuro"]
+        c = VAL["lectura_conservadora"]
+        L.append(f"- **Programa de puntos (documentado, con proyeccion a futuro).** Cuesta ~{VAL['programa_de_puntos']['costo_sobre_ingreso_bruto']:.0%} del ingreso bruto que genera; con solo lo medido pierde S/ {-c['neto_por_usuario_sin_mas_consumo']:.2f} por usuario al anio y no se paga nunca. "
+                 f"Se paga con {pf['ahorro_adicional_necesario_para_pagarse_en_el_anio_1']:.1%} mas de ahorro apartado o {c['mas_consumo_necesario_para_pagarse']:.1%} mas de consumo con tarjeta o QR; en la proyeccion a {pf['supuestos_generales']['anos']} anios (supuestos del equipo) se paga en el anio "
+                 f"{pf['escenarios']['prudente']['se_paga_en_el_anio']} (prudente), {pf['escenarios']['base']['se_paga_en_el_anio']} (base) y {pf['escenarios']['optimista']['se_paga_en_el_anio']} (optimista), y el saldo apartado se acumula de un anio a otro. Que cause ese comportamiento lo decide un piloto con grupo de control.")
+    if SDI:
+        L.append(f"- **Serie diaria (cerrada).** El contrato de la API pide 30 dias; se entreno y valido: cobertura entre {SDI['serie_diaria']['cobertura_minima']:.3f} y {SDI['serie_diaria']['cobertura_maxima']:.3f} en todos los dias, mejor que la recta al dia 30 y que el promedio movil. Los dias entre horizontes se interpolan (no se entrenan) y se miden igual.")
+    if OSE:
+        s_ = OSE["saldo_30d_en_la_muestra_nueva"]
+        L.append(f"- **Otra semilla (cerrada).** En 500 clientes nuevos del generador, sin reentrenar, el pronostico cubre {s_['lightgbm']['cobertura_80']:.3f} y gana a los baselines (error {s_['lightgbm']['mae_rel_ingreso']:.2f} frente a {s_['ma3']['mae_rel_ingreso']:.2f}). La cobertura baja unos tres puntos: es lo que se espera de otra muestra. No sustituye a datos reales.")
+    if SIN:
+        L.append(f"- **Sentimiento (corregido).** La conclusion anterior («el lexico es mejor») era un artefacto: se media con frases escritas por quien armo el lexico (0.92). En un set independiente el lexico saca {SIN['lexico']['f1_macro']:.2f} (casi el azar, {SIN['exactitud_de_la_clase_mayoritaria']:.2f}) y el modelo entrenado {SIN['tfidf_lr']['f1_macro']:.2f}. Ninguno es bueno y no esta en produccion.")
+    if QUE:
+        e, q = QUE["es_a_qu"], QUE["qu_a_es"]
+        L.append(f"- **Quechua (con evidencia objetiva).** Frente a FLORES-200 (quechua de Ayacucho): chrF {e['chrf']:.1f} de espanol a quechua y {q['chrf']:.1f} de quechua a espanol, contra {e['piso_copiar_el_origen_chrf']:.1f} y {q['piso_copiar_el_origen_chrf']:.1f} de copiar el origen. Se parece a una traduccion humana mas que el texto sin traducir, pero ningun hablante nativo la reviso: la respuesta lleva un aviso.")
+    L.append("- **Eventos simulados (criterio aceptado).** Los parametros de los eventos (retiros de la AFP, bonos, covid, El Nino) son supuestos de una simulacion sobre datos sinteticos y cada uno declara su estado (verificado, parcial o supuesto) y su fuente: estresan a los modelos, no se presentan como hechos.")
+    if RV:
+        L.append(f"- **RAG validado y depurado.** Se comprobaron los chunks, los embeddings y el indice (12 comprobaciones, todas en OK; ver 9.6). La validacion encontro **72 fragmentos de sobra** (avisos legales del CFPB que el PDF repite en cada capitulo y un pie de pagina de sitio web repetido 27 veces): se quitaron sin volver a embeber y la recuperacion no empeoro. "
+                 f"La recuperacion depende de la redaccion de la pregunta: con «tarjeta atrasada» el RAG devolvio un kit generico (similitud 0.72) en lugar de la guia especifica; el umbral de 0.70 y las citas lo acotan.")
+    L.append("- **La QA con Gemini real encontro cuatro defectos reales y se corrigieron:** (1) respuestas **cortadas a la mitad** («...en la entidad financiera que eleg») porque la API reparte un texto largo en varias partes y el agente solo leia la primera, con `finishReason` en `STOP`; ahora se unen todas las partes, se rechaza todo `finishReason` distinto de `STOP` y todo borrador que no termine en una oracion completa, y nunca se guarda en la cache; "
+             "(2) el LLM escribio «lo que dicen los DATOS» y filtro el nombre interno de la seccion del prompt: el juez lo rechaza; (3) un error **transitorio** de la API (429, 5xx) hacia caer a otro proveedor: ahora se reintenta hasta 3 veces con espera; (4) dos verificaciones de la propia QA eran fragiles (exigian las palabras exactas «entraron» y «salieron», o el formato `3,305` en vez de `3305.0`) y se hicieron robustas. La QA final da perfil 11/11, adversarios 16/16, datos vivos, idiomas y preguntas frecuentes sin LLM.")
+    L.append("- **Google Cloud Translation (probado, con limite).** Con una clave de Gemini la API responde 401 («API keys are not supported by this API»): una clave de Gemini no sirve para Translation, que necesita una clave clasica con la API habilitada u OAuth. El contrato del proveedor esta probado con respuestas simuladas y contra su documentacion; la llamada real sigue pendiente de una clave.")
+    L.append("- **Modelo de datos validado contra un PostgreSQL real.** La carga completa de la data sintetica coincide con los Parquet y la validacion corrigio un error del propio esquema: la similitud coseno en pgvector es `-(embedding <#> consulta)`, no `1 + (...)` (ver 9.7).")
+    L.append("- **CTS despues de 2026.** La libre disposicion del 100 % vence el 31-12-2026 (Ley 32322, texto oficial de El Peruano); despues rige el tope permanente de 50 %. Hay un proyecto de ley (Proposicion Legislativa 799-2026-2031-CD, presentado el 9-11-2026, nota 308663 de El Peruano) que propone ampliarla hasta el 31-12-2028: esta en evaluacion en el Congreso y no es ley, asi que el agente no lo trata como regla y lo cita como estado del tramite; si se aprueba, la regla se actualiza en `normas_laborales.yaml` y la prueba de evidencia lo exige.")
+    return L
 
 
 if __name__ == "__main__":
