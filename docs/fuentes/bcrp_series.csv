@@ -1,0 +1,7 @@
+codigo,archivo,descripcion,enlace,fecha_consulta,estado,detalle
+PD04637PD,bcrp/tc_interbancario_compra_diario.json,"Tipo de cambio interbancario, compra (S/ por US$), diario",https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PD04637PD/json/2019-1-1/2025-12-31/esp,2026-11-14,ok,1827 observaciones
+PD04638PD,bcrp/tc_interbancario_venta_diario.json,"Tipo de cambio interbancario, venta (S/ por US$), diario",https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PD04638PD/json/2019-1-1/2025-12-31/esp,2026-11-14,ok,1827 observaciones
+PN01271PM,bcrp/ipc_lima_var_mensual.json,"IPC Lima Metropolitana, variacion % mensual",https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PN01271PM/json/2019-1/2025-12/esp,2026-11-14,ok,84 observaciones
+PN01273PM,bcrp/ipc_lima_var_12m.json,"IPC Lima Metropolitana, variacion % en 12 meses",https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PN01273PM/json/2019-1/2025-12/esp,2026-11-14,ok,84 observaciones
+PD04722MM,bcrp/tasa_referencia_bcrp.json,Tasa de referencia de la politica monetaria del BCRP (%),https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PD04722MM/json/2019-1/2025-12/esp,2026-11-14,ok,84 observaciones
+PN07819NM,bcrp/tasas_bancarias_mn_promedio.json,Tasas de interes activas y pasivas promedio de empresas bancarias en MN (% efectivo anual),https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PN07819NM/json/2019-1/2025-12/esp,2026-11-14,ok,84 observaciones

@@ -1,0 +1,106 @@
+{
+ "por_nivel": {
+  "aprendiz": {
+   "clientes": 13,
+   "consumo_elegible_anual": 4197.802561026081,
+   "puntos_por_mes": 82.64614709444058,
+   "costo_de_puntos_anual": 6.942276355933008,
+   "comision_por_consumo_anual": 41.978025610260815,
+   "margen_por_ahorro_anual": 94.32779088112501,
+   "ingreso_anual": 136.30581649138583,
+   "costo_sobre_ingreso": 0.050931622249383184,
+   "consumo_por_cada_sol_de_puntos": 423.27064525557074,
+   "neto_bruto_anual": 129.3635401354528,
+   "mejora_de_ingreso_necesaria_para_pagarse": 0.050931622249383184
+  },
+  "campeon": {
+   "clientes": 228,
+   "consumo_elegible_anual": 9415.67717044783,
+   "puntos_por_mes": 254.51680389833126,
+   "costo_de_puntos_anual": 21.379411527459826,
+   "comision_por_consumo_anual": 94.15677170447829,
+   "margen_por_ahorro_anual": 241.31755865853475,
+   "ingreso_anual": 335.4743303630131,
+   "costo_sobre_ingreso": 0.06372890439732125,
+   "consumo_por_cada_sol_de_puntos": 308.286035415334,
+   "neto_bruto_anual": 314.0949188355533,
+   "mejora_de_ingreso_necesaria_para_pagarse": 0.06372890439732125
+  },
+  "constructor": {
+   "clientes": 153,
+   "consumo_elegible_anual": 5045.418235188503,
+   "puntos_por_mes": 110.194972517112,
+   "costo_de_puntos_anual": 9.25637769143741,
+   "comision_por_consumo_anual": 50.45418235188503,
+   "margen_por_ahorro_anual": 101.09982227030281,
+   "ingreso_anual": 151.55400462218782,
+   "costo_sobre_ingreso": 0.061076430903378824,
+   "consumo_por_cada_sol_de_puntos": 381.5523612329506,
+   "neto_bruto_anual": 142.2976269307504,
+   "mejora_de_ingreso_necesaria_para_pagarse": 0.061076430903378824
+  },
+  "luchador": {
+   "clientes": 58,
+   "consumo_elegible_anual": 7177.830929052827,
+   "puntos_por_mes": 47.997359654326075,
+   "costo_de_puntos_anual": 4.03177821096339,
+   "comision_por_consumo_anual": 71.77830929052827,
+   "margen_por_ahorro_anual": 26.568505665785533,
+   "ingreso_anual": 98.34681495631378,
+   "costo_sobre_ingreso": 0.040995513812565554,
+   "consumo_por_cada_sol_de_puntos": 1246.2197540217328,
+   "neto_bruto_anual": 94.31503674535038,
+   "mejora_de_ingreso_necesaria_para_pagarse": 0.040995513812565554
+  },
+  "maestro": {
+   "clientes": 48,
+   "consumo_elegible_anual": 12289.427167285292,
+   "puntos_por_mes": 239.1236925457427,
+   "costo_de_puntos_anual": 20.086390173842386,
+   "comision_por_consumo_anual": 122.89427167285291,
+   "margen_por_ahorro_anual": 200.2724812941404,
+   "ingreso_anual": 323.16675296699333,
+   "costo_sobre_ingreso": 0.06215487821512973,
+   "consumo_por_cada_sol_de_puntos": 428.2799917081411,
+   "neto_bruto_anual": 303.0803627931509,
+   "mejora_de_ingreso_necesaria_para_pagarse": 0.06215487821512973
+  }
+ },
+ "total": {
+  "costo_anual": 15.168020000106004,
+  "comision_anual": 79.59748255906011,
+  "margen_ahorro_anual": 165.86304769378688,
+  "ingreso_anual": 245.46053025284704,
+  "costo_sobre_ingreso": 0.06179413034136911,
+  "neto_bruto_por_usuario_anual": 230.29251025274104,
+  "neto_bruto_anual_escenario": 23029251.025274105,
+  "usuarios": 100000,
+  "puntos_por_usuario_al_mes": 180.57166666792864
+ },
+ "supuestos": {
+  "comision_por_consumo": 0.01,
+  "margen_anual_sobre_saldo_apartado": 0.03,
+  "porcentaje_de_puntos_que_se_canjea": 0.7,
+  "reinversion_maxima_de_la_comision": 0.3,
+  "canales_que_pagan_comision": [
+   "tarjeta_debito",
+   "tarjeta_credito",
+   "pago_qr"
+  ]
+ },
+ "valor_por_punto": 0.01,
+ "topes_de_reinversion": {
+  "luchador": 0.0,
+  "aprendiz": 0.05,
+  "constructor": 0.1,
+  "maestro": 0.2,
+  "campeon": 0.3
+ },
+ "niveles_de_la_muestra": {
+  "campeon": 228,
+  "constructor": 153,
+  "luchador": 58,
+  "maestro": 48,
+  "aprendiz": 13
+ }
+}

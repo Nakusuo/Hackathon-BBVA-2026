@@ -7,6 +7,10 @@ const PANTALLAS = [
   { ruta: '/lucas/gastos', titulo: 'Lucas' },
   { ruta: '/lucas/que-viene', titulo: 'Lucas' },
   { ruta: '/lucas/chat', titulo: 'Lucas' },
+  { ruta: '/lucas/aprendido', titulo: 'Lucas' },
+  { ruta: '/lucas/salud', titulo: 'Lucas' },
+  { ruta: '/lucas/gastos-detalle', titulo: 'Lucas' },
+  { ruta: '/preferencias', titulo: 'Preferencias' },
 ]
 
 async function sinGuia(page) {
@@ -55,8 +59,8 @@ test('con movimiento reducido las cifras del resumen salen ya en su valor final'
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/lucas/resumen')
   const recuadros = page.getByRole('region', { name: 'Cuánto puedes gastar' })
-  await expect(recuadros.locator('.recuadro-cifra [aria-hidden="true"]').first()).toHaveText('S/ 26')
-  await expect(recuadros.locator('.recuadro-cifra [aria-hidden="true"]').nth(1)).toHaveText('S/ 30')
+  await expect(recuadros.locator('.hero-cifra [aria-hidden="true"]')).toHaveText('S/ 26')
+  await expect(recuadros.locator('.hero-actual [aria-hidden="true"]')).toHaveText('S/ 30')
 })
 
 test('lo importante se ve sin bajar: aviso de Lucas en la banca y gasto diario en Lucas', async ({ page }) => {
@@ -107,9 +111,11 @@ test('la banca puede ocultar los montos', async ({ page }) => {
   await expect(ojo).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('Resumen: confirmar lo aprendido', async ({ page }) => {
+test('Resumen: confirmar lo aprendido desde su bloque', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/lucas/resumen')
+  await page.getByRole('link', { name: /Lo que aprendí/ }).click()
+  await expect(page).toHaveURL(/lucas\/aprendido/)
   const primero = page.locator('.aprendido').first()
   await primero.getByRole('button', { name: 'Sí' }).click()
   await expect(primero).toContainText('Gracias, lo sigo usando.')
@@ -119,18 +125,19 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   await sinGuia(page)
   await page.goto('/lucas/resumen')
   const tips = page.getByRole('region', { name: 'Tips para tu día más justo' })
-  await expect(tips).toContainText('Si haces los 3')
+  const aviso = page.getByRole('status', { name: 'Aviso de Lucas' })
+  await expect(tips.locator('.impacto')).toContainText('Días en rojo 2 → 0')
   const botones = tips.getByRole('button', { name: 'Lo hago' })
   await expect(botones).toHaveCount(3)
 
   await botones.nth(0).click()
   await expect(botones.nth(0)).toHaveAttribute('aria-pressed', 'true')
-  await expect(tips).toContainText('Con tu cambio, tu peor caso del domingo 29 pasa de −S/ 60 a −S/ 29')
+  await expect(aviso).toContainText('−S/ 29')
 
   await botones.nth(1).click()
   await botones.nth(2).click()
-  await expect(tips).toContainText('Ya no quedas en rojo antes de cobrar')
-  await expect(page.getByRole('status', { name: 'Aviso de Lucas' })).toContainText('Vas bien')
+  await expect(tips.locator('.impacto')).toContainText('Días en rojo 0')
+  await expect(aviso).toContainText('Vas bien')
   await expect(page.getByText('podrías apartar S/ 150')).toBeVisible()
 
   await page.getByRole('link', { name: 'Qué viene' }).click()
@@ -148,6 +155,8 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
 test('Gastos compara cada categoría con el promedio', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/lucas/gastos')
+  await expect(page.locator('.leyenda-gastos li').first()).toContainText('Comida y delivery')
+  await page.getByRole('link', { name: 'Ver detalle' }).click()
   const categorias = page.getByRole('region', { name: 'Tus gastos por categoría' })
   await expect(categorias.locator('.categoria').first()).toContainText('Comida y delivery')
   await expect(categorias).toContainText('S/ 32 más que tu promedio')
@@ -163,7 +172,7 @@ test('Qué viene cambia de periodo y muestra los pagos de diciembre', async ({ p
   await expect(pagos).toContainText('Pago total de tarjeta')
 })
 
-test('el chat responde con cifras verificadas y no da asesoría', async ({ page }) => {
+test('el chat responde «Calculado con tus datos» y no da asesoría', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/lucas/chat')
   await page.getByRole('button', { name: '¿Puedo gastar S/ 150 en un regalo?' }).click()
@@ -207,7 +216,7 @@ test('la guía retiene el foco con Tab y lo devuelve al botón «?» al cerrar',
 
 test('responder «No» marca el dato como por revisar y se puede deshacer', async ({ page }) => {
   await sinGuia(page)
-  await page.goto('/lucas/resumen')
+  await page.goto('/lucas/aprendido')
   const dato = page.locator('.aprendido').nth(1)
   await dato.getByRole('button', { name: 'No' }).click()
   await expect(dato).toContainText('Marcado como por revisar.')

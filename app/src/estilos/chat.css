@@ -46,7 +46,7 @@
 
 .cifras-verificadas svg {
   flex: none;
-  color: var(--azul);
+  color: var(--azul-texto);
 }
 
 .cifras-verificadas strong {

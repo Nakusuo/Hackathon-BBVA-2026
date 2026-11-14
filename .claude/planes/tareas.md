@@ -57,7 +57,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **DX-01** Diccionario de datos v1 (`data/dictionary.md`) junto con Michael y Diego: tablas, columnas, tipos, etiquetas. *Hecho:* los tres lo aprueban. Rama `feature/datos-diccionario`
 - [ ] **MG-01** Contrato de la API (`docs/api.md`) junto con Marcela y Jeffrey: endpoints y JSON de ejemplo en `data/sample/mocks/`. *Hecho:* los tres lo aprueban. Rama `feature/backend-contrato`
 - [x] **MC-01** Decidir la UI a las 11:30 (React + Recharts o Streamlit) y esqueleto que navega las 6 pantallas vacías. *Hecho:* se abre en el navegador. Rama `feature/front-esqueleto` — Nakusuo/Marcela, 2026-11-14: React + Recharts; pantallas Cómo estás, Qué viene y Qué hacer con datos de prueba (las demás se agregan cuando hagan falta)
-- [ ] **JF-01** Instalar Ollama con `qwen2.5:3b` (ajustes de GPU del plan maestro, sección 3) y un modelo de embeddings; anotar versiones en `PROMPTS.md`. Descargar los PDFs del «núcleo del RAG» de `.claude/investigacion/rag-fuentes.md` en `docs/rag/<modulo>/` y armar `docs/rag/fuentes.csv`. Buscar el texto oficial de la Ley 29571. Rama `feature/ia-setup`
+- [x] **JF-01** Instalar Ollama con `qwen2.5:3b` (ajustes de GPU del plan maestro, sección 3) y un modelo de embeddings; anotar versiones en `PROMPTS.md`. Descargar los PDFs del «núcleo del RAG» de `.claude/investigacion/rag-fuentes.md` en `docs/rag/<modulo>/` y armar `docs/rag/fuentes.csv`. Buscar el texto oficial de la Ley 29571. Rama `feature/ia-setup`
 - [ ] **DI-01** Lista de variables por cliente y firma de las funciones de baseline (`src/models/baselines.py` con tests vacíos). Rama `feature/ml-baselines`
 
 ## Bloque 2 · Sábado 12:00–15:00 · Base que funciona
@@ -70,8 +70,8 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **MG-02** Ingesta: validación Pydantic, dedup y carga a Postgres. `make data` completo. *Depende:* DX-02, MI-03. Rama `feature/backend-ingesta`
 - [ ] **MG-03** FastAPI con los endpoints del contrato devolviendo los mocks. `make run`. *Depende:* MG-01. Rama `feature/backend-api`
 - [ ] **MC-02** Pantallas Cómo estás y Qué viene (gráfico con banda) usando mocks. *Depende:* MG-01. Rama `feature/front-estado-pronostico`
-- [ ] **JF-11** `GeminiProvider` como segundo proveedor (Ollama → Gemini → plantillas) según [gemini-api.md](../investigacion/gemini-api.md): clave solo en `.env`, envía solo salidas de tools, timeout y paso a plantilla ante error 429 o sin red. Test: con la red apagada responde por plantilla. *No bloquea a nadie.* Rama `feature/ia-gemini`
-- [ ] **JF-02** Esqueleto LangGraph: router → tool falsa → redacción → juez → respuesta, con `TemplateProvider`. *Hecho:* test de punta a punta del grafo. Rama `feature/ia-grafo`
+- [x] **JF-11** `GeminiProvider` como segundo proveedor (Ollama → Gemini → plantillas) según [gemini-api.md](../investigacion/gemini-api.md): clave solo en `.env`, envía solo salidas de tools, timeout y paso a plantilla ante error 429 o sin red. Test: con la red apagada responde por plantilla. *No bloquea a nadie.* Rama `feature/ia-gemini`
+- [x] **JF-02** Esqueleto LangGraph: router → tool falsa → redacción → juez → respuesta, con `TemplateProvider`. *Hecho:* test de punta a punta del grafo. Rama `feature/ia-grafo`
 - [ ] **DI-02** Variables por cliente calculadas desde transacciones, con test. *Depende:* DX-02. Rama `feature/ml-features`
 - [ ] **DI-03** Baselines: promedio móvil de saldo, «mismo comercio ≥ 3 veces», diccionario de glosas. Con tests. *Depende:* DI-02
 
@@ -106,7 +106,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 
 - [ ] **DX-17 / MG-14 / MC-12** Lucas en 5 preguntas, versión mínima (HU-21, cierra la ola 1 y va antes que cualquier tarea de ola 2): `generar_cliente(respuestas, seed)` en el generador, con las mismas reglas que los 500 clientes (Dixon); endpoint sin token que llama a `calcular_estado` sin base (Miguel); formulario y resultado (Marcela). Segmento por umbrales. Caso CP-SIS-22. Rama `feature/backend-cinco-preguntas`
 - [ ] **JF-05** RAG por módulos: PDFs en `docs/rag/<modulo>/` con `fuentes.csv`; fragmentos con su módulo en pgvector; el agente busca solo en el módulo que toca; el juez valida que cada cita exista. Rama `feature/ia-rag`
-- [ ] **JF-06** 30 preguntas fijas y 10 adversas (inyección, «compra dólares», «transfiere») en `tests/agent/`. Rama `feature/ia-tests`
+- [x] **JF-06** 30 preguntas fijas y 10 adversas (inyección, «compra dólares», «transfiere») en `tests/agent/`. Rama `feature/ia-tests`
 - [ ] **MG-07** Endpoints de simulador y Sueldo Lucas (con Diego). Sueldo Lucas: solo si la volatilidad del ingreso supera el umbral; monto prudente con piso en los fijos (si no los cubre, `falta_para_fijos` y reco, nunca un monto que deje en rojo); sin pago actual, apartar 0 y días con colchón. Caso CP-SIS-33. Rama `feature/backend-simulador`
 - [ ] **MG-08** Ofertas: `data/catalogo_ofertas.json` con productos y promociones ficticias o genéricas; reglas por necesidad, cuadrante de la matriz e idoneidad (inversión solo con colchón ≥ 3 meses y sin deuda cara); precision@3 frente a «lo más popular». Rama `feature/backend-ofertas`
 - [ ] **MG-11** Metas de ahorro: aporte por quincena que no deja en rojo, proyección a fin de año con la banda del pronóstico y probabilidad de cumplir; frente a la regla del 10 %. Con Diego. *Depende:* DI-06. Rama `feature/backend-metas`
@@ -139,7 +139,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 
 - [ ] **DI-11** Sentimiento con modelo preentrenado frente a léxico, medido en las 100 frases.
 - [ ] **DI-12** Lucas en 5 preguntas, ola 2: asignación a cluster K-Prototypes y MAE con 0, 1 y 3 meses frente al promedio poblacional. *Depende:* DX-17 / MG-14 / MC-12.
-- [ ] **JF-08** BCRP: tipo de cambio e inflación con caché y serie grabada de respaldo.
+- [x] **JF-08** BCRP: tipo de cambio e inflación con caché y serie grabada de respaldo.
 - [ ] **JF-10 / MG-12** Aprendizaje por respuestas: pesos por tipo de recomendación y segmento que suben o bajan con «útil / no me sirve»; simulación con `prob_acepta_reco` frente al recomendador sin memoria.
 - [ ] **DX-12** Si DX-11 dio luz verde: base semilla del bootstrap desde la ENAHO y regenerar datos (`make data`); comparar métricas antes y después.
 - [ ] **MC-09** Pulido: claro y oscuro, 1366×768, celular, checklist anti-slop de `reglas/calidad-codigo.md`.

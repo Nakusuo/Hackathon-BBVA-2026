@@ -1,8 +1,10 @@
-// Monograma propio de Lucas: no usa iconos de terceros para que la marca sea reconocible dentro de cualquier banca.
+import Mascota from './Mascota.jsx'
+
+// En tamaños de ícono la mascota va quieta: moverse en cada esquina de la app distrae.
 export default function MarcaLucas({ tamano = 40 }) {
   return (
     <span className="marca-lucas" style={{ '--tamano': `${tamano}px` }} aria-hidden="true">
-      L
+      <Mascota tamano={tamano * 0.92} animada={false} />
     </span>
   )
 }

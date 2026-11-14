@@ -218,3 +218,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Analitica: datos generados, modelos pesados y caches locales
+data/generado/
+models/*.tmp
+.ipynb_checkpoints/
+models/*.log
+models/fig_*.png
+data/generado/memoria/
+
+# Caché local del BCRP (la serie grabada sí se versiona)
+data/bcrp/cache.json

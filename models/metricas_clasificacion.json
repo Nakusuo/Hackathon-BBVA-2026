@@ -1,0 +1,58 @@
+{
+ "glosa_a_categoria": {
+  "diccionario": {
+   "f1_macro": 0.8642178793235947,
+   "exactitud": 0.9894333333333334
+  },
+  "tfidf_char_sgd_lineal": {
+   "f1_macro": 0.8936542149159054,
+   "exactitud": 0.9894666666666667
+  },
+  "cobertura_diccionario": 0.9999666666666667,
+  "n_prueba": 30000
+ },
+ "recurrentes": {
+  "periodicidad_y_monto": {
+   "precision": 0.9985535607929891,
+   "recall": 0.8752330524274741,
+   "f1": 0.9328352277243462
+  },
+  "baseline_mismo_comercio_3_veces": {
+   "precision": 0.09207255705549877,
+   "recall": 1.0,
+   "f1": 0.1686198530686449
+  },
+  "n_clientes": 150
+ },
+ "suscripciones_duplicadas": {
+  "precision": 1.0,
+  "recall": 0.7,
+  "f1": 0.8235294117647058,
+  "detectados": 7,
+  "reales": 10
+ },
+ "atipicos": {
+  "n_atipicos": 2066,
+  "n": 800000,
+  "zscore_robusto": {
+   "precision_en_k": 0.6878025169409487,
+   "recall_en_k": 0.6878025169409487
+  },
+  "isolation_forest": {
+   "precision_en_k": 0.750242013552759,
+   "recall_en_k": 0.750242013552759
+  }
+ },
+ "sentimiento": {
+  "plantillas_futuras": {
+   "lexico_f1": 0.6184785043128144,
+   "tfidf_lr_f1": 1.0,
+   "n": 12801
+  },
+  "escritas_a_mano": {
+   "lexico_f1": 0.9163752913752914,
+   "tfidf_lr_f1": 0.7306915306915307,
+   "n": 24
+  }
+ }
+}

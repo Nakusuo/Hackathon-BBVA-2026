@@ -51,3 +51,9 @@ export function textoDiasEnRojo(riesgo) {
     ? `El ${fechaDia(riesgo.desde)}`
     : `Entre el ${fechaDia(riesgo.desde)} y el ${fechaDia(riesgo.hasta)}`
 }
+
+export function nivelDeSalud(puntaje) {
+  if (puntaje >= 70) return 'vas bien'
+  if (puntaje >= 45) return 'vas regular'
+  return 'estás en riesgo'
+}

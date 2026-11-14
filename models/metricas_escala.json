@@ -1,0 +1,10 @@
+{
+ "clientes": 500,
+ "carga_modelos_y_datos_s": 4.1,
+ "contexto_por_cliente_ms": 3.32,
+ "recomendaciones_por_cliente_ms": 0.43,
+ "recomendaciones_por_segundo": 2319.0,
+ "pico_memoria_gb": 0.81,
+ "pronostico_30d_filas": 500,
+ "pronostico_30d_ms_por_cliente": 0.084
+}

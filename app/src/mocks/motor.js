@@ -1,7 +1,7 @@
 // Sustituto del pronóstico (DI-06) y del recomendador (MG-04) mientras no exista la API (MG-01).
 // Todas las cifras de las pantallas salen de aquí para que nunca se contradigan entre sí.
 
-export function sumarDias(fechaIso, dias) {
+function sumarDias(fechaIso, dias) {
   const d = new Date(`${fechaIso}T12:00:00`)
   d.setDate(d.getDate() + dias)
   return d.toISOString().slice(0, 10)
@@ -97,11 +97,6 @@ export function ajusteDe(cambios) {
     }),
     { pagosOmitidos: [], frecuencias: {} },
   )
-}
-
-export function evaluarTodos(persona, cambios) {
-  const puntos = simular(persona, ajusteDe(cambios))
-  return { peor: peorDia(persona, puntos), diasEnRojo: diasEnRojo(persona, puntos) }
 }
 
 // Un gasto puntual mañana: cómo cambia el peor día y cuánto conviene gastar al día después.

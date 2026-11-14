@@ -1,0 +1,103 @@
+# Parametros del generador sintetico. Cada bloque lleva su fuente y su estado:
+#   verificado = leido en la fuente primaria | parcial = ancla verificada + ajuste del equipo | supuesto = decision del equipo
+version: 1
+periodo:
+  inicio: "2019-01-01"
+  fin: "2025-12-31"
+
+estratos:
+  # Ningun estrato (arquetipo x ahorro x gasto) baja de esta fraccion de la muestra.
+  # El peso muestral restituye la proporcion poblacional: sobremuestreo controlado, no sesgo oculto.
+  piso_por_estrato: 0.02
+
+poblacion:
+  # Poblacion objetivo: trabajadores del sector privado con cuenta, no toda la PEA.
+  # Ancla INEI/EPEN abr-2025 a mar-2026: ingreso promedio S/ 1 925,9; urbano 2 093,7; comercio 1 682,0; servicios 2 285,8; manufactura 2 024,8 (cuadros 1.28 y 1.30).
+  arquetipos:
+    formal_quincena:
+      peso: 0.30
+      p_ahorra: 0.45
+      p_gasta_mucho: 0.35
+      mediana: 2400
+      sigma: 0.35
+      estado: parcial
+      fuente: "Mediana cercana a servicios 2 285,8 (INEI EPEN, cuadro 1.30); pesos del equipo"
+    base_comision:
+      peso: 0.15
+      p_ahorra: 0.35
+      p_gasta_mucho: 0.45
+      mediana: 2000
+      sigma: 0.40
+      estado: parcial
+      fuente: "Mediana cercana a manufactura 2 024,8 (INEI EPEN, cuadro 1.30); pesos del equipo"
+    independiente:
+      peso: 0.40
+      p_ahorra: 0.25
+      p_gasta_mucho: 0.40
+      subtipos:
+        diario: {peso: 0.55, mediana: 1700, sigma: 0.45}
+        proyectos: {peso: 0.45, mediana: 2100, sigma: 0.55}
+      estado: parcial
+      fuente: "Diario ancla en comercio 1 682,0 (INEI EPEN, cuadro 1.30); proyectos y pesos son supuesto del equipo. La informalidad total es 69,8 % (INEI, cuadro 1.20) pero la poblacion objetivo es bancarizada"
+    mixto:
+      peso: 0.15
+      p_ahorra: 0.30
+      p_gasta_mucho: 0.40
+      mediana: 1900
+      sigma: 0.45
+      estado: parcial
+      fuente: "Mediana cercana al promedio urbano 2 093,7 (INEI EPEN, cuadro 1.28); pesos del equipo"
+  region:
+    values: {lima: 0.45, norte: 0.18, sur: 0.17, centro: 0.12, oriente: 0.08}
+    estado: supuesto
+  departamento:
+    # Ubicacion gruesa (departamento), no coordenadas. Pesos internos de cada region: supuesto del equipo.
+    values:
+      lima: {Lima: 0.93, Callao: 0.07}
+      norte: {Piura: 0.30, La Libertad: 0.26, Lambayeque: 0.22, Cajamarca: 0.14, Tumbes: 0.08}
+      sur: {Arequipa: 0.30, Cusco: 0.20, Ica: 0.15, Puno: 0.12, Tacna: 0.08, Moquegua: 0.05, Apurimac: 0.10}
+      centro: {Junin: 0.35, Ancash: 0.25, Huanuco: 0.15, Ayacucho: 0.15, Pasco: 0.05, Huancavelica: 0.05}
+      oriente: {Loreto: 0.30, San Martin: 0.25, Ucayali: 0.20, Amazonas: 0.15, Madre de Dios: 0.10}
+    estado: supuesto
+  edad:
+    values: {"18-24": 0.12, "25-34": 0.32, "35-44": 0.26, "45-54": 0.18, "55+": 0.12}
+    estado: supuesto
+
+bootstrap_perfiles:
+  # Bootstrap suavizado: se remuestrean perfiles semilla y se les agrega ruido en escala log.
+  # Si hay microdatos reales (ENAHO) se pasa una tabla semilla y reemplaza a la parametrica.
+  n_semillas: 4000
+  ancho_banda_log: 0.10
+
+comportamiento:
+  gasto_ratio: {gasta_poco: [0.68, 0.86], gasta_mucho: [0.92, 1.08]}
+  ahorro_tasa: {ahorra: [0.08, 0.22], no_ahorra: [0.0, 0.02]}
+  prob_alquiler: 0.55
+  alquiler_share: [0.18, 0.32]
+  prob_deuda: 0.45
+  cuota_share: [0.08, 0.20]
+  prob_usd: 0.06
+  # Parte del ingreso y del gasto que se mueve en efectivo y no pasa por la cuenta (dato incompleto).
+  fraccion_efectivo:
+    formal_quincena: [0.00, 0.03]
+    base_comision: [0.00, 0.05]
+    independiente_diario: [0.20, 0.45]
+    independiente_proyectos: [0.00, 0.10]
+    mixto: [0.05, 0.20]
+  # Cuanto de la inflacion llega al ingreso nominal (el resto es perdida de poder de compra).
+  traspaso_inflacion: {formal_quincena: 0.65, base_comision: 0.55, independiente: 0.45, mixto: 0.55}
+  prob_credito_informal: {ahorra: 0.20, no_ahorra: 0.55}
+  tasa_credito_informal_mensual: [0.05, 0.18]
+  prob_cambio_patron: 0.12
+  estado: supuesto
+
+calidad:
+  p_faltante_glosa: 0.020
+  p_faltante_categoria: 0.030
+  p_faltante_saldo: 0.015
+  p_faltante_monto: 0.002
+  p_duplicado: 0.004
+  p_atipico: 0.003
+
+mensajes:
+  tasa_dia: 0.035
