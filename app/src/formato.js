@@ -52,6 +52,12 @@ export function diasEntre(desdeIso, hastaIso) {
   return Math.round((aFecha(hastaIso) - aFecha(desdeIso)) / 86400000)
 }
 
+// Parte del ciclo de cobro que ya pasó, entre 0 y 1: con un cobro a más de 30 días (o ya vencido)
+// la barra no puede salirse ni quedar en negativo.
+export function avanceDelCiclo(diasQueFaltan, diasDelCiclo = 30) {
+  return Math.min(1, Math.max(0, 1 - diasQueFaltan / diasDelCiclo))
+}
+
 export function textoDiasEnRojo(riesgo) {
   return riesgo.desde === riesgo.hasta
     ? `El ${fechaDia(riesgo.desde)}`

@@ -16,14 +16,13 @@ import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import CifraVerificada from '../componentes/CifraVerificada.jsx'
 import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
-import { diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
+import { avanceDelCiclo, diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
 import { entrada } from '../movimiento.js'
 import ExplicameFacil from './ExplicameFacil.jsx'
 import { explicarResumen } from './explicaciones.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee, fitzona: Barbell, taxi: Taxi }
-const DIAS_DEL_CICLO = 30
 
 function Tip({ tip, activo, alAlternar }) {
   const Icono = ICONOS[tip.id] ?? PiggyBank
@@ -120,7 +119,7 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
         <span className="hero-barra" aria-hidden="true">
           <motion.span
             initial={reducido ? false : { scaleX: 0 }}
-            animate={{ scaleX: 1 - faltan / DIAS_DEL_CICLO }}
+            animate={{ scaleX: avanceDelCiclo(faltan) }}
             transition={{ duration: 0.8, delay: 0.2 }}
           />
         </span>

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { conSigno, diasEntre, enSoles, enSolesRedondo, fechaDia, iniciales } from '../src/formato.js'
+import { avanceDelCiclo, conSigno, diasEntre, enSoles, enSolesRedondo, fechaDia, iniciales } from '../src/formato.js'
 
 const NBSP = ' '
 
@@ -33,4 +33,11 @@ test('iniciales: dos palabras como máximo y texto vacío sin error', () => {
   assert.equal(iniciales('Cafetería La Esquina'), 'CL')
   assert.equal(iniciales('RapiFood'), 'R')
   assert.equal(iniciales('  '), '')
+})
+
+test('avanceDelCiclo: la barra de días se queda entre 0 y 1', () => {
+  assert.equal(avanceDelCiclo(15), 0.5)
+  assert.equal(avanceDelCiclo(0), 1)
+  assert.equal(avanceDelCiclo(45), 0)
+  assert.equal(avanceDelCiclo(-3), 1)
 })
