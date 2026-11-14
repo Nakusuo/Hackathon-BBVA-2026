@@ -15,6 +15,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, RAIZ)
+from src.comun.huella import METRICAS, huella  # noqa: E402
+
 MODELOS, DOCS = os.path.join(RAIZ, "models"), os.path.join(RAIZ, "docs")
 # Paleta de referencia validada (contraste >= 3:1 y separacion para daltonismo): el elegido en azul con textura; los descartados en gris neutro. Texto siempre en tinta, nunca en el color de la serie.
 SUPERFICIE, TINTA, TINTA_2, AZUL, GRIS, AZUL_CLARO = "#fcfcfb", "#0b0b0b", "#52514e", "#2a78d6", "#8c8b86", "#a9c8f0"
@@ -214,7 +217,8 @@ def escribir_documentos(P: list[dict]) -> None:
              "Cada fila trae también el límite de la comparación: lo que no demuestra.\n\n"
              "![Comparativa de modelos](figuras/comparativa_modelos.png)\n\n"
              "Una imagen por problema para las diapositivas: `docs/figuras/comparativa/`.\n\n"
-             "| Problema | Métrica | Resultados (elegido en negrita) | Elegido | Por qué se eligió | Límite |\n|---|---|---|---|---|---|\n" + "\n".join(filas) + "\n")
+             "| Problema | Métrica | Resultados (elegido en negrita) | Elegido | Por qué se eligió | Límite |\n|---|---|---|---|---|---|\n" + "\n".join(filas) + "\n"
+             f"\n<!-- huella_metricas: {huella(METRICAS)} (la puerta de calidad compara esta huella con la de las metricas actuales) -->\n")
     with open(os.path.join(DOCS, "comparativa_modelos.md"), "w", encoding="utf-8") as f:
         f.write(texto)
     with open(os.path.join(DOCS, "comparativa_modelos.csv"), "w", encoding="utf-8", newline="") as f:

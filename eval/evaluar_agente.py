@@ -15,6 +15,7 @@ import numpy as np  # noqa: E402
 from src.agente_analitico.grafo import construir_grafo, exportar_diagramas, responder  # noqa: E402
 from src.agente_analitico.repositorio import Repositorio  # noqa: E402
 from src.agente_analitico.verificador import PROHIBIDOS  # noqa: E402
+from src.comun.huella import AGENTE, huella  # noqa: E402
 from src.comun.rutas import MODELOS, ruta  # noqa: E402
 from src.rag.indice import Buscador  # noqa: E402
 import re  # noqa: E402
@@ -85,4 +86,5 @@ if __name__ == "__main__":
         print(modo, json.dumps(res[modo]["resumen"], ensure_ascii=False, indent=1), flush=True)
     res["diagramas"] = {k: os.path.relpath(v, RAIZ).replace(os.sep, "/") for k, v in exportar_diagramas(ruta("docs", "diagramas"), repo, b).items()}   # rutas relativas: nada de la laptop de nadie
     os.makedirs(MODELOS, exist_ok=True)
+    res["huella_codigo"] = huella(AGENTE)   # la puerta de calidad compara esta huella con la del codigo actual
     json.dump(res, open(os.path.join(MODELOS, f"metricas_agente_{a.llm}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
