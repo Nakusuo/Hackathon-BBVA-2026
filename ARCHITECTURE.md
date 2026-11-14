@@ -20,7 +20,7 @@ Lucas responde una pregunta: «¿cuánto puedo gastar o ahorrar este mes sin que
 |---|---|---|
 | Monolito modular en Python, un proceso para la API | Microservicios, colas, varios agentes | Que la UI, el simulador y el chat muestren cifras distintas para el mismo cliente |
 | Núcleo de cálculo puro (DataFrames entran, tipos Pydantic salen) | ORM con modelos para cada tabla | Que el agente pueda leer `seguro.*` o elegir el `customer_id` |
-| Un rol de Postgres por componente, RLS por cliente | Autenticación real de usuarios | Que la demo dependa de internet |
+| Un rol de Postgres por componente, RLS por cliente, sesión de demo firmada | Autenticación real de usuarios (la pone el banco que integre a Lucas) | Que la demo dependa de internet |
 | Entrenar por lotes, inferir en línea por cliente | Reentrenar en cada request | Que `make test` necesite Postgres para los tests del núcleo |
 
 ## 2. Enfoques considerados
@@ -72,15 +72,16 @@ Montos en S/, positivos, redondeados a 2 decimales al serializar. Fechas en `Ame
 
 | Tipo | Campos mínimos | Lo produce |
 |---|---|---|
-| `Perfil` | `customer_id`, `tipo_trabajo`, `frecuencia_ingreso`, `colchon_meses`, `cuota_ingreso`, `nivel_deuda` (bajo/medio/alto), `personas_a_cargo`, `region`, `paga_en_usd` | `db.lecturas` desde `app.perfil` |
+| `Perfil` | `customer_id`, `tipo_trabajo`, `frecuencia_ingreso`, `colchon_meses`, `cuota_ingreso`, `nivel_deuda` (bajo/medio/alto), `deuda_cara: bool`, `deuda_cara_tramo` (ninguno/bajo/medio/alto), `personas_a_cargo`, `region`, `paga_en_usd` | `db.lecturas` desde `app.perfil` |
 | `Salud` | `total` (0–100), `componentes: dict[str, float]`, `explicacion: list[str]` | `models.health` |
 | `Pronostico` | `dias: list[DiaPronostico]` (`fecha`, `p10`, `p50`, `p90`), `dia_riesgo: date \| None`, `prob_rojo: float`, `confianza` (alta/media/baja) | `models.forecast` |
 | `Segmento` | `cluster`, `cuadrante` (ahorrador firme, se le escapa, ingreso justo, gastador), `descripcion` | `models.segment` (umbrales en la ola 1) |
 | `Recurrente` | `comercio`, `categoria`, `monto`, `periodicidad_dias`, `proxima_fecha`, `duplicada: bool` | `engine.recurrentes` |
 | `Reco` | `id`, `tipo`, `accion`, `impacto_soles`, `por_que`, `supuestos`, `confianza`, `datos_usados` | `recommender` |
-| `Aviso` | `id`, `tipo`, `fecha_evento`, `mensaje`, `prob`, `impacto_soles` | `events` |
+| `Aviso` | `id`, `tipo`, `urgencia` (normal/urgente), `fecha_evento`, `mensaje`, `prob`, `impacto_soles` | `events` |
 | `Cambio` | Unión discriminada por `tipo`: `cancelar_recurrente`, `reducir_categoria`, `agregar_movimiento`, `quitar_ingreso`, `apartar_quincenal` | UI y simulador |
 | `Memoria` | `respuestas: list[RespuestaReco]`, `preferencias: list[Preferencia]` (`clave`, `valor`) | `db.lecturas` desde `app.respuestas_reco` y `app.memoria` |
+| `SueldoLucas` | `monto_quincenal`, `apartar_ahora`, `falta_para_fijos` (S/ o `None`), `dias_con_colchon` | `recommender` |
 | `Estado` | `perfil`, `salud`, `pronostico`, `segmento`, `recurrentes`, `recos`, `avisos`, `sueldo_lucas` | `nucleo.estado_cliente` |
 
 Agregar un campo opcional no rompe a nadie. Renombrar o quitar uno se avisa en el grupo antes del merge.
@@ -103,7 +104,7 @@ features_cliente(tx, perfil) -> dict                 # entrada del K-Prototypes 
 
 # src/recommender/       (Miguel)
 recomendar(estado_parcial, memoria) -> list[Reco]    # candidatos → impacto×facilidad → segmento → seguridad → top 3
-sueldo_lucas(pronostico, tx, perfil) -> float
+sueldo_lucas(pronostico, tx, perfil) -> SueldoLucas | None   # None si el ingreso no es irregular
 plan_meta(meta, pronostico) -> PlanMeta
 
 # src/events/            (Miguel)
@@ -120,9 +121,9 @@ entrenar(conn_batch, hasta: date) -> Artefactos     # solo usa datos con fecha_h
 ```
 
 - **`calcular_estado` es el único cálculo.** `estado_cliente` es solo la versión que lee de la base. El **simulador** es `estado_cliente(..., cambios=[...])`. **«Lucas en 5 preguntas»** arma un `Perfil` y una `tx` sintética con las respuestas y llama directo a `calcular_estado`, sin `customer_id` ni base.
-- **`hoy` siempre es explícito** y `calcular_estado` descarta todo movimiento posterior. La API lo toma de `HOY_DEMO` en `.env`. Su valor lo eligen Dixon y Marcela según el guion (la demo pasa cerca de la grati de julio). `eval/` lo usa para el walk-forward: el mismo camino de cálculo con otra fecha de corte.
-- **Sin fuga en la evaluación.** `make train` usa `hasta = HOY_DEMO`. `eval/` entrena sus propios artefactos con `hasta` = fin del mes 9 y nunca usa los de `models/artefactos/`.
-- **`Memoria`** (en `tipos.py`) tiene `respuestas` (de `app.respuestas_reco`, las escribe la API con «útil / no me sirve») y `preferencias: list[Preferencia]` (de `app.memoria` con `tipo = 'preferencia'`, las escribe el agente). `Preferencia` tiene `clave` (por ejemplo `excluir_tipo_reco`) y `valor`. Así lo que se dice en el chat cambia las tarjetas de «Qué hacer», y el contrato entre Jeffrey y Miguel es ese tipo, no el JSONB libre.
+- **`hoy` siempre es explícito** y `calcular_estado` descarta todo movimiento de `app.transacciones` posterior a esa fecha. Los de `app.movimientos_usuario` con fecha entre `hoy` y `hoy + 30` son **planificados**: no entran como historia, sino como flujo conocido en su día exacto del pronóstico, igual que una recurrente. Así Lucas puede adelantarse a un gasto que el usuario ya sabe que viene sin que haya fuga en la evaluación. La API lo toma de `HOY_DEMO` en `.env`. Su valor lo eligen Dixon y Marcela según el guion (la demo pasa cerca de la grati de julio). `eval/` lo usa para el walk-forward: el mismo camino de cálculo con otra fecha de corte.
+- **Sin fuga en la evaluación.** `make train` usa `hasta = HOY_DEMO`. `eval/` entrena sus propios artefactos con `hasta` = fin del mes 9 y nunca usa los de `models/artefactos/`. El impacto (D16) no se mide con el pronóstico: las decisiones tomadas al cierre del mes 9 se repiten con `aplicar_cambios` sobre las transacciones reales de los meses 10 a 12. El mes 10 también sirve para ajustar el pronóstico; es una fuga menor y se declara en EVALUATION.md.
+- **`Memoria`** (en `tipos.py`) tiene `respuestas` (de `app.respuestas_reco`, las escribe la API con «útil / no me sirve») y `preferencias: list[Preferencia]` (de `app.memoria` con `tipo = 'preferencia'`, las escribe el agente). `Preferencia` tiene `clave` y `valor` de listas cerradas (`Literal` en `tipos.py`); por ejemplo `excluir_tipo_reco` con un tipo excluible. Los resúmenes de conversación también son estructurados (temas de una lista cerrada y fecha). **Ningún texto libre del usuario se guarda en la memoria ni vuelve al prompt**, así una inyección no queda persistida. Los tipos `bajar_deuda_cara` y `colchon_minimo` son **protegidos**: no se pueden excluir, y una exclusión nunca deja entrar una reco de crédito en su lugar. Así lo que se dice en el chat cambia las tarjetas de «Qué hacer», y el contrato entre Jeffrey y Miguel es ese tipo, no el JSONB libre.
 
 ## 5. Base de datos
 
@@ -134,7 +135,7 @@ entrenar(conn_batch, hasta: date) -> Artefactos     # solo usa datos con fecha_h
 | `app` | Interno | `perfil` (derivado y sin montos de deuda), `transacciones`, `movimientos_usuario`, `segmentos`, `metas`, `memoria`, `respuestas_reco`, `avisos`, `mensajes` | Sí, por `customer_id` |
 | `rag` | Público | `fuentes`, `fragmentos` (`modulo`, `texto`, `embedding vector(n)`) | No |
 
-`app.perfil` es la frontera de privacidad. La ingesta, que tiene la clave, lee `seguro.clientes` y escribe ahí solo valores derivados: `cuota_ingreso`, `nivel_deuda`, `colchon_meses`. Los modelos trabajan solo con eso. El monto exacto de la deuda solo lo usa `eval/` (rol `lucas_batch`) para calcular los intereses evitados (D16).
+`app.perfil` es la frontera de privacidad. La ingesta, que tiene la clave, lee `seguro.clientes` y escribe ahí solo valores derivados: `cuota_ingreso`, `nivel_deuda` (por umbrales de cuota/ingreso), `colchon_meses`, `deuda_cara` (alguna deuda con TCEA mayor o igual al umbral) y `deuda_cara_tramo` (saldo de esa deuda en rangos, nunca el monto exacto). Los umbrales y rangos están en `config/supuestos.yaml`. Los modelos trabajan solo con eso. El monto exacto de la deuda solo lo usa `eval/` (rol `lucas_batch`) para calcular los intereses evitados (D16).
 
 Los gastos y metas que se agregan en vivo van a `app.movimientos_usuario` y `app.metas`. Por eso `make data` puede regenerar `app.transacciones` sin borrar lo que se hizo en la demo, y `eval/` los excluye. `nucleo` une las dos tablas al leer.
 
@@ -156,6 +157,8 @@ with como_cliente(conn, customer_id):   # SET LOCAL app.customer_id = %s
 
 Las políticas comparan `customer_id = current_setting('app.customer_id', true)`. Sin el ajuste, la consulta no devuelve filas: falla cerrada.
 
+**El `customer_id` nunca sale de la URL ni del cuerpo del request.** Elegir una persona en la UI equivale al inicio de sesión de la demo: `POST /sesion {customer_id}` devuelve un token `customer_id.firma`, con la firma HMAC-SHA256 (`hmac` de la librería estándar) y la clave `SESION_CLAVE` de `.env`. Las demás rutas son `/yo/...`, y una dependencia de FastAPI verifica la firma con `hmac.compare_digest` y saca el `customer_id` del token; sin token o con firma inválida responde 401. Como no existe un parámetro de cliente, no hay forma de pedir los datos de otro. Las únicas rutas sin token son `POST /sesion` y «Lucas en 5 preguntas», que no toca la base. Límite que se dice en el pitch: en la demo cualquiera puede elegir cualquier persona; el inicio de sesión real lo pone el banco.
+
 **El `customer_id` del agente nunca sale del LLM.** La API lo pone en el estado del grafo y las tools lo leen de ahí. Una pregunta como «muéstrame al cliente C0002» no tiene por dónde entrar.
 
 ## 6. Flujos
@@ -173,25 +176,25 @@ make rag    → docs/rag/*.pdf → fragmentos → embeddings locales (Ollama) �
 
 ### 6.2 Request de pantalla (< 2 s)
 
-`GET /clientes/{id}/estado` → API (`lucas_app`) → `como_cliente` → `lecturas` (tx, perfil, segmento, avisos previos, memoria) → `estado_cliente` → `Estado` → la API guarda los avisos nuevos → JSON.
+`GET /yo/estado` → API (`lucas_app`) → token → `como_cliente` → `lecturas` (tx, perfil, segmento, avisos previos, memoria) → `estado_cliente` → `Estado` → la API guarda los avisos nuevos → JSON.
 
-**Solo la API persiste avisos**, y fuera de `nucleo`, que nunca escribe. El `id` de un aviso es determinista (`tipo` + `fecha_evento`), y se guarda con `INSERT ... ON CONFLICT DO NOTHING`. Así repetir el GET no duplica avisos ni gasta el límite semanal. El simulador y las tools del agente leen `avisos_previos` pero no guardan nada.
+**Solo la API persiste avisos**, y fuera de `nucleo`, que nunca escribe. El `id` de un aviso es determinista: `tipo` + `fecha_evento` para los eventos de calendario e ingreso, y `riesgo` + fecha del próximo ingreso para el de riesgo, porque un mismo hueco antes de un cobro es un solo aviso aunque su día se mueva. Se guarda con `INSERT ... ON CONFLICT (id) DO UPDATE` de fecha, monto y probabilidad. Así repetir el GET o agregar un movimiento no duplica avisos ni gasta el límite semanal. La semana va de lunes a domingo, hora de Lima; el aviso de riesgo tiene un lugar reservado de los 3 y los otros 2 van por impacto en S/. El simulador y las tools del agente leen `avisos_previos` pero no guardan nada.
 
 ### 6.3 Simulador y gasto en vivo
 
-`POST /clientes/{id}/simular` con `cambios` → el mismo `estado_cliente` con `cambios`, sin escribir nada.
-`POST /clientes/{id}/movimientos` → inserta en `app.movimientos_usuario` → la UI vuelve a pedir el estado.
+`POST /yo/simular` con `cambios` → el mismo `estado_cliente` con `cambios`, sin escribir nada.
+`POST /yo/movimientos` → valida (monto > 0, fecha hasta `hoy + 30`) → inserta en `app.movimientos_usuario` → la UI vuelve a pedir el estado. Si el movimiento coincide con una recurrente (mismo comercio y monto parecido), la respuesta lo advierte para no contarlo dos veces.
 
 ### 6.4 Chat (< 8 s con LLM local)
 
 ```
-POST /clientes/{id}/chat
+POST /yo/chat
   → grafo LangGraph (conexión lucas_agente, customer_id en el estado)
   memoria → router → tools → [rag] → redacción (LLMProvider) → juez → guardar memoria
 ```
 
-- **Las tools llaman a `estado_cliente`** con la conexión del agente y devuelven `model_dump()` de los tipos. Son de solo lectura; no existe ninguna que mueva dinero.
-- **El juez** extrae cada número de la respuesta y lo busca, con tolerancia de redondeo, en las salidas de las tools de ese turno. Cada cita del RAG debe existir en `rag.fragmentos`. Si falla, reintenta una vez y si no, responde la plantilla.
+- **Las tools llaman a `estado_cliente`** con la conexión del agente y devuelven `model_dump()` de los tipos, junto con las entradas que usaron (`simulate` devuelve sus `cambios`). Son de solo lectura; no existe ninguna que mueva dinero.
+- **El juez** extrae cada número de la respuesta y lo busca, con tolerancia de redondeo, en las salidas de las tools de ese turno (incluidas sus entradas y fechas) y en los fragmentos citados. Un número del mensaje del usuario que ninguna tool usó no vale. Cada cita del RAG debe existir en `rag.fragmentos`. Además revisa el texto: si el cliente no pasa la regla de crédito o de inversión, una lista de frases prohibidas («préstamo», «crédito», «invierte en», «compra dólares», etc.) hace fallar la respuesta. Si falla, reintenta una vez y si no, responde la plantilla.
 - **`LLMProvider`** es la única interfaz con varias implementaciones (excepción acordada en calidad-codigo): `OllamaProvider` (por defecto), `GeminiProvider` (apagado, `LLM_PROVIDER=gemini`) y `TemplateProvider` (siempre). Recibe la pregunta y las salidas de las tools; nunca el perfil crudo ni identificadores.
 
 ## 7. Configuración y comandos
@@ -203,11 +206,12 @@ DB_URL_ADMIN, DB_URL_BATCH, DB_URL_APP, DB_URL_AGENTE   # una URL por rol
 CLAVE_DATOS                                              # pgcrypto, solo admin y batch
 LLM_PROVIDER=ollama   OLLAMA_MODEL=qwen2.5:3b   OLLAMA_EMBED_MODEL=...
 GEMINI_API_KEY=xxxx
+SESION_CLAVE=xxxx                                        # firma los tokens de sesión de la demo
 SEED=42
 HOY_DEMO=2026-07-14                                      # ejemplo; lo fijan Dixon y Marcela con el guion
 ```
 
-Los supuestos de negocio (TCEA supuesta, umbrales) van en `config/supuestos.yaml`, versionado y visible.
+Los supuestos de negocio (TCEA supuesta, umbral de deuda cara, umbrales de `nivel_deuda`, rangos de `deuda_cara_tramo`, umbral de probabilidad de rojo, umbral de volatilidad del ingreso para el Sueldo Lucas) van en `config/supuestos.yaml`, versionado y visible.
 
 `make` no está en todas las laptops (Windows). Cada objetivo del `Makefile` es **una sola línea** `python -m ...` que se puede copiar y correr a mano:
 
@@ -252,10 +256,10 @@ Los tests que necesitan Postgres llevan `@pytest.mark.db`. Los de seguridad de r
 | Esqueleto, `pyproject.toml`, `Makefile`, `tipos.py`, `nucleo.py`, `db/conexion.py` | Michael | MI-01, MI-04 |
 | `docker-compose.yml`, `db/init.sql` (esquemas, roles, RLS, pgcrypto, pgvector) | Michael | MI-02, MI-03 |
 | `data/generator.py`, `dictionary.md` (con columna de clasificación) | Dixon | DX-01, DX-02 |
-| `src/ingest/`, `src/api/`, `recommender/`, `events/` | Miguel | MG-01 a MG-13 |
+| `src/ingest/`, `src/api/`, `recommender/`, `events/` | Miguel | MG-01 a MG-14 |
 | `src/engine/`, `src/models/`, `eval/` | Diego | DI-01 a DI-13 |
 | `src/agent/`, `src/bcrp/`, `PROMPTS.md` | Jeffrey | JF-01 a JF-11 |
-| `app/` | Marcela | MC-01 a MC-11 |
+| `app/` | Marcela | MC-01 a MC-12 |
 
 `nucleo.py` arranca con implementaciones falsas de cada módulo que devuelven tipos válidos. Así la API y la UI funcionan con datos de mentira desde el bloque 1 y cada dueño reemplaza su pieza cuando la tiene.
 
