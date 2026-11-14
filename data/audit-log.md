@@ -24,6 +24,16 @@ Este registro documenta todas las auditorías automáticas y manuales realizadas
   - Esquema `app` incluye transacciones, metas, memoria vectorial y respuestas de recomendación con integridad referencial.
   - Flujo de datos sintéticos correctamente acoplado a la validación Pydantic y carga reproducible con `--seed`.
 
+### Auditoría #03 — Sábado, 2026-11-14 (Documentación de Casos de Uso UML y Trazabilidad)
+- **Commit / PR analizado:** Rama `develop` (Actualización con `docs/casos-uso.md`, `docs/diagramas/casos-uso.puml` y `.svg`).
+- **Alcance evaluado:** Fichas de casos de uso (CU-01 a CU-12), matriz de trazabilidad de historias de usuario y esquemas de arquitectura orientados a seguridad.
+- **Resultado de Auditoría:** ✅ **APRUEBA sin observaciones.**
+- **Detalle de cumplimiento:**
+  - Cobertura completa de los 12 casos de uso con especificación de actores y flujos alternativos.
+  - Correcta delimitación de los accesos sin token (restringidos a sesión y onboarding de 5 preguntas) alineado con los controles de acceso ISO/IEC 27001 (5.15).
+  - Integridad documental y ausencia de datos reales en los diagramas UML.
+
 ---
 
 *Registro actualizado automáticamente por el Auditor Técnico Principal (Rol DX).*
+
