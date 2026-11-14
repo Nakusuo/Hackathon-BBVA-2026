@@ -52,8 +52,57 @@ async function sinGuia(page) {
   await page.addInitScript(() => window.localStorage.setItem('lucas-guia-vista', 'si'))
 }
 
-for (const { ruta, titulo } of PANTALLAS) for (const tema of ['claro', 'oscuro']) {
-  test(`${ruta} en ${tema} abre sin errores, sin scroll horizontal y con texto de 16 px o más`, async ({ page }, info) => {
+// Contraste AA calculado en el navegador: color del texto contra el fondo real, mezclando capas semitransparentes.
+// No ve imágenes ni desenfoques de fondo; para eso quedan las capturas en claro y oscuro.
+function textosSinContraste() {
+  const leer = (c) => {
+    const n = c.match(/[\d.]+/g)?.map(Number) ?? [0, 0, 0, 0]
+    return { r: n[0], g: n[1], b: n[2], a: n.length > 3 ? n[3] : 1 }
+  }
+  const mezclar = (arriba, abajo) => ({
+    r: arriba.r * arriba.a + abajo.r * (1 - arriba.a),
+    g: arriba.g * arriba.a + abajo.g * (1 - arriba.a),
+    b: arriba.b * arriba.a + abajo.b * (1 - arriba.a),
+    a: 1,
+  })
+  const luz = ({ r, g, b }) => {
+    const canal = (v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+    return 0.2126 * canal(r) + 0.7152 * canal(g) + 0.0722 * canal(b)
+  }
+  const fondoDe = (elemento) => {
+    const capas = []
+    for (let e = elemento; e; e = e.parentElement) {
+      const c = leer(getComputedStyle(e).backgroundColor)
+      if (c.a > 0) capas.push(c)
+      if (c.a >= 1) break
+    }
+    let fondo = { r: 255, g: 255, b: 255, a: 1 }
+    for (const capa of capas.reverse()) fondo = mezclar(capa, fondo)
+    return fondo
+  }
+  const fallas = []
+  const recorrido = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+  while (recorrido.nextNode()) {
+    const nodo = recorrido.currentNode
+    const texto = nodo.textContent.trim()
+    const padre = nodo.parentElement
+    if (!texto || !padre || padre.closest('[aria-hidden="true"], .solo-lector')) continue
+    const caja = padre.getBoundingClientRect()
+    if (caja.width === 0 || caja.height === 0) continue
+    const estilo = getComputedStyle(padre)
+    const fondo = fondoDe(padre)
+    const tinta = mezclar(leer(estilo.color), fondo)
+    const [clara, oscura] = [luz(tinta), luz(fondo)].sort((x, y) => y - x)
+    const razon = (clara + 0.05) / (oscura + 0.05)
+    const tamano = parseFloat(estilo.fontSize)
+    const grande = tamano >= 24 || (tamano >= 18.66 && Number(estilo.fontWeight) >= 700)
+    if (razon < (grande ? 3 : 4.5)) fallas.push(`${texto.slice(0, 40)} (${razon.toFixed(2)}:1)`)
+  }
+  return fallas
+}
+
+for (const tema of ['claro', 'oscuro']) for (const { ruta, titulo } of PANTALLAS) {
+  test(`${ruta} en ${tema}: sin errores ni scroll horizontal, texto de 16 px o más y contraste AA`, async ({ page }, info) => {
     await sinGuia(page)
     await page.addInitScript((t) => window.localStorage.setItem('lucas-tema', t), tema)
     const errores = []
@@ -76,7 +125,8 @@ for (const { ruta, titulo } of PANTALLAS) for (const tema of ['claro', 'oscuro']
         const nodo = recorrido.currentNode
         const texto = nodo.textContent.trim()
         const padre = nodo.parentElement
-        if (!texto || !padre || padre.closest('[aria-hidden="true"]:not(.circulo):not(.marca-lucas)')) continue
+        if (!texto || !padre || padre.closest('[aria-hidden="true"]:not(.circulo):not(.marca-lucas):not(.grafico)'))
+          continue
         const caja = padre.getBoundingClientRect()
         if (caja.width === 0 || caja.height === 0) continue
         const tamano = parseFloat(getComputedStyle(padre).fontSize)
@@ -86,11 +136,51 @@ for (const { ruta, titulo } of PANTALLAS) for (const tema of ['claro', 'oscuro']
     })
     // Movimiento reducido no apaga los desvanecidos de entrada: sin esperar, la captura salía a medio aparecer.
     await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'))
-    await page.screenshot({ path: `capturas/${info.project.name}-${tema}${ruta.replaceAll('/', '-')}.png`, fullPage: true })
+    await page.screenshot({
+      path: `capturas/${info.project.name}-${tema}${ruta.replaceAll('/', '-')}.png`,
+      fullPage: true,
+    })
     expect(textosChicos).toEqual([])
+    expect(await page.evaluate(textosSinContraste)).toEqual([])
     expect(errores).toEqual([])
   })
 }
+
+test('la banca muestra 3 movimientos y «Ver todo» abre el resto', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/banca')
+  const movimientos = page.getByRole('region', { name: 'Últimos movimientos' })
+  await expect(movimientos.locator('.fila')).toHaveCount(3)
+  const verTodo = movimientos.getByRole('button', { name: 'Ver todo' })
+  await expect(verTodo).toHaveAttribute('aria-expanded', 'false')
+  await verTodo.click()
+  await expect(movimientos.locator('.fila')).toHaveCount(5)
+  await expect(movimientos.getByRole('button', { name: 'Ver menos' })).toHaveAttribute('aria-expanded', 'true')
+})
+
+test('el gráfico de Qué viene lleva etiquetas directas y línea punteada', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/que-viene')
+  const grafico = page.locator('.grafico')
+  for (const rotulo of ['Hoy', 'Cobro', 'Peor caso']) {
+    await expect(grafico.getByText(rotulo, { exact: true })).toBeVisible()
+  }
+  await expect(grafico.locator('.recharts-line-curve')).toHaveAttribute('stroke-dasharray', '8 5')
+})
+
+test('cada pantalla principal cabe en 1.5 pantallas de celular', async ({ page }, info) => {
+  test.skip(info.project.name !== 'celular', 'La regla es del celular')
+  await sinGuia(page)
+  for (const ruta of ['/banca', '/lucas/resumen', '/lucas/que-viene', '/lucas/chat']) {
+    await page.goto(ruta)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    const alto = await page.evaluate(async () => {
+      await document.fonts.ready
+      return document.documentElement.scrollHeight / window.innerHeight
+    })
+    expect(alto, ruta).toBeLessThanOrEqual(1.5)
+  }
+})
 
 test('con movimiento reducido las cifras del resumen salen ya en su valor final', async ({ page }) => {
   await sinGuia(page)

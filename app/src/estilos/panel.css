@@ -78,20 +78,18 @@
 }
 
 .panel-grafico .leyenda .clave-esperado::before {
-  background: var(--grafico-linea);
+  background: none;
+  border-top-color: var(--grafico-linea);
 }
 
 .panel-grafico .leyenda .clave-banda::before {
   background: var(--grafico-banda);
 }
 
-.panel-grafico .leyenda .clave-cero::before {
-  border-top-color: var(--riesgo-claro);
-}
 
 .grafico {
   width: 100%;
-  height: 230px;
+  height: 196px;
 }
 
 .leyenda {
@@ -112,18 +110,14 @@
 }
 
 .leyenda .clave-esperado::before {
-  height: 3px;
-  background: var(--azul);
+  height: 0;
+  border-top: 3px dashed var(--azul);
 }
 
 .leyenda .clave-banda::before {
   background: var(--banda);
 }
 
-.leyenda .clave-cero::before {
-  height: 0;
-  border-top: 2px dashed var(--riesgo);
-}
 
 .globo {
   display: grid;
@@ -132,4 +126,19 @@
   border-radius: var(--radio-chico);
   background: var(--crema);
   color: var(--tinta);
+}
+
+.grupo-dia {
+  display: grid;
+}
+
+.grupo-nombre {
+  padding-top: 4px;
+  color: var(--tinta-suave);
+  font-weight: 600;
+}
+
+/* En Qué viene la lista va más junta para que la pantalla quepa en 1.5 alturas de celular. */
+.hoja .fila {
+  padding: 7px 0;
 }

@@ -37,6 +37,7 @@
   --vidrio-borde: rgb(255 255 255 / 0.9);
   --brillo: rgb(33 96 224 / 0.35);
   --sombra: rgb(30 63 178 / 0.12);
+  --sombra-alta: rgb(30 63 178 / 0.3);
   --serie-1: #1e3fb2;
   --serie-2: #2160e0;
   --serie-3: #4f86f0;
@@ -80,6 +81,7 @@
   --vidrio-borde: rgb(255 255 255 / 0.14);
   --brillo: rgb(58 125 255 / 0.22);
   --sombra: rgb(0 0 0 / 0.45);
+  --sombra-alta: rgb(0 0 0 / 0.7);
   --serie-1: #8fb0f5;
   --serie-2: #6d93e6;
   --serie-3: #5277c9;

@@ -32,10 +32,30 @@ const PERIODOS = [
 const COLOR = {
   linea: 'var(--grafico-linea)',
   banda: 'var(--grafico-banda)',
-  rejilla: 'rgb(255 255 255 / 0.15)',
+  rejilla: 'rgb(255 255 255 / 0.12)',
   texto: 'var(--sobre-azul-suave)',
   riesgo: 'var(--riesgo-claro)',
   fondo: 'var(--azul-profundo)',
+  fuerte: 'var(--sobre-azul)',
+}
+
+// Etiquetas directas sobre el gráfico (ui-ux-pro-max): quien mira no tiene que cruzar colores con la leyenda.
+const ETIQUETA = { fontSize: 16, fontWeight: 700 }
+
+// El rótulo del peor caso lleva fondo propio: así no se cruza con la línea del cero y conserva contraste.
+function RotuloPeorCaso({ viewBox }) {
+  if (!viewBox) return null
+  const ancho = 92
+  const x = viewBox.x - ancho - 4
+  const y = viewBox.y - 34
+  return (
+    <g>
+      <rect x={x} y={y} width={ancho} height={26} rx={13} fill={COLOR.fondo} stroke={COLOR.riesgo} strokeWidth={1.5} />
+      <text x={x + ancho / 2} y={y + 18} textAnchor="middle" fill={COLOR.fuerte} {...ETIQUETA}>
+        Peor caso
+      </text>
+    </g>
+  )
 }
 
 function Globo({ active, payload }) {
@@ -126,6 +146,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
   const panel = estadoDelPanel(vista, periodo)
   const puntoRiesgo = panel.rojo && datos.find((p) => p.fecha === panel.peorFecha)
   const ultimoDia = datos.at(-1).fecha
+  const primero = datos[0]
 
   const movimientos = [
     ...proximosPagos.map((p) => ({ ...p, entra: false })),
@@ -187,8 +208,14 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
         <p className="solo-lector">{resumen}</p>
         <div className="grafico" aria-hidden="true">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={datos} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+            <ComposedChart data={datos} margin={{ top: 28, right: 16, bottom: 0, left: 0 }}>
               <CartesianGrid stroke={COLOR.rejilla} vertical={false} />
+              <ReferenceLine
+                x={proximoIngreso.fecha}
+                stroke={COLOR.texto}
+                strokeDasharray="2 4"
+                label={{ ...ETIQUETA, value: 'Cobro', position: 'insideTopRight', fill: COLOR.fuerte }}
+              />
               <XAxis
                 dataKey="fecha"
                 tickFormatter={fechaCorta}
@@ -224,11 +251,21 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
                 dataKey="esperado"
                 stroke={COLOR.linea}
                 strokeWidth={3}
+                strokeDasharray="8 5"
                 dot={false}
                 activeDot={{ r: 6, fill: COLOR.fondo, stroke: COLOR.linea, strokeWidth: 3 }}
                 isAnimationActive={false}
               />
               <ReferenceLine y={0} stroke={COLOR.riesgo} strokeDasharray="6 4" strokeWidth={2} />
+              <ReferenceDot
+                x={primero.fecha}
+                y={primero.esperado}
+                r={6}
+                fill={COLOR.linea}
+                stroke={COLOR.fondo}
+                strokeWidth={2}
+                label={{ ...ETIQUETA, value: 'Hoy', position: 'top', fill: COLOR.fuerte }}
+              />
               {puntoRiesgo && (
                 <ReferenceDot
                   x={puntoRiesgo.fecha}
@@ -237,6 +274,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
                   fill={COLOR.riesgo}
                   stroke={COLOR.fondo}
                   strokeWidth={2}
+                  label={<RotuloPeorCaso />}
                 />
               )}
             </ComposedChart>
@@ -246,7 +284,6 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
         <div className="leyenda" aria-hidden="true">
           <span className="clave-esperado">Lo más probable</span>
           <span className="clave-banda">Rango posible</span>
-          <span className="clave-cero">Saldo en cero</span>
         </div>
       </section>
 
@@ -268,11 +305,14 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
         <h2 id="movimientos-titulo">Pagos y cobros</h2>
         <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} alQuitar={alQuitar} />
         <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} alQuitar={alQuitar} />
-        <p className="suave">
-          {cliente.ingresoVariable
-            ? 'El rango se abre con los días porque tu gasto varía, y se ensancha en cada cobro porque tus clientes no siempre te pagan lo mismo.'
-            : 'El rango es angosto porque tu sueldo llega fijo; solo se abre un poco con los días porque tu gasto varía.'}
-        </p>
+        <details>
+          <summary>¿Por qué cambia el rango?</summary>
+          <p className="suave">
+            {cliente.ingresoVariable
+              ? 'El rango se abre con los días porque tu gasto varía, y se ensancha en cada cobro porque tus clientes no siempre te pagan lo mismo.'
+              : 'El rango es angosto porque tu sueldo llega fijo; solo se abre un poco con los días porque tu gasto varía.'}
+          </p>
+        </details>
       </section>
     </>
   )

@@ -41,8 +41,9 @@
   justify-self: start;
 }
 
+/* En oscuro --tinta es casi blanca: con ella de fondo el texto blanco del botón desaparecía. */
 .boton:hover {
-  background: var(--tinta);
+  background: var(--azul-profundo);
 }
 
 .boton-ancho {
