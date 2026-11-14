@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const PUERTO = 5174
+// PW_PUERTO deja correr las pruebas de una rama mientras otra carpeta del repo ya usa el 5174.
+const PUERTO = Number(process.env.PW_PUERTO ?? 5174)
 
 // Sin PW_CHROMIUM se usa el Chromium de Playwright (`npx playwright install chromium`).
 // Con PW_CHROMIUM se usa un navegador ya instalado, por ejemplo Brave, y no se descarga nada.
@@ -26,7 +27,8 @@ export default defineConfig({
     },
     {
       name: 'celular',
-      use: { ...devices['Pixel 7'], browserName: 'chromium' },
+      // 390 px: el ancho más común de celular en la demo; más angosto que el Pixel 7 que usa de base.
+      use: { ...devices['Pixel 7'], viewport: { width: 390, height: 844 }, browserName: 'chromium' },
     },
   ],
 })

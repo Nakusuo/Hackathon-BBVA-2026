@@ -2,14 +2,15 @@ import { ArrowsLeftRight, CreditCard, DotsThreeOutline, House } from '@phosphor-
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
-import { persona, vistaCon } from '../mocks/cliente.js'
+import { vistaCon } from '../mocks/cliente.js'
+import { personaPorId } from '../mocks/personas.js'
+import { CLAVE_TIPS, guardarPersona, permisoDe, personaGuardada, retirarPermiso } from '../sesion.js'
 
 const SIN_DEMO = 'En esta demo solo está activo Lucas.'
-const CLAVE_ELEGIDOS = 'lucas-tips-elegidos'
 
 function leerElegidos() {
   try {
-    const guardado = JSON.parse(window.localStorage.getItem(CLAVE_ELEGIDOS))
+    const guardado = JSON.parse(window.localStorage.getItem(CLAVE_TIPS))
     return Array.isArray(guardado) ? guardado : []
   } catch {
     return []
@@ -19,8 +20,25 @@ function leerElegidos() {
 export default function MarcoBanca() {
   const [aviso, setAviso] = useState('')
   const temporizador = useRef(null)
+  const [personaId, setPersonaId] = useState(personaGuardada)
+  const [permiso, setPermiso] = useState(() => permisoDe(personaGuardada()))
   const [elegidos, setElegidos] = useState(leerElegidos)
-  const vista = useMemo(() => vistaCon(elegidos), [elegidos])
+  const vista = useMemo(() => vistaCon(elegidos, personaId), [elegidos, personaId])
+  const persona = personaPorId(personaId).persona
+
+  function elegirPersona(id) {
+    if (id === personaId) return
+    guardarPersona(id)
+    setPersonaId(id)
+    setPermiso(permisoDe(id))
+    setElegidos([])
+  }
+
+  function retirarPermisoActual() {
+    retirarPermiso(personaId)
+    setPermiso(null)
+    setElegidos([])
+  }
 
   // Cada clic reinicia el tiempo; si no, el temporizador de un clic anterior borraba el aviso nuevo antes de leerlo.
   // Se vacía un instante antes para que el lector de pantalla vuelva a anunciar el mismo texto.
@@ -37,7 +55,7 @@ export default function MarcoBanca() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(CLAVE_ELEGIDOS, JSON.stringify(elegidos))
+      window.localStorage.setItem(CLAVE_TIPS, JSON.stringify(elegidos))
     } catch {
       // Sin almacenamiento los tips elegidos duran solo esta visita; la app sigue funcionando.
     }
@@ -48,7 +66,9 @@ export default function MarcoBanca() {
   return (
     <div className="exterior">
       <div className="marco">
-        <Outlet context={{ avisarSinDemo, vista, persona, alternarTip }} />
+        <Outlet
+          context={{ avisarSinDemo, vista, persona, alternarTip, personaId, elegirPersona, permiso, retirarPermisoActual }}
+        />
 
         <nav className="barra-inferior" aria-label="Menú principal">
           <NavLink to="/banca" className="barra-item">

@@ -1,6 +1,5 @@
 // Respuestas por plantilla mientras no exista el agente (JF-02). Toda cifra sale del motor, nunca del texto.
-import { CAMBIOS } from '../mocks/cliente.js'
-import { ajusteDe, apartadoSinRojo, evaluarGastoExtra } from '../mocks/motor.js'
+import { apartadoSinRojo, evaluarGastoExtra } from '../mocks/motor.js'
 import { conSigno, enSoles, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
 
 export const PREGUNTAS_SUGERIDAS = [
@@ -35,7 +34,7 @@ export function montoEn(texto) {
 }
 
 function ajusteActual(cliente) {
-  return ajusteDe(CAMBIOS.filter((c) => cliente.elegidos?.includes(c.id)))
+  return cliente.ajuste ?? {}
 }
 
 function llegarAlCobro(cliente) {
@@ -126,10 +125,10 @@ function cuantoAhorrar(cliente, persona, monto) {
     }
   }
   return {
-    texto: `Cuando cobres el ${cobro}, podrías apartar ${enSoles(apartado.monto)}. Lo comprobé con tus pagos hasta el ${fechaCorta(apartado.hasta)} y no te deja en rojo. Si lo repites ${apartado.repeticiones} meses, juntarías ${enSoles(apartado.total)}.`,
+    texto: `Cuando cobres el ${cobro}, podrías apartar ${enSoles(apartado.monto)}. Lo comprobé con tus pagos hasta el ${fechaCorta(apartado.hasta)} y no te deja en rojo. Si lo repites en tus próximos ${apartado.repeticiones} cobros, juntarías ${enSoles(apartado.total)}.`,
     cifras: [
       { etiqueta: 'Apartado por cobro', valor: enSoles(apartado.monto) },
-      { etiqueta: `Si lo repites ${apartado.repeticiones} meses`, valor: enSoles(apartado.total) },
+      { etiqueta: `En tus próximos ${apartado.repeticiones} cobros`, valor: enSoles(apartado.total) },
     ],
   }
 }
