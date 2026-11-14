@@ -47,6 +47,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Vidrio esmerilado y brillo azul solo en la tarjeta protagonista de cada pantalla (login, panel de Resumen); sin morado ni rosa | Que destaque una cosa por pantalla sin caer en AI slop (regla 8 de la nota de diseño) |
 | 2026-11-14 | Celular primero: cada pantalla principal cabe en 1.5 pantallas de celular; el detalle va en pantallas u hojas aparte, sin sobrecargar | Pedido de Marcela: que el usuario no se abrume |
 | 2026-11-14 | Gráficas según ui-ux-pro-max: etiquetas y porcentajes visibles, nunca solo color; dona solo hasta 6 partes; pronóstico con línea punteada y banda | Accesibilidad y lectura rápida en celular |
+| 2026-11-14 | Tipografía: Manrope para títulos, cifras y texto, instalada como paquete con versión fija. Reemplaza a Source Serif 4 + Plus Jakarta Sans | La serifa se veía antigua sobre fondo oscuro; comparación de 4 opciones (Manrope, Sora + Inter, Space Grotesk + Inter, Plus Jakarta) y eligió Marcela |
 
 ## Lo que falta
 
