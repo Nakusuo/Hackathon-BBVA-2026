@@ -28,6 +28,12 @@ Lucas gana cuando el cliente **ahorra y llega a fin de mes**, no cuando se endeu
 
 **Lo que no decimos:** ningún porcentaje de retención, churn o mora «de Lucas». Con datos sintéticos no se puede probar. Decimos qué mediría un piloto y con qué grupo de control.
 
+**Evidencia externa que sí podemos citar** (detalle en [../investigacion/negocio-impacto.md](../investigacion/negocio-impacto.md)):
+- En Reino Unido, las alertas por SMS y app bajaron 24 % los cargos por sobregiro no acordado (FCA, 2015), pero también bajaron los saldos en cuenta entre 17 y 24 %. Por eso P1 se mide, no se supone, y el pitch lo dice.
+- Los recordatorios de un solo producto pueden mover el problema a otro: bajaron 14 % los atrasos de tarjeta, pero subieron 9 % los sobregiros (Medina, *Review of Financial Studies*, 2021). Lucas mira toda la liquidez a 30 días, no un producto suelto.
+- Los clientes que usan el banco como principal desertan 11 puntos menos y tienen 3 veces más probabilidad de tener varios productos (Bain, Reino Unido, 2022). Es correlación, no causa.
+- Ningún estudio público prueba que una app de finanzas personales **cause** más retención o depósitos. Lo validaría el piloto.
+
 ### Calculadora de valor (supuestos a la vista)
 
 Se muestra en el pitch como fórmula, con un escenario conservador y cada supuesto etiquetado («fuente» o «supuesto del equipo»):
@@ -47,13 +53,16 @@ Valor anual ≈ clientes que usan Lucas
 
 | Opción | Cómo cobra | Encaje |
 |---|---|---|
-| **B2B2C (elegido)** | Licencia por cliente activo a bancos, cajas municipales y cooperativas, con su catálogo y su marca | Gratis para el usuario final; el banco paga porque gana por P1 a P6 |
+| **B2B2C (elegido)** | Licencia por cliente activo a bancos, cajas municipales y cooperativas, con su catálogo y su marca; opcionalmente un bono por resultados medidos en un piloto con grupo de control (saldo apartado, atrasos evitados) | Gratis para el usuario final; el banco paga porque gana por P1 a P6 |
 | Freemium al usuario | Funciones premium pagadas | Choca con el público objetivo (ingreso justo) |
 | Comisión por producto vendido | Pago por cada crédito o tarjeta colocada | Incentivo a vender: contradice las reglas de seguridad. **Descartado** |
 
 ## Impacto en los peruanos
 
-Público: trabajadores del sector privado, con foco en **independientes y mixtos**, cuyo ingreso varía y casi ningún banco les arma un plan. Cifras de dolor en [../estadisticas/cifras-publicas.md](../estadisticas/cifras-publicas.md).
+Público: trabajadores del sector privado, con foco en **independientes y mixtos**, cuyo ingreso varía y casi ningún banco les arma un plan. Cifras de dolor (verificadas en [../estadisticas/cifras-publicas.md](../estadisticas/cifras-publicas.md)):
+- **61 %** de los adultos no podría cubrir un imprevisto de un mes de ingresos (SBS–CAF, 2026).
+- **69,8 %** del empleo es informal (INEI, abril 2025 a marzo 2026): ingreso irregular y sin un plan pensado para él.
+- **17,0 millones** de usuarios activos de Yape al mes (Credicorp, setiembre 2026): el canal digital para llegarles ya existe.
 
 Métricas de impacto que produce `make eval` sobre la población sintética (Lucas frente a «no hacer nada» y frente a «apartar 10 % fijo»):
 
@@ -78,6 +87,8 @@ Comparación con lo que hay en Perú: [../investigacion/negocio-impacto.md](../i
 | Valor antes de ser cliente | Hay que abrir cuenta para ver algo | 5 preguntas y ya tienes tu pronóstico |
 
 Además, calendario peruano (quincena, grati, CTS, campañas) dentro del modelo, no como decoración.
+
+En lo público, las apps de BBVA Perú, BCP e Interbank miran el gasto pasado o ayudan a guardar plata (presupuestos, metas, apartados, alertas). BBVA España tiene «movimientos previstos» por pagos recurrentes, sin banda ni foco en ingreso irregular. En el pitch se dice **«no lo encontramos en fuentes públicas»**, nunca «nadie lo hace».
 
 ## Costo
 
