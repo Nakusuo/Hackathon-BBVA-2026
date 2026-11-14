@@ -1,113 +1,103 @@
-// Datos sintéticos de una persona de demo. Se reemplazan por la API cuando exista el contrato (MG-01).
+// Persona sintética de la demo. Se reemplaza por la API cuando exista el contrato (MG-01).
+import {
+  diasEnRojo,
+  evaluarCambio,
+  evaluarTodos,
+  gastoDiarioSeguro,
+  gastoVariableDiario,
+  peorDia,
+  simular,
+} from './motor.js'
 
-const HOY = '2026-11-14'
-const SALDO_HOY = 1240
-const INGRESO = { fecha: '2026-11-30', monto: 2600, tipo: 'Recibo por honorarios' }
+const persona = {
+  hoy: '2026-11-14',
+  horizonteDias: 30,
+  saldoHoy: 1240,
+  ingreso: { fecha: '2026-11-30', monto: 2600, tipo: 'Recibo por honorarios' },
+  gastoBaseDiario: 23,
+  banda: { inicial: 25, porDia: 8.6 },
+  pagos: [
+    { id: 'streamflix', fecha: '2026-11-16', concepto: 'StreamFlix', monto: 39.9 },
+    { id: 'prestamo', fecha: '2026-11-18', concepto: 'Cuota préstamo personal', monto: 210 },
+    { id: 'musika', fecha: '2026-11-20', concepto: 'MusiKa Plus', monto: 21.9 },
+    { id: 'alquiler', fecha: '2026-11-25', concepto: 'Alquiler de cuarto', monto: 420 },
+    { id: 'tarjeta', fecha: '2026-12-01', concepto: 'Tarjeta de crédito', monto: 950 },
+    { id: 'internet', fecha: '2026-12-05', concepto: 'Internet y celular', monto: 180 },
+  ],
+  gastosFrecuentes: [
+    { id: 'delivery', comercio: 'RapiFood', vecesMes: 9, ticket: 12.44 },
+    { id: 'cafe', comercio: 'Cafetería La Esquina', vecesMes: 20, ticket: 5.3 },
+  ],
+  suscripciones: [
+    { id: 'streamflix', comercio: 'StreamFlix', monto: 39.9, dia: 16, uso: 'La usaste 11 veces este mes' },
+    { id: 'musika', comercio: 'MusiKa Plus', monto: 21.9, dia: 20, uso: 'No la usas hace 5 semanas' },
+  ],
+}
 
-const PAGOS = [
-  { fecha: '2026-11-16', concepto: 'StreamFlix', tipo: 'Suscripción', monto: 39.9 },
-  { fecha: '2026-11-18', concepto: 'Cuota préstamo personal', tipo: 'Deuda', monto: 210 },
-  { fecha: '2026-11-20', concepto: 'MusiKa Plus', tipo: 'Suscripción', monto: 21.9 },
-  { fecha: '2026-11-25', concepto: 'Alquiler de cuarto', tipo: 'Vivienda', monto: 420 },
-  { fecha: '2026-12-01', concepto: 'Tarjeta de crédito', tipo: 'Deuda', monto: 950 },
-  { fecha: '2026-12-05', concepto: 'Internet y celular', tipo: 'Servicios', monto: 180 },
+const CAMBIOS = [
+  {
+    id: 'musika',
+    titulo: 'Pausa MusiKa Plus hasta tu próximo cobro',
+    facilidad: 'Fácil',
+    ahorro: 21.9,
+    porque: 'No la usas hace 5 semanas y se cobra el 20, justo antes de tus días más justos.',
+    ajuste: { pagosOmitidos: ['musika'] },
+  },
+  {
+    id: 'delivery',
+    titulo: 'Pide RapiFood una vez por semana hasta el 30',
+    facilidad: 'Esfuerzo medio',
+    ahorro: null,
+    porque: 'Este mes pediste 9 veces, a unos S/ 12.44 por pedido. Bajar a 4 al mes deja más saldo antes de cobrar.',
+    ajuste: { frecuencias: { delivery: 4 } },
+  },
+  {
+    id: 'cafe',
+    titulo: 'Toma café fuera 3 veces por semana',
+    facilidad: 'Esfuerzo medio',
+    ahorro: null,
+    porque: 'Este mes fuiste 20 veces a Cafetería La Esquina, a unos S/ 5.30 cada vez.',
+    ajuste: { frecuencias: { cafe: 13 } },
+  },
 ]
 
-const PAGO_POR_FECHA = Object.groupBy(PAGOS, (p) => p.fecha)
+const APARTADO = { monto: 150, cobros: 3 }
 
-const GASTO_DIARIO = 30
+const pronostico = simular(persona)
+const peor = peorDia(persona, pronostico)
+const rojo = diasEnRojo(persona, pronostico)
+const recomendaciones = CAMBIOS.map((c) => evaluarCambio(persona, c)).sort((a, b) => b.mejora - a.mejora)
+const conTodos = evaluarTodos(persona, CAMBIOS)
 
-function sumarDias(fechaIso, dias) {
-  const d = new Date(`${fechaIso}T12:00:00`)
-  d.setDate(d.getDate() + dias)
-  return d.toISOString().slice(0, 10)
-}
-
-// La banda se abre con los días porque el ingreso de un independiente es incierto.
-function construirPronostico() {
-  const puntos = []
-  let saldo = SALDO_HOY
-  for (let i = 0; i <= 30; i++) {
-    const fecha = sumarDias(HOY, i)
-    const pagosDelDia = (PAGO_POR_FECHA[fecha] ?? []).reduce((s, p) => s + p.monto, 0)
-    if (i > 0) saldo -= GASTO_DIARIO + pagosDelDia
-    if (fecha === INGRESO.fecha) saldo += INGRESO.monto
-    const ancho = 40 + i * 14
-    puntos.push({
-      fecha,
-      esperado: Math.round(saldo),
-      banda: [Math.round(saldo - ancho), Math.round(saldo + ancho)],
-    })
-  }
-  return puntos
-}
-
-const pronostico = construirPronostico()
-const diaRiesgo = pronostico.find((p) => p.banda[0] < 0)
-
-const pagosAntesDelIngreso = PAGOS.filter((p) => p.fecha < INGRESO.fecha).reduce((s, p) => s + p.monto, 0)
-const diasHastaIngreso = pronostico.findIndex((p) => p.fecha === INGRESO.fecha)
+const componentesSalud = [
+  { nombre: 'Colchón', valor: 35, explicacion: 'Cubre 2 semanas de gastos; lo sano son 3 meses.' },
+  { nombre: 'Deudas', valor: 62, explicacion: 'Tus cuotas son el 24 % de lo que ganas.' },
+  { nombre: 'Regularidad del ingreso', valor: 48, explicacion: 'Cobraste entre S/ 1,900 y S/ 3,400 al mes.' },
+  { nombre: 'Control del gasto', valor: 71, explicacion: 'Gastaste menos de lo que entró en 4 de 6 meses.' },
+]
 
 export const cliente = {
-  hoy: HOY,
-  arquetipo: 'Independiente con recibo por honorarios',
-  saldoHoy: SALDO_HOY,
-  proximoIngreso: INGRESO,
-  // Lo que queda libre al día después de separar los pagos fijos hasta el próximo ingreso.
-  disponibleDiario: Math.floor((SALDO_HOY - pagosAntesDelIngreso) / diasHastaIngreso),
-  proximosPagos: PAGOS,
-  salud: {
-    puntaje: 58,
-    componentes: [
-      { nombre: 'Colchón', valor: 35, explicacion: 'Cubre 2 semanas de gastos; lo sano son 3 meses.' },
-      { nombre: 'Deudas', valor: 62, explicacion: 'Tus cuotas son el 24\u00a0% de lo que ganas.' },
-      { nombre: 'Regularidad del ingreso', valor: 48, explicacion: 'Cobraste entre S/\u00a01,900 y S/\u00a03,400 al mes.' },
-      { nombre: 'Control del gasto', valor: 71, explicacion: 'Gastaste menos de lo que entró en 4 de 6 meses.' },
-    ],
-  },
-  segmento: {
-    nombre: 'Ingreso justo',
-    descripcion: 'Gastas con cuidado, pero casi no te queda para ahorrar. Un pequeño colchón te daría calma entre pago y pago.',
-  },
-  gastoHormiga: {
-    mes: 186,
-    detalle: [
-      { comercio: 'RapiFood', veces: 9, total: 112 },
-      { comercio: 'Cafetería La Esquina', veces: 14, total: 74 },
-    ],
-  },
-  suscripciones: [
-    { comercio: 'StreamFlix', monto: 39.9, dia: 16, usoUltimoMes: 'La usaste 11 veces' },
-    { comercio: 'MusiKa Plus', monto: 21.9, dia: 20, usoUltimoMes: 'No la usaste en 5 semanas' },
-  ],
+  hoy: persona.hoy,
+  saldoHoy: persona.saldoHoy,
+  proximoIngreso: persona.ingreso,
+  gastoDiarioActual: Math.round(gastoVariableDiario(persona)),
+  gastoDiarioSeguro: gastoDiarioSeguro(persona),
+  proximosPagos: persona.pagos,
   pronostico,
-  diaRiesgo: diaRiesgo
-    ? { fecha: diaRiesgo.fecha, minimo: diaRiesgo.banda[0], maximo: diaRiesgo.banda[1], confianza: 'media' }
+  riesgo: rojo.length
+    ? { desde: rojo[0], hasta: rojo.at(-1), peorFecha: peor.fecha, peorMonto: peor.banda[0], esperado: peor.esperado }
     : null,
-  recomendaciones: [
-    {
-      id: 'reco-1',
-      titulo: 'Pausa MusiKa Plus hasta tu próximo pago',
-      monto: 21.9,
-      efecto: 'Antes del cobro del 20 de noviembre.',
-      porque: 'No la usaste en 5 semanas y se cobra 10 días antes de tu ingreso, justo cuando tu saldo está más bajo.',
-      facilidad: 'Fácil',
-    },
-    {
-      id: 'reco-2',
-      titulo: 'Baja RapiFood a 2 pedidos por semana',
-      monto: 60,
-      efecto: 'Más saldo para tu día más justo, el 26 de noviembre.',
-      porque: 'Este mes pediste 9 veces, con un promedio de S/ 12.40. Con 2 por semana pasas tu día más justo sin quedar en rojo.',
-      facilidad: 'Esfuerzo medio',
-    },
-    {
-      id: 'reco-3',
-      titulo: 'Aparta una parte cuando cobres el 30',
-      monto: 80,
-      efecto: 'Por quincena. En 3 meses tendrías S/\u00a0240 de colchón.',
-      porque: 'Diciembre trae la cuota del 1 y gastos de fin de año. Separar una parte el día que cobras evita usarla sin darte cuenta.',
-      facilidad: 'Fácil',
-    },
-  ],
+  salud: {
+    puntaje: Math.round(componentesSalud.reduce((s, c) => s + c.valor, 0) / componentesSalud.length),
+    componentes: componentesSalud,
+  },
+  segmento: { nombre: 'Ingreso justo' },
+  gastosFrecuentes: persona.gastosFrecuentes.map((g) => ({
+    ...g,
+    totalMes: Math.round(g.vecesMes * g.ticket),
+  })),
+  suscripciones: persona.suscripciones,
+  recomendaciones,
+  conTodos: { peorFecha: conTodos.peor.fecha, peorMonto: conTodos.peor.banda[0], diasEnRojo: conTodos.diasEnRojo.length },
+  apartado: { ...APARTADO, total: APARTADO.monto * APARTADO.cobros },
 }

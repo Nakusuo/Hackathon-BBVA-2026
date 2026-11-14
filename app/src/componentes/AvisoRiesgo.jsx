@@ -1,6 +1,6 @@
 import { TriangleAlert } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { enSoles, fechaLarga } from '../formato.js'
+import { enSoles, fechaDia, textoDiasEnRojo } from '../formato.js'
 
 export default function AvisoRiesgo({ riesgo }) {
   if (!riesgo) return null
@@ -11,9 +11,8 @@ export default function AvisoRiesgo({ riesgo }) {
         Lucas te avisa
       </p>
       <p>
-        El {fechaLarga(riesgo.fecha)} podrías quedar en rojo. Ese día tu saldo estaría entre{' '}
-        <span className="cifra">{enSoles(riesgo.minimo)}</span> y <span className="cifra">{enSoles(riesgo.maximo)}</span>{' '}
-        (confianza {riesgo.confianza}).
+        {textoDiasEnRojo(riesgo)} podrías quedar en rojo si sigues gastando igual. Peor caso:{' '}
+        <span className="cifra">{enSoles(riesgo.peorMonto)}</span> el {fechaDia(riesgo.peorFecha)}.
       </p>
       <Link className="boton" to="/que-hacer">
         Ver qué puedo hacer

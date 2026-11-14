@@ -35,10 +35,16 @@ for (const { ruta, titulo } of PANTALLAS) {
         }
         return chicos
       })
+      await page.screenshot({ path: `capturas/${info.project.name}${ruta.replace('/', '-')}.png`, fullPage: true })
       expect(textosChicos).toEqual([])
       expect(errores).toEqual([])
 
-      await page.screenshot({ path: `capturas/${info.project.name}${ruta.replace('/', '-')}.png`, fullPage: true })
+      // Regla 22 de calidad: en la laptop de la demo cada pantalla se ve completa sin bajar.
+      if (info.project.name.startsWith('laptop')) {
+        const alto = await page.evaluate(() => document.documentElement.scrollHeight)
+        expect(alto).toBeLessThanOrEqual(768)
+      }
+
     })
   })
 }
@@ -46,27 +52,33 @@ for (const { ruta, titulo } of PANTALLAS) {
 test('el aviso anticipado lleva a Qué hacer', async ({ page }) => {
   await page.goto('/como-estas')
   const aviso = page.getByRole('status', { name: 'Aviso de Lucas' })
-  await expect(aviso).toContainText('26 de noviembre podrías quedar en rojo')
+  await expect(aviso).toContainText('Entre el sábado 28 y el domingo 29 podrías quedar en rojo')
   await aviso.getByRole('link', { name: 'Ver qué puedo hacer' }).click()
   await expect(page).toHaveURL(/que-hacer/)
 })
 
 test('Cómo estás responde cuánto puedo gastar al día', async ({ page }) => {
   await page.goto('/como-estas')
-  await expect(page.getByRole('region', { name: 'Cuánto puedes gastar' })).toContainText('S/ 34')
+  const principal = page.getByRole('region', { name: 'Cuánto puedes gastar' })
+  await expect(principal).toContainText('S/ 26')
+  await expect(principal).toContainText('Hoy gastas unos S/ 30 al día')
 })
 
 test('Qué viene cambia de periodo y muestra los pagos de diciembre', async ({ page }) => {
   await page.goto('/que-viene')
-  const pagos = page.getByRole('region', { name: 'Pagos e ingresos que vienen' })
+  const pagos = page.getByRole('region', { name: 'Pagos y cobros' })
   await expect(pagos).not.toContainText('Tarjeta de crédito')
   await page.getByRole('button', { name: '30 días' }).click()
   await expect(page.getByRole('button', { name: '30 días' })).toHaveAttribute('aria-pressed', 'true')
   await expect(pagos).toContainText('Tarjeta de crédito')
 })
 
-test('Qué hacer explica el porqué de cada cambio', async ({ page }) => {
+test('Qué hacer muestra el efecto de cada cambio sobre el día más justo', async ({ page }) => {
   await page.goto('/que-hacer')
-  await page.getByText('¿Por qué?').first().click()
-  await expect(page.getByText('No la usaste en 5 semanas')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Efecto de los cambios juntos' })).toContainText('ya no quedas en rojo')
+  const primera = page.getByRole('listitem').first()
+  await expect(primera).toContainText('Pide RapiFood')
+  await expect(primera).toContainText('+S/ 31 en tu día más justo')
+  await primera.getByText('¿Por qué?').click()
+  await expect(primera.getByText('Este mes pediste 9 veces')).toBeVisible()
 })
