@@ -33,3 +33,19 @@ export function partesDelGrafico(categorias, maximo = 6) {
     },
   ]
 }
+
+// Porcentajes enteros que siempre suman 100 (método del mayor resto): redondear cada parte por
+// separado puede dar 99 o 101, y el gráfico se lee como si faltara o sobrara algo.
+export function porcentajes(partes) {
+  const total = partes.reduce((s, p) => s + p.total, 0)
+  if (!total) return partes.map(() => 0)
+  const exactos = partes.map((p) => (p.total / total) * 100)
+  const enteros = exactos.map(Math.floor)
+  const faltan = 100 - enteros.reduce((s, n) => s + n, 0)
+  exactos
+    .map((x, i) => ({ i, resto: x - enteros[i] }))
+    .sort((a, b) => b.resto - a.resto || a.i - b.i)
+    .slice(0, faltan)
+    .forEach(({ i }) => enteros[i]++)
+  return enteros
+}

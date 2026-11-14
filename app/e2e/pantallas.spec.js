@@ -167,18 +167,28 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   const tips = page.getByRole('region', { name: 'Tips para tu día más justo' })
   const aviso = page.getByRole('status', { name: 'Aviso de Lucas' })
   await expect(tips.locator('.impacto')).toContainText('Días en rojo 2 → 0')
+  const salud = page.getByRole('link', { name: /Tu salud/ })
+  await expect(salud).toContainText('56, vas regular. Si cumples los tips, 63')
   const botones = tips.getByRole('button', { name: 'Lo hago' })
   await expect(botones).toHaveCount(3)
+  await expect(tips.locator('.tip').nth(0)).toContainText('Evitas 1 día en rojo')
+  await expect(tips.locator('.tip').nth(2)).not.toContainText('Evitas')
 
   await botones.nth(0).click()
   await expect(botones.nth(0)).toHaveAttribute('aria-pressed', 'true')
   await expect(aviso).toContainText('−S/ 29')
+  await expect(tips.locator('.tip').nth(0)).toContainText('Llevas 0 de 2 veces en RapiFood hasta el 30 nov')
 
+  await expect(tips.locator('.tip').nth(0)).not.toContainText('Evitas')
   await botones.nth(1).click()
+  await expect(tips.locator('.impacto')).toContainText('Días en rojo 1 → 0')
+  await expect(tips.locator('.tip').nth(2)).toContainText('Evitas 1 día en rojo')
   await botones.nth(2).click()
   await expect(tips.locator('.impacto')).toContainText('Días en rojo 0')
   await expect(aviso).toContainText('Vas bien')
   await expect(page.getByText('podrías apartar S/ 150')).toBeVisible()
+  await expect(salud).toContainText('63, vas regular')
+  await expect(salud).not.toContainText('Si cumples')
 
   await page.getByRole('link', { name: 'Qué viene' }).click()
   await expect(page.locator('.panel-grafico')).toContainText('Con tus cambios llegas a tu cobro')
@@ -201,6 +211,42 @@ test('Gastos compara cada categoría con el promedio', async ({ page }) => {
   await expect(categorias.locator('.categoria').first()).toContainText('Comida y delivery')
   await expect(categorias).toContainText('S/ 32 más que tu promedio')
   await expect(categorias).toContainText('Como siempre')
+})
+
+test('MusiKa se pausa desde Suscripciones y queda elegida en los tips', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/gastos-detalle')
+  const suscripciones = page.getByRole('region', { name: 'Suscripciones' })
+  const pausar = suscripciones.getByRole('button', { name: 'La pausaré hasta mi cobro: MusiKa Plus' })
+  await expect(suscripciones.getByRole('button')).toHaveCount(1)
+  const fila = suscripciones.locator('.fila').filter({ hasText: 'MusiKa' })
+  await expect(fila).toContainText('+S/ 22 el 29 nov. Evitas 1 día en rojo')
+  await pausar.click()
+  await expect(pausar).toHaveAttribute('aria-pressed', 'true')
+  await expect(fila).toContainText('Recuerda pausarla antes del 20 nov')
+
+  await page.goto('/lucas/resumen')
+  const tip = page.locator('.tip').filter({ hasText: 'Pausa MusiKa' })
+  await expect(tip.getByRole('button', { name: 'Lo hago' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(tip).toContainText('antes del 20 nov')
+})
+
+test('cada parte de la salud lleva a una acción', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/salud')
+  const salud = page.getByRole('region', { name: /Tu salud financiera/ })
+  await expect(salud.getByRole('link')).toHaveCount(4)
+  await salud.getByRole('link', { name: 'Ver tips para tu día más justo' }).click()
+  await expect(page).toHaveURL(/lucas\/resumen#tips/)
+  await expect(page.getByRole('region', { name: 'Tips para tu día más justo' })).toBeInViewport()
+
+  await page.goto('/lucas/salud')
+  await salud.getByRole('link', { name: 'Ver cuánto apartar al cobrar' }).click()
+  await expect(page.locator('#apartado')).toBeInViewport()
+
+  await page.goto('/lucas/salud')
+  await salud.getByRole('link', { name: 'Ver tus próximos pagos' }).click()
+  await expect(page.getByRole('region', { name: 'Pagos y cobros' })).toBeVisible()
 })
 
 test('Qué viene cambia de periodo y muestra los pagos de diciembre', async ({ page }) => {

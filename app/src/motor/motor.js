@@ -30,6 +30,18 @@ export function primerCobro(persona) {
   return persona.ingresos.reduce((a, b) => (a.fecha <= b.fecha ? a : b))
 }
 
+// Una meta mensual («4 veces al mes») llevada al tramo que falta hasta el cobro, que es lo que el tip pide.
+export function vecesHastaCobro(persona, vecesMes) {
+  const dias = (new Date(`${primerCobro(persona).fecha}T12:00:00`) - new Date(`${persona.hoy}T12:00:00`)) / 86400000
+  // Al menos 1: con un cobro muy cerca el tip seguiría pidiendo «0 de 0».
+  return Math.max(1, Math.round((vecesMes * dias) / 30))
+}
+
+// Cuántas veces fue al comercio desde que eligió el tip (hoy incluido).
+export function vecesDesde(movimientos, comercio, desdeIso) {
+  return movimientos.filter((m) => m.concepto === comercio && m.fecha >= desdeIso).length
+}
+
 export function simular(persona, { pagosOmitidos = [], frecuencias = {}, gastoDiario, pagosExtra = [] } = {}) {
   const diario = gastoDiario ?? gastoVariableDiario(persona, frecuencias)
   const puntos = []
@@ -76,9 +88,12 @@ export function gastoDiarioSeguro(persona, ajuste = {}) {
   return Math.floor(bajo)
 }
 
-export function evaluarCambio(persona, cambio) {
-  const antes = peorDia(persona, simular(persona))
-  const despues = simular(persona, cambio.ajuste)
+// Se mide sobre los otros tips ya elegidos: así «+S/» y «Evitas N días» de cada tarjeta se pueden sumar
+// y nunca prometen un día menos en rojo que luego no llega.
+export function evaluarCambio(persona, cambio, otrosElegidos = []) {
+  const sinCambio = simular(persona, ajusteDe(otrosElegidos))
+  const antes = peorDia(persona, sinCambio)
+  const despues = simular(persona, ajusteDe([...otrosElegidos, cambio]))
   const peorDespues = despues.find((p) => p.fecha === antes.fecha)
   return {
     ...cambio,
@@ -86,6 +101,7 @@ export function evaluarCambio(persona, cambio) {
     peorAntes: antes.banda[0],
     peorDespues: peorDespues.banda[0],
     mejora: redondear(peorDespues.banda[0] - antes.banda[0]),
+    diasEvitados: diasEnRojo(persona, sinCambio).length - diasEnRojo(persona, despues).length,
   }
 }
 

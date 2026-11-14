@@ -1,5 +1,5 @@
-import { ArrowDown, ArrowUp, DotsThree } from '@phosphor-icons/react'
-import { enSoles, iniciales } from '../formato.js'
+import { ArrowDown, ArrowUp, CheckCircle, DotsThree } from '@phosphor-icons/react'
+import { enSoles, enSolesRedondo, fechaCorta, iniciales } from '../formato.js'
 import { diferenciaConPromedio, ICONOS_CATEGORIA } from './categorias.js'
 
 function Comparacion({ categoria }) {
@@ -14,8 +14,38 @@ function Comparacion({ categoria }) {
   )
 }
 
-export default function GastosDetalle({ cliente }) {
-  const { categorias, suscripciones } = cliente
+// Una suscripción que Lucas propone pausar se puede elegir desde aquí: es el mismo tip del Resumen.
+// Lucas no toca la suscripción: el botón dice lo que hará la persona y luego le recuerda la fecha.
+function PausarSuscripcion({ tip, activo, alAlternar }) {
+  const { comercio, fecha } = tip.seguimiento
+  return (
+    <span className="suscripcion-accion">
+      <button
+        type="button"
+        className="boton-lo-hago"
+        aria-pressed={activo}
+        aria-label={`La pausaré hasta mi cobro: ${comercio}`}
+        onClick={() => alAlternar(tip.id)}
+      >
+        {activo && <CheckCircle size={20} weight="fill" aria-hidden="true" />}
+        La pausaré hasta mi cobro
+      </button>
+      {activo ? (
+        <span className="suave" role="status">
+          Recuerda pausarla antes del {fechaCorta(fecha)}, que es cuando se cobra.
+        </span>
+      ) : (
+        <span className="cifra cifra-azul">
+          +{enSoles(tip.mejora)} el {fechaCorta(tip.fechaPeorDia)}
+          {tip.diasEvitados > 0 && `. Evitas ${tip.diasEvitados === 1 ? '1 día' : `${tip.diasEvitados} días`} en rojo`}
+        </span>
+      )}
+    </span>
+  )
+}
+
+export default function GastosDetalle({ cliente, alternarTip }) {
+  const { categorias, suscripciones, recomendaciones, elegidos } = cliente
   const mayor = Math.max(...categorias.map((c) => c.total))
 
   return (
@@ -33,7 +63,7 @@ export default function GastosDetalle({ cliente }) {
                 <span className="categoria-texto">
                   <span className="categoria-cabecera">
                     <span>{c.nombre}</span>
-                    <span className="cifra">{enSoles(Math.round(c.total))}</span>
+                    <span className="cifra">{enSolesRedondo(c.total)}</span>
                   </span>
                   <span className="medidor" aria-hidden="true">
                     <span style={{ width: `${(c.total / mayor) * 100}%` }} />
@@ -52,20 +82,24 @@ export default function GastosDetalle({ cliente }) {
       <section className="tarjeta" aria-labelledby="suscripciones-titulo">
         <h2 id="suscripciones-titulo">Suscripciones</h2>
         <ul className="lista-limpia">
-          {suscripciones.map((s) => (
-            <li key={s.id} className="fila">
-              <span className="circulo" aria-hidden="true">
-                {iniciales(s.comercio)}
-              </span>
-              <span className="fila-texto">
-                <span>{s.comercio}</span>
-                <span className="suave">
-                  Día {s.dia}. {s.uso}
+          {suscripciones.map((s) => {
+            const tip = recomendaciones.find((r) => r.ajuste.pagosOmitidos?.includes(s.id))
+            return (
+              <li key={s.id} className="fila">
+                <span className="circulo" aria-hidden="true">
+                  {iniciales(s.comercio)}
                 </span>
-              </span>
-              <span className="fila-monto">{enSoles(s.monto)}</span>
-            </li>
-          ))}
+                <span className="fila-texto">
+                  <span>{s.comercio}</span>
+                  <span className="suave">
+                    Día {s.dia}. {s.uso}
+                  </span>
+                </span>
+                <span className="fila-monto">{enSoles(s.monto)}</span>
+                {tip && <PausarSuscripcion tip={tip} activo={elegidos.includes(tip.id)} alAlternar={alternarTip} />}
+              </li>
+            )
+          })}
         </ul>
       </section>
     </>

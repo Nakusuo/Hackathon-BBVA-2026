@@ -9,6 +9,12 @@ export function enSoles(monto) {
   return `${signo}S/ ${formato.format(absoluto)}`
 }
 
+// Totales y sumas se muestran al sol: un solo redondeo para que la misma cifra no salga como
+// «S/ 62» en un lado y «S/ 61.80» en otro. Los cobros sueltos (StreamFlix S/ 39.90) van con enSoles.
+export function enSolesRedondo(monto) {
+  return enSoles(Math.round(monto))
+}
+
 export function conSigno(monto) {
   return monto > 0 ? `+${enSoles(monto)}` : enSoles(monto)
 }
@@ -44,6 +50,12 @@ export function iniciales(nombre) {
 
 export function diasEntre(desdeIso, hastaIso) {
   return Math.round((aFecha(hastaIso) - aFecha(desdeIso)) / 86400000)
+}
+
+// Parte del ciclo de cobro que ya pasó, entre 0 y 1: con un cobro a más de 30 días (o ya vencido)
+// la barra no puede salirse ni quedar en negativo.
+export function avanceDelCiclo(diasQueFaltan, diasDelCiclo = 30) {
+  return Math.min(1, Math.max(0, 1 - diasQueFaltan / diasDelCiclo))
 }
 
 export function textoDiasEnRojo(riesgo) {

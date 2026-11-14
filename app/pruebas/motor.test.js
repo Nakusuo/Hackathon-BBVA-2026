@@ -11,6 +11,8 @@ import {
   gastoDiarioSeguro,
   peorDia,
   simular,
+  vecesDesde,
+  vecesHastaCobro,
 } from '../src/motor/motor.js'
 
 // Las pantallas solo son creíbles si sus cifras no se contradicen: estas pruebas lo vigilan.
@@ -104,4 +106,78 @@ test('sin margen después del cobro no se propone apartar nada', () => {
   // 300 − 10 días × 20 − 100 de luz = 0 el día del cobro, y el cobro es de 0.
   const sinMargen = { ...personaMinima, saldoHoy: 300, ingresos: [{ id: 'cobro', fecha: '2026-01-11', monto: 0, variacion: 0 }] }
   assert.equal(apartadoMaximo(sinMargen), 0)
+})
+
+test('el seguimiento de cada tip sale del mismo plan que el tip', () => {
+  for (const r of cliente.recomendaciones) {
+    const cambio = CAMBIOS.find((c) => c.id === r.id)
+    const s = r.seguimiento
+    if (s.tipo === 'pausa') {
+      assert.equal(persona.pagos.find((p) => p.id === cambio.ajuste.pagosOmitidos[0]).fecha, s.fecha)
+      continue
+    }
+    assert.equal(s.hasta, cliente.proximoIngreso.fecha)
+    assert.equal(s.usadas, 0, 'la persona de la demo aún no compra hoy')
+    assert.ok(s.limite > 0 && s.limite <= Object.values(cambio.ajuste.frecuencias)[0], r.id)
+  }
+  // RapiFood 4 veces al mes son 2 en los 16 días que faltan para el cobro.
+  assert.equal(cliente.recomendaciones.find((r) => r.id === 'delivery').seguimiento.limite, 2)
+})
+
+test('la salud sube con cada día en rojo que se evita y es el promedio de sus partes', () => {
+  const sinTips = vistaCon([]).salud
+  const conUno = vistaCon(['delivery']).salud
+  const conTodos = vistaCon(TODOS).salud
+  assert.ok(sinTips.puntaje < conUno.puntaje && conUno.puntaje < conTodos.puntaje)
+  assert.equal(cliente.conTodos.salud, conTodos.puntaje)
+  for (const s of [sinTips, conUno, conTodos]) {
+    const promedio = s.componentes.reduce((t, c) => t + c.valor, 0) / s.componentes.length
+    assert.equal(s.puntaje, Math.round(promedio))
+  }
+  assert.match(sinTips.componentes.at(-1).explicacion, /2 días en rojo/)
+  assert.match(conTodos.componentes.at(-1).explicacion, /sin quedar en rojo/)
+})
+
+test('«evitas N días en rojo» de un tip por elegir se cumple al elegirlo, con cualquier selección previa', () => {
+  const selecciones = [
+    [],
+    ['delivery'],
+    ['musika'],
+    ['cafe'],
+    ['delivery', 'musika'],
+    ['delivery', 'cafe'],
+    ['musika', 'cafe'],
+  ]
+  for (const elegidos of selecciones) {
+    const vista = vistaCon(elegidos)
+    for (const r of vista.recomendaciones.filter((t) => !elegidos.includes(t.id))) {
+      assert.equal(r.diasEvitados, vista.diasEnRojo - vistaCon([...elegidos, r.id]).diasEnRojo, `${elegidos} + ${r.id}`)
+    }
+  }
+  // El caso que vio el juez: con RapiFood y MusiKa queda 1 día, y el café es el que lo quita.
+  const dos = vistaCon(['delivery', 'musika'])
+  assert.equal(dos.diasEnRojo, 1)
+  assert.equal(dos.recomendaciones.find((r) => r.id === 'cafe').diasEvitados, 1)
+})
+
+test('las tarjetas de tips no cambian de orden al elegir', () => {
+  const orden = cliente.recomendaciones.map((r) => r.id)
+  for (const elegidos of [['cafe'], TODOS])
+    assert.deepEqual(
+      vistaCon(elegidos).recomendaciones.map((r) => r.id),
+      orden,
+    )
+})
+
+test('el seguimiento cuenta las compras desde hoy y nunca pide «0 de 0»', () => {
+  const movimientos = [
+    { concepto: 'RapiFood', fecha: '2026-11-13' },
+    { concepto: 'RapiFood', fecha: '2026-11-14' },
+    { concepto: 'Cafetería La Esquina', fecha: '2026-11-14' },
+    { concepto: 'RapiFood', fecha: '2026-11-15' },
+  ]
+  assert.equal(vecesDesde(movimientos, 'RapiFood', '2026-11-14'), 2)
+  assert.equal(vecesDesde(movimientos, 'RapiFood', '2026-11-16'), 0)
+  const cobroManana = { ...persona, ingresos: [{ ...persona.ingresos[0], fecha: '2026-11-15' }] }
+  assert.equal(vecesHastaCobro(cobroManana, 4), 1)
 })

@@ -10,6 +10,8 @@ import {
   peorDia,
   primerCobro,
   simular,
+  vecesDesde,
+  vecesHastaCobro,
 } from './motor.js'
 import { PERSONA_INICIAL, personaPorId } from './personas.js'
 
@@ -22,8 +24,20 @@ function totalesPorCategoria(p) {
   return totales
 }
 
-// Mientras no exista el modelo de salud (DI-07), el puntaje de deudas baja el doble de rápido que sube el peso de las cuotas.
-function componentesSalud(definicion) {
+// Mientras no exista el modelo de salud (DI-07), el puntaje de deudas baja el doble de rápido que sube el peso de las cuotas,
+// y el control del gasto promedia su historia con el plan de hoy: cada día en rojo proyectado antes del cobro le quita
+// 30 puntos al plan. Así la salud se mueve cuando la persona elige tips.
+const PUNTOS_POR_DIA_EN_ROJO = 30
+
+function controlConPlan(control, diasRojo) {
+  const plan = Math.max(0, 100 - diasRojo * PUNTOS_POR_DIA_EN_ROJO)
+  const conPlan = diasRojo
+    ? `Con tu plan de hoy quedarías ${diasRojo === 1 ? '1 día' : `${diasRojo} días`} en rojo antes de cobrar.`
+    : 'Con tu plan de hoy llegas a tu cobro sin quedar en rojo.'
+  return { ...control, valor: Math.round((control.valor + plan) / 2), explicacion: `${control.explicacion} ${conPlan}` }
+}
+
+function componentesSalud(definicion, diasRojo) {
   const p = definicion.persona
   const cuotas = p.pagos.filter((pago) => pago.cuota).reduce((s, pago) => s + pago.monto, 0)
   const peso = Math.round((cuotas / p.ingresoMensual) * 100)
@@ -31,8 +45,13 @@ function componentesSalud(definicion) {
   return [
     colchon,
     { nombre: 'Deudas', valor: Math.max(0, 100 - peso * 2), explicacion: `Tus cuotas son el ${peso} % de lo que cobras.` },
-    ...resto,
+    ...resto.map((c) => (c.nombre === 'Control del gasto' ? controlConPlan(c, diasRojo) : c)),
   ]
+}
+
+function saludDe(definicion, diasRojo) {
+  const componentes = componentesSalud(definicion, diasRojo)
+  return { puntaje: Math.round(componentes.reduce((s, c) => s + c.valor, 0) / componentes.length), componentes }
 }
 
 function riesgoDe(p, puntos) {
@@ -48,6 +67,33 @@ function apartadoDe(p, ajuste) {
   return { monto, repeticiones: REPETICIONES_APARTADO, total: monto * REPETICIONES_APARTADO, hasta: simular(p).at(-1).fecha }
 }
 
+// Lo que se sigue de cada tip desde que se elige: cuántas veces van del comercio frente a lo que el tip
+// permite hasta el cobro, o la fecha del cargo que hay que pausar. Cuenta los movimientos desde hoy.
+function seguimientoDe(definicion, cambio) {
+  const p = definicion.persona
+  const [idFrecuente, meta] = Object.entries(cambio.ajuste.frecuencias ?? {})[0] ?? []
+  if (idFrecuente) {
+    const gasto = p.gastosFrecuentes.find((g) => g.id === idFrecuente)
+    const usadas = vecesDesde(definicion.movimientosRecientes, gasto.comercio, p.hoy)
+    return { tipo: 'veces', comercio: gasto.comercio, usadas, limite: vecesHastaCobro(p, meta), hasta: primerCobro(p).fecha }
+  }
+  const pago = p.pagos.find((pago) => cambio.ajuste.pagosOmitidos?.includes(pago.id))
+  return pago ? { tipo: 'pausa', comercio: pago.concepto, fecha: pago.fecha } : null
+}
+
+// Cada tip se mide sobre los otros ya elegidos; el orden de las tarjetas se fija con su efecto por sí solo,
+// para que no salten al elegir.
+function recomendacionesCon(definicion, activos) {
+  const p = definicion.persona
+  const solos = definicion.cambios.map((c) => ({ cambio: c, mejora: evaluarCambio(p, c).mejora }))
+  return solos
+    .sort((a, b) => b.mejora - a.mejora)
+    .map(({ cambio }) => ({
+      ...evaluarCambio(p, cambio, activos.filter((a) => a.id !== cambio.id)),
+      seguimiento: seguimientoDe(definicion, cambio),
+    }))
+}
+
 // Todo lo que cambia con la persona elegida o con los tips activados con «Lo hago» se recalcula aquí.
 // `pagosExtra` son gastos de prueba (la bandeja de avisos los usa para mostrar cómo se mueve el riesgo).
 export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra = []) {
@@ -60,7 +106,6 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
   const peor = peorDia(p, pronostico)
   const pronosticoConTodos = simular(p, ajusteDe(cambios))
   const peorConTodos = peorDia(p, pronosticoConTodos)
-  const salud = componentesSalud(definicion)
   const totales = totalesPorCategoria(p)
   const veces = Object.fromEntries(p.gastosFrecuentes.map((g) => [g.id, g.vecesMes]))
   const aprendido = definicion.aprendido(p, veces)
@@ -84,7 +129,7 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
     peorDia: { fecha: peor.fecha, monto: peor.banda[0], esperado: peor.esperado },
     elegidos: activos.map((c) => c.id),
     ajuste,
-    salud: { puntaje: Math.round(salud.reduce((s, c) => s + c.valor, 0) / salud.length), componentes: salud },
+    salud: saludDe(definicion, diasEnRojo(p, pronostico).length),
     aprendido: [
       { id: 'cobro', dato: aprendido.cobro, fuente: aprendido.cobroFuente },
       { id: 'variacion', dato: aprendido.variacion, fuente: 'Últimos 6 meses' },
@@ -99,12 +144,13 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
       .map((c) => ({ ...c, total: Math.round((totales[c.id] ?? 0) * 100) / 100 }))
       .sort((a, b) => b.total - a.total),
     suscripciones: p.suscripciones,
-    recomendaciones: cambios.map((c) => evaluarCambio(p, c)).sort((a, b) => b.mejora - a.mejora),
+    recomendaciones: recomendacionesCon(definicion, activos),
     conTodos: {
       peorFecha: peorConTodos.fecha,
       peorMonto: peorConTodos.banda[0],
       peorAntes: peorDia(p, simular(p)).banda[0],
       diasEnRojo: diasEnRojo(p, pronosticoConTodos).length,
+      salud: saludDe(definicion, diasEnRojo(p, pronosticoConTodos).length).puntaje,
     },
     apartado: apartadoDe(p, ajuste),
     apartadoConTodos: apartadoDe(p, ajusteDe(cambios)),

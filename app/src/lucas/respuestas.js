@@ -1,6 +1,6 @@
 // Respuestas por plantilla: respaldo cuando el agente (JF-02) no está o no contesta. Toda cifra sale del motor, nunca del texto.
 import { apartadoSinRojo, evaluarGastoExtra } from '../motor/motor.js'
-import { conSigno, enSoles, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
+import { conSigno, enSoles, enSolesRedondo, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
 
 export const PREGUNTAS_SUGERIDAS = [
   '¿Llego a mi cobro?',
@@ -97,9 +97,9 @@ function dondeGastoMas(cliente) {
       ? `Y es lo que más subió: ${enSoles(diferencia)} más que tu promedio.`
       : `Lo que más subió frente a tu promedio es ${subeMas.nombre.toLowerCase()}, ${enSoles(diferencia)} más de lo usual.`
   return {
-    texto: `En los últimos 30 días gastaste más en ${mayor.nombre.toLowerCase()}: ${enSoles(Math.round(mayor.total))}. ${subida}`,
+    texto: `En los últimos 30 días gastaste más en ${mayor.nombre.toLowerCase()}: ${enSolesRedondo(mayor.total)}. ${subida}`,
     cifras: [
-      { etiqueta: mayor.nombre, valor: enSoles(Math.round(mayor.total)) },
+      { etiqueta: mayor.nombre, valor: enSolesRedondo(mayor.total) },
       { etiqueta: `${subeMas.nombre} sobre tu promedio`, valor: enSoles(diferencia) },
     ],
   }

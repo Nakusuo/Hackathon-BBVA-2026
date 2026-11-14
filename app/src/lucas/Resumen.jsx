@@ -16,14 +16,36 @@ import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import CifraVerificada from '../componentes/CifraVerificada.jsx'
 import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
-import { diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
+import { avanceDelCiclo, diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
 import { entrada } from '../movimiento.js'
 import ExplicameFacil from './ExplicameFacil.jsx'
 import { explicarResumen } from './explicaciones.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee, fitzona: Barbell, taxi: Taxi }
-const DIAS_DEL_CICLO = 30
+
+// Al elegir un tip, la tarjeta pasa a mostrar cómo va: es la razón para volver mañana.
+function Seguimiento({ seguimiento }) {
+  if (seguimiento.tipo === 'pausa') {
+    return (
+      <p className="seguimiento">
+        Pausa {seguimiento.comercio} antes del {fechaCorta(seguimiento.fecha)}, que es cuando se cobra.
+      </p>
+    )
+  }
+  const { usadas, limite, comercio, hasta } = seguimiento
+  return (
+    <div className="seguimiento">
+      <p>
+        Llevas <b>{usadas} de {limite}</b> veces en {comercio} hasta el {fechaCorta(hasta)}. Lucas lo cuenta con tus
+        compras con tarjeta.
+      </p>
+      <span className="medidor" aria-hidden="true">
+        <span style={{ width: `${Math.min(1, usadas / limite) * 100}%` }} />
+      </span>
+    </div>
+  )
+}
 
 function Tip({ tip, activo, alAlternar }) {
   const Icono = ICONOS[tip.id] ?? PiggyBank
@@ -39,6 +61,13 @@ function Tip({ tip, activo, alAlternar }) {
       <p className="cifra cifra-azul">
         +{enSoles(tip.mejora)} el {fechaCorta(tip.fechaPeorDia)}
       </p>
+      {/* Solo en los tips por elegir: medido sobre lo ya elegido, cada «Evitas» se cumple al tocar «Lo hago». */}
+      {!activo && tip.diasEvitados > 0 && (
+        <p className="tip-evita">
+          Evitas {tip.diasEvitados === 1 ? '1 día' : `${tip.diasEvitados} días`} en rojo
+        </p>
+      )}
+      <div aria-live="polite">{activo && tip.seguimiento && <Seguimiento seguimiento={tip.seguimiento} />}</div>
       <div className="tip-acciones">
         <motion.button
           type="button"
@@ -62,7 +91,7 @@ function Tip({ tip, activo, alAlternar }) {
 function Apartado({ cliente }) {
   const { apartado, proximoIngreso } = cliente
   return (
-    <li className="tip">
+    <li className="tip" id="apartado">
       <div className="reco-cabecera">
         <span className="circulo" aria-hidden="true">
           <PiggyBank size={22} />
@@ -120,7 +149,7 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
         <span className="hero-barra" aria-hidden="true">
           <motion.span
             initial={reducido ? false : { scaleX: 0 }}
-            animate={{ scaleX: 1 - faltan / DIAS_DEL_CICLO }}
+            animate={{ scaleX: avanceDelCiclo(faltan) }}
             transition={{ duration: 0.8, delay: 0.2 }}
           />
         </span>
@@ -194,6 +223,7 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
           <span className="bento-titulo">Tu salud</span>
           <span className="suave">
             {salud.puntaje}, {nivelDeSalud(salud.puntaje)}
+            {faltanCambios && salud.puntaje !== conTodos.salud && `. Si cumples los tips, ${conTodos.salud}`}
           </span>
         </Link>
         <Link to={`/lucas/chat?q=${encodeURIComponent(PREGUNTAS_SUGERIDAS[0])}`} className="bento-bloque">

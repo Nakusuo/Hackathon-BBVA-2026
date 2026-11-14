@@ -23,9 +23,10 @@
   --exterior: #e6ecf7;
   --banda: #c3d7fc;
   /* La gráfica de Qué viene va sobre --azul-profundo en los dos temas: línea, banda y foco
-     llevan color propio para no heredar --crema, que en oscuro es casi negra. Banda ya opaca. */
+     llevan color propio para no heredar --crema, que en oscuro es casi negra. Banda ya opaca:
+     #7f9be6 queda en 3.2:1 contra el azul (antes 1.99:1) y la línea crema sobre ella en 2.4:1. */
   --grafico-linea: #f5eedd;
-  --grafico-banda: #5874cc;
+  --grafico-banda: #7f9be6;
   --foco: #f5eedd;
   --riesgo: #b42318;
   --riesgo-claro: #ff8a80;
