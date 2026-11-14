@@ -1,4 +1,4 @@
-import { PERSONAS, personaPorId } from '../mocks/personas.js'
+import { PERSONAS, personaPorId } from '../motor/personas.js'
 
 // Radios nativos con apariencia de selector: el teclado y el lector de pantalla los tratan como un solo grupo.
 export default function SelectorPersona({ valor, alCambiar, leyenda = 'Persona de la demo' }) {

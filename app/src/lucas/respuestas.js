@@ -1,5 +1,5 @@
 // Respuestas por plantilla: respaldo cuando el agente (JF-02) no está o no contesta. Toda cifra sale del motor, nunca del texto.
-import { apartadoSinRojo, evaluarGastoExtra } from '../mocks/motor.js'
+import { apartadoSinRojo, evaluarGastoExtra } from '../motor/motor.js'
 import { conSigno, enSoles, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
 
 export const PREGUNTAS_SUGERIDAS = [

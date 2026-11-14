@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { CAMBIOS, cliente, persona, vistaCon } from '../src/mocks/cliente.js'
+import { CAMBIOS, cliente, persona, vistaCon } from '../src/motor/cliente.js'
 import {
   ajusteDe,
   anchoBanda,
@@ -11,7 +11,7 @@ import {
   gastoDiarioSeguro,
   peorDia,
   simular,
-} from '../src/mocks/motor.js'
+} from '../src/motor/motor.js'
 
 // Las pantallas solo son creíbles si sus cifras no se contradicen: estas pruebas lo vigilan.
 

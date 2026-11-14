@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { AVISOS, CLIENTE_ID, desdeAgente, preguntarALucas } from '../src/lucas/clienteChat.js'
-import { cliente, persona } from '../src/mocks/cliente.js'
+import { CLIENTE_DEMO } from '../src/api/lucas.js'
+import { AVISOS, desdeAgente, preguntarALucas } from '../src/lucas/clienteChat.js'
+import { cliente, persona } from '../src/motor/cliente.js'
 
 const NBSP = ' '
 const RESPUESTA = {
@@ -25,11 +26,11 @@ function falsoFetch(respuesta, registro = []) {
   }
 }
 
-const opciones = (extra) => ({ cliente, persona, base: 'http://api.local/', ...extra })
+const opciones = (extra) => ({ cliente, persona, activo: true, ...extra })
 
-test('sin dirección de la API responde con plantillas y no llama a la red', async () => {
+test('con el agente apagado responde con plantillas y no llama a la red', async () => {
   const registro = []
-  const r = await preguntarALucas('¿Llego a mi cobro?', { cliente, persona, base: '', fetchImpl: falsoFetch(RESPUESTA, registro) })
+  const r = await preguntarALucas('¿Llego a mi cobro?', { cliente, persona, activo: false, pedir: falsoFetch(RESPUESTA, registro) })
   assert.equal(r.origen, 'plantilla')
   assert.equal(r.aviso, null)
   assert.equal(registro.length, 0)
@@ -37,13 +38,13 @@ test('sin dirección de la API responde con plantillas y no llama a la red', asy
 
 test('manda el contrato mínimo y conserva la conversación', async () => {
   const registro = []
-  await preguntarALucas('¿Puedo gastar S/ 150?', opciones({ conversacion: 'conv-9', fetchImpl: falsoFetch(RESPUESTA, registro) }))
-  assert.equal(registro[0].url, 'http://api.local/api/v1/chat')
-  assert.deepEqual(registro[0].cuerpo, { customer_id: CLIENTE_ID, message: '¿Puedo gastar S/ 150?', conversation_id: 'conv-9' })
+  await preguntarALucas('¿Puedo gastar S/ 150?', opciones({ conversacion: 'conv-9', pedir: falsoFetch(RESPUESTA, registro) }))
+  assert.equal(registro[0].url, '/api/v1/chat')
+  assert.deepEqual(registro[0].cuerpo, { customer_id: CLIENTE_DEMO, message: '¿Puedo gastar S/ 150?', conversation_id: 'conv-9' })
 })
 
 test('las cifras verificadas del agente se muestran con el formato de la app', async () => {
-  const r = await preguntarALucas('¿Puedo gastar S/ 150?', opciones({ fetchImpl: falsoFetch(RESPUESTA) }))
+  const r = await preguntarALucas('¿Puedo gastar S/ 150?', opciones({ pedir: falsoFetch(RESPUESTA) }))
   assert.equal(r.origen, 'agente')
   assert.equal(r.verificado, true)
   assert.equal(r.conversacion, 'conv-001')
@@ -52,7 +53,7 @@ test('las cifras verificadas del agente se muestran con el formato de la app', a
 })
 
 test('si el agente no verificó, su texto no se muestra y responde la plantilla con aviso', async () => {
-  const r = await preguntarALucas('¿Llego a mi cobro?', opciones({ fetchImpl: falsoFetch({ ...RESPUESTA, verified: false }) }))
+  const r = await preguntarALucas('¿Llego a mi cobro?', opciones({ pedir: falsoFetch({ ...RESPUESTA, verified: false }) }))
   assert.equal(r.origen, 'plantilla')
   assert.equal(r.aviso, AVISOS.sinVerificar)
   assert.doesNotMatch(r.texto, /310/)
@@ -76,7 +77,7 @@ test('error de red, HTTP 500 o respuesta sin texto caen a la plantilla con aviso
     [{ verified: true }, AVISOS.ilegible],
   ]
   for (const [respuesta, aviso] of casos) {
-    const r = await preguntarALucas('¿Llego a mi cobro?', opciones({ fetchImpl: falsoFetch(respuesta) }))
+    const r = await preguntarALucas('¿Llego a mi cobro?', opciones({ pedir: falsoFetch(respuesta) }))
     assert.equal(r.origen, 'plantilla')
     assert.equal(r.aviso, aviso)
     assert.match(r.texto, /cobro/)
@@ -86,7 +87,7 @@ test('error de red, HTTP 500 o respuesta sin texto caen a la plantilla con aviso
 test('preguntas normales con «transacción» o «mueve» no se confunden con pedir operaciones', async () => {
   const registro = []
   for (const p of ['¿Cuántas transacciones hice?', '¿Qué mueve mi gasto?']) {
-    await preguntarALucas(p, opciones({ fetchImpl: falsoFetch(RESPUESTA, registro) }))
+    await preguntarALucas(p, opciones({ pedir: falsoFetch(RESPUESTA, registro) }))
   }
   assert.equal(registro.length, 2)
 })
@@ -94,14 +95,14 @@ test('preguntas normales con «transacción» o «mueve» no se confunden con pe
 test('si el agente tarda demasiado, se corta y responde la plantilla', async () => {
   const lento = (_url, { signal }) =>
     new Promise((_, rechazar) => signal.addEventListener('abort', () => rechazar(Object.assign(new Error('abort'), { name: 'AbortError' }))))
-  const r = await preguntarALucas('¿Llego a mi cobro?', opciones({ fetchImpl: lento, esperaMs: 20 }))
+  const r = await preguntarALucas('¿Llego a mi cobro?', opciones({ pedir: lento, esperaMs: 20 }))
   assert.equal(r.aviso, AVISOS.demora)
 })
 
 test('pedir comprar dólares o mover plata no sale al servidor', async () => {
   const registro = []
   for (const p of ['¿compro dólares?', 'transfiere 100 a mi mamá', 'mueve 100 a mi ahorro', 'muéveme S/ 100']) {
-    const r = await preguntarALucas(p, opciones({ fetchImpl: falsoFetch(RESPUESTA, registro) }))
+    const r = await preguntarALucas(p, opciones({ pedir: falsoFetch(RESPUESTA, registro) }))
     assert.match(r.texto, /no lo hago/)
   }
   assert.equal(registro.length, 0)

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { vistaCon } from '../src/mocks/cliente.js'
-import { PERSONAS, personaPorId } from '../src/mocks/personas.js'
-import { anchoBanda, peorDia, simular } from '../src/mocks/motor.js'
+import { vistaCon } from '../src/motor/cliente.js'
+import { PERSONAS, personaPorId } from '../src/motor/personas.js'
+import { anchoBanda, peorDia, simular } from '../src/motor/motor.js'
 
 // El selector de persona solo es honesto si todas pasan por el mismo motor y cumplen las mismas reglas.
 

@@ -1,12 +1,10 @@
-// Cliente de POST /api/v1/chat (propuesta MC-06). Sin VITE_LUCAS_API el chat responde solo con plantillas.
+// Chat contra POST /api/v1/chat (propuesta MC-06). Sin VITE_CHAT_AGENTE=si responde solo con plantillas.
+import { ErrorApi } from '../api/http.js'
+import { preguntarAgente } from '../api/lucas.js'
 import { enSoles } from '../formato.js'
 import { esPedidoDeOperacion, responder as responderConPlantilla } from './respuestas.js'
 
-// Es el mismo cliente sintético de las plantillas locales (src/mocks/cliente.js), así ambas respuestas hablan de la misma persona.
-export const CLIENTE_ID = 'demo-001'
 export const LARGO_MAXIMO = 500
-// La meta del agente es p95 < 8 s con LLM local; pasado esto ya no vale la pena esperar.
-const ESPERA_MS = 12000
 
 export const AVISOS = {
   sinConexion: 'No pude hablar con el agente de Lucas. Te respondo con mis cálculos de siempre.',
@@ -30,8 +28,6 @@ function formatoCifra(c) {
 function enlaceSeguro(url) {
   return typeof url === 'string' && /^https?:\/\//i.test(url) ? url : null
 }
-
-class RespuestaIlegible extends Error {}
 
 export function esRespuestaValida(cuerpo) {
   return Boolean(cuerpo) && typeof cuerpo.answer === 'string' && cuerpo.answer.trim() !== ''
@@ -64,37 +60,21 @@ function plantilla(texto, cliente, persona, aviso = null) {
   return { origen: 'plantilla', verificado: false, fuentes: [], aviso, ...responderConPlantilla(texto, cliente, persona) }
 }
 
-export async function preguntarALucas(
-  texto,
-  { cliente, persona, conversacion, base, fetchImpl = fetch, esperaMs = ESPERA_MS },
-) {
+export async function preguntarALucas(texto, { cliente, persona, conversacion, activo, ...opcionesApi }) {
   // Los pedidos de operación o inversión se cortan aquí: no hace falta mandarlos a ningún servidor.
-  if (!base || esPedidoDeOperacion(texto)) return plantilla(texto, cliente, persona)
+  if (!activo || esPedidoDeOperacion(texto)) return plantilla(texto, cliente, persona)
 
-  const control = new AbortController()
-  const reloj = setTimeout(() => control.abort(), esperaMs)
+  let cuerpo
   try {
-    const r = await fetchImpl(`${base.replace(/\/$/, '')}/api/v1/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customer_id: CLIENTE_ID,
-        message: texto.slice(0, LARGO_MAXIMO),
-        ...(conversacion ? { conversation_id: conversacion } : {}),
-      }),
-      signal: control.signal,
-    })
-    if (!r.ok) throw new Error(`HTTP ${r.status}`)
-    const cuerpo = await r.json().catch(() => null)
-    if (!esRespuestaValida(cuerpo)) throw new RespuestaIlegible()
-    if (cuerpo.verified !== true) {
-      return { ...plantilla(texto, cliente, persona, AVISOS.sinVerificar), conversacion: cuerpo.conversation_id ?? null }
-    }
-    return desdeAgente(cuerpo)
-  } catch (e) {
-    const aviso = e instanceof RespuestaIlegible ? AVISOS.ilegible : e?.name === 'AbortError' ? AVISOS.demora : AVISOS.sinConexion
+    cuerpo = await preguntarAgente(texto.slice(0, LARGO_MAXIMO), { conversacion, ...opcionesApi })
+  } catch (error) {
+    if (!(error instanceof ErrorApi)) throw error
+    const aviso = { tiempo: AVISOS.demora, formato: AVISOS.ilegible }[error.tipo] ?? AVISOS.sinConexion
     return plantilla(texto, cliente, persona, aviso)
-  } finally {
-    clearTimeout(reloj)
   }
+  if (!esRespuestaValida(cuerpo)) return plantilla(texto, cliente, persona, AVISOS.ilegible)
+  if (cuerpo.verified !== true) {
+    return { ...plantilla(texto, cliente, persona, AVISOS.sinVerificar), conversacion: cuerpo.conversation_id ?? null }
+  }
+  return desdeAgente(cuerpo)
 }

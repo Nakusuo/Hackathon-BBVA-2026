@@ -14,6 +14,7 @@ import {
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
+import CifraVerificada from '../componentes/CifraVerificada.jsx'
 import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
 import { diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
 import { entrada } from '../movimiento.js'
@@ -102,7 +103,9 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
       <motion.section {...entra(0)} className="hero" data-guia="cobro" aria-label="Cuánto puedes gastar">
         <span className="hero-etiqueta">Puedes gastar al día</span>
         <strong className="hero-cifra">
-          <NumeroAnimado valor={cliente.gastoDiarioSeguro} formato={enSoles} />
+          <CifraVerificada>
+            <NumeroAnimado valor={cliente.gastoDiarioSeguro} formato={enSoles} />
+          </CifraVerificada>
         </strong>
         <span className={`hero-actual ${exceso > 0 ? 'hero-actual-alto' : ''}`}>
           Hoy gastas <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} />

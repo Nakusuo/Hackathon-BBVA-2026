@@ -2,6 +2,7 @@ import { CaretLeft, Question } from '@phosphor-icons/react'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, NavLink, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import EstadoDatos from '../componentes/EstadoDatos.jsx'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import Aprendido from './Aprendido.jsx'
 import Chat from './Chat.jsx'
@@ -24,7 +25,7 @@ const DETALLES = { aprendido: 'resumen', salud: 'resumen', 'gastos-detalle': 'ga
 
 export default function EspacioLucas() {
   const { seccion } = useParams()
-  const { vista, persona, alternarTip, permiso } = useOutletContext()
+  const { vista, persona, alternarTip, permiso, datosApi } = useOutletContext()
   const navegar = useNavigate()
   const { hash, pathname } = useLocation()
   // Solo se abre sola si la primera entrada es al Resumen, que es donde están sus tres marcas.
@@ -103,6 +104,8 @@ export default function EspacioLucas() {
         {seccion === 'aprendido' && <Aprendido cliente={vista} />}
         {seccion === 'salud' && <Salud cliente={vista} />}
         {seccion === 'gastos-detalle' && <GastosDetalle cliente={vista} />}
+        {/* Al final: las cifras de arriba no dependen del servidor, así que el aviso no les quita el primer plano. */}
+        <EstadoDatos estado={datosApi.estado} />
       </main>
 
       {guiaAbierta && seccion === 'resumen' && <Guia alCerrar={cerrarGuia} />}

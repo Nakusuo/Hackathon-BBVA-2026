@@ -5,7 +5,8 @@ import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import { LARGO_MAXIMO, preguntarALucas } from './clienteChat.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
-const API = import.meta.env.VITE_LUCAS_API ?? ''
+// Apagado hasta que exista POST /api/v1/chat en FastAPI; las demás lecturas no dependen de esto.
+const AGENTE = import.meta.env.VITE_CHAT_AGENTE === 'si'
 
 const BIENVENIDA = {
   autor: 'lucas',
@@ -133,7 +134,7 @@ export default function Chat({ cliente, persona }) {
     const respuesta = await preguntarALucas(limpio, {
       cliente,
       persona,
-      base: API,
+      activo: AGENTE,
       conversacion: conversacion.current,
     })
     ocupado.current = false

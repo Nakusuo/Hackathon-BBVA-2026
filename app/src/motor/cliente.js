@@ -1,4 +1,4 @@
-// Vista de la persona elegida. Se reemplaza por la API cuando exista el contrato (MG-01).
+// Vista de la persona elegida. La API de hoy describe a otra persona (demo-001), así que las cifras que se recalculan salen de aquí.
 // Todas las personas pasan por el mismo motor: solo cambian sus datos, nunca las fórmulas.
 import {
   ajusteDe,

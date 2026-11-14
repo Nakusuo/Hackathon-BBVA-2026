@@ -19,8 +19,8 @@ export default defineConfig({
     command: `npm run dev -- --port ${PUERTO} --strictPort`,
     url: `http://localhost:${PUERTO}`,
     reuseExistingServer: !process.env.CI,
-    // El chat llama al agente en el mismo origen; las pruebas responden por él con page.route.
-    env: { VITE_LUCAS_API: `http://localhost:${PUERTO}` },
+    // Enciende el chat contra el agente; las pruebas responden por /api/v1/chat con page.route.
+    env: { VITE_CHAT_AGENTE: 'si' },
   },
   projects: [
     {
