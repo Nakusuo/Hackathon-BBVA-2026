@@ -24,6 +24,9 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Jueces técnicos de las ramas de los demás | — | Dixon `feature/datos-diagramas-v2`: CAMBIOS, no unir (el doc ya está idéntico en `develop` por un commit directo; el diagrama mermaid no compila, el ERD contradice ARCHITECTURE). Jeffrey PR #5: CAMBIOS (el juez de cifras ignoraba el signo). Miguel `feature/backend-fastapi`: CAMBIOS (signo de `expense` contra el mock, simulador sin tope, al forecast le faltan `first_risk_date`/`model`/`sample_only`, cifras escritas en el código, `rate` como texto). Los jueces de mi rama y de Diego se cortaron sin veredicto. Nakusuo/Marcela |
 | 2026-11-14 | Arreglos en la rama de Jeffrey (con su PR #5) | `feature/ia-jeffrey-actividades` | Commits `ed58864` y `6c35ff4`, subidos al PR #5: el juez rechaza «S/ 310 a favor» con saldo −310, redondeo solo a decena (≥100) o centena (≥1 000), prohibidas «préstamo», sugerir crédito y «sin riesgo», router manda «tipo de cambio» y «cambio del dólar» a fx, versiones fijas de `ollama` y `google-genai`, licencia del Banco Mundial corregida. 173/173 pytest y ruff limpio. Nakusuo/Marcela |
 | 2026-11-14 | Ramas nuevas revisadas | — | Diego subió `feature/ml-segmentos-pronostico` (152 archivos, ~24 500 líneas: ML, agente propio en `src/agente_analitico`, RAG, BCRP, puntos). No choca con `develop`, front ni backend, **sí con Jeffrey** (`.gitignore` y `docs/rag/fuentes.csv`) y duplica su trabajo: mismos PDFs con otros nombres, dos catálogos de fuentes, dos agentes con juez, dos `src/bcrp/`. Las historias de usuario que mencionó un compañero ya estaban en `develop` (commit de Michael a las 13:42). Nakusuo/Marcela |
+| 2026-11-14 | Cuarta revisión y unión del PR #5 de Jeffrey | `develop` | El juez pidió 3 rondas más: negación cerca de la marca de rojo, negación lejos y «en rojo por S/ 210» con saldo positivo. Arreglos `2ba73de` y `082aea0` (con negación en la frase, el rojo exige «-S/»). juez-tecnico APRUEBA en la 4.ª; 193 pruebas. PR #5 unido con squash. Nakusuo/Marcela |
+| 2026-11-14 | Arreglo y unión de mi rama | `develop` | juez-tecnico pidió el contraste de la gráfica de Qué viene en modo oscuro: `--grafico-linea`, `--grafico-banda` y `--foco` propias por tema (línea 11.7:1, banda 3.1:1). npm test 29/29, Playwright 52/52, capturas en claro y oscuro. PR #8 unido con merge (sin borrar la rama, porque otra sesión sigue en ella). La 2.ª revisión APRUEBA, con 6 opcionales. Nakusuo/Marcela |
+| 2026-11-14 | Unión de las ramas de Diego y Miguel por pedido mío | `develop` | Diego (PR #9): se trajo develop a su rama y se resolvieron los choques (`.gitignore` con las líneas de los dos; `docs/rag/fuentes.csv` con el formato de Diego porque su RAG lo lee; la lista de Jeffrey pasó a `docs/rag/fuentes_agente.csv`). Miguel (PR #10) con el veredicto CAMBIOS pendiente. Con todo junto: 386 pruebas de Python pasan (24 se saltan porque piden Ollama o datos). Dixon no se une: su documento ya estaba igual en `develop`. Nakusuo/Marcela |
 | 2026-11-14 | Rediseño móvil (en curso) | `feature/front-rediseno-movil` | Limpieza de código sin uso. Manrope en todo el front. Diurno por defecto y «Modo oscuro» con interruptor en Más → Preferencias (variables por tema, `--azul-texto` para contraste). Lucas como mascota propia en SVG (créditos a @aokulova en Preferencias). Login con arcos azules y tarjeta de vidrio. Resumen sin sobrecarga: panel con la cifra del día, aviso de una línea, tips en carrusel con «Días en rojo 2 → 0» y «Apartas S/ 40 → S/ 150», y bloques que abren Lo aprendido, Salud y Chat. Gastos en gráfico circular (5 categorías + Otros) con detalle aparte. Pestañas con barra deslizante. 29 pruebas de funciones y 52 de Playwright en verde |
 
 ## Lo que acordamos
@@ -56,14 +59,13 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Gráficas según ui-ux-pro-max: etiquetas y porcentajes visibles, nunca solo color; dona solo hasta 6 partes; pronóstico con línea punteada y banda | Accesibilidad y lectura rápida en celular |
 | 2026-11-14 | Tipografía: Manrope para títulos, cifras y texto, instalada como paquete con versión fija. Reemplaza a Source Serif 4 + Plus Jakarta Sans | La serifa se veía antigua sobre fondo oscuro; comparación de 4 opciones (Manrope, Sora + Inter, Space Grotesk + Inter, Plus Jakarta) y eligió Marcela |
 
-## Para retomar en otra laptop (2026-11-14)
+## Para retomar en otra laptop (2026-11-14, actualizado tras unir todo)
 
-1. `git fetch --all --prune` y `git switch feature/front-rediseno-movil` → `git pull`.
-2. Los arreglos de Jeffrey ya están subidos al PR #5 (`git fetch` los trae). Falta avisarle a Jeffrey para que los revise.
-3. Volver a pasar `juez-tecnico` por `feature/front-rediseno-movil` y por `feature/ml-segmentos-pronostico` (se cortaron).
-4. Juntar a `develop` con PR + squash (`gh pr merge <n> --squash --delete-branch`) solo lo aprobado: mi rama y el PR #5 de Jeffrey con los arreglos.
-5. No juntar todavía: Dixon (no aporta nada; corregir el doc en rama nueva), Miguel (5 bloqueantes), Diego (decidir con Jeffrey qué agente, qué catálogo RAG y qué `src/bcrp` se quedan).
-6. Decidir con Miguel y Diego qué significa `expense` en el simulador (gasto nuevo o recorte).
+1. `git fetch --all --prune`, `git switch develop` y `git pull`. En `develop` ya está todo: front, agente de Jeffrey, ML de Diego y API de Miguel.
+2. Para seguir con el front: `git switch feature/front-rediseno-movil` y `git pull` (sigue viva; otra sesión trabaja en ella).
+3. Python: hacen falta dos entornos, porque `requirements-ia.txt` (Jeffrey) y `requirements-analitica.txt` (Diego) chocan en `langgraph` y `pypdf`. Las pruebas de todo pasan instalando primero lo de Diego y luego `ollama`, `google-genai`, `langchain-google-genai`, `httpx` y `fastapi`.
+4. Avisar a Jeffrey, Diego y Miguel de lo que se unió y de sus pendientes (ver «Lo que falta»).
+5. Decidir con el equipo: qué agente se queda (`src/agent` o `src/agente_analitico`), qué juego de PDFs del RAG y qué `src/bcrp`; y qué significa `expense` en el simulador.
 
 ## Lo que falta
 
@@ -72,10 +74,14 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 
 - [x] Segunda ronda de jueces sobre `feature/front-banca-lucas`: APRUEBA, APRUEBA (~63) y CUMPLE CON RIESGOS. Nakusuo/Marcela
 - [x] Push de `feature/front-banca-lucas` y PR #6 unido a `develop`; PR #3 cerrado porque su contenido entró con el #6. Nakusuo/Marcela
-- [ ] PR de `feature/front-rediseno-movil` a `develop` tras su juez
+- [x] PR #8 de `feature/front-rediseno-movil` unido a `develop`. Nakusuo/Marcela
 - [x] Subir los arreglos de Jeffrey al PR #5. Nakusuo/Marcela
-- [ ] Unir el PR #5 cuando Jeffrey vea los arreglos
-- [ ] Avisar a Dixon, Miguel y Diego de sus veredictos
+- [x] PR #5 unido tras la 4.ª revisión del juez. Nakusuo/Marcela
+- [ ] Avisar a Jeffrey de los 4 commits que entraron en su juez y su router (PR #5)
+- [ ] Avisar a Miguel: PR #10 unido con 5 pendientes del juez (signo de `expense`, topes del simulador, campos del forecast, cifras desde los mocks, `rate` como número)
+- [ ] Avisar a Diego: PR #9 unido; unificar con Jeffrey los PDFs, el agente, `src/bcrp` y las versiones de `requirements`
+- [ ] Avisar a Dixon: no se unió su rama; corregir `docs/arquitectura-datos.md` en rama nueva (mermaid roto, ERD contra ARCHITECTURE)
+- [ ] Opcionales del juez en el front: clase `hero-actual-alto` sin CSS, «S/ 62» frente a «S/ 61.80», porcentajes que suman 99, banda en claro 1.99:1, barra de días sin límite, pruebas de `categorias.js`
 - [ ] Guion de demo de 60 s en `demo/` (banca → aviso → «Lo hago» → el rojo desaparece → apartar S/ 150)
 - [ ] Revisar «Banco Vértice» en el registro de la SBS antes del pitch
 - [ ] Conectar el chat al agente real (JF-02/JF-03) y el pronóstico al modelo de Diego (DI-06)
