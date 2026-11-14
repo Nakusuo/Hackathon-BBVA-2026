@@ -75,7 +75,7 @@ No encontré fuente pública sobre categorías de gasto en BCP Banca Móvil (lo 
 
 ## 6. Qué evitar para no parecer un banco real
 
-- Nombres, logos, colores insignia o tipografías de BBVA, BCP, Interbank, Scotiabank, Yape o Plin. Tampoco el azul marino con aqua de BBVA ni el morado de Yape [I]. Nuestra paleta crema y azules está bien, pero sin degradados que imiten a ningún banco.
+- Nombres, logos, colores insignia o tipografías de BBVA, BCP, Interbank, Scotiabank, Mibanco, Yape o Plin. «Mi Banca» se descartó por parecerse a Mibanco; el banco ficticio es «Banco Vértice» (sin coincidencias en una búsqueda web del 14/11/2026; falta revisar el registro de la SBS). Tampoco el azul marino con aqua de BBVA ni el morado de Yape [I]. Nuestra paleta crema y azules está bien, pero sin degradados que imiten a ningún banco.
 - Nombres de funciones reales: «Mi día a día», «Mis finanzas», «modo discreto», «Trends», «Blue», «Plin», «Yapear». Usar nombres propios: «Tu quincena», «Ocultar montos».
 - Copiar la distribución exacta de una pantalla real a partir de capturas.
 - La banca anfitriona se rotula como «Banca de ejemplo», con datos sintéticos. El pie dice «Lucas podría integrarse en cualquier banca».

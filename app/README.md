@@ -11,7 +11,7 @@ npm run lint
 npm test         # pruebas de funciones: montos, fechas, eje, coherencia de cifras y respuestas del chat
 ```
 
-Recorrido: `/ingresar` (Mi Banca, banca de ejemplo con datos ficticios ya cargados) → `/banca` (inicio con la tarjeta de aviso de Lucas y Lucas al centro de la barra) → `/lucas/resumen`, `/lucas/gastos`, `/lucas/que-viene` y `/lucas/chat`. La primera vez que se entra a Lucas aparece una guía de 3 pasos; se vuelve a ver con el botón «?».
+Recorrido: `/ingresar` (Banco Vértice, banco ficticio con datos de prueba ya cargados) → `/banca` (inicio con la tarjeta de aviso de Lucas y Lucas al centro de la barra) → `/lucas/resumen`, `/lucas/gastos`, `/lucas/que-viene` y `/lucas/chat`. La primera vez que se entra a Lucas aparece una guía de 3 pasos; se vuelve a ver con el botón «?».
 
 Mientras no exista el contrato de la API (MG-01), las pantallas leen una persona sintética de `src/mocks/cliente.js`. Sus cifras salen de `src/mocks/motor.js`, un sustituto simple del pronóstico y del recomendador, para que ninguna pantalla contradiga a otra.
 

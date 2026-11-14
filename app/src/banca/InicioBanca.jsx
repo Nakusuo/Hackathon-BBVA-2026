@@ -48,8 +48,9 @@ export default function InicioBanca() {
           </button>
           <div className="banca-saludo">
             <h1>Hola</h1>
-            <p>Bienvenido a Mi Banca</p>
+            <p>Bienvenido a Banco Vértice</p>
           </div>
+          <span className="etiqueta-demo">Banco ficticio</span>
           <button type="button" className="icono-boton" aria-label="Notificaciones" onClick={avisarSinDemo}>
             <Bell size={24} aria-hidden="true" />
           </button>
@@ -78,7 +79,7 @@ export default function InicioBanca() {
       <main className="banca-contenido">
         <section className="tarjeta-credito" aria-label={`${tarjeta.nombre} terminada en ${tarjeta.terminacion}`}>
           <div className="tarjeta-credito-frente">
-            <span className="logotipo logotipo-claro">Mi Banca</span>
+            <span className="logotipo logotipo-claro">Vértice</span>
             <span className="tarjeta-credito-numero" aria-hidden="true">
               •••• •••• •••• {tarjeta.terminacion}
             </span>

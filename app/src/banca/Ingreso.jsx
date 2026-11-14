@@ -14,8 +14,8 @@ export default function Ingreso() {
     <main className="ingreso">
       <form className="ingreso-tarjeta" onSubmit={ingresar} aria-labelledby="ingreso-titulo">
         <div className="ingreso-marca">
-          <span className="logotipo">Mi Banca</span>
-          <span className="etiqueta-demo">Banca de ejemplo</span>
+          <span className="logotipo">Banco Vértice</span>
+          <span className="etiqueta-demo">Banco ficticio</span>
         </div>
         <h1 id="ingreso-titulo">Ingresa a tu banca</h1>
 

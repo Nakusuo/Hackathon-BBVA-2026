@@ -50,7 +50,7 @@ export default function MarcoBanca() {
           {aviso}
         </p>
       </div>
-      <p className="nota-demo">Banca de ejemplo con datos sintéticos. Lucas podría integrarse en cualquier banca.</p>
+      <p className="nota-demo">Banco Vértice es un banco ficticio con datos sintéticos. Lucas podría integrarse en cualquier banca.</p>
     </div>
   )
 }

@@ -77,7 +77,7 @@ function cuantoAhorrar(cliente) {
     return { texto: 'Este mes no te conviene apartar al cobrar: primero toca pasar tus días más justos.', cifras: [] }
   }
   return {
-    texto: `Cuando cobres el ${fechaDia(proximoIngreso.fecha)}, aparta ${enSoles(apartado.monto)}. Lo comprobé con tus pagos de diciembre y no te deja en rojo. En ${apartado.cobros} cobros tendrías ${enSoles(apartado.total)} de colchón.`,
+    texto: `Cuando cobres el ${fechaDia(proximoIngreso.fecha)}, podrías apartar ${enSoles(apartado.monto)}. Lo comprobé con tus pagos de diciembre y no te deja en rojo. En ${apartado.cobros} cobros tendrías ${enSoles(apartado.total)} de colchón.`,
     cifras: [
       { etiqueta: 'Apartado por cobro', valor: enSoles(apartado.monto) },
       { etiqueta: `Colchón en ${apartado.cobros} cobros`, valor: enSoles(apartado.total) },
