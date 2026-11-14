@@ -389,12 +389,8 @@
   gap: 10px;
 }
 
-.aviso-corto > svg {
-  color: var(--riesgo);
-}
-
-.aviso-bien.aviso-corto > svg {
-  color: var(--bien);
+.aviso-corto > .lucas-pose {
+  margin-top: -4px;
 }
 
 .aviso-corto p {
@@ -544,5 +540,16 @@
 
 .boton-secundario:hover {
   background: var(--azul-claro);
+}
+
+
+.avisos-vacio {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avisos-vacio p {
+  margin: 0;
 }
 

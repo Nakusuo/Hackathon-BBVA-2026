@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import LucasPose from '../componentes/LucasPose.jsx'
 import { marcarGuiaVista } from './guiaVista.js'
 
 // Tres marcas en contexto y siempre con «Saltar»: los tutoriales largos no mejoran el uso (NN/g, ver investigacion/ui-banca.md).
@@ -20,7 +21,7 @@ const PASOS = [
   },
 ]
 
-const ESPACIO_TARJETA = 230
+const ESPACIO_TARJETA = 270
 // Alto de la barra inferior de la banca más un respiro, para no taparla.
 const SOBRE_LA_BARRA = 84
 
@@ -108,9 +109,12 @@ export default function Guia({ alCerrar }) {
         className="guia-tarjeta"
         style={posicionTarjeta(caja)}
       >
-        <p className="suave">
-          Paso {paso + 1} de {PASOS.length}
-        </p>
+        <div className="guia-cabecera">
+          <LucasPose pose={paso === 0 ? 'saludo' : 'senala'} tamano={56} />
+          <p className="suave">
+            Paso {paso + 1} de {PASOS.length}
+          </p>
+        </div>
         <h2 id="guia-titulo">{actual.titulo}</h2>
         <p>{actual.texto}</p>
         <div className="guia-botones">

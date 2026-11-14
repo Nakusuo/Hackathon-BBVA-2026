@@ -121,7 +121,7 @@ export default function InicioBanca() {
 
         {!permiso ? (
           <Link to="/consentimiento" state={{ volver: '/lucas/resumen' }} className="tarjeta-lucas">
-            <MarcaLucas tamano={44} />
+            <MarcaLucas tamano={52} pose="saludo" />
             <span className="tarjeta-lucas-texto">
               <strong>Activa Lucas</strong>
               <span>Te avisa antes de quedar en rojo. Primero te cuento qué datos uso.</span>
@@ -129,7 +129,7 @@ export default function InicioBanca() {
           </Link>
         ) : riesgo ? (
           <Link to="/lucas/resumen" className="tarjeta-lucas">
-            <MarcaLucas tamano={44} />
+            <MarcaLucas tamano={52} pose={riesgoLejano ? 'pensando' : 'alerta'} />
             {/* Con el rojo a más de 7 días no hay aviso (regla de avisos): Lucas lo muestra como algo que viene. */}
             <span className="tarjeta-lucas-texto">
               <strong>{riesgoLejano ? 'Lucas lo ve venir' : 'Lucas te avisa'}</strong>
@@ -143,7 +143,7 @@ export default function InicioBanca() {
           </Link>
         ) : (
           <Link to="/lucas/resumen" className="tarjeta-lucas">
-            <MarcaLucas tamano={44} />
+            <MarcaLucas tamano={52} pose="celebra" />
             <span className="tarjeta-lucas-texto">
               <strong>Lucas</strong>
               <span>Con tus cambios llegas a tu cobro sin quedar en rojo. Mira tu plan.</span>

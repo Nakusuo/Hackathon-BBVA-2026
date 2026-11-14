@@ -137,11 +137,13 @@ const LIMITES = {
   texto:
     'Eso no lo hago: no recomiendo inversiones ni compra de dólares, y no muevo tu plata. Sí puedo decirte cuánto margen tienes hasta tu cobro.',
   cifras: [],
+  pose: 'pensando',
 }
 
 const NO_ENTIENDO = {
   texto: 'Todavía no sé responder eso. Prueba con una de las preguntas sugeridas.',
   cifras: [],
+  pose: 'pensando',
 }
 
 export function esPedidoDeOperacion(pregunta) {
@@ -156,7 +158,7 @@ export function responder(pregunta, cliente, persona) {
   if (esPedidoDeOperacion(pregunta)) return LIMITES
   const monto = montoEn(texto)
   const montoValido = monto > 0 ? monto : null
-  if (/(ahorr|apart|guardar|colchon)/.test(texto)) return cuantoAhorrar(cliente, persona, montoValido)
+  if (/(ahorr|apart|guardar|colchon)/.test(texto)) return { ...cuantoAhorrar(cliente, persona, montoValido), pose: 'ahorra' }
   if (montoValido && /(gast|compr|regalo|pag)/.test(texto)) return gastoExtra(cliente, persona, montoValido)
   if (/(llego|alcanza|fin de mes|cobro|rojo)/.test(texto)) return llegarAlCobro(cliente)
   if (/(gasto mas|en que gasto|categoria|donde se va)/.test(texto)) return dondeGastoMas(cliente)

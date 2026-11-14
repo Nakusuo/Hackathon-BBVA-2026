@@ -12,6 +12,7 @@ const BIENVENIDA = {
   autor: 'lucas',
   texto: 'Hola, soy Lucas. Respondo con lo que aprendí de tus movimientos y con mi pronóstico de tu saldo.',
   cifras: [],
+  pose: 'saludo',
 }
 
 function Cifras({ mensaje }) {
@@ -71,7 +72,7 @@ function Mensaje({ mensaje }) {
   }
   return (
     <li className="mensaje mensaje-lucas">
-      <MarcaLucas tamano={32} />
+      <MarcaLucas tamano={40} pose={mensaje.pose} />
       <div className="mensaje-cuerpo">
         <span className="solo-lector">Lucas: </span>
         {mensaje.aviso && (

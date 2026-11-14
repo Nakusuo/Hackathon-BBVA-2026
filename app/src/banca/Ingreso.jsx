@@ -3,7 +3,7 @@ import { motion } from 'motion/react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import FondoIngreso from '../componentes/FondoIngreso.jsx'
-import Mascota from '../componentes/Mascota.jsx'
+import LucasPose from '../componentes/LucasPose.jsx'
 import SelectorPersona from '../componentes/SelectorPersona.jsx'
 import { SUAVE } from '../movimiento.js'
 import { guardarPersona, permisoDe, personaGuardada } from '../sesion.js'
@@ -32,7 +32,7 @@ export default function Ingreso() {
         transition={{ duration: 0.5, ease: SUAVE, delay: 0.2 }}
       >
         <div className="ingreso-saludo">
-          <Mascota tamano={84} />
+          <LucasPose pose="saludo" tamano={92} animada />
           <p className="burbuja">¡Hola de nuevo! Soy Lucas, tu copiloto de plata.</p>
         </div>
         <div className="ingreso-marca">

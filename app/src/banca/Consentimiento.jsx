@@ -2,7 +2,7 @@ import { ArrowCounterClockwise, Database, Flask, ShieldCheck, Target } from '@ph
 import { motion } from 'motion/react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import FondoIngreso from '../componentes/FondoIngreso.jsx'
-import Mascota from '../componentes/Mascota.jsx'
+import LucasPose from '../componentes/LucasPose.jsx'
 import { personaPorId } from '../motor/personas.js'
 import { SUAVE } from '../movimiento.js'
 import { darPermiso, personaGuardada } from '../sesion.js'
@@ -53,7 +53,7 @@ export default function Consentimiento() {
         transition={{ duration: 0.5, ease: SUAVE }}
       >
         <div className="ingreso-saludo">
-          <Mascota tamano={64} />
+          <LucasPose pose="senala" tamano={72} />
           <p className="burbuja">Para avisarte a tiempo necesito mirar tus movimientos. Te cuento qué uso.</p>
         </div>
         <h1 id="permiso-titulo">Antes de activar Lucas</h1>

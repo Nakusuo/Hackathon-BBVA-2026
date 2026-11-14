@@ -35,3 +35,14 @@
   justify-content: space-between;
   align-items: center;
 }
+
+.guia-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.guia-cabecera p {
+  margin: 0;
+}
+
