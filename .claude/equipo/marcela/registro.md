@@ -17,6 +17,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Banca + Lucas v2 | `feature/front-banca-lucas` | Ingreso visual de Mi Banca, inicio con saldo ocultable, cuentas, accesos, tarjeta «Lucas te avisa» y Lucas al centro de la barra; espacio Lucas con Resumen (gasto diario, aviso, lo que aprendí con «¿Es correcto?», tips con efecto, apartado comprobado, salud), Gastos (7 categorías frente al promedio), Qué viene y Chat (respuestas con cifras verificadas y límites de asesoría); guía de 3 pasos. 19 pruebas de funciones y 28 de Playwright en verde |
 | 2026-11-14 | Revisión y corrección de errores + estructura de referencias | `feature/front-banca-lucas` | Corregidos: aviso «solo Lucas» que se borraba antes de tiempo, foco que escapaba de la guía y no volvía al «?», selector partido en celular, «No» de lo aprendido que no hacía nada visible, lector de pantalla que no leía el aviso de la tarjeta de Lucas, leyenda del gráfico con color equivocado. Nueva estructura (referencias de apps financieras, en azules): cabecera azul profunda con saldo, tarjeta de crédito visual, accesos en bloque blanco, pagos programados deslizables, movimientos por día; Resumen con dos recuadros; Gastos y Qué viene con panel azul y hoja blanca. 19 pruebas de funciones y 36 de Playwright en verde |
 | 2026-11-14 | Correcciones de los 3 jueces + mejoras de producto | `feature/front-banca-lucas` | Banco ficticio «Banco Vértice» con rótulo visible. Animaciones (de otra sesión) revisadas, con motion fijo y respetando «reducir movimiento». Guía: paso 2 ya no se aplasta y «?» funciona en todas las pestañas. Chat: no dice «Puedes» ante gastos imposibles, lee «S/ 1.500» y no confunde días, responde «¿Puedo ahorrar X?», usa los tips activos y dice «Calculado con tus datos». Botón «Lo hago» en cada tip: el aviso, el gráfico, la banca y el chat se recalculan en vivo (−S/ 60 → −S/ 29 → −S/ 7 → +S/ 12) y se recuerda. Persona coherente: cuenta de ahorros, 2 clientes con cobros que varían, tarjeta como pago total, apartado calculado (S/ 40 sin tips, S/ 150 con los 3). 28 pruebas de funciones y 44 de Playwright en verde |
+| 2026-11-14 | Segunda ronda de jueces y actualización con develop | `feature/front-banca-lucas` | Rama rebasada sobre `develop` (contrato de API de Miguel y docs de Dixon) sin conflictos. juez-tecnico APRUEBA, juez-producto APRUEBA (~63/100), juez-cumplimiento CUMPLE CON RIESGOS (favicon en el límite de marca). 28 pruebas de funciones y 44 de Playwright en verde |
 
 ## Lo que acordamos
 
@@ -45,7 +46,8 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 
 ## Lo que falta
 
-- [ ] Segunda ronda de jueces sobre `feature/front-banca-lucas` (después del almuerzo) y abrir su PR
+- [x] Segunda ronda de jueces sobre `feature/front-banca-lucas`: APRUEBA, APRUEBA (~63) y CUMPLE CON RIESGOS. Nakusuo/Marcela
+- [ ] Push de `feature/front-banca-lucas` y PR a `develop`
 - [ ] Guion de demo de 60 s en `demo/` (banca → aviso → «Lo hago» → el rojo desaparece → apartar S/ 150)
 - [ ] Revisar «Banco Vértice» en el registro de la SBS antes del pitch
 - [ ] Conectar el chat al agente real (JF-02/JF-03) y el pronóstico al modelo de Diego (DI-06)
