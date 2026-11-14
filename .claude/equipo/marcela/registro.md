@@ -32,6 +32,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Rediseño móvil (en curso) | `feature/front-rediseno-movil` | Limpieza de código sin uso. Manrope en todo el front. Diurno por defecto y «Modo oscuro» con interruptor en Más → Preferencias (variables por tema, `--azul-texto` para contraste). Lucas como mascota propia en SVG (créditos a @aokulova en Preferencias). Login con arcos azules y tarjeta de vidrio. Resumen sin sobrecarga: panel con la cifra del día, aviso de una línea, tips en carrusel con «Días en rojo 2 → 0» y «Apartas S/ 40 → S/ 150», y bloques que abren Lo aprendido, Salud y Chat. Gastos en gráfico circular (5 categorías + Otros) con detalle aparte. Pestañas con barra deslizante. 29 pruebas de funciones y 52 de Playwright en verde |
 | 2026-11-14 | Consentimiento, selector de persona y «explícamelo fácil» (HU-23, HU-03) | `feature/front-consentimiento-persona` | Consentimiento como segundo paso del ingreso, por persona, con «Ahora no» y retiro en Más → Preferencias → Privacidad (borra los tips). Persona independiente o formal con quincena en el ingreso y en Preferencias: todas las cifras salen del mismo motor y la banda del formal es angosta (S/ 110 frente a S/ 308 el día antes del cobro). «Explícamelo fácil» en Resumen y Qué viene, con «peor caso» y sin cifras nuevas. 57 unitarias y 86 e2e en claro y oscuro, a 1366×768 y 390 px. `PW_PUERTO` para no chocar con otra carpeta en el 5174. Jueces: producto CAMBIOS → resueltos; cumplimiento CUMPLE CON RIESGOS. Sin push |
 | 2026-11-14 | MC-03 Bandeja de avisos y MC-07 Evidencia | `feature/front-avisos-evidencia` | Bandeja en `/lucas/avisos` (campana en la banca y en Lucas): regla de estado.md (3–7 días normal, 0–2 urgente, > 7 sin aviso, 3 por semana con lugar para el riesgo, un aviso por hueco), «Urgente»/«Aviso» con texto, ícono y color, «¿Por qué?» con datos, supuesto y qué tan seguro, «útil / no me sirve», enlace a la acción, demo de la regla que no gasta el tope y botón para borrar lo guardado en Más. Panel `/evidencia` para el jurado: cada cifra leída de `models/metricas*.json` con su fuente (falla la build si falta una clave), impacto en S/ con IC 95 % primero, 12 técnicas frente a su baseline, agente y RAG, perturbaciones y alertas de equidad, incluido lo que sale peor. npm test 45/45 y Playwright 68/68 en 1366×768 y 390 px; tras el rebase sobre develop (API, consentimiento y personas), 83/83 y 112/112. Jueces ronda 1: CAMBIOS ×3, arreglados en eb95624; ronda 2: APRUEBA ×3 (producto 3,55/5), con los detalles aplicados en dd38be5. Push y PR #17 a `develop`. Nakusuo/Marcela |
+| 2026-11-14 | Opcionales y mejoras de los jueces en el front | `feature/front-ajustes-jueces` | 22 commits chicos. Técnicos: CSS de `hero-actual-alto`, `enSolesRedondo` (S/ 62 en todos lados), porcentajes que suman 100 (mayor resto), banda en claro 1.99 → 3.2:1 con halo bajo la línea, barra de días entre 0 y 1, pruebas de `categorias.js`. Producto: seguimiento del tip elegido («Llevas 0 de 2 veces en RapiFood hasta el 30 nov»), salud que se mueve con los tips (independiente 56, meta 63; formal 70, meta 74; regla provisional hasta DI-07), «Evitas N días en rojo» medido sobre lo ya elegido, «La pausaré hasta mi cobro» para MusiKa desde Suscripciones, cada parte de la salud lleva a una acción. Rebase sobre `develop` con los PR #13, #15, #16 y #17: lo del motor pasó a `src/motor/cliente.js` y sirve a las dos personas. 105/105 node, 122/122 Playwright (`PW_PUERTO`), claro/oscuro a 1366×768 y 390 px con las dos personas. juez-tecnico CAMBIOS → APRUEBA; juez-producto CAMBIOS → APRUEBA 68/100. Sin push. Nakusuo/Marcela |
 
 ## Lo que acordamos
 
@@ -76,7 +77,8 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [ ] Avisar a Diego y Miguel: `make eval` simula la alerta a 14 días con p ≥ 0,25 y la app avisa a 7 días sin probabilidad; falta una ruta de avisos con `p_rojo` (MG-05) para mostrar la confianza en cada aviso
 
 - [ ] Rediseño móvil (`feature/front-rediseno-movil`): pasar al estilo nuevo la banca (tarjeta con volumen, accesos en bento, 3 movimientos con «Ver todo»), Qué viene (gráfico según ui-ux-pro-max, sin sobrecarga) y Chat; revisar Ingreso en oscuro; luego jueces (técnico, producto, cumplimiento), push y PR a `develop`
-- [ ] Juez de producto: seguimiento del tip elegido («Pediste RapiFood 1 de 4 veces») para volver mañana; salud que se mueva con los tips o en segundo plano
+- [x] Juez de producto: seguimiento del tip elegido y salud que se mueve con los tips (`feature/front-ajustes-jueces`). Nakusuo/Marcela
+- [ ] Seguimiento que avance en la demo («Simular mañana»: un pedido nuevo y «1 de 2») y colchón que se mueva con lo apartado (juez-producto, 2.ª ronda)
 
 - [x] Segunda ronda de jueces sobre `feature/front-banca-lucas`: APRUEBA, APRUEBA (~63) y CUMPLE CON RIESGOS. Nakusuo/Marcela
 - [x] Push de `feature/front-banca-lucas` y PR #6 unido a `develop`; PR #3 cerrado porque su contenido entró con el #6. Nakusuo/Marcela
@@ -87,14 +89,15 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [ ] Avisar a Miguel: PR #10 unido con 5 pendientes del juez (signo de `expense`, topes del simulador, campos del forecast, cifras desde los mocks, `rate` como número)
 - [ ] Avisar a Diego: PR #9 unido; unificar con Jeffrey los PDFs, el agente, `src/bcrp` y las versiones de `requirements`
 - [ ] Avisar a Dixon: no se unió su rama; corregir `docs/arquitectura-datos.md` en rama nueva (mermaid roto, ERD contra ARCHITECTURE)
-- [ ] Opcionales del juez en el front: clase `hero-actual-alto` sin CSS, «S/ 62» frente a «S/ 61.80», porcentajes que suman 99, banda en claro 1.99:1, barra de días sin límite, pruebas de `categorias.js`
+- [x] Opcionales del juez en el front (`feature/front-ajustes-jueces`). Nakusuo/Marcela
+- [ ] Push de `feature/front-ajustes-jueces` y PR a `develop` (con permiso de Marcela)
 - [ ] Guion de demo de 60 s en `demo/` (banca → aviso → «Lo hago» → el rojo desaparece → apartar S/ 150)
 - [ ] Revisar «Banco Vértice» en el registro de la SBS antes del pitch
 - [ ] Aprobar el contrato de `/api/v1/chat` con Jeffrey y Miguel; luego el endpoint y probar el chat contra el agente real (el front ya está en `feature/front-chat-agente`)
 - [ ] Conectar el pronóstico al modelo de Diego (DI-06)
 
 - [ ] Firecrawl: conectar en claude.ai (Settings → Connectors) para investigación web
-- [ ] Mejoras del juez-producto: apartado S/ 150 calculado por el motor (entrada a Sueldo Lucas); explicar «peor caso» con palabras simples y mostrar «evitas 2 días en rojo»; enlazar MusiKa (Suscripciones) y la salud a acciones
+- [ ] Mejoras del juez-producto: apartado S/ 150 calculado por el motor (entrada a Sueldo Lucas); explicar «peor caso» con palabras simples. Ya hecho: «Evitas N días en rojo», MusiKa y salud enlazadas a acciones
 - [ ] Con la API: «veces este mes» como ritmo diario, explicaciones de salud desde el modelo (DI-07)
 - [ ] Lugar para la marca ✓ de cifra verificada cuando exista la API
 - [ ] Push de `feature/front-esqueleto` y PR a `develop` (revisa Dixon + `juez-tecnico`, y `juez-producto` porque se ve en la demo)
