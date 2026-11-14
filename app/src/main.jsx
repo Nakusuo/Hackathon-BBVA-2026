@@ -14,6 +14,8 @@ import './estilos/lucas.css'
 import './estilos/panel.css'
 import './estilos/chat.css'
 import './estilos/guia.css'
+import './estilos/avisos.css'
+import './estilos/evidencia.css'
 
 document.documentElement.dataset.tema = temaGuardado()
 

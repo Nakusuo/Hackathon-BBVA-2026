@@ -111,6 +111,14 @@ export default function Preferencias() {
         <p className="suave">Se aplica a toda la app y se recuerda en este navegador.</p>
       </section>
 
+      <section className="tarjeta" aria-labelledby="evidencia-titulo">
+        <h2 id="evidencia-titulo">Para el jurado</h2>
+        <p className="suave">Cada modelo de Lucas frente a su baseline, con la fuente de cada cifra.</p>
+        <Link to="/evidencia" className="enlace">
+          Ver la evidencia
+        </Link>
+      </section>
+
       <section className="tarjeta" aria-labelledby="creditos-titulo">
         <h2 id="creditos-titulo">Créditos</h2>
         <ul className="lista-limpia creditos">
