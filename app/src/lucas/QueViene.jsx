@@ -1,4 +1,4 @@
-import { Warning, X } from '@phosphor-icons/react'
+import { CaretDown, CaretUp, Warning, X } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -133,6 +133,8 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
   const [periodo, setPeriodo] = useState('ingreso')
   const [borrador, setBorrador] = useState(VACIO)
   const [agregado, setAgregado] = useState('')
+  // El simulador va plegado: abierto ocupa casi una pantalla y Qué viene debe caber en 1.5 de celular.
+  const [simulando, setSimulando] = useState(false)
 
   const revision = validarPlanificado(cliente, borrador)
   const { movimiento } = revision
@@ -167,6 +169,12 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
     setBorrador((previo) => ({ ...previo, [campo]: valor }))
     // La vista sigue a la fecha: lo que cae después del cobro no se ve en «Hasta mi cobro».
     if (campo === 'fecha' && valor) setPeriodo(valor >= proximoIngreso.fecha ? 'mes' : 'ingreso')
+  }
+
+  // Al cerrar se descarta el borrador: si no, el gráfico seguiría mostrando una prueba que ya no se ve.
+  function alternarSimulador() {
+    if (simulando) setBorrador(VACIO)
+    setSimulando(!simulando)
   }
 
   function agregar(nuevo) {
@@ -276,7 +284,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
                   fill={COLOR.riesgo}
                   stroke={COLOR.fondo}
                   strokeWidth={2}
-                  label={<RotuloPeorCaso texto={`Peor caso ${enSoles(riesgo.peorMonto)}`} />}
+                  label={<RotuloPeorCaso texto={`Peor caso ${enSoles(panel.peorMonto)}`} />}
                 />
               )}
             </ComposedChart>
@@ -287,27 +295,44 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
           <span className="clave-esperado">Lo más probable</span>
           <span className="clave-banda">Rango posible</span>
         </div>
+
+        <button
+          type="button"
+          className="boton boton-ancho boton-sobre-azul"
+          aria-expanded={simulando}
+          aria-controls="simulador"
+          onClick={alternarSimulador}
+        >
+          {simulando ? 'Cerrar la simulación' : 'Simular un gasto o ingreso'}
+          {simulando ? <CaretUp size={20} aria-hidden="true" /> : <CaretDown size={20} aria-hidden="true" />}
+        </button>
       </section>
 
-      <Planificar
-        cliente={cliente}
-        prueba={prueba}
-        borrador={borrador}
-        revision={revision}
-        alCambiar={cambiar}
-        alAgregar={agregar}
-      />
-      <p className="solo-lector" role="status">
-        {agregado}
-      </p>
+      {/* Abierto va entre el panel y la lista; cerrado no existe, y la hoja de pagos vuelve a montarse sobre el panel. */}
+      {simulando && (
+        <div id="simulador">
+          <Planificar
+            cliente={cliente}
+            prueba={prueba}
+            borrador={borrador}
+            revision={revision}
+            alCambiar={cambiar}
+            alAgregar={agregar}
+          />
+        </div>
+      )}
 
 
-      <section className="tarjeta" aria-labelledby="movimientos-titulo">
+      <section className="tarjeta hoja" aria-labelledby="movimientos-titulo">
         <h2 id="movimientos-titulo">Pagos y cobros</h2>
         <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} alQuitar={alQuitar} />
         <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} alQuitar={alQuitar} />
         <ExplicameFacil puntos={explicarQueViene(cliente)} />
       </section>
+      {/* Al final y no entre el panel y la hoja: así la hoja sigue montada sobre el panel. */}
+      <p className="solo-lector" role="status">
+        {agregado}
+      </p>
     </>
   )
 }

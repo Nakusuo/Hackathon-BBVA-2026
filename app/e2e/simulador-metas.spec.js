@@ -11,6 +11,11 @@ const RUTAS_API = {
 }
 
 // Permiso ya dado y guía vista, una sola vez por pestaña: así una prueba puede retirar el permiso y recargar.
+// El simulador está plegado en Qué viene: cada prueba lo abre antes de usarlo.
+async function abrirSimulador(page) {
+  await page.getByRole('button', { name: 'Simular un gasto o ingreso' }).click()
+}
+
 test.beforeEach(async ({ page }) => {
   // La API responde con los JSON del contrato: si FastAPI no está, el aviso de datos movería la página a mitad
   // de un clic.
@@ -31,6 +36,7 @@ test.beforeEach(async ({ page }) => {
 test('simulador: un gasto de S/ 450 el 5 dic mueve la banda en vivo y se agrega al pronóstico', async ({ page }) => {
   await page.goto('/lucas/que-viene')
   const plan = page.getByRole('region', { name: '¿Y si viene un gasto o un ingreso?' })
+  await abrirSimulador(page)
   const panel = page.locator('.panel-grafico')
 
   await plan.getByLabel('Monto en S/').fill('450')
@@ -67,6 +73,7 @@ test('simulador: con los 3 tips, un gasto planificado en diciembre avisa en el R
 
   await page.getByRole('link', { name: 'Qué viene' }).click()
   const plan = page.getByRole('region', { name: '¿Y si viene un gasto o un ingreso?' })
+  await abrirSimulador(page)
   await plan.getByLabel('Monto en S/').fill('450')
   await plan.getByLabel('Fecha').fill('2026-12-05')
   await expect(plan.locator('.impacto')).toContainText('Días en rojo 0 → 10')
@@ -78,6 +85,7 @@ test('simulador: con los 3 tips, un gasto planificado en diciembre avisa en el R
   await expect(aviso).toContainText('Vas bien')
 
   await page.getByRole('link', { name: 'Qué viene' }).click()
+  await abrirSimulador(page)
   await plan.getByLabel('Monto en S/').fill('450')
   await plan.getByLabel('Fecha').fill('2026-12-05')
   await plan.getByRole('button', { name: 'Agregar a mi pronóstico' }).click()
@@ -95,6 +103,7 @@ test('simulador: con los 3 tips, un gasto planificado en diciembre avisa en el R
 test('simulador: un ingreso antes del día más justo quita el rojo', async ({ page }) => {
   await page.goto('/lucas/que-viene')
   const plan = page.getByRole('region', { name: '¿Y si viene un gasto o un ingreso?' })
+  await abrirSimulador(page)
   await plan.getByRole('button', { name: 'Ingreso' }).click()
   await plan.getByLabel('Monto en S/').fill('100')
   await plan.getByLabel('Fecha').fill('2026-11-20')
@@ -105,6 +114,7 @@ test('simulador: un ingreso antes del día más justo quita el rojo', async ({ p
 test('simulador: rechaza montos y fechas inválidos y avisa si el gasto ya está contado', async ({ page }) => {
   await page.goto('/lucas/que-viene')
   const plan = page.getByRole('region', { name: '¿Y si viene un gasto o un ingreso?' })
+  await abrirSimulador(page)
   await plan.getByRole('button', { name: 'Agregar a mi pronóstico' }).click()
   await expect(plan.getByLabel('Monto en S/')).toHaveAttribute('aria-invalid', 'true')
   await expect(plan.getByLabel('Monto en S/')).toBeFocused()
@@ -193,6 +203,7 @@ test('datos rotos guardados en el navegador no tumban la app', async ({ page }) 
 test('retirar el permiso olvida lo planificado y las metas', async ({ page }) => {
   await page.goto('/lucas/que-viene')
   const plan = page.getByRole('region', { name: '¿Y si viene un gasto o un ingreso?' })
+  await abrirSimulador(page)
   await plan.getByLabel('Monto en S/').fill('100')
   await plan.getByLabel('Fecha').fill('2026-11-20')
   await plan.getByRole('button', { name: 'Agregar a mi pronóstico' }).click()

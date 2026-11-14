@@ -1,5 +1,4 @@
 import {
-  ChatCircleDots,
   CheckCircle,
   Barbell,
   Coffee,
@@ -20,7 +19,6 @@ import { avanceDelCiclo, diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud 
 import { entrada } from '../movimiento.js'
 import ExplicameFacil from './ExplicameFacil.jsx'
 import { explicarResumen } from './explicaciones.js'
-import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee, fitzona: Barbell, taxi: Taxi }
 
@@ -245,11 +243,6 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
           <Target size={24} aria-hidden="true" />
           <span className="bento-titulo">Tus metas</span>
           <span className="suave">{metas.length ? `${metas.length} ${metas.length === 1 ? 'meta' : 'metas'}` : 'Crea la primera'}</span>
-        </Link>
-        <Link to={`/lucas/chat?q=${encodeURIComponent(PREGUNTAS_SUGERIDAS[0])}`} className="bento-bloque">
-          <ChatCircleDots size={24} aria-hidden="true" />
-          <span className="bento-titulo">Pregúntale</span>
-          <span className="suave">{PREGUNTAS_SUGERIDAS[0]}</span>
         </Link>
       </motion.nav>
 

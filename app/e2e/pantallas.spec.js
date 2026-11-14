@@ -426,14 +426,14 @@ test('si el agente no verificó sus cifras, su texto no se muestra', async ({ pa
   await expect(ultima.getByRole('list', { name: 'Calculado con tus datos' })).toBeVisible()
 })
 
-test('una pregunta sugerida desde el Resumen llega al chat una sola vez', async ({ page }) => {
+test('una pregunta sugerida desde Salud llega al chat una sola vez', async ({ page }) => {
   await sinGuia(page)
   await agenteCaido(page)
-  await page.goto('/lucas/resumen')
-  await page.getByRole('link', { name: '¿Llego a mi cobro?' }).click()
+  await page.goto('/lucas/salud')
+  await page.getByRole('link', { name: 'Pregúntale cuánto puedes ahorrar' }).click()
   await expect(page).toHaveURL(/lucas\/chat$/)
   await expect(page.locator('.mensaje-tu')).toHaveCount(1)
-  await expect(page.locator('.mensaje-lucas').last()).toContainText('podrías quedar en rojo')
+  await expect(page.locator('.mensaje-lucas')).toHaveCount(1)
 })
 
 test('el aviso de «solo Lucas» dura completo aunque se toquen dos botones seguidos', async ({ page }) => {

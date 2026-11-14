@@ -443,15 +443,15 @@
 
 .bento {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
+/* Tres bloques en una fila (Lo aprendido, Salud y Metas): el chat ya tiene su pestaña arriba. */
 .bento-bloque {
   display: grid;
   align-content: start;
   gap: 4px;
-  min-height: 112px;
   padding: 14px 12px;
   border: 1px solid var(--borde);
   border-radius: var(--radio);
