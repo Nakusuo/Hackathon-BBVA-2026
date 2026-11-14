@@ -59,7 +59,7 @@ Pendiente: grabar el video de respaldo y ensayar el guion 3 veces con cronómetr
 
 ## Capturas
 
-Las saca la prueba de Playwright en `demo/capturas/`, una serie por tamaño de pantalla (`laptop-` 1366×768 y `celular-` Pixel 7):
+Las saca la prueba de Playwright en `demo/capturas/`, una serie por tamaño de pantalla (`laptop-` 1366×768 y `celular-` 390 px):
 
 ```
 cd app
