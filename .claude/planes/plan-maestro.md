@@ -47,7 +47,7 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 **Población:** trabajadores dependientes e independientes del sector privado en Perú: cobran por quincena, con comisiones o con pagos irregulares; usan Yape/Plin y tarjeta; tienen cuotas o deudas.
 
 **Problema principal: liquidez a 30 días.** No saben si les alcanzará la plata hasta el próximo ingreso ni qué cambio concreto mejora su situación. Es más agudo en independientes porque su ingreso varía.
-*(El 61 % sin colchón de un mes está pendiente de fuente exacta: ver `estadisticas/cifras-publicas.md`.)*
+*Dolor verificado: el 61 % de los adultos no podría cubrir un imprevisto de un mes de ingresos (SBS–CAF, 2026) y el 69,8 % del empleo es informal (INEI, 2026). Fuentes en `estadisticas/cifras-publicas.md`.*
 
 **Decisión que mejoramos:**
 > «¿Cuánto puedo gastar o ahorrar este mes sin quedarme en rojo antes de mi próximo ingreso, y qué cambio me conviene más?»
