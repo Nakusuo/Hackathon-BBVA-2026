@@ -10,9 +10,9 @@ Fuente: bases finales «AI Financial Life» (14–15 nov 2026). Resumen operativ
 |---|---|---|
 | IA y analítica | 25 % | Cada modelo frente a su baseline; bandas con cobertura medida; verificador de cifras |
 | Calidad técnica | 25 % | Tests, `make` reproducible, arquitectura en 3 capas, validación Pydantic, fallback |
-| Valor | 15 % | Un problema (liquidez a 30 días), una población, una decisión concreta |
-| Producto y UX | 15 % | 5 pantallas, tiempo hasta insight < 60 s, accesibilidad AA |
-| Innovación | 10 % | Verificador de cifras, banda según tipo de ingreso, calendario peruano |
+| Valor | 15 % | Un problema (liquidez a 30 días), una población, una decisión concreta; impacto en S/ por cliente y palancas de ingreso para el banco ([rentabilidad-impacto.md](rentabilidad-impacto.md)) |
+| Producto y UX | 15 % | 6 pantallas, tiempo hasta insight < 60 s, accesibilidad AA |
+| Innovación | 10 % | Banda según tipo de ingreso, Sueldo Lucas, verificador de cifras, valor antes de ser cliente, calendario peruano |
 | Demo | 10 % | Guion ensayado 3 veces, video de respaldo, funciona sin red |
 
 Rigor + baseline + tests ≈ 50 % de la nota. La escalabilidad ya no tiene peso propio.
@@ -50,7 +50,7 @@ Protocolo: (1) leer el cambio → (2) agregar escenario al generador → (3) tes
 
 ## Preguntas pendientes a la organización
 
-1. ¿Se autoriza un LLM externo con clave propia (sin datos personales)?
+1. ¿Se autoriza un LLM externo con clave propia (sin datos personales)? En concreto: Gemini en nivel gratuito, recibiendo solo salidas de tools sobre datos sintéticos.
 2. ¿Hay dataset común o lo generamos nosotros?
 3. ¿Se pueden usar APIs públicas (BCRP) en la demo?
 4. Formato de entrega (repo público/privado, hora de cierre); confirmar 10 + 3 min.

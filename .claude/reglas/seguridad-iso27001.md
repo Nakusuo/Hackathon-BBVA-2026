@@ -25,7 +25,7 @@ Controles que aplicamos, cómo y dónde está la evidencia. Lo que no aplica se 
 | 8.9 | Gestión de la configuración | Todo por código: `docker-compose.yml`, `Makefile`, `requirements.txt` | Repo | MI-01, MI-02 |
 | 8.10 | Eliminación de información | «Olvidar lo que sabes de mí» borra memoria y respuestas | Test de borrado | JF-09 |
 | 8.11 | Enmascaramiento de datos | Logs y respuestas del agente sin montos de deuda exactos ni IDs completos | Test de logs | MI-11 |
-| 8.12 | Prevención de fuga de datos | Ningún dato de usuario va a un LLM externo; Ollama local por defecto | `PROMPTS.md`, test del proveedor | JF-01 |
+| 8.12 | Prevención de fuga de datos | Ollama local por defecto. Gemini (nivel gratuito, apagado por defecto) solo recibe salidas de tools sobre datos sintéticos, nunca identificadores ni texto libre del usuario | `PROMPTS.md`, test que revisa el contenido enviado al proveedor | JF-01, JF-11 |
 | 8.13 | Copias de respaldo | Los datos se regeneran con `make data` (semilla fija); el RAG desde `docs/rag/` | README | DX-02 |
 | 8.15 | Registro de eventos (logging) | Log de accesos a la API y de cada llamada a tools del agente, sin datos sensibles | `src/api` middleware | MI-05 |
 | 8.16 | Monitoreo | Latencia y errores por endpoint en el panel Evidencia | Panel | MI-05, MC-07 |
@@ -38,7 +38,7 @@ Controles que aplicamos, cómo y dónde está la evidencia. Lo que no aplica se 
 | 8.32 | Gestión de cambios | Todo cambio entra por PR a `develop` con revisión | GitHub | Todos |
 | 8.33 | Información de prueba | Solo datos sintéticos; nunca datos reales en pruebas | `data/QUALITY.md` | DX-02 |
 
-**No aplican en el hackathon** (se dice en `ARCHITECTURE.md`): controles físicos (tema 7), gestión de proveedores y nube (5.19 a 5.23), continuidad del negocio (5.29, 5.30), gestión de personal (tema 6). Con datos reales serían obligatorios.
+**No aplican en el hackathon** (se dice en `ARCHITECTURE.md`): controles físicos (tema 7), gestión de proveedores y nube (5.19 a 5.23; el único servicio en la nube es Gemini, opcional y sin datos personales), continuidad del negocio (5.29, 5.30), gestión de personal (tema 6). Con datos reales serían obligatorios.
 
 ## Para la demo y el pitch
 

@@ -36,13 +36,17 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 | 2026-11-14 | Pruebas con método ISTQB: 4 niveles, 3 ciclos, criterios de salida; coordina Dixon con el agente tester | Pruebas funcionales del sistema demostrables |
 | 2026-11-14 | Descartado: NoSQL, GraphRAG, deep learning desde cero, multimodal, varios agentes, ubicación exacta | Sin puntos extra y riesgo de tiempo |
 | 2026-11-14 | Gitflow simplificado; flujo investigador, codificador y jueces; revisión cruzada en parejas | Control y verificación |
+| 2026-11-14 | Verificación de rentabilidad: 6 palancas de ingreso, calculadora con supuestos visibles, modelo B2B2C (gratis para el usuario, licencia al banco). Descartada la comisión por producto vendido | El jurado preguntará por qué un banco pagaría; coherente con «no es venta disfrazada» |
+| 2026-11-14 | Métricas de impacto en S/ por cliente (D16, tarea MG-13) | Impacto entendible y medido frente a baseline |
+| 2026-11-14 | Construcción en dos olas: núcleo rentable hasta las 19:00, profundidad después | 15 módulos DEBE no caben sin orden |
+| 2026-11-14 | LLM: Ollama → Gemini `gemini-3.5-flash-lite` en nivel gratuito (apagado por defecto, solo salidas de tools) → plantillas. Embeddings siempre locales | Respaldo sin costo si Ollama falla; el nivel gratuito usa los prompts, por eso nada personal |
 | — | UI: React + Recharts o Streamlit (Marcela decide a las 11:30) | — |
 
 ## Respuestas de la organización
 
 | Pregunta | Respuesta |
 |---|---|
-| LLM externo con clave propia | — |
+| LLM externo con clave propia (Gemini gratis, datos sintéticos) | — |
 | Dataset común | — |
 | APIs públicas en la demo | — |
 | Formato de entrega y hora de cierre | — |

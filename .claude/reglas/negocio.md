@@ -62,7 +62,9 @@ reglas candidatas → puntaje impacto (S/) × facilidad → ajuste por perfil �
 5. La UI marca con ✓ las cifras verificadas.
 6. System prompt fijo; defensa contra prompt injection; casos adversos en tests.
 
-Proveedores LLM: `OllamaProvider` (por defecto, offline) · `APIProvider` (opcional, clave en `.env`, sin datos personales) · `TemplateProvider` (siempre disponible).
+Proveedores LLM, en este orden: `OllamaProvider` (por defecto, offline) · `GeminiProvider` (`gemini-3.5-flash-lite` en nivel gratuito, apagado por defecto, se activa con `LLM_PROVIDER=gemini`, clave en `.env`, solo salidas de tools, nunca datos personales) · `TemplateProvider` (siempre disponible). Ante error 429, timeout o sin red: un reintento y luego plantilla. Los embeddings del RAG son siempre locales. Detalle: [../investigacion/gemini-api.md](../investigacion/gemini-api.md).
+
+Regla de costo: si una plantilla responde bien la pregunta, no se llama al LLM.
 
 ## Datos y privacidad
 

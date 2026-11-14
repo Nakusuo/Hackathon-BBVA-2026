@@ -1,4 +1,4 @@
-# PLAN MAESTRO v2: «Lucas», tu compañero de plata
+# PLAN MAESTRO v3: «Lucas», tu compañero de plata
 
 **Hackathon BBVA · AI Financial Life · 14 y 15 de noviembre de 2026 · Equipo 2**
 
@@ -6,11 +6,21 @@
 
 > **Indicación del juez (14/11):** la IA tiene que ser el **compañero bancario** del cliente. Debe atacar necesidades reales de clientes actuales (**fidelización**) y futuros (**atracción**). No basta una demo cosmética ni un chatbot genérico.
 
-Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.md`. Esta versión suma lo decidido el sábado 14 por la mañana.
+Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.md`. La v2 suma lo decidido el sábado 14 por la mañana; la v3, la verificación de rentabilidad, impacto, innovación y costo.
 
 ---
 
-## 0. Qué cambió en la v2
+## 0. Qué cambió en la v3
+
+| Antes (v2) | Ahora (v3) | Motivo |
+|---|---|---|
+| «Fideliza y atrae», sin mecanismo de ingreso | **6 palancas de ingreso** para el banco, cada una con función y métrica de piloto, y calculadora con supuestos visibles ([rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md)) | El jurado pregunta por qué un banco pagaría |
+| Métricas solo técnicas | **Métricas de impacto en S/** por cliente: días en rojo evitados, colchón, intereses evitados, % que sube de cuadrante | Impacto entendible para cualquiera |
+| 15 módulos DEBE sin orden | **Núcleo rentable primero** (sección 2): lo que mueve la plata del usuario se construye antes que memoria, RAG y segmentos avanzados | Llegar al flujo de punta a punta a las 19:00 |
+| LLM: Ollama o «API externa» sin definir | **Ollama → Gemini (nivel gratuito, solo salidas de tools) → plantillas** ([gemini-api.md](../investigacion/gemini-api.md)) | Respaldo si Ollama falla en una laptop, sin costo |
+| Modelo de ingreso implícito | **B2B2C**: gratis para el usuario, licencia al banco, caja o cooperativa. Descartada la comisión por producto vendido | Coherente con «no es venta disfrazada» |
+
+## 0b. Qué cambió en la v2
 
 | Antes (v1) | Ahora (v2) | Motivo |
 |---|---|---|
@@ -44,11 +54,14 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 
 **Arquetipos:** formal con quincena (banda estrecha), base + comisiones (media), independiente con recibo por honorarios (ancha), mixto (media-ancha). Un solo motor. El arquetipo nunca entra a un modelo.
 
-**Para el banco:**
-- **Fidelización:** avisos a tiempo y ahorro medible hacen que el cliente vuelva.
-- **Atracción:** «Lucas en 5 preguntas» da valor a quien todavía no es cliente.
-- **Oferta responsable:** tipos de producto genéricos solo cuando hay una necesidad detectada y pasan las reglas de idoneidad.
+**Para el banco** (detalle, calculadora y modelo de ingreso en [rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md)):
+- **Gana cuando el cliente ahorra**, no cuando se endeuda: metas y Sueldo Lucas traen fondeo barato (P1).
+- **Fidelización:** avisos a tiempo hacen que el cliente reciba su ingreso en el banco y vuelva cada quincena (P2); llegar a fin de mes baja la mora (P3).
+- **Atracción:** «Lucas en 5 preguntas» da valor a quien todavía no es cliente, sin oficina ni vendedor (P4).
+- **Oferta responsable:** tipos de producto genéricos solo cuando hay una necesidad detectada y pasan las reglas de idoneidad (P5).
 - **Camino de crecimiento:** quien gasta de más recibe metas de ahorro; cuando ya ahorra, Lucas le muestra promociones y productos de ahorro e inversión del catálogo del banco. El cliente crece con el banco y eso lo fideliza.
+
+**Para los peruanos:** menos días en rojo, un colchón para imprevistos y menos intereses de deuda cara, medidos en S/ por cliente.
 
 ### Criterios de éxito
 
@@ -61,6 +74,8 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 7. Ofertas: mejor precision@3 sobre necesidades sembradas que «lo más popular para todos».
 8. Metas: mayor probabilidad simulada de llegar a la meta de fin de año que la regla fija del 10 %.
 9. Aprendizaje: con la memoria de respuestas, la tasa simulada de recomendaciones aceptadas sube frente a un recomendador sin memoria.
+10. Impacto: siguiendo a Lucas, el cliente simulado tiene **menos días en rojo y más colchón** que con «no hacer nada» y que con «apartar 10 % fijo», reportado en S/ con intervalo.
+11. Costo: la demo cuesta S/ 0 y se reporta el % de respuestas del chat que salen por plantilla sin llamar al LLM.
 
 ---
 
@@ -85,6 +100,18 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 | D13 | Perfil de ahorro y gasto (matriz 2×2) y **metas de ahorro** con proyección a fin de año | Diego + Miguel |
 | D14 | **Memoria del usuario**: metas, preferencias, resúmenes de conversación y respuesta a cada recomendación (útil / no me sirve) | Jeffrey + Michael |
 | D15 | **RAG por módulos** con PDFs públicos de educación financiera y metadatos (fuente, licencia, módulo, nivel) | Jeffrey + Dixon |
+| D16 | **Métricas de impacto en S/** (días en rojo evitados, colchón, intereses evitados, % que sube de cuadrante) y **calculadora de valor para el banco** con supuestos visibles | Miguel + Diego |
+
+### Orden de construcción: núcleo rentable primero
+
+Todo lo anterior es DEBE, pero no todo pesa igual. Se construye en dos olas para llegar al flujo de punta a punta a las 19:00:
+
+| Ola | Módulos | Por qué primero |
+|---|---|---|
+| **1. Núcleo (hasta el checkpoint de 19:00)** | D1, D2 (esquemas, roles y RLS), D5, D6, D7 con segmento por umbrales, D8, D9, D10 con tools + juez + plantillas, D11, D16 | Es lo que mueve la plata del usuario y la del banco: aviso → Sueldo Lucas → simulador → impacto en S/ |
+| **2. Profundidad (19:00 en adelante)** | D3 clasificador de glosa, D4 K-Prototypes (reemplaza a los umbrales), D12 panel completo, D13, D14, D15 con 2 módulos (deudas y ahorro) antes que los 6 | Suben la nota de IA y personalización, pero el núcleo funciona sin ellos |
+
+Cada módulo de la ola 2 se compara con lo que ya hay en la ola 1 (por ejemplo, K-Prototypes frente a umbrales). Así la ola 1 ya es el baseline.
 
 ### DEBERÍA
 - Lucas en 5 preguntas (arranque en frío por cluster). *Prioridad alta.*
@@ -98,12 +125,13 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 - Consentimiento y botón «explícamelo fácil».
 
 ### PODRÍA
+- «¿Cuánto te cuesta tapar el hueco?»: compara en S/ las salidas a un día en rojo (colchón, mover un gasto, tarjeta, préstamo informal) con TCEA supuesta y visible. Educa, no ofrece crédito.
 - Plan de grati y CTS completo. Explicación contrafactual. Alerta de atípicos. Equipo rojo en vivo. Servidor MCP con los modelos.
 
 ### NO AHORA
 NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ubicación exacta/GPS, WhatsApp, app nativa, modo familia, vista para el banco.
 
-**Orden de recorte** si a mitad del sábado no hay flujo de punta a punta: sentimiento → BCRP → modelos por segmento (queda el global) → Lucas en 5 preguntas.
+**Orden de recorte** si a mitad del sábado no hay flujo de punta a punta: sentimiento → BCRP → modelos por segmento (queda el global) → RAG a un solo módulo → memoria solo de metas → Lucas en 5 preguntas. El núcleo (ola 1) y D16 no se recortan.
 
 ---
 
@@ -137,7 +165,12 @@ NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ub
 
 **Stack:** Python 3.11, pandas, scikit-learn, `kmodes`, statsmodels, SciPy, `holidays`, PostgreSQL 16 + pgvector (Docker), SQLAlchemy/psycopg, FastAPI + Pydantic, LangGraph + Ollama, pytest, ruff.
 **UI:** React + Recharts si Marcela lo domina; si no, Streamlit. Se decide a las 11:30 y no se cambia.
-**LLM:** Ollama local por defecto; API externa solo si la organización la autoriza y sin datos personales; plantillas siempre. **La demo funciona con la red apagada.**
+**LLM** (detalle en [gemini-api.md](../investigacion/gemini-api.md)):
+1. **Ollama local**, por defecto en la demo.
+2. **Gemini `gemini-3.5-flash-lite` en nivel gratuito**, solo si Ollama falla, hay red y la organización lo autorizó. Se activa con `LLM_PROVIDER=gemini`; la clave va en `.env`, en un proyecto de AI Studio sin facturación. Recibe solo salidas de tools sobre datos sintéticos, porque en el nivel gratuito Google usa los prompts para mejorar sus productos y pueden leerlos revisores humanos. Con clientes reales haría falta el nivel de pago o un modelo propio del banco.
+3. **Plantillas**, siempre disponibles y baseline del agente.
+
+Los **embeddings del RAG son siempre locales** (Ollama): vectores de modelos distintos no se comparan y el RAG debe funcionar sin red. **La demo funciona con la red apagada.**
 
 ### Seguridad de datos demostrable
 - Roles: `lucas_app` (lee y escribe `app`), `lucas_agente` (solo lectura, sin columnas sensibles), `lucas_admin`.
@@ -205,6 +238,7 @@ Pronóstico: walk-forward (entrena 1–9, valida 10, test 11–12). Recurrentes,
 | Ofertas | Necesidad detectada + idoneidad | Lo más popular para todos | Precision@3 sobre necesidades sembradas |
 | Arranque en frío (DEBERÍA) | Asignación a cluster con 5 respuestas | Promedio poblacional | MAE con 0, 1 y 3 meses de historia |
 | Agente | LangGraph + tools + RAG + juez | Respuestas por plantilla | % cifras verificadas, % citas válidas, exactitud en 30 preguntas, bloqueo adverso |
+| Impacto (D16) | Seguir las recomendaciones de Lucas en el simulador | No hacer nada / apartar 10 % fijo | Días en rojo evitados, S/ de colchón a 3 meses, intereses evitados, % que sube de cuadrante |
 
 ### Lucas aprende del usuario
 
@@ -276,7 +310,7 @@ Cada PDF va en `docs/rag/<modulo>/` con su fila en `docs/rag/fuentes.csv`: títu
 9. **Contraste:** se cambia a un *ahorrador firme*; Lucas le muestra el módulo de inversión básica y una promoción del catálogo.
 10. **Seguridad:** el agente intenta leer un dato sensible y Postgres lo bloquea.
 11. **Atracción:** alguien sin historial responde 5 preguntas y ve su pronóstico.
-12. **Evidencia:** cada técnica frente a su baseline.
+12. **Evidencia:** cada técnica frente a su baseline y el **impacto en S/** sobre los 500 clientes simulados (días en rojo evitados, colchón, intereses evitados).
 
 Si el tiempo de demo no alcanza, se quitan los pasos 9 y 11.
 
@@ -391,9 +425,9 @@ Protocolo: leer el cambio → escenario en el generador → test que falla → a
 | 2:00–6:00 | Demo en vivo (sección 6) | Marcela + Jeffrey |
 | 6:00–7:30 | Evidencia: baselines, cobertura, % verificado, errores conocidos | Diego |
 | 7:30–8:30 | Arquitectura, seguridad de datos, offline | Michael |
-| 8:30–10:00 | Valor para el banco (fidelización, atracción), límites y siguiente paso | Miguel |
+| 8:30–10:00 | Impacto en S/ para el usuario, palancas de ingreso y calculadora del banco, modelo B2B2C, costo, límites y piloto | Miguel |
 
-Preguntas probables: ¿por qué no bastan reglas? ¿Cómo evitan que el LLM invente? ¿Qué pasa sin internet? ¿Los datos son plausibles? ¿No es venta disfrazada? ¿Qué harían con datos reales? Respuesta de 20 s para cada una.
+Preguntas probables: ¿por qué no bastan reglas? ¿Cómo evitan que el LLM invente? ¿Qué pasa sin internet? ¿Los datos son plausibles? ¿No es venta disfrazada? ¿Qué harían con datos reales? **¿Por qué un banco pagaría por esto? ¿Cuánto cuesta operarlo? ¿Qué tiene de nuevo frente a las apps de los bancos?** Respuesta de 20 s para cada una (base en [rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md)).
 
 ---
 
@@ -403,7 +437,10 @@ Preguntas probables: ¿por qué no bastan reglas? ¿Cómo evitan que el LLM inve
 |---|---|
 | Alcance grande para 2 días | MoSCoW, orden de recorte, checkpoint 19:00 |
 | Postgres/Docker falla en una laptop | `data/sample/` + script que carga en un Postgres local; la máquina de demo se prueba el sábado |
-| LLM lento o sin red | Ollama con modelo pequeño ya descargado + plantillas |
+| LLM lento o sin red | Ollama con modelo pequeño ya descargado → Gemini en nivel gratuito si hay red y Ollama falla → plantillas |
+| Gemini corta por límite de uso (error 429) o la organización no lo autoriza | Pasa solo a plantillas; la demo de punta a punta se ensaya también con la red apagada |
+| El jurado ve «otra app de presupuesto» | Abrir la demo con el aviso anticipado y el Sueldo Lucas; cerrar con impacto en S/ y la calculadora del banco |
+| Cifras de negocio inventadas | Ninguna cifra de retención o mora «de Lucas»; solo fórmula con supuestos visibles y lo que mediría un piloto |
 | Métricas demasiado buenas | Perturbaciones, set de texto a mano, decirlo |
 | Ofertas que suenan a venta | Solo por necesidad, idoneidad, tipos genéricos, «tú decides» |
 | Parecer app de BBVA | Marca Lucas, paleta propia |
@@ -413,7 +450,7 @@ Preguntas probables: ¿por qué no bastan reglas? ¿Cómo evitan que el LLM inve
 
 ## 14. Preguntas a la organización
 
-LLM externo permitido · dataset común · APIs públicas en la demo · formato y hora de entrega · prueba de evolución · modelos descargados de antemano. Respuestas en `estado.md`.
+LLM externo permitido (en concreto, Gemini en nivel gratuito con datos sintéticos) · dataset común · APIs públicas en la demo · formato y hora de entrega · prueba de evolución · modelos descargados de antemano. Respuestas en `estado.md`.
 
 ---
 
@@ -423,6 +460,7 @@ LLM externo permitido · dataset común · APIs públicas en la demo · formato 
 - [ ] Datos legales y reproducibles (`make data`, semilla, QUALITY.md)
 - [ ] MVP ejecutable (`make run`, también offline)
 - [ ] IA/ML con valor medido (EVALUATION.md)
+- [ ] Impacto en S/ y calculadora del banco con supuestos visibles (D16)
 - [ ] Baselines y casos adversos
 - [ ] Seguridad y explicabilidad (declaración de aplicabilidad ISO 27001 con evidencia)
 - [ ] Pruebas funcionales del sistema: 3 ciclos ejecutados y criterios de salida cumplidos

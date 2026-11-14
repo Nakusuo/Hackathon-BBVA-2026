@@ -70,6 +70,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **MG-02** Ingesta: validación Pydantic, dedup y carga a Postgres. `make data` completo. *Depende:* DX-02, MI-03. Rama `feature/backend-ingesta`
 - [ ] **MG-03** FastAPI con los endpoints del contrato devolviendo los mocks. `make run`. *Depende:* MG-01. Rama `feature/backend-api`
 - [ ] **MC-02** Pantallas Cómo estás y Qué viene (gráfico con banda) usando mocks. *Depende:* MG-01. Rama `feature/front-estado-pronostico`
+- [ ] **JF-11** `GeminiProvider` como segundo proveedor (Ollama → Gemini → plantillas) según [gemini-api.md](../investigacion/gemini-api.md): clave solo en `.env`, envía solo salidas de tools, timeout y paso a plantilla ante error 429 o sin red. Test: con la red apagada responde por plantilla. *No bloquea a nadie.* Rama `feature/ia-gemini`
 - [ ] **JF-02** Esqueleto LangGraph: router → tool falsa → redacción → juez → respuesta, con `TemplateProvider`. *Hecho:* test de punta a punta del grafo. Rama `feature/ia-grafo`
 - [ ] **DI-02** Variables por cliente calculadas desde transacciones, con test. *Depende:* DX-02. Rama `feature/ml-features`
 - [ ] **DI-03** Baselines: promedio móvil de saldo, «mismo comercio ≥ 3 veces», diccionario de glosas. Con tests. *Depende:* DI-02
@@ -91,6 +92,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **MC-03** Pantallas Qué hacer (tarjetas con «¿por qué?») y Avisos (bandeja). Rama `feature/front-recos-avisos`
 - [ ] **MC-04** Conectar la UI a la API real. *Depende:* MG-06
 - [ ] **MI-04** Makefile completo: `data`, `db`, `test`, `check` (ruff + tests con cobertura + `pip-audit`), `eval`, `run`, `e2e`. Rama `feature/arq-makefile`
+- [ ] **MG-13** Impacto y valor (D16): en el simulador, cada cliente sigue a Lucas frente a «no hacer nada» y «apartar 10 % fijo»; calcula días en rojo evitados, S/ de colchón a 3 meses, intereses evitados (TCEA supuesta en `config/supuestos.yaml`) y % que sube de cuadrante. `eval/valor_banco.py` aplica la calculadora de [rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md) con supuestos visibles. Con Diego. *Depende:* MG-07, DI-06. Rama `feature/backend-impacto`
 - [ ] **MI-10** ISO 27001: completar la evidencia de la declaración de aplicabilidad (`reglas/seguridad-iso27001.md`), sección Activos en `ARCHITECTURE.md`, proteger las ramas `main` y `develop` en GitHub. Rama `feature/arq-iso27001`
 - [ ] **DX-13** Plan de pruebas: revisar el catálogo de `planes/pruebas.md` con el agente `tester`, crear la etiqueta `defecto` y la plantilla de issue en GitHub, armar `tests/sistema/` para los casos automatizables. Rama `feature/docs-pruebas-plan`
 - [ ] **TODOS-05** Cada persona agrega al catálogo los casos de su módulo (`CP-<código>-NN`) con al menos una técnica de caja negra.
@@ -98,7 +100,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **DX-05** Escenarios difíciles: ingresos irregulares, duplicadas, cambio de patrón, faltantes, atípicos y necesidades ocultas sembradas. Rama `feature/datos-escenarios`
 - [ ] **DX-06** Diagramas v1 (Mermaid): arquitectura en 3 capas, flujo de datos, grafo del agente. En `ARCHITECTURE.md`. Rama `feature/docs-diagramas`
 
-**Checkpoint 19:00:** todo el equipo corre el flujo de la demo en develop. Si no funciona, se aplica el orden de recorte del plan.
+**Checkpoint 19:00:** todo el equipo corre el flujo de la demo en develop. Si no funciona, se aplica el orden de recorte del plan. Primero se cierra la **ola 1 (núcleo rentable)** del plan maestro, sección 2; DI-05 puede entregar primero el segmento por umbrales y K-Prototypes después.
 
 ## Bloque 4 · Sábado 19:00–23:00 · Demo completa
 
@@ -126,10 +128,10 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 
 - [ ] **DI-10** `make eval` → `EVALUATION.md` con intervalos y pruebas con perturbaciones. Rama `feature/ml-eval`
 - [ ] **JF-07** Métricas del agente (% cifras verificadas, % citas válidas, exactitud, bloqueo adverso) en `EVALUATION.md`. Rama `feature/ia-eval`
-- [ ] **MC-07** Panel Evidencia con los resultados de `make eval`. Rama `feature/front-evidencia`
+- [ ] **MC-07** Panel Evidencia con los resultados de `make eval`, empezando por el impacto en S/ de MG-13. Rama `feature/front-evidencia`
 - [ ] **MG-09** Manejo de errores y timeouts; tests de la API. Rama `feature/backend-robustez`
 - [ ] **MI-08** Pasar el agente `juez-cumplimiento`; `git grep` de secretos; corregir lo bloqueante. Rama `fix/arq-cumplimiento`
-- [ ] **DX-08** README v1 y guion del pitch v1. Rama `feature/docs-readme-pitch`
+- [ ] **DX-08** README v1 y guion del pitch v1, con el minuto de impacto y valor para el banco de [rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md) y respuestas de 20 s a «¿por qué pagaría un banco?», «¿cuánto cuesta?» y «¿qué tiene de nuevo?». Rama `feature/docs-readme-pitch`
 - [ ] **DX-15** **Ciclo 2: regresión completa (10:00)**. Pruebas de confirmación de los defectos cerrados. Informe de pruebas en `EVALUATION.md`.
 
 ## Bloque 6 · Domingo 10:00–12:00 · DEBERÍA y pulido

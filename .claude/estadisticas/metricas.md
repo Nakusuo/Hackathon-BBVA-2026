@@ -11,6 +11,23 @@ Regla: **cada técnica se compara con una alternativa sencilla**. Los resultados
 | 3 | Tiempo hasta insight | < 60 s hasta el «día de riesgo» y una recomendación accionable |
 | 4 | Recurrentes y duplicadas | F1 ≥ 0,85 sobre etiquetas sintéticas |
 | 5 | Banda según tipo de ingreso | Más ancha para independientes que para dependientes, manteniendo cobertura |
+| 6 | Impacto en el usuario | Menos días en rojo y más colchón que «no hacer nada» y que «apartar 10 % fijo», en S/ con intervalo |
+| 7 | Costo | Demo a S/ 0; se reporta el % de respuestas del chat por plantilla |
+
+## Impacto y negocio (D16, simulado)
+
+Se calculan sobre la población sintética con el simulador. Son **simulación**, no resultados de clientes reales. Detalle en [../reglas/rentabilidad-impacto.md](../reglas/rentabilidad-impacto.md).
+
+| Métrica | Lucas | Baseline | Unidad |
+|---|---|---|---|
+| Días en rojo evitados | Sigue las recomendaciones | No hacer nada / 10 % fijo | días por cliente al mes |
+| Colchón a 3 meses | Sueldo Lucas y metas | 10 % fijo | S/ por cliente |
+| Intereses evitados | Hueco cubierto con colchón en vez de deuda | Hueco cubierto con deuda a TCEA supuesta | S/ por cliente al mes |
+| Sube de cuadrante | Metas y avisos | No hacer nada | % de clientes en 6 meses |
+| S/ apartados (entrada de la calculadora del banco) | Metas y Sueldo Lucas | 10 % fijo | S/ por cliente al mes |
+| Respuestas por plantilla | Chat | — | % de respuestas sin llamar al LLM |
+
+Cada supuesto (TCEA, márgenes del banco) va en `config/supuestos.yaml` y se muestra junto al resultado.
 
 ## Técnica frente a baseline
 
