@@ -64,7 +64,7 @@ export default function EspacioLucas() {
       </header>
 
       <main className="lucas-contenido">
-        {seccion === 'resumen' && <Resumen cliente={cliente} />}
+        {seccion === 'resumen' && <Resumen cliente={cliente} animarEntrada={!guiaAbierta} />}
         {seccion === 'gastos' && <Gastos cliente={cliente} />}
         {seccion === 'que-viene' && <QueViene cliente={cliente} />}
         {seccion === 'chat' && <Chat cliente={cliente} persona={persona} />}

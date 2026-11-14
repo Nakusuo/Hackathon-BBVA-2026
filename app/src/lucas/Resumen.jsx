@@ -1,12 +1,21 @@
 import { CheckCircle, Coffee, ForkKnife, PauseCircle, PiggyBank, Question, Warning } from '@phosphor-icons/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import AnilloSalud from '../componentes/AnilloSalud.jsx'
+import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
 import { conSigno, diasEntre, enSoles, fechaDia, textoDiasEnRojo } from '../formato.js'
+import { entrada } from '../movimiento.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee }
 const TIPS_VISIBLES = 2
+const CAMBIO = {
+  initial: { opacity: 0, y: 4 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+  transition: { duration: 0.15 },
+}
 
 function nivel(puntaje) {
   if (puntaje >= 70) return 'vas bien'
@@ -20,27 +29,33 @@ function DatoAprendido({ dato }) {
     <li className={`aprendido ${respuesta === 'no' ? 'por-revisar' : ''}`}>
       <p>{dato.dato}</p>
       <p className="suave">Lo saqué de: {dato.fuente.toLowerCase()}</p>
-      {respuesta === null ? (
-        <div className="confirmar" role="group" aria-label="¿Es correcto?">
-          <span className="suave">¿Es correcto?</span>
-          <button type="button" className="boton-texto" onClick={() => setRespuesta('si')}>
-            Sí
-          </button>
-          <button type="button" className="boton-texto" onClick={() => setRespuesta('no')}>
-            No
-          </button>
-        </div>
-      ) : (
-        <p className={respuesta === 'si' ? 'confirmado' : 'marcado'}>
-          {respuesta === 'si' ? <CheckCircle size={20} aria-hidden="true" /> : <Question size={20} aria-hidden="true" />}
-          {respuesta === 'si' ? 'Gracias, lo sigo usando.' : 'Marcado como por revisar.'}
-          {respuesta === 'no' && (
-            <button type="button" className="boton-texto" onClick={() => setRespuesta(null)}>
-              Deshacer
+      <AnimatePresence mode="wait" initial={false}>
+        {respuesta === null ? (
+          <motion.div key="pregunta" {...CAMBIO} className="confirmar" role="group" aria-label="¿Es correcto?">
+            <span className="suave">¿Es correcto?</span>
+            <button type="button" className="boton-texto" onClick={() => setRespuesta('si')}>
+              Sí
             </button>
-          )}
-        </p>
-      )}
+            <button type="button" className="boton-texto" onClick={() => setRespuesta('no')}>
+              No
+            </button>
+          </motion.div>
+        ) : (
+          <motion.p key={respuesta} {...CAMBIO} className={respuesta === 'si' ? 'confirmado' : 'marcado'}>
+            {respuesta === 'si' ? (
+              <CheckCircle size={20} aria-hidden="true" />
+            ) : (
+              <Question size={20} aria-hidden="true" />
+            )}
+            {respuesta === 'si' ? 'Gracias, lo sigo usando.' : 'Marcado como por revisar.'}
+            {respuesta === 'no' && (
+              <button type="button" className="boton-texto" onClick={() => setRespuesta(null)}>
+                Deshacer
+              </button>
+            )}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </li>
   )
 }
@@ -48,7 +63,12 @@ function DatoAprendido({ dato }) {
 function Tip({ tip }) {
   const Icono = ICONOS[tip.id] ?? PiggyBank
   return (
-    <li className="tarjeta tip">
+    <motion.li
+      className="tarjeta tip"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, transition: { duration: 0.15 } }}
+    >
       <div className="reco-cabecera">
         <span className="circulo" aria-hidden="true">
           <Icono size={22} />
@@ -57,34 +77,40 @@ function Tip({ tip }) {
       </div>
       <h3>{tip.titulo}</h3>
       <p>
-        <span className="cifra cifra-azul">{enSoles(tip.mejora)} más</span> el {fechaDia(tip.fechaPeorDia)}. Tu
-        peor caso pasa de {enSoles(tip.peorAntes)} a {enSoles(tip.peorDespues)}.
+        <span className="cifra cifra-azul">{enSoles(tip.mejora)} más</span> el {fechaDia(tip.fechaPeorDia)}. Tu peor
+        caso pasa de {enSoles(tip.peorAntes)} a {enSoles(tip.peorDespues)}.
       </p>
       <details>
         <summary>¿Por qué?</summary>
         <p className="suave">{tip.porque}</p>
       </details>
-    </li>
+    </motion.li>
   )
 }
 
-export default function Resumen({ cliente }) {
+export default function Resumen({ cliente, animarEntrada = true }) {
   const { riesgo, proximoIngreso, recomendaciones, conTodos, apartado, salud } = cliente
   const [todosLosTips, setTodosLosTips] = useState(false)
   const tips = todosLosTips ? recomendaciones : recomendaciones.slice(0, TIPS_VISIBLES)
   const exceso = cliente.gastoDiarioActual - cliente.gastoDiarioSeguro
+  const [saludAbierta, setSaludAbierta] = useState(false)
+  const entra = (orden) => entrada(orden, animarEntrada)
 
   return (
     <>
-      <section className="recuadros" data-guia="cobro" aria-label="Cuánto puedes gastar">
+      <motion.section {...entra(0)} className="recuadros" data-guia="cobro" aria-label="Cuánto puedes gastar">
         <div className="recuadro recuadro-azul">
           <span>Puedes gastar al día</span>
-          <strong className="recuadro-cifra">{enSoles(cliente.gastoDiarioSeguro)}</strong>
+          <strong className="recuadro-cifra">
+            <NumeroAnimado valor={cliente.gastoDiarioSeguro} formato={enSoles} />
+          </strong>
           <span>sin quedar en rojo hasta el {fechaDia(proximoIngreso.fecha)}</span>
         </div>
         <div className="recuadro">
           <span className="suave">Hoy gastas al día</span>
-          <strong className="recuadro-cifra">{enSoles(cliente.gastoDiarioActual)}</strong>
+          <strong className="recuadro-cifra">
+            <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} />
+          </strong>
           <span className="suave">
             {exceso > 0 ? `${enSoles(exceso)} más de lo que te conviene` : 'Dentro de lo que te conviene'}
           </span>
@@ -92,10 +118,10 @@ export default function Resumen({ cliente }) {
         <p className="recuadros-pie suave">
           Cobras {enSoles(proximoIngreso.monto)} en {diasEntre(cliente.hoy, proximoIngreso.fecha)} días.
         </p>
-      </section>
+      </motion.section>
 
       {riesgo && (
-        <section className="aviso" role="status" aria-label="Aviso de Lucas">
+        <motion.section {...entra(1)} className="aviso" role="status" aria-label="Aviso de Lucas">
           <p className="aviso-etiqueta">
             <Warning size={20} aria-hidden="true" />
             Lucas te avisa
@@ -108,19 +134,19 @@ export default function Resumen({ cliente }) {
           <a className="boton" href="#tips">
             Ver cómo evitarlo
           </a>
-        </section>
+        </motion.section>
       )}
 
-      <section className="tarjeta" data-guia="aprendido" aria-labelledby="aprendido-titulo">
+      <motion.section {...entra(2)} className="tarjeta" data-guia="aprendido" aria-labelledby="aprendido-titulo">
         <h2 id="aprendido-titulo">Lo que aprendí de ti</h2>
         <ul className="lista-limpia lista-aprendido">
           {cliente.aprendido.map((d) => (
             <DatoAprendido key={d.id} dato={d} />
           ))}
         </ul>
-      </section>
+      </motion.section>
 
-      <section id="tips" className="seccion" aria-labelledby="tips-titulo">
+      <motion.section {...entra(3)} id="tips" className="seccion" aria-labelledby="tips-titulo">
         <h2 id="tips-titulo">Tips para tu día más justo</h2>
         {riesgo && (
           <p className="sugerencia">
@@ -131,9 +157,11 @@ export default function Resumen({ cliente }) {
           </p>
         )}
         <ul className="lista-limpia lista-tips">
-          {tips.map((t) => (
-            <Tip key={t.id} tip={t} />
-          ))}
+          <AnimatePresence initial={false}>
+            {tips.map((t) => (
+              <Tip key={t.id} tip={t} />
+            ))}
+          </AnimatePresence>
         </ul>
         {recomendaciones.length > TIPS_VISIBLES && (
           <button type="button" className="boton-texto" onClick={() => setTodosLosTips(!todosLosTips)}>
@@ -157,17 +185,21 @@ export default function Resumen({ cliente }) {
             </p>
           </div>
         )}
-      </section>
+      </motion.section>
 
-      <section className="tarjeta" aria-labelledby="salud-titulo">
-        <details>
+      <motion.section {...entra(4)} className="tarjeta" aria-labelledby="salud-titulo">
+        <details onToggle={(e) => setSaludAbierta(e.currentTarget.open)}>
           <summary>
             <span id="salud-titulo">
               Tu salud financiera: {salud.puntaje} de 100, {nivel(salud.puntaje)}
             </span>
           </summary>
           <div className="salud">
-            <AnilloSalud puntaje={salud.puntaje} componentes={salud.componentes} />
+            {saludAbierta ? (
+              <AnilloSalud puntaje={salud.puntaje} componentes={salud.componentes} />
+            ) : (
+              <div className="anillo" />
+            )}
             <ul className="lista-limpia componentes">
               {salud.componentes.map((c) => (
                 <li key={c.nombre} className="componente">
@@ -182,9 +214,9 @@ export default function Resumen({ cliente }) {
           </div>
           <p className="suave">Es el promedio de las 4 partes.</p>
         </details>
-      </section>
+      </motion.section>
 
-      <section className="tarjeta" aria-labelledby="pregunta-titulo">
+      <motion.section {...entra(5)} className="tarjeta" aria-labelledby="pregunta-titulo">
         <h2 id="pregunta-titulo">Pregúntale a Lucas</h2>
         <div className="chips">
           {PREGUNTAS_SUGERIDAS.slice(0, 2).map((p) => (
@@ -193,9 +225,11 @@ export default function Resumen({ cliente }) {
             </Link>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      <p className="decision">Lucas te muestra simulaciones con tus datos. No mueve tu plata ni es asesoría: tú decides.</p>
+      <motion.p {...entra(6)} className="decision">
+        Lucas te muestra simulaciones con tus datos. No mueve tu plata ni es asesoría: tú decides.
+      </motion.p>
     </>
   )
 }
