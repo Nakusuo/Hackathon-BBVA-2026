@@ -136,7 +136,7 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
           </CifraVerificada>
         </strong>
         <span className={`hero-actual ${exceso > 0 ? 'hero-actual-alto' : ''}`}>
-          Hoy gastas <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} />
+          Gastas <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} /> al día
           {exceso > 0 ? `, ${enSoles(exceso)} de más` : ''}
         </span>
         <div className="hero-cobro">

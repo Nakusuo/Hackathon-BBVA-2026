@@ -8,27 +8,10 @@ import { SUAVE } from '../movimiento.js'
 import { darPermiso, personaGuardada } from '../sesion.js'
 
 const PUNTOS = [
-  {
-    Icono: Database,
-    titulo: 'Qué uso',
-    texto: 'Tus movimientos de cuenta y tarjeta de los últimos 12 meses, tus pagos programados, tus cobros y un perfil resumido: tipo de ingreso y nivel de deuda.',
-  },
-  {
-    Icono: Target,
-    titulo: 'Para qué',
-    texto: 'Para calcular cuánto puedes gastar al día, avisarte antes de quedar en rojo y proponerte cambios con monto.',
-  },
-  {
-    Icono: ShieldCheck,
-    titulo: 'Lo que no hago',
-    texto:
-      'No muevo tu plata ni hago operaciones. Si se activa Gemini de Google para el chat (viene apagado), solo recibe resultados de cálculos: nunca tu nombre, tu DNI ni lo que escribes.',
-  },
-  {
-    Icono: ArrowCounterClockwise,
-    titulo: 'Puedes retirarlo',
-    texto: 'Cuando quieras, en Más → Preferencias → Privacidad. Lucas se apaga y borra los tips que elegiste.',
-  },
+  { Icono: Database, titulo: 'Qué uso', texto: 'Tus movimientos, pagos y cobros.' },
+  { Icono: Target, titulo: 'Para qué', texto: 'Decirte cuánto puedes gastar y avisarte antes de quedar en rojo.' },
+  { Icono: ShieldCheck, titulo: 'Lo que no hago', texto: 'No muevo tu plata. Tu nombre y tu DNI no salen de aquí.' },
+  { Icono: ArrowCounterClockwise, titulo: 'Puedes retirarlo', texto: 'Cuando quieras, en Más → Preferencias → Privacidad.' },
 ]
 
 // Segundo paso del ingreso: sin este permiso Lucas no se enciende, y la banca sigue funcionando igual.
@@ -54,15 +37,14 @@ export default function Consentimiento() {
       >
         <div className="ingreso-saludo">
           <LucasPose pose="senala" tamano={72} />
-          <p className="burbuja">Para avisarte a tiempo necesito mirar tus movimientos. Te cuento qué uso.</p>
+          <p className="burbuja">Para avisarte a tiempo, necesito ver tus movimientos.</p>
         </div>
         <h1 id="permiso-titulo">Antes de activar Lucas</h1>
 
         <p className="permiso-sintetico">
           <Flask size={20} aria-hidden="true" />
           <span>
-            <strong>Datos sintéticos.</strong> Entras como «{persona.nombre}»: la persona, los montos y los comercios son
-            inventados.
+            <strong>Datos sintéticos.</strong> «{persona.nombre}» y sus montos son inventados.
           </span>
         </p>
 
@@ -88,11 +70,7 @@ export default function Consentimiento() {
             Ahora no
           </button>
         </div>
-        <p className="suave permiso-pie">
-          Lucas da orientación con simulaciones, no asesoría: tú decides. Alineado con la Ley 29733 de Protección de
-          Datos Personales: el responsable de tus datos es el banco que integre a Lucas, y ante él pides acceso,
-          rectificación, cancelación u oposición.
-        </p>
+        <p className="suave permiso-pie">Orientación, no asesoría. Tus datos se cuidan según la Ley 29733.</p>
       </motion.section>
     </main>
   )

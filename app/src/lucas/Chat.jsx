@@ -1,4 +1,4 @@
-import { BookOpen, Calculator, CheckCircle, PaperPlaneRight, WarningCircle } from '@phosphor-icons/react'
+import { BookOpen, Calculator, CaretRight, CheckCircle, ListBullets, PaperPlaneRight, WarningCircle } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -125,7 +125,8 @@ export default function Chat({ cliente, persona }) {
   const montado = useRef(false)
   const siguienteId = useRef(0)
   const final = useRef(null)
-  const sugerencias = useRef(null)
+  // Las preguntas frecuentes se ven abiertas al empezar; después de preguntar se pliegan en un botón.
+  const [faqAbierto, setFaqAbierto] = useState(true)
 
   // Lo ya preguntado sale de las sugerencias; si se usaron todas, vuelven a aparecer.
   const hechas = new Set(mensajes.filter((m) => m.autor === 'tu').map((m) => m.texto))
@@ -153,7 +154,7 @@ export default function Chat({ cliente, persona }) {
     const previas = mensajes.filter((m) => m.autor === 'tu').map((m) => m.texto)
     agregar({ autor: 'tu', texto: limpio })
     setBorrador('')
-    sugerencias.current?.scrollTo?.({ left: 0 })
+    setFaqAbierto(false)
     setPensando(true)
     try {
       const respuesta = await preguntarALucas(limpio, {
@@ -209,13 +210,29 @@ export default function Chat({ cliente, persona }) {
       <div ref={final} />
 
       <div className="chat-pie">
-        <div ref={sugerencias} className="chips chips-fila" role="group" aria-label="Preguntas sugeridas">
-          {visibles.map((p) => (
-            <button key={p} type="button" className="chip chip-suave" disabled={pensando} onClick={() => preguntar(p)}>
-              {p}
-            </button>
-          ))}
-        </div>
+        {faqAbierto && (
+          <div
+            id="faq"
+            className="faq"
+            role="group"
+            aria-labelledby="faq-titulo"
+            onKeyDown={(e) => e.key === 'Escape' && mensajes.length > 0 && setFaqAbierto(false)}
+          >
+            <p id="faq-titulo" className="faq-titulo">
+              Preguntas frecuentes
+            </p>
+            <ul className="lista-limpia faq-lista">
+              {visibles.map((p) => (
+                <li key={p}>
+                  <button type="button" className="faq-opcion" disabled={pensando} onClick={() => preguntar(p)}>
+                    <span>{p}</span>
+                    <CaretRight size={18} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <form
           className="chat-entrada"
@@ -224,6 +241,18 @@ export default function Chat({ cliente, persona }) {
             preguntar(borrador)
           }}
         >
+          {mensajes.length > 0 && (
+            <button
+              type="button"
+              className="icono-boton icono-boton-suave"
+              aria-label="Preguntas frecuentes"
+              aria-expanded={faqAbierto}
+              aria-controls="faq"
+              onClick={() => setFaqAbierto(!faqAbierto)}
+            >
+              <ListBullets size={22} aria-hidden="true" />
+            </button>
+          )}
           <label className="solo-lector" htmlFor="pregunta">
             Escribe tu pregunta
           </label>

@@ -24,8 +24,8 @@ export function explicarResumen(cliente) {
   const { gastoDiarioSeguro, gastoDiarioActual, proximoIngreso } = cliente
   const ritmo =
     gastoDiarioActual > gastoDiarioSeguro
-      ? `Hoy gastas ${enSoles(gastoDiarioActual)} al día: más de lo que te alcanza.`
-      : `Hoy gastas ${enSoles(gastoDiarioActual)} al día, dentro de lo que te alcanza.`
+      ? `Gastas ${enSoles(gastoDiarioActual)} al día: más de lo que te alcanza.`
+      : `Gastas ${enSoles(gastoDiarioActual)} al día, dentro de lo que te alcanza.`
   return [
     {
       termino: 'Lo que puedes gastar',
