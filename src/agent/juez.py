@@ -23,6 +23,7 @@ class Veredicto:
     ok: bool
     cifras_verificadas: list[float] = field(default_factory=list)
     cifras_no_verificadas: list[float] = field(default_factory=list)
+    cifras_mal_descritas: list[float] = field(default_factory=list)
     citas_invalidas: list[str] = field(default_factory=list)
     fechas_incorrectas: list[str] = field(default_factory=list)
     frases_prohibidas: list[str] = field(default_factory=list)
@@ -212,7 +213,11 @@ _ROJO_ANTES = re.compile(
     r"(en rojo|en negativo|falta\w*|faltar\w*|d[eé]ficit|deuda|sobregir\w*|corto|debajo)"
     r"\s+(?:(?:por|de|en|con|unos|unas|cerca de)\s+)*(?:s/\s*)?$"
 )
-_ROJO_DESPUES = re.compile(r"^\s*(?:de\s+)?(en rojo|en negativo|abajo|bajo cero|de deuda|negativo)")
+_ROJO_DESPUES = re.compile(
+    r"^\s*(?:de\s+)?(en rojo|en negativo|abajo|bajo cero|de deuda|negativo"
+    # «S/ 200 te faltaron» sí; en «S/ 150 te faltarían S/ 200» lo que falta es el 200.
+    r"|(?:te |me )?falta\w*(?!.*s/))"
+)
 _NEGACION = re.compile(r"\b(no|sin|ni|nada|nunca|jam[aá]s|ning[uú]n\w*|tampoco|lejos de)\b")
 _A_FAVOR = re.compile(r"a favor|te sobra|sobran|de sobra|positiv|ganancia|tranquil")
 
@@ -234,6 +239,20 @@ def signo_contradice(valor: float, origen: float, alrededor: tuple[str, str, str
     return origen > 0 and (valor < 0 or _marca_rojo(antes, despues))
 
 
+# Lo vio Michael en la RTX 3050: «Tu saldo actual es S/ 120» con 120 = ahorro en delivery,
+# y el 3b llamó «saldo actual» al saldo final de la simulación.
+_CAMPOS_SALDO = re.compile(r"saldo|balance|bound")
+_CAMPOS_FUTUROS = re.compile(r"final|bound|predicted|previsto|probable")
+_DICE_HOY = re.compile(r"\b(actual|hoy|ahora)\b")
+
+
+def cifra_mal_descrita(campo: str, antes: str) -> bool:
+    """La cifra existe, pero el texto la llama como otra cosa."""
+    if "saldo" in antes and not _CAMPOS_SALDO.search(campo):
+        return True
+    return bool(_DICE_HOY.search(antes) and _CAMPOS_FUTUROS.search(campo))
+
+
 def juzgar(
     texto: str,
     datos,
@@ -247,14 +266,17 @@ def juzgar(
     que no sea parte de una fecha: un texto sin montos no es error, pero no ayuda a decidir.
     """
     p = valores_permitidos(datos)
-    verificadas, no_verificadas, detalle = [], [], []
+    verificadas, no_verificadas, detalle, mal_descritas = [], [], [], []
     for valor, decimales, en_soles, alrededor in extraer_numeros(texto):
         respaldo = buscar(valor, decimales, p.soles if en_soles else p.todos)
         if respaldo is None or signo_contradice(valor, respaldo, alrededor):
             no_verificadas.append(valor)
             continue
-        verificadas.append(valor)
         origen = buscar(valor, decimales, p.soles if en_soles else p.cifras)
+        if origen is not None and cifra_mal_descrita(p.campo[origen], alrededor[0]):
+            mal_descritas.append(valor)
+            continue
+        verificadas.append(valor)
         if origen is not None:
             detalle.append((origen, p.campo[origen]))
     montos = len(detalle)
@@ -264,9 +286,11 @@ def juzgar(
     prohibidas = frases_prohibidas(texto) if revisar_frases else []
     sin_cifras = exigir_cifra and bool(p.cifras) and not montos
     return Veredicto(
-        ok=not (no_verificadas or citas_invalidas or fechas_mal or prohibidas or sin_cifras),
+        ok=not (no_verificadas or mal_descritas or citas_invalidas or fechas_mal or prohibidas)
+        and not sin_cifras,
         cifras_verificadas=verificadas,
         cifras_no_verificadas=no_verificadas,
+        cifras_mal_descritas=mal_descritas,
         citas_invalidas=citas_invalidas,
         fechas_incorrectas=fechas_mal,
         frases_prohibidas=prohibidas,

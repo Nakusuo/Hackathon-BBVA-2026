@@ -37,7 +37,15 @@ class Estado(TypedDict, total=False):
     respuesta: str
 
 
-def construir(herramientas: Herramientas, cadena: list[LLMProvider], espera_s: float = 1.0):
+def construir(
+    herramientas: Herramientas,
+    cadena: list[LLMProvider],
+    espera_s: float = 1.0,
+    solo_plantilla: set[str] | None = None,
+):
+    """`solo_plantilla` cambia qué intenciones no pasan por el LLM (para probar CP-SIS-10)."""
+    sin_llm = plantillas.INTENCIONES_SOLO_PLANTILLA if solo_plantilla is None else solo_plantilla
+
     def nodo_router(e: Estado) -> Estado:
         intencion, monto = router.clasificar(e["pregunta"])
         return {"intencion": intencion, "monto": monto, "redacciones": 0}
@@ -93,9 +101,7 @@ def construir(herramientas: Herramientas, cadena: list[LLMProvider], espera_s: f
         return "plantilla" if e["intencion"] in _BLOQUEADAS else "tools"
 
     def tras_tools(e: Estado) -> str:
-        return (
-            "plantilla" if e["intencion"] in plantillas.INTENCIONES_SOLO_PLANTILLA else "redaccion"
-        )
+        return "plantilla" if e["intencion"] in sin_llm else "redaccion"
 
     def tras_juez(e: Estado) -> str:
         if e["aprobado"]:

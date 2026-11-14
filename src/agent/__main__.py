@@ -6,6 +6,7 @@ import logging
 import sys
 import time
 
+from agent import plantillas
 from agent.chat import responder
 from agent.grafo import construir
 from agent.providers import TemplateProvider, cadena_desde_entorno, calentar
@@ -16,6 +17,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Prueba el agente de Lucas con los mocks.")
     parser.add_argument("--plantilla", action="store_true", help="responde sin LLM")
     parser.add_argument("--json", action="store_true", help="muestra la respuesta de /chat")
+    parser.add_argument(
+        "--simular-con-llm",
+        action="store_true",
+        help="la simulación la redacta el LLM y no la plantilla (prueba de CP-SIS-10)",
+    )
     args = parser.parse_args()
     logging.basicConfig(level=logging.WARNING, format="  [%(name)s] %(message)s")
     sys.stdout.reconfigure(encoding="utf-8")
@@ -27,7 +33,10 @@ def main() -> None:
         print("Cargando el modelo de Ollama...")
         if not calentar():
             print("Ollama no responde: contestará la plantilla.")
-    agente = construir(HerramientasMock(), cadena)
+    solo_plantilla = None
+    if args.simular_con_llm:
+        solo_plantilla = plantillas.INTENCIONES_SOLO_PLANTILLA - {"simular"}
+    agente = construir(HerramientasMock(), cadena, solo_plantilla=solo_plantilla)
     print("Escribe tu pregunta (Enter vacío para salir).\n")
 
     while pregunta := input("Tú: ").strip():

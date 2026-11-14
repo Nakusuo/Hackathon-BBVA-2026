@@ -2,7 +2,7 @@
 
 import json
 
-VERSION_PROMPT = "redaccion-v3"
+VERSION_PROMPT = "redaccion-v4"
 
 # Sin cifras de ejemplo: con v2 el modelo copiaba las del ejemplo de formato como si fueran datos.
 SISTEMA = """Eres Lucas, un compañero que ayuda a trabajadores en Perú con su plata del mes.
@@ -11,10 +11,12 @@ Redactas una respuesta corta (máximo 4 frases) a partir de DATOS que ya calcula
 Reglas que no rompes:
 1. Menciona los montos clave de DATOS copiados tal cual. No calcules, no sumes, no restes ni inventes cifras.
 2. Pon «S/» delante de cada monto en soles. Escribe las fechas con el número del día y el mes, sin el día de la semana.
-3. Háblale de tú al usuario («tu saldo», «te conviene»). Sin tono alarmista.
-4. No des asesoría: nunca digas que compre o venda dólares, que invierta en algo ni prometas rentabilidad.
-5. No ofrezcas hacer operaciones ni mover dinero. No numeres listas.
-6. Termina con: «Es una simulación para orientarte, no una asesoría. Tú decides.»"""
+3. Si un saldo es negativo, escríbelo con su signo menos (-S/) y di que quedarías en rojo. Nunca digas que te sobra.
+4. «Saldo» es solo la plata de tu cuenta. Al puntaje llámalo «puntaje de salud», nunca saldo.
+5. Háblale de tú al usuario («tu saldo», «te conviene»). Sin tono alarmista.
+6. No des asesoría: nunca digas que compre o venda dólares, que invierta en algo ni prometas rentabilidad.
+7. No ofrezcas hacer operaciones ni mover dinero. No numeres listas.
+8. Termina con: «Es una simulación para orientarte, no una asesoría. Tú decides.»"""
 
 # Claves que nunca salen hacia un LLM, ni siquiera local: así el contenido es igual en todos
 # los proveedores y se puede probar una sola vez (ISO 27001, control 8.12).
@@ -49,16 +51,25 @@ def resumen_para_llm(intencion: str, datos: dict) -> dict:
         }
     if intencion == "simular":
         s = datos["simulate"]
+        sin_gasto, con_gasto = s["baseline"]["final_balance"], s["simulated"]["final_balance"]
+        # Comparar con cero no es calcular: se le dice si queda en rojo porque el 3b invertía
+        # el signo («te sobraron S/ 50» por -50).
         return {
-            "gasto_consultado": s["request"]["changes"][0]["amount"],
-            "saldo_final_sin_el_gasto": s["baseline"]["final_balance"],
-            "saldo_final_con_el_gasto": s["simulated"]["final_balance"],
+            # «gasto_consultado» lo leía como «gasto en consultas».
+            "monto_del_gasto_que_preguntas": s["request"]["changes"][0]["amount"],
+            "saldo_final_sin_el_gasto": sin_gasto,
+            "sin_el_gasto_quedarias_en_rojo": sin_gasto < 0,
+            "saldo_final_con_el_gasto": con_gasto,
+            "con_el_gasto_quedarias_en_rojo": con_gasto < 0,
         }
     if intencion == "salud":
         h = datos["get_health"]
         return {
             # «colchón» confundía al 3b: lo leyó como el mueble y sugirió comprar uno.
-            "puntaje_de_salud_sobre_100": h["score"],
+            "puntaje_de_salud": h["score"],
+            # La escala 0–100 es fija (D5). Va como dato porque el LLM escribe «72 de 100» y,
+            # si el 100 solo estaba en el nombre del campo, el juez lo rechazaba (Michael).
+            "puntaje_maximo": 100,
             "estado": h["status"],
             "meses_que_cubre_tu_ahorro_de_emergencia": h["emergency_fund_months"],
         }

@@ -21,6 +21,18 @@ MODELO_OLLAMA = os.getenv("OLLAMA_MODEL", "qwen2.5:3b")
 MODELO_GEMINI = "gemini-3.5-flash-lite"
 
 
+def host_ollama() -> str:
+    """`OLLAMA_HOST` como URL a la que el cliente puede conectarse.
+
+    El servidor acepta `0.0.0.0:11434` para escuchar en todas las interfaces, pero un cliente
+    no puede conectarse a esa dirección (lo vio Michael en su laptop).
+    """
+    host = os.getenv("OLLAMA_HOST", "").strip() or "localhost:11434"
+    if "://" not in host:
+        host = f"http://{host}"
+    return host.replace("://0.0.0.0", "://localhost")
+
+
 class ProveedorNoDisponible(Exception):
     """El proveedor no respondió: sin red, timeout, cuota agotada o modelo ausente."""
 
@@ -73,7 +85,7 @@ def ollama() -> ProveedorChat:
 
     chat = ChatOllama(
         model=MODELO_OLLAMA,
-        base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"),
+        base_url=host_ollama(),
         temperature=0.2,
         num_predict=160,
         # 4096 alcanza porque el prompt lleva solo salidas de tools, y así el 3b cabe entero
@@ -124,7 +136,7 @@ def calentar(timeout_s: float = 120) -> bool:
     """
     import ollama as sdk
 
-    cliente = sdk.Client(host=os.getenv("OLLAMA_HOST", "http://localhost:11434"), timeout=timeout_s)
+    cliente = sdk.Client(host=host_ollama(), timeout=timeout_s)
     try:
         cliente.generate(
             model=MODELO_OLLAMA, prompt="hola", keep_alive=-1, options={"num_ctx": 4096}

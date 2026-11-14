@@ -90,3 +90,10 @@ def test_bloqueadas_no_llaman_al_llm(pregunta):
     r = preguntar(agente_con(chat), "c-001", pregunta)
     assert chat.recibidos == []
     assert r["proveedor"] == "plantilla"
+
+
+def test_con_simular_por_llm_la_redaccion_del_llm_se_juzga():
+    cadena = [ProveedorChat("falso", ChatFijo(f"Te sobraron S/ 50. {CIERRE}"), (httpx.HTTPError,))]
+    agente = construir(HerramientasMock(), [*cadena, TemplateProvider()], 0, solo_plantilla=set())
+    r = preguntar(agente, "c-001", "¿Puedo gastar S/ 150?")
+    assert r["proveedor"] == "plantilla"

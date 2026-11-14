@@ -87,3 +87,18 @@ def test_gemini_con_clave_va_detras_de_ollama(monkeypatch):
 def test_modo_plantilla_no_usa_llm(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "plantilla")
     assert [p.nombre for p in providers.cadena_desde_entorno()] == ["plantilla"]
+
+
+@pytest.mark.parametrize(
+    "valor, esperado",
+    [
+        ("", "http://localhost:11434"),
+        ("0.0.0.0:11434", "http://localhost:11434"),
+        ("http://0.0.0.0:11434", "http://localhost:11434"),
+        ("192.168.1.20:11434", "http://192.168.1.20:11434"),
+        ("http://localhost:11434", "http://localhost:11434"),
+    ],
+)
+def test_host_ollama_se_normaliza(monkeypatch, valor, esperado):
+    monkeypatch.setenv("OLLAMA_HOST", valor)
+    assert providers.host_ollama() == esperado
