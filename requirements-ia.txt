@@ -1,0 +1,14 @@
+langgraph==1.2.20
+langchain-core==1.8.0
+langchain-ollama==1.1.0
+langchain-google-genai==4.5.0
+# providers.py los importa directo; se fijan para que nadie suba de versión sin querer.
+ollama==0.6.3
+google-genai==3.3.0
+httpx==0.28.1
+pydantic==2.14.3
+pypdf==7.0.1
+pytest==9.2.0
+ruff==0.17.4
+faiss-cpu==1.16.0
+numpy==2.4.6

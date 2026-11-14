@@ -1,0 +1,145 @@
+/* Pantalla para el jurado: fuera del marco de celular, para leerse en una laptop. */
+.evidencia {
+  min-height: 100vh;
+  background: var(--fondo);
+}
+
+.evidencia-cabecera,
+.evidencia-contenido {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.evidencia-cabecera {
+  display: grid;
+  gap: 8px;
+}
+
+.evidencia-contenido {
+  display: grid;
+  gap: 32px;
+  padding-bottom: 48px;
+}
+
+.evidencia code {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.evidencia-seccion {
+  display: grid;
+  gap: 12px;
+}
+
+.evidencia-impacto,
+.evidencia-grilla {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+}
+
+.evidencia-impacto h3,
+.evidencia-fila h3 {
+  font-weight: 700;
+}
+
+.evidencia-cifra {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--azul-texto);
+}
+
+.evidencia-dos {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+}
+
+.evidencia-fila {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 16px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.evidencia-par {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0;
+}
+
+.evidencia-par div {
+  display: grid;
+  gap: 2px;
+}
+
+.evidencia-par dt {
+  color: var(--tinta-suave);
+}
+
+.evidencia-par dd {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.veredicto {
+  font-weight: 700;
+}
+
+.veredicto-mejor {
+  color: var(--bien);
+}
+
+.veredicto-peor {
+  color: var(--riesgo);
+}
+
+.fuente {
+  color: var(--tinta-suave);
+  overflow-wrap: anywhere;
+}
+
+.evidencia-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.evidencia-tabla th,
+.evidencia-tabla td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--borde);
+  text-align: right;
+}
+
+.evidencia-tabla th:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.evidencia-tabla thead th {
+  color: var(--tinta-suave);
+  font-weight: 600;
+}
+
+.evidencia-tabla-lucas th,
+.evidencia-tabla-lucas td {
+  font-weight: 800;
+}
+
+.evidencia-supuestos {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.evidencia-resumen {
+  font-size: 1.125rem;
+  border-color: var(--azul);
+}

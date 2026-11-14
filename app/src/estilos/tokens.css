@@ -1,0 +1,91 @@
+@import '@fontsource-variable/manrope';
+
+/* Diurno por defecto; el modo oscuro solo redefine estas variables (Preferencias → Apariencia).
+   Ningún color queda a menos de 20 puntos por canal de los azules de BBVA: por eso no hay azul marino
+   y el oscuro es carbón neutro. --azul es fondo de botones; --azul-texto es para letras, porque en
+   oscuro ningún azul sirve para las dos cosas con contraste 4.5. Rojo y verde siempre van con texto. */
+:root {
+  --fondo: #f3f6fc;
+  --superficie: #ffffff;
+  --superficie-suave: #e9f0fd;
+  --borde: #d6e0f3;
+  --tinta: #1f2329;
+  --tinta-suave: #4b5563;
+  --azul: #2160e0;
+  --azul-texto: #2160e0;
+  --azul-profundo: #1e3fb2;
+  --azul-claro: #c3d7fc;
+  --azul-palido: #e3ecfd;
+  --sobre-azul: #ffffff;
+  --sobre-azul-suave: #d9e5fd;
+  --crema: #f5eedd;
+  --crema-borde: #e4d8bb;
+  --exterior: #e6ecf7;
+  --banda: #c3d7fc;
+  /* La gráfica de Qué viene va sobre --azul-profundo en los dos temas: línea, banda y foco
+     llevan color propio para no heredar --crema, que en oscuro es casi negra. Banda ya opaca:
+     #7f9be6 queda en 3.2:1 contra el azul (antes 1.99:1) y la línea crema sobre ella en 2.4:1. */
+  --grafico-linea: #f5eedd;
+  --grafico-banda: #7f9be6;
+  --foco: #f5eedd;
+  --riesgo: #b42318;
+  --riesgo-claro: #ff8a80;
+  --riesgo-fondo: #fdeeec;
+  --bien: #1d6b46;
+  --bien-fondo: #e8f4ee;
+  --vidrio: rgb(255 255 255 / 0.72);
+  --vidrio-borde: rgb(255 255 255 / 0.9);
+  --brillo: rgb(33 96 224 / 0.35);
+  --sombra: rgb(30 63 178 / 0.12);
+  --serie-1: #1e3fb2;
+  --serie-2: #2160e0;
+  --serie-3: #4f86f0;
+  --serie-4: #84aaf5;
+  --serie-5: #b5ccf9;
+  --serie-6: #9aa3b2;
+
+  --letra: 'Manrope Variable', system-ui, sans-serif;
+  --titulos: 'Manrope Variable', system-ui, sans-serif;
+  --radio: 18px;
+  --radio-chico: 12px;
+
+  color-scheme: light;
+}
+
+:root[data-tema='oscuro'] {
+  --fondo: #0e1013;
+  --superficie: #171a20;
+  --superficie-suave: #1f232b;
+  --borde: #2b303a;
+  --tinta: #f2f4f7;
+  --tinta-suave: #a9b1bd;
+  --azul: #2d66e3;
+  --azul-texto: #86acff;
+  --azul-profundo: #243150;
+  --azul-claro: #2a3d6b;
+  --azul-palido: #232836;
+  --sobre-azul-suave: #c3d7fc;
+  --crema: #1d212b;
+  --crema-borde: #2b303a;
+  --exterior: #08090b;
+  --banda: #2a3d6b;
+  --grafico-linea: #f2f4f7;
+  --grafico-banda: #647db3;
+  --foco: #f2f4f7;
+  --riesgo: #ff7b6e;
+  --riesgo-fondo: #3a1d1b;
+  --bien: #5fd39a;
+  --bien-fondo: #14301f;
+  --vidrio: rgb(255 255 255 / 0.06);
+  --vidrio-borde: rgb(255 255 255 / 0.14);
+  --brillo: rgb(58 125 255 / 0.22);
+  --sombra: rgb(0 0 0 / 0.45);
+  --serie-1: #8fb0f5;
+  --serie-2: #6d93e6;
+  --serie-3: #5277c9;
+  --serie-4: #3d5ea8;
+  --serie-5: #2f4a85;
+  --serie-6: #5b6270;
+
+  color-scheme: dark;
+}
