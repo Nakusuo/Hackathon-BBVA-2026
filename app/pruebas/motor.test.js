@@ -121,3 +121,17 @@ test('el seguimiento de cada tip sale del mismo plan que el tip', () => {
   // RapiFood 4 veces al mes son 2 en los 16 días que faltan para el cobro.
   assert.equal(cliente.recomendaciones.find((r) => r.id === 'delivery').seguimiento.limite, 2)
 })
+
+test('la salud sube con cada día en rojo que se evita y es el promedio de sus partes', () => {
+  const sinTips = vistaCon([]).salud
+  const conUno = vistaCon(['delivery']).salud
+  const conTodos = vistaCon(TODOS).salud
+  assert.ok(sinTips.puntaje < conUno.puntaje && conUno.puntaje < conTodos.puntaje)
+  assert.equal(cliente.conTodos.salud, conTodos.puntaje)
+  for (const s of [sinTips, conUno, conTodos]) {
+    const promedio = s.componentes.reduce((t, c) => t + c.valor, 0) / s.componentes.length
+    assert.equal(s.puntaje, Math.round(promedio))
+  }
+  assert.match(sinTips.componentes.at(-1).explicacion, /2 días en rojo/)
+  assert.match(conTodos.componentes.at(-1).explicacion, /sin quedar en rojo/)
+})
