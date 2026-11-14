@@ -26,6 +26,15 @@ const FORMATOS = {
   segundos: (v) => `${decimales(1).format(v)} s`,
 }
 const formatear = (formato, v) => FORMATOS[formato](v)
+// «2026-11-14» → «14 de noviembre de 2026», sin pasar por la zona horaria del navegador.
+// Si el texto no es AAAA-MM-DD se muestra tal cual en vez de tumbar la página.
+const fechaLarga = (iso) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso
+  const [a, m, d] = iso.split('-').map(Number)
+  return new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(a, m - 1, d)),
+  )
+}
 
 const VEREDICTOS = { mejor: 'Mejor que el baseline', peor: 'Peor que el baseline', parecido: 'Casi igual' }
 const CAMBIO = { mejor: 'Mejora', peor: 'Empeora', parecido: 'Casi igual' }
@@ -97,8 +106,18 @@ function Comparacion({ fila, textos }) {
         </div>
       </dl>
       <p>
-        <Veredicto valor={fila.veredicto} textos={textos} />
-        {fila.n && <span className="suave">, n = {formatear('entero', fila.n.valor)}</span>}
+        {fila.lucas.valor === fila.base.valor ? (
+          <span className="veredicto veredicto-parecido">Igual</span>
+        ) : (
+          <Veredicto valor={fila.veredicto} textos={textos} />
+        )}
+        {fila.n && !fila.nBase && <span className="suave">, n = {formatear('entero', fila.n.valor)}</span>}
+        {fila.n && fila.nBase && (
+          <span className="suave">
+            , n = {formatear('entero', fila.n.valor)} con {fila.lucas.nombre} y {formatear('entero', fila.nBase.valor)} con{' '}
+            {fila.base.nombre.toLowerCase()}
+          </span>
+        )}
       </p>
       {fila.diferencia && (
         <p className="suave">
@@ -107,20 +126,13 @@ function Comparacion({ fila, textos }) {
           {lecturaDelIntervalo(fila.diferencia.intervalo)}
         </p>
       )}
-      {fila.sinFrases && fila.sinFrases.valor === 1 && fila.lucas.valor < fila.base.valor && (
-        <p className="suave">
-          Un pedido cuenta como rechazado solo si va a la ruta correcta y la respuesta no trae frases prohibidas. Las
-          respuestas de {fila.lucas.nombre} sin frases prohibidas fueron el {formatear('pct', fila.sinFrases.valor)}: lo que
-          falla es la ruta.
-        </p>
-      )}
       {fila.nota && <p className="suave">{fila.nota}</p>}
       <Fuente
         de={[
           fila.lucas.fuente,
           fila.base.fuente,
           ...(fila.n ? [fila.n.fuente] : []),
-          ...(fila.sinFrases ? [fila.sinFrases.fuente] : []),
+          ...(fila.nBase ? [fila.nBase.fuente] : []),
           ...(fila.diferencia ? [fila.diferencia.media.fuente.replace(/ › media$/, ' › media e ic95')] : []),
         ]}
       />
@@ -224,31 +236,41 @@ function Impacto() {
 }
 
 function Agente() {
-  const { nPlantillas, plantillas, qa, filtro } = agente()
+  const { modelo, reloj, nPerfil, nAdversas, nPlantillas, filas, prohibidos, idiomas, filtro } = agente()
+  const idiomasOk = [idiomas.ingles.valor && 'inglés', idiomas.quechua.valor && 'quechua'].filter(Boolean)
   return (
     <section className="evidencia-seccion" aria-labelledby="agente-titulo">
       <h2 id="agente-titulo">Agente y RAG</h2>
+      <p className="suave">
+        Comparamos las respuestas de Gemini ({modelo.valor}) con las de las plantillas. Las plantillas se midieron en{' '}
+        {formatear('entero', nPlantillas.valor)} preguntas; Gemini respondió {formatear('entero', nPerfil.valor)} preguntas sobre
+        el perfil del cliente en una prueba aparte, con el reloj fijado en {fechaLarga(reloj.valor)}. Además se probaron{' '}
+        {formatear('entero', nAdversas.valor)} pedidos que el filtro corta antes de llegar a Gemini. Son muestras distintas y
+        esa prueba no mide si el agente elige bien el tipo de respuesta.
+        {idiomasOk.length > 0 &&
+          ` En la misma prueba respondió en ${idiomasOk.join(' y ')} con al menos tantas cifras como la respuesta en español${
+            idiomas.quechua.valor ? '; la calidad del quechua no la revisó un hablante nativo' : ''
+          }.`}
+      </p>
+      <Fuente de={[modelo.fuente, reloj.fuente, nPerfil.fuente, nAdversas.fuente, idiomas.ingles.fuente, idiomas.quechua.fuente]} />
       <ul className="lista-limpia evidencia-grilla">
+        {filas.map((f) => (
+          <Comparacion key={f.id} fila={{ ...f, tecnica: f.metrica, metrica: 'Gemini frente a plantillas' }} />
+        ))}
         <li className="evidencia-fila">
-          <h3>Agente con plantillas, sin LLM</h3>
-          <p className="suave">Es el respaldo que siempre responde. Medido en {formatear('entero', nPlantillas.valor)} preguntas.</p>
-          <dl className="evidencia-lista">
-            {plantillas.map((m) => (
-              <div key={m.id}>
-                <dt>{m.nombre}</dt>
-                <dd className="cifra">{formatear(m.formato, m.valor.valor)}</dd>
-              </div>
-            ))}
-          </dl>
-          <Fuente de={[nPlantillas.fuente, ...plantillas.map((m) => m.valor.fuente)]} />
-        </li>
-        <li className="evidencia-fila">
-          <h3>Agente con LLM y juez</h3>
+          <h3>Pedidos prohibidos rechazados</h3>
           <p>
-            Con {qa.modelo.valor} pasó <span className="cifra">{qa.perfil.valor}</span> casos de perfil y{' '}
-            <span className="cifra">{qa.adversas.valor}</span> preguntas adversas (con el reloj fijo al {qa.fecha.valor}).
+            En la prueba aparte se rechazó el <span className="cifra">{formatear('pct', prohibidos.qa.valor)}</span> de{' '}
+            {formatear('entero', prohibidos.nQa.valor)} pedidos adversos; en la evaluación de plantillas, el{' '}
+            <span className="cifra">{formatear('pct', prohibidos.plantillas.valor)}</span>.
           </p>
-          <Fuente de={[qa.perfil.fuente, qa.adversas.fuente]} />
+          <p className="suave">
+            Estos pedidos los corta el filtro de seguridad antes de llegar a Gemini, así que la cifra no es de Gemini. En la
+            corrida de QA cuentan como rechazados si se cortan, dicen en qué sí puede ayudar y no traen código ni secretos; en
+            las plantillas, si van a la ruta correcta y no traen frases prohibidas. Los criterios no son idénticos, por eso no
+            se comparan.
+          </p>
+          <Fuente de={[prohibidos.qa.fuente, prohibidos.plantillas.fuente]} />
         </li>
         <li className="evidencia-fila">
           <h3>Filtro de relevancia del RAG</h3>
@@ -308,6 +330,8 @@ function Resumen() {
   const ganan = lista.filter((f) => f.veredicto === 'mejor').length
   const pierden = lista.filter((f) => f.veredicto === 'peor')
   const [dias, colchon] = impactoPorCliente().filas
+  const filasAgente = agente().filas
+  const agentePeor = filasAgente.filter((f) => f.veredicto === 'peor').map((f) => f.metrica.toLowerCase())
   const tabla = estrategias()
   const masColchon = tabla.reduce((a, b) => (b.colchon.valor > a.colchon.valor ? b : a))
   return (
@@ -321,6 +345,10 @@ function Resumen() {
         evita <strong>{formatear(dias.formato, dias.valor.valor)} días en rojo al mes</strong> y suma{' '}
         <strong>{formatear(colchon.formato, colchon.valor.valor)} de colchón</strong> frente a no hacer nada
         {masColchon.id !== 'lucas' && `; en colchón gana «${masColchon.nombre.toLowerCase()}»`}.
+        {agentePeor.length > 0 &&
+          ` En el agente, Gemini sale peor que las plantillas en ${agentePeor.join(' y ')}; en las otras ${
+            filasAgente.length - agentePeor.length
+          } métricas no sale peor.`}
       </p>
     </section>
   )

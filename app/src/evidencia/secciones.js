@@ -1,6 +1,6 @@
 // Qué muestra el panel Evidencia (HU-20, CP-SIS-48): primero el impacto en S/, luego cada técnica frente a
 // su baseline y al final lo que empeora. Los textos son fijos; los números salen todos de `cifra`.
-import { booleano, claves, cifra, texto } from './cifras.js'
+import { booleano, claves, cifra, cuenta, media, proporcion, proporcionCompleta, texto } from './cifras.js'
 
 // Por debajo de 1 % de diferencia no se dice que uno gana.
 export const MARGEN_PARECIDO = 0.01
@@ -138,21 +138,52 @@ export function tecnicas() {
   ]
 }
 
-const ag = (metrica) => cifra('agentePlantillas', 'agente_unico', 'resumen', metrica)
-const qa = (clave) => texto('qaAgente', 'resumen', clave)
+const ag = (archivo, metrica) => cifra(archivo, 'agente_unico', 'resumen', metrica)
 
-// La medición vieja con Gemini (metricas_agente_gemini.json) se retiró porque era anterior a las salvaguardas;
-// el LLM se valida con la corrida de QA de casos de perfil y preguntas adversas.
+// En el agente la base es responder por plantillas. Gemini se valida en la corrida de QA (eval/qa_agente.py):
+// preguntas con el perfil del cliente y pedidos adversos. Son muestras distintas: cada fila lleva el n de cada lado.
+// Esa corrida no mide el ruteo, así que no se compara. Los pedidos prohibidos los corta el filtro previo, sin LLM,
+// en las dos corridas y con criterios distintos: se muestran aparte y sin veredicto.
+const QA = 'qaAgente'
 export function agente() {
+  const gemini = (medida) => ({ nombre: 'Gemini', ...medida })
+  const plantillas = (clave) => ({ nombre: 'Plantillas', ...ag('agentePlantillas', clave) })
+  const nPerfil = cuenta(QA, 'perfil')
+  const nAdversas = cuenta(QA, 'adversas')
+  const nPlantillas = ag('agentePlantillas', 'n')
+  const conN = { n: nPerfil, nBase: nPlantillas }
   return {
-    nPlantillas: ag('n'),
-    plantillas: [
-      { id: 'sin-inventar', nombre: 'Respuestas sin cifras inventadas', formato: 'pct', valor: ag('respuestas_sin_cifras_inventadas') },
-      { id: 'prohibidos', nombre: 'Pedidos prohibidos rechazados', formato: 'pct', valor: ag('pedidos_prohibidos_rechazados') },
-      { id: 'ruteo', nombre: 'Ruteo correcto', formato: 'pct', valor: ag('ruteo_correcto') },
-      { id: 'latencia', nombre: 'Latencia media', formato: 'segundos', valor: ag('latencia_media_s') },
+    modelo: texto(QA, 'resumen', 'modelo'),
+    reloj: texto(QA, 'resumen', 'reloj_fijo'),
+    nPerfil,
+    nAdversas,
+    nPlantillas,
+    filas: [
+      fila('sin-inventar', 'Agente', 'Respuestas sin cifras inventadas', 'pct', 'mayor',
+        gemini(proporcion(QA, 'perfil', 'sin_cifras_inventadas')),
+        plantillas('respuestas_sin_cifras_inventadas'),
+        conN),
+      fila('tu-decides', 'Agente', 'Respuestas que cierran con «Tú decides»', 'pct', 'mayor',
+        gemini(proporcion(QA, 'perfil', 'cierra_con_tu_decides')),
+        plantillas('cierra_con_tu_decides'),
+        conN),
+      fila('latencia', 'Agente', 'Latencia media', 'segundos', 'menor',
+        gemini(media(QA, 'perfil', 'segundos')),
+        plantillas('latencia_media_s'),
+        {
+          ...conN,
+          nota: 'Las preguntas no son las mismas: las de Gemini pasan todas por el LLM; las plantillas nunca lo llaman y además incluyen pedidos que se cortan antes. La dirección vale; el tamaño de la diferencia, no.',
+        }),
     ],
-    qa: { perfil: qa('perfil_ok'), adversas: qa('adversas_ok'), modelo: qa('modelo'), fecha: qa('reloj_fijo') },
+    prohibidos: {
+      qa: proporcionCompleta(QA, 'adversas'),
+      nQa: nAdversas,
+      plantillas: ag('agentePlantillas', 'pedidos_prohibidos_rechazados'),
+    },
+    idiomas: {
+      ingles: booleano(QA, 'resumen', 'idiomas', 'ingles'),
+      quechua: booleano(QA, 'resumen', 'idiomas', 'quechua'),
+    },
     filtro: {
       aceptadas: cifra('rag', 'filtro_relevancia', 'con_los_umbrales_actuales', 'con_respuesta_aceptadas'),
       rechazadas: cifra('rag', 'filtro_relevancia', 'con_los_umbrales_actuales', 'fuera_rechazadas'),

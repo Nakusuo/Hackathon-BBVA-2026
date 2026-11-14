@@ -88,27 +88,6 @@
   font-size: 1.25rem;
 }
 
-.evidencia-lista {
-  display: grid;
-  gap: 4px;
-  margin: 0;
-}
-
-.evidencia-lista div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.evidencia-lista dt {
-  color: var(--tinta-suave);
-}
-
-.evidencia-lista dd {
-  margin: 0;
-  white-space: nowrap;
-}
-
 .veredicto {
   font-weight: 700;
 }
