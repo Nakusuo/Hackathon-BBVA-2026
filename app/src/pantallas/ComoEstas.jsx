@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import AnilloSalud from '../componentes/AnilloSalud.jsx'
 import AvisoRiesgo from '../componentes/AvisoRiesgo.jsx'
 import { diasEntre, enSoles, fechaLarga, iniciales } from '../formato.js'
@@ -9,7 +10,7 @@ function nivel(puntaje) {
 }
 
 export default function ComoEstas({ cliente }) {
-  const { salud, segmento, gastoHormiga, suscripciones, proximoIngreso } = cliente
+  const { salud, segmento, gastosFrecuentes, suscripciones, proximoIngreso, riesgo } = cliente
   const totalSuscripciones = suscripciones.reduce((s, x) => s + x.monto, 0)
 
   return (
@@ -22,18 +23,18 @@ export default function ComoEstas({ cliente }) {
       <div className="dos-columnas">
         <div className="columna">
           <section className="principal" aria-label="Cuánto puedes gastar">
-            <p className="etiqueta-principal">Puedes gastar hasta</p>
+            <p className="principal-etiqueta">Para llegar a tu cobro sin quedar en rojo, gasta hasta</p>
             <p className="principal-cifra">
-              {enSoles(cliente.disponibleDiario)} <small>al día</small>
+              {enSoles(cliente.gastoDiarioSeguro)} <small>al día</small>
             </p>
-            <p>Así llegas a tu próximo ingreso con tus pagos fijos cubiertos.</p>
+            <p>Hoy gastas unos {enSoles(cliente.gastoDiarioActual)} al día.</p>
             <div className="principal-pie">
               <div>
                 <span>Saldo hoy</span>
                 <strong>{enSoles(cliente.saldoHoy)}</strong>
               </div>
               <div>
-                <span>Próximo ingreso</span>
+                <span>Cobras</span>
                 <strong>
                   {enSoles(proximoIngreso.monto)} en {diasEntre(cliente.hoy, proximoIngreso.fecha)} días
                 </strong>
@@ -41,24 +42,26 @@ export default function ComoEstas({ cliente }) {
             </div>
           </section>
 
-          <AvisoRiesgo riesgo={cliente.diaRiesgo} />
+          <AvisoRiesgo riesgo={riesgo} />
 
-          <section className="tarjeta" aria-labelledby="hormiga-titulo">
+          <section className="tarjeta" aria-labelledby="frecuentes-titulo">
             <div className="tarjeta-titulo">
-              <h2 id="hormiga-titulo">Gasto hormiga este mes</h2>
-              <span className="cifra">{enSoles(gastoHormiga.mes)}</span>
+              <h2 id="frecuentes-titulo">Gastos que se repiten</h2>
+              <Link className="enlace" to="/que-hacer">
+                Ver cómo bajarlos
+              </Link>
             </div>
             <ul className="lista-limpia">
-              {gastoHormiga.detalle.map((g) => (
-                <li key={g.comercio} className="fila">
+              {gastosFrecuentes.map((g) => (
+                <li key={g.id} className="fila">
                   <span className="circulo" aria-hidden="true">
                     {iniciales(g.comercio)}
                   </span>
                   <span className="fila-texto">
                     <span>{g.comercio}</span>
-                    <span className="suave">{g.veces} veces este mes</span>
+                    <span className="suave">{g.vecesMes} veces este mes</span>
                   </span>
-                  <span className="fila-monto">{enSoles(g.total)}</span>
+                  <span className="fila-monto">{enSoles(g.totalMes)}</span>
                 </li>
               ))}
             </ul>
@@ -80,13 +83,13 @@ export default function ComoEstas({ cliente }) {
                       <span>{c.nombre}</span>
                       <span>{c.valor}</span>
                     </span>
-                    <span className="suave chico">{c.explicacion}</span>
+                    <span className="suave">{c.explicacion}</span>
                   </li>
                 ))}
               </ul>
             </div>
-            <p className="suave chico">
-              Tu perfil: <strong>{segmento.nombre}</strong>. {segmento.descripcion}
+            <p className="suave">
+              Es el promedio de las 4 partes. Tu perfil: <strong>{segmento.nombre}</strong>.
             </p>
           </section>
 
@@ -97,14 +100,14 @@ export default function ComoEstas({ cliente }) {
             </div>
             <ul className="lista-limpia">
               {suscripciones.map((s) => (
-                <li key={s.comercio} className="fila">
+                <li key={s.id} className="fila">
                   <span className="circulo" aria-hidden="true">
                     {iniciales(s.comercio)}
                   </span>
                   <span className="fila-texto">
                     <span>{s.comercio}</span>
                     <span className="suave">
-                      Día {s.dia}. {s.usoUltimoMes}
+                      Día {s.dia}. {s.uso}
                     </span>
                   </span>
                   <span className="fila-monto">{enSoles(s.monto)}</span>

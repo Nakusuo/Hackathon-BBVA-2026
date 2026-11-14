@@ -1,0 +1,58 @@
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/source-serif-4';
+
+/* Familia de grises azulados para leer, petróleo para los datos y ámbar como único acento de la marca Lucas.
+   Rojo y verde solo marcan estado y siempre van con texto. */
+:root {
+  --fondo: #f5f7fa;
+  --superficie: #ffffff;
+  --superficie-suave: #ebf1f6;
+  --borde: #dee5ec;
+  --tinta: #1b2433;
+  --tinta-suave: #4f5b6d;
+  --principal: #dcebf7;
+  --sobre-principal: #1b2433;
+  --sobre-principal-suave: #3d4a5e;
+  --dato: #1f6b8a;
+  --banda: #bcdcea;
+  --acento: #9a5b0c;
+  --acento-vivo: #e8a33d;
+  --acento-fondo: #fbf0dc;
+  --boton: #1b2433;
+  --sobre-boton: #ffffff;
+  --riesgo: #b42318;
+  --riesgo-fondo: #fdeeec;
+  --bien: #1d6b46;
+
+  --letra: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --titulos: 'Source Serif 4 Variable', Georgia, serif;
+  --radio: 18px;
+  --radio-chico: 12px;
+  --ancho-lateral: 232px;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #0e131b;
+    --superficie: #161d28;
+    --superficie-suave: #1f2834;
+    --borde: #2a3442;
+    --tinta: #e9edf2;
+    --tinta-suave: #aab4c1;
+    --principal: #1c3446;
+    --sobre-principal: #e9edf2;
+    --sobre-principal-suave: #bccbd8;
+    --dato: #7cc0d8;
+    --banda: #24485a;
+    --acento: #f0b45a;
+    --acento-vivo: #f0b45a;
+    --acento-fondo: #3a2c14;
+    --boton: #e9edf2;
+    --sobre-boton: #0e131b;
+    --riesgo: #ff8a80;
+    --riesgo-fondo: #3a1d22;
+    --bien: #7dd3a8;
+  }
+}

@@ -8,13 +8,14 @@ npm install
 npm run dev      # abre http://localhost:5173
 npm run build    # versión final en app/dist
 npm run lint
+npm test         # pruebas de funciones: montos, fechas, eje y coherencia de cifras
 ```
 
-Mientras no exista el contrato de la API (MG-01), las pantallas leen datos sintéticos de `src/mocks/`.
+Mientras no exista el contrato de la API (MG-01), las pantallas leen una persona sintética de `src/mocks/cliente.js`. Sus cifras salen de `src/mocks/motor.js`, un sustituto simple del pronóstico y del recomendador, para que ninguna pantalla contradiga a otra.
 
 ## Pruebas de la interfaz (Playwright)
 
-Prueban las 3 pantallas en laptop clara (1366×768), laptop oscura y celular: que abran sin errores, sin scroll horizontal, con todo el texto de 16 px o más, y los flujos principales (aviso → Qué hacer, cambio de periodo, «¿Por qué?»). Dejan capturas en `app/capturas/`.
+Prueban las 3 pantallas en laptop clara (1366×768), laptop oscura y celular: que abran sin errores, sin scroll horizontal, con todo el texto de 16 px o más, que en laptop quepan sin bajar, y los flujos principales (aviso → Qué hacer, cambio de periodo, «¿Por qué?»). Dejan capturas en `app/capturas/`.
 
 ```bash
 npx playwright install chromium   # solo la primera vez

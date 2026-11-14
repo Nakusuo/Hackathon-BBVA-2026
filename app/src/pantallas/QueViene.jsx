@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Area,
   CartesianGrid,
@@ -11,11 +12,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import AvisoRiesgo from '../componentes/AvisoRiesgo.jsx'
-import { enSoles, fechaCorta, fechaLarga } from '../formato.js'
+import { enSoles, fechaCorta, fechaDia, fechaLarga, textoDiasEnRojo } from '../formato.js'
+import { marcasDelEje } from '../grafico.js'
 
 const PERIODOS = [
-  { id: 'ingreso', nombre: 'Hasta mi ingreso' },
+  { id: 'ingreso', nombre: 'Hasta mi cobro' },
   { id: 'mes', nombre: '30 días' },
 ]
 
@@ -33,40 +34,25 @@ function Globo({ active, payload }) {
   )
 }
 
-// Recharts redondea el eje a -1000 por un rojo pequeño y el cero queda perdido; las marcas van a mano.
-function marcasDelEje(datos) {
-  const piso = Math.floor(Math.min(0, ...datos.map((p) => p.banda[0])) / 250) * 250
-  const paso = Math.max(...datos.map((p) => p.banda[1])) > 1500 ? 1000 : 500
-  const techo = Math.ceil(Math.max(...datos.map((p) => p.banda[1])) / paso) * paso
-  const marcas = new Set([piso])
-  for (let v = 0; v <= techo; v += paso) marcas.add(v)
-  return { dominio: [piso, techo], marcas: [...marcas] }
-}
-
-function DiaEnCirculo({ fecha }) {
-  return (
-    <span className="circulo" aria-hidden="true">
-      {Number(fecha.slice(8))}
-    </span>
-  )
-}
-
 export default function QueViene({ cliente }) {
-  const { pronostico, diaRiesgo, proximoIngreso, proximosPagos } = cliente
+  const { pronostico, riesgo, proximoIngreso, proximosPagos, saldoHoy } = cliente
   const [periodo, setPeriodo] = useState('ingreso')
 
-  const datos =
-    periodo === 'ingreso' ? pronostico.filter((p) => p.fecha <= proximoIngreso.fecha) : pronostico
+  const datos = periodo === 'ingreso' ? pronostico.filter((p) => p.fecha <= proximoIngreso.fecha) : pronostico
   const { dominio, marcas } = marcasDelEje(datos)
-  const puntoRiesgo = diaRiesgo && datos.find((p) => p.fecha === diaRiesgo.fecha)
+  const puntoRiesgo = riesgo && datos.find((p) => p.fecha === riesgo.peorFecha)
   const ultimoDia = datos.at(-1).fecha
 
   const movimientos = [
     ...proximosPagos.map((p) => ({ ...p, entra: false })),
-    { fecha: proximoIngreso.fecha, concepto: 'Tu ingreso', tipo: proximoIngreso.tipo, monto: proximoIngreso.monto, entra: true },
+    { id: 'ingreso', fecha: proximoIngreso.fecha, concepto: 'Tu cobro', monto: proximoIngreso.monto, entra: true },
   ]
     .filter((m) => m.fecha <= ultimoDia)
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
+
+  const resumen = riesgo
+    ? `Saldo de hoy ${enSoles(saldoHoy)}. Baja hasta el ${fechaDia(riesgo.peorFecha)}, donde el peor caso es ${enSoles(riesgo.peorMonto)}, y sube el ${fechaDia(proximoIngreso.fecha)} con tu cobro.`
+    : `Saldo de hoy ${enSoles(saldoHoy)}. No baja de cero antes de tu cobro.`
 
   return (
     <>
@@ -75,95 +61,104 @@ export default function QueViene({ cliente }) {
         <p>Tu saldo día por día y lo que entra o sale de tu cuenta.</p>
       </div>
 
-      <AvisoRiesgo riesgo={diaRiesgo} />
-
-      <section className="tarjeta" aria-labelledby="pronostico-titulo">
-        <div className="tarjeta-titulo">
-          <h2 id="pronostico-titulo">Tu saldo proyectado</h2>
-          <div className="selector" role="group" aria-label="Periodo">
-            {PERIODOS.map((p) => (
-              <button key={p.id} type="button" aria-pressed={periodo === p.id} onClick={() => setPeriodo(p.id)}>
-                {p.nombre}
-              </button>
-            ))}
+      <div className="viene">
+        <section className="tarjeta" aria-labelledby="pronostico-titulo">
+          <div className="tarjeta-titulo">
+            <h2 id="pronostico-titulo">Tu saldo proyectado</h2>
+            <div className="selector" role="group" aria-label="Periodo">
+              {PERIODOS.map((p) => (
+                <button key={p.id} type="button" aria-pressed={periodo === p.id} onClick={() => setPeriodo(p.id)}>
+                  {p.nombre}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="grafico">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={datos} margin={{ top: 12, right: 28, bottom: 0, left: 8 }}>
-              <CartesianGrid stroke="var(--borde)" vertical={false} />
-              <XAxis
-                dataKey="fecha"
-                tickFormatter={fechaCorta}
-                interval="preserveStartEnd"
-                minTickGap={28}
-                tick={{ fill: 'var(--tinta-suave)', fontSize: 16 }}
-                axisLine={{ stroke: 'var(--borde)' }}
-                tickLine={false}
-              />
-              <YAxis
-                tickFormatter={enSoles}
-                domain={dominio}
-                ticks={marcas}
-                tick={{ fill: 'var(--tinta-suave)', fontSize: 16 }}
-                axisLine={false}
-                tickLine={false}
-                width={92}
-              />
-              <Tooltip content={<Globo />} cursor={{ stroke: 'var(--tinta-suave)', strokeDasharray: '4 4' }} />
-              <Area dataKey="banda" stroke="none" fill="var(--banda)" fillOpacity={0.6} isAnimationActive={false} />
-              <Line
-                dataKey="esperado"
-                stroke="var(--acento)"
-                strokeWidth={3}
-                dot={false}
-                activeDot={{ r: 6, fill: 'var(--superficie)', stroke: 'var(--acento)', strokeWidth: 3 }}
-                isAnimationActive={false}
-              />
-              <ReferenceLine y={0} stroke="var(--riesgo)" strokeDasharray="6 4" strokeWidth={2} />
-              {puntoRiesgo && (
-                <ReferenceDot
-                  x={puntoRiesgo.fecha}
-                  y={puntoRiesgo.banda[0]}
-                  r={6}
-                  fill="var(--riesgo)"
-                  stroke="var(--superficie)"
-                  strokeWidth={2}
+          {riesgo ? (
+            <p>
+              <strong className="texto-riesgo">{textoDiasEnRojo(riesgo)} podrías quedar en rojo.</strong> Peor caso:{' '}
+              <span className="cifra">{enSoles(riesgo.peorMonto)}</span> el {fechaDia(riesgo.peorFecha)}.{' '}
+              <Link className="enlace" to="/que-hacer">
+                Ver qué puedo hacer
+              </Link>
+            </p>
+          ) : (
+            <p>Llegas a tu cobro sin quedar en rojo, incluso en el peor caso.</p>
+          )}
+
+          <div className="grafico" role="img" aria-label={resumen}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={datos} margin={{ top: 8, right: 24, bottom: 0, left: 4 }}>
+                <CartesianGrid stroke="var(--borde)" vertical={false} />
+                <XAxis
+                  dataKey="fecha"
+                  tickFormatter={fechaCorta}
+                  interval="preserveStartEnd"
+                  minTickGap={28}
+                  tick={{ fill: 'var(--tinta-suave)', fontSize: 16 }}
+                  axisLine={{ stroke: 'var(--borde)' }}
+                  tickLine={false}
                 />
-              )}
-            </ComposedChart>
-          </ResponsiveContainer>
-        </div>
+                <YAxis
+                  tickFormatter={enSoles}
+                  domain={dominio}
+                  ticks={marcas}
+                  tick={{ fill: 'var(--tinta-suave)', fontSize: 16 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={88}
+                />
+                <Tooltip content={<Globo />} cursor={{ stroke: 'var(--tinta-suave)', strokeDasharray: '4 4' }} />
+                <Area dataKey="banda" stroke="none" fill="var(--banda)" fillOpacity={0.7} isAnimationActive={false} />
+                <Line
+                  dataKey="esperado"
+                  stroke="var(--dato)"
+                  strokeWidth={3}
+                  dot={false}
+                  activeDot={{ r: 6, fill: 'var(--superficie)', stroke: 'var(--dato)', strokeWidth: 3 }}
+                  isAnimationActive={false}
+                />
+                <ReferenceLine y={0} stroke="var(--riesgo)" strokeDasharray="6 4" strokeWidth={2} />
+                {puntoRiesgo && (
+                  <ReferenceDot
+                    x={puntoRiesgo.fecha}
+                    y={puntoRiesgo.banda[0]}
+                    r={6}
+                    fill="var(--riesgo)"
+                    stroke="var(--superficie)"
+                    strokeWidth={2}
+                  />
+                )}
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
 
-        <div className="leyenda" aria-hidden="true">
-          <span className="clave-esperado">Saldo más probable</span>
-          <span className="clave-banda">Rango posible</span>
-          <span className="clave-cero">Saldo en cero</span>
-        </div>
-        <p className="suave chico">
-          El rango se ensancha con los días porque tus ingresos como independiente varían de un mes a otro.
-        </p>
-      </section>
+          <div className="leyenda" aria-hidden="true">
+            <span className="clave-esperado">Lo más probable</span>
+            <span className="clave-banda">Rango posible</span>
+            <span className="clave-cero">Saldo en cero</span>
+          </div>
+          <p className="suave">El rango se abre con los días porque tu ingreso varía de un mes a otro.</p>
+        </section>
 
-      <section className="tarjeta" aria-labelledby="movimientos-titulo">
-        <h2 id="movimientos-titulo">Pagos e ingresos que vienen</h2>
-        <ul className="lista-limpia">
-          {movimientos.map((m) => (
-            <li key={`${m.fecha}-${m.concepto}`} className="fila">
-              <DiaEnCirculo fecha={m.fecha} />
-              <span className="fila-texto">
-                <span>{m.concepto}</span>
-                <span className="suave">{fechaLarga(m.fecha)}</span>
-              </span>
-              <span className={`fila-monto ${m.entra ? 'entra' : ''}`}>
-                {m.entra ? '+' : '−'}
-                {enSoles(m.monto)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+        <section className="tarjeta" aria-labelledby="movimientos-titulo">
+          <h2 id="movimientos-titulo">Pagos y cobros</h2>
+          <ul className="lista-limpia">
+            {movimientos.map((m) => (
+              <li key={m.id} className="fila">
+                <span className="fila-texto">
+                  <span>{m.concepto}</span>
+                  <span className="suave">{fechaDia(m.fecha)}</span>
+                </span>
+                <span className={`fila-monto ${m.entra ? 'entra' : ''}`}>
+                  {m.entra ? '+' : '−'}
+                  {enSoles(m.monto)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </>
   )
 }

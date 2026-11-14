@@ -1,22 +1,40 @@
-import { CirclePause, PiggyBank, UtensilsCrossed } from 'lucide-react'
-import { enSoles } from '../formato.js'
+import { CirclePause, Coffee, PiggyBank, UtensilsCrossed } from 'lucide-react'
+import { conSigno, enSoles, fechaDia } from '../formato.js'
 
 const ICONOS = {
-  'reco-1': CirclePause,
-  'reco-2': UtensilsCrossed,
-  'reco-3': PiggyBank,
+  musika: CirclePause,
+  delivery: UtensilsCrossed,
+  cafe: Coffee,
 }
 
 export default function QueHacer({ cliente }) {
+  const { recomendaciones, conTodos, riesgo, apartado, proximoIngreso } = cliente
+  const peorFecha = recomendaciones[0]?.fechaPeorDia
+
   return (
     <>
       <div className="encabezado-pantalla">
         <h1>Qué hacer</h1>
-        <p>Cambios ordenados por lo que más te ayudan a pasar tu día más justo.</p>
+        <p>
+          {peorFecha
+            ? `Ordenados por cuánto mejoran tu día más justo, el ${fechaDia(peorFecha)}.`
+            : 'Cambios que te dejan más margen hasta tu cobro.'}
+        </p>
       </div>
 
+      {riesgo && (
+        <section className="sugerencia" aria-label="Efecto de los cambios juntos">
+          <p className="sugerencia-etiqueta">Si haces los {recomendaciones.length} cambios</p>
+          <p>
+            Tu peor caso del {fechaDia(riesgo.peorFecha)} pasa de <span className="cifra">{enSoles(riesgo.peorMonto)}</span> a{' '}
+            <span className="cifra">{conSigno(conTodos.peorMonto)}</span>
+            {conTodos.diasEnRojo === 0 ? ': ya no quedas en rojo antes de cobrar.' : '.'}
+          </p>
+        </section>
+      )}
+
       <ul className="recos">
-        {cliente.recomendaciones.map((r) => {
+        {recomendaciones.map((r) => {
           const Icono = ICONOS[r.id] ?? PiggyBank
           return (
             <li key={r.id} className="tarjeta">
@@ -28,8 +46,10 @@ export default function QueHacer({ cliente }) {
               </div>
               <h2>{r.titulo}</h2>
               <p className="reco-efecto">
-                <span className="cifra">+{enSoles(r.monto)}</span>
-                <span className="suave">{r.efecto}</span>
+                <span className="cifra">{conSigno(r.mejora)} en tu día más justo</span>
+                <span className="suave">
+                  Tu peor caso pasa de {enSoles(r.peorAntes)} a {enSoles(r.peorDespues)}.
+                </span>
               </p>
               <details>
                 <summary>¿Por qué?</summary>
@@ -40,9 +60,24 @@ export default function QueHacer({ cliente }) {
         })}
       </ul>
 
-      <p className="decision">
-        Lucas te muestra simulaciones con tus datos. No mueve tu plata ni es asesoría: tú decides.
-      </p>
+      <section className="tarjeta" aria-labelledby="despues-titulo">
+        <div className="fila">
+          <span className="circulo" aria-hidden="true">
+            <PiggyBank size={20} />
+          </span>
+          <span className="fila-texto">
+            <h2 id="despues-titulo">
+              Cuando cobres el {fechaDia(proximoIngreso.fecha)}, aparta {enSoles(apartado.monto)}
+            </h2>
+            <span className="suave">
+              Separarlo el mismo día evita gastarlo sin darte cuenta. En {apartado.cobros} cobros tendrías{' '}
+              {enSoles(apartado.total)} de colchón.
+            </span>
+          </span>
+        </div>
+      </section>
+
+      <p className="decision">Lucas te muestra simulaciones con tus datos. No mueve tu plata ni es asesoría: tú decides.</p>
     </>
   )
 }
