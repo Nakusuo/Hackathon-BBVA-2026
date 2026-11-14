@@ -1,11 +1,11 @@
 # Lucas — Contrato de API REST
 
-**Versión:** 0.2 — borrador técnico corregido (MG-01)  
+**Versión:** 1.0 — aprobada (MG-01)  
 **Responsable:** Miguel — Backend  
 **Revisión funcional:** Marcela (Frontend), Jeffrey (Agente IA)  
 **Validación de modelos:** Diego (Analítica)  
 **Validación de seguridad y persistencia:** Michael (Arquitectura)  
-**Estado:** PENDIENTE DE APROBACIÓN. No constituye contrato definitivo.
+**Estado:** APROBADO el 2026-11-14 por Marcela, Jeffrey, Diego y Michael (acuerdo fuera de GitHub, registrado por Marcela).
 
 ## 1. Alcance y convenciones
 
@@ -35,7 +35,7 @@ Lucas expone información financiera derivada de **datos sintéticos** y permite
 | POST | `/api/v1/chat` | `chat.json` | `chat-request.json` |
 | POST | `/api/v1/onboarding` | `onboarding.json` | `onboarding-request.json` |
 
-**Estado de las rutas:** propuestas; sujetas a acuerdo con consumidores y propietarios de módulos. La tabla incluye onboarding y ofertas, ausentes del inventario inicial.
+**Estado de las rutas:** aprobadas con la versión 1.0 del contrato. La tabla incluye onboarding y ofertas, ausentes del inventario inicial.
 
 ## 3. Salud financiera
 
@@ -560,27 +560,27 @@ Ejemplo **propuesto** de error (confirmar compatibilidad con el manejador FastAP
 
 | Decisión | Quién valida | Estado |
 |---|---|---|
-| Rutas, parámetros, paginación y campos requeridos por las pantallas | Marcela + Miguel | Pendiente |
-| Contrato `/chat`, `conversation_id`, `verified`, `sources` y dueño del endpoint | Jeffrey + Miguel | Pendiente |
-| Contratos de score, cuadrantes, segmentos y confianza | Diego + Miguel | Pendiente |
-| Serie diaria de 30 días, bandas y definición de riesgo | Diego + Miguel | Pendiente |
-| Reglas de simulación, recurrencia y Sueldo Lucas | Diego + Marcela + Miguel | Pendiente |
-| Cinco preguntas definitivas y salida DI-12 | Diego + Marcela + Miguel | Pendiente |
-| Autenticación, autorización, esquemas y permisos PostgreSQL | Michael + Miguel | Pendiente |
-| Propietario de integración BCRP, caché y endpoint FX | Jeffrey + Miguel | Pendiente |
-| Categorías de gastos, ingreso manual y persistencia | Marcela + Michael + Miguel | Pendiente |
-| Tipos de impacto, elegibilidad, ofertas y cálculo precision@3 | Diego + Miguel | Pendiente |
-| Probabilidad de metas y proyección de ahorro | Diego + Miguel | Pendiente |
-| Códigos HTTP y formato uniforme de errores | Michael + Miguel | Pendiente |
+| Rutas, parámetros, paginación y campos requeridos por las pantallas | Marcela + Miguel | Aprobado |
+| Contrato `/chat`, `conversation_id`, `verified`, `sources` y dueño del endpoint | Jeffrey + Miguel | Aprobado |
+| Contratos de score, cuadrantes, segmentos y confianza | Diego + Miguel | Aprobado |
+| Serie diaria de 30 días, bandas y definición de riesgo | Diego + Miguel | Aprobado |
+| Reglas de simulación, recurrencia y Sueldo Lucas | Diego + Marcela + Miguel | Aprobado |
+| Cinco preguntas definitivas y salida DI-12 | Diego + Marcela + Miguel | Aprobado |
+| Autenticación, autorización, esquemas y permisos PostgreSQL | Michael + Miguel | Aprobado |
+| Propietario de integración BCRP, caché y endpoint FX | Jeffrey + Miguel | Aprobado |
+| Categorías de gastos, ingreso manual y persistencia | Marcela + Michael + Miguel | Aprobado |
+| Tipos de impacto, elegibilidad, ofertas y cálculo precision@3 | Diego + Miguel | Aprobado |
+| Probabilidad de metas y proyección de ahorro | Diego + Miguel | Aprobado |
+| Códigos HTTP y formato uniforme de errores | Michael + Miguel | Aprobado |
 
 ## 16. Criterio de cierre de MG-01
 
 - [x] Documentación inicial de los endpoints propuestos.
 - [x] Mocks JSON sintácticamente válidos, incluidos request y response para los POST documentados.
 - [x] Duplicación de recomendaciones eliminada; inventario y numeración revisados.
-- [ ] Confirmación de contratos con Marcela y Jeffrey.
-- [ ] Validación de campos derivados de modelos con Diego.
-- [ ] Aprobación de seguridad/autorización con Michael.
-- [ ] Registrar acuerdos y actualizar este documento a versión aprobada.
+- [x] Confirmación de contratos con Marcela y Jeffrey.
+- [x] Validación de campos derivados de modelos con Diego.
+- [x] Aprobación de seguridad/autorización con Michael.
+- [x] Registrar acuerdos y actualizar este documento a versión aprobada.
 
-**No iniciar integraciones definitivas contra este contrato sin resolver los puntos críticos.** Se pueden desarrollar endpoints con mocks mientras se acuerdan los esquemas.
+Aprobado el 2026-11-14 por Marcela, Jeffrey, Diego y Michael, fuera de GitHub (el PR #4 se unió sin revisiones); lo registra Marcela. Los cambios al contrato desde ahora van por PR con revisión de los afectados.
