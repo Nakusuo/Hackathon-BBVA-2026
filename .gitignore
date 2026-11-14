@@ -219,3 +219,10 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 .idea/
+
+# Analitica: datos generados, modelos pesados y caches locales
+data/generado/
+models/*.tmp
+.ipynb_checkpoints/
+models/*.log
+models/fig_*.png
