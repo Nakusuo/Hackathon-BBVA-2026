@@ -37,8 +37,8 @@ function Seguimiento({ seguimiento }) {
   return (
     <div className="seguimiento">
       <p>
-        Llevas <b>{usadas} de {limite}</b> veces en {comercio} hasta el {fechaCorta(hasta)}. Vuelve mañana para ver
-        cómo vas.
+        Llevas <b>{usadas} de {limite}</b> veces en {comercio} hasta el {fechaCorta(hasta)}. Lucas lo cuenta con tus
+        compras con tarjeta.
       </p>
       <span className="medidor" aria-hidden="true">
         <span style={{ width: `${Math.min(1, usadas / limite) * 100}%` }} />
