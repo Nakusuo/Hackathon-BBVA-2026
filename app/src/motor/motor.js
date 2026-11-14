@@ -33,7 +33,13 @@ export function primerCobro(persona) {
 // Una meta mensual («4 veces al mes») llevada al tramo que falta hasta el cobro, que es lo que el tip pide.
 export function vecesHastaCobro(persona, vecesMes) {
   const dias = (new Date(`${primerCobro(persona).fecha}T12:00:00`) - new Date(`${persona.hoy}T12:00:00`)) / 86400000
-  return Math.round((vecesMes * dias) / 30)
+  // Al menos 1: con un cobro muy cerca el tip seguiría pidiendo «0 de 0».
+  return Math.max(1, Math.round((vecesMes * dias) / 30))
+}
+
+// Cuántas veces fue al comercio desde que eligió el tip (hoy incluido).
+export function vecesDesde(movimientos, comercio, desdeIso) {
+  return movimientos.filter((m) => m.concepto === comercio && m.fecha >= desdeIso).length
 }
 
 export function simular(persona, { pagosOmitidos = [], frecuencias = {}, gastoDiario, pagosExtra = [] } = {}) {

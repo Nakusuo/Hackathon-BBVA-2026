@@ -67,7 +67,7 @@ function Tip({ tip, activo, alAlternar }) {
           Evitas {tip.diasEvitados === 1 ? '1 día' : `${tip.diasEvitados} días`} en rojo
         </p>
       )}
-      <div aria-live="polite">{activo && <Seguimiento seguimiento={tip.seguimiento} />}</div>
+      <div aria-live="polite">{activo && tip.seguimiento && <Seguimiento seguimiento={tip.seguimiento} />}</div>
       <div className="tip-acciones">
         <motion.button
           type="button"

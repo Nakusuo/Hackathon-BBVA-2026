@@ -11,6 +11,8 @@ import {
   gastoDiarioSeguro,
   peorDia,
   simular,
+  vecesDesde,
+  vecesHastaCobro,
 } from '../src/motor/motor.js'
 
 // Las pantallas solo son creíbles si sus cifras no se contradicen: estas pruebas lo vigilan.
@@ -115,7 +117,7 @@ test('el seguimiento de cada tip sale del mismo plan que el tip', () => {
       continue
     }
     assert.equal(s.hasta, cliente.proximoIngreso.fecha)
-    assert.equal(s.usadas, 0, 'el seguimiento empieza hoy, sin movimientos todavía')
+    assert.equal(s.usadas, 0, 'la persona de la demo aún no compra hoy')
     assert.ok(s.limite > 0 && s.limite <= Object.values(cambio.ajuste.frecuencias)[0], r.id)
   }
   // RapiFood 4 veces al mes son 2 en los 16 días que faltan para el cobro.
@@ -165,4 +167,17 @@ test('las tarjetas de tips no cambian de orden al elegir', () => {
       vistaCon(elegidos).recomendaciones.map((r) => r.id),
       orden,
     )
+})
+
+test('el seguimiento cuenta las compras desde hoy y nunca pide «0 de 0»', () => {
+  const movimientos = [
+    { concepto: 'RapiFood', fecha: '2026-11-13' },
+    { concepto: 'RapiFood', fecha: '2026-11-14' },
+    { concepto: 'Cafetería La Esquina', fecha: '2026-11-14' },
+    { concepto: 'RapiFood', fecha: '2026-11-15' },
+  ]
+  assert.equal(vecesDesde(movimientos, 'RapiFood', '2026-11-14'), 2)
+  assert.equal(vecesDesde(movimientos, 'RapiFood', '2026-11-16'), 0)
+  const cobroManana = { ...persona, ingresos: [{ ...persona.ingresos[0], fecha: '2026-11-15' }] }
+  assert.equal(vecesHastaCobro(cobroManana, 4), 1)
 })

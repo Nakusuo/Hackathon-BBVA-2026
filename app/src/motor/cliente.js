@@ -10,6 +10,7 @@ import {
   peorDia,
   primerCobro,
   simular,
+  vecesDesde,
   vecesHastaCobro,
 } from './motor.js'
 import { PERSONA_INICIAL, personaPorId } from './personas.js'
@@ -73,11 +74,11 @@ function seguimientoDe(definicion, cambio) {
   const [idFrecuente, meta] = Object.entries(cambio.ajuste.frecuencias ?? {})[0] ?? []
   if (idFrecuente) {
     const gasto = p.gastosFrecuentes.find((g) => g.id === idFrecuente)
-    const usadas = definicion.movimientosRecientes.filter((m) => m.concepto === gasto.comercio && m.fecha >= p.hoy).length
+    const usadas = vecesDesde(definicion.movimientosRecientes, gasto.comercio, p.hoy)
     return { tipo: 'veces', comercio: gasto.comercio, usadas, limite: vecesHastaCobro(p, meta), hasta: primerCobro(p).fecha }
   }
   const pago = p.pagos.find((pago) => cambio.ajuste.pagosOmitidos?.includes(pago.id))
-  return { tipo: 'pausa', comercio: pago.concepto, fecha: pago.fecha }
+  return pago ? { tipo: 'pausa', comercio: pago.concepto, fecha: pago.fecha } : null
 }
 
 // Cada tip se mide sobre los otros ya elegidos; el orden de las tarjetas se fija con su efecto por sí solo,
