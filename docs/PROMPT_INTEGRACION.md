@@ -18,6 +18,9 @@ Eres el integrador. Debes unir **dos agentes** del proyecto Lucas (copiloto de l
 2. `docs/QA_ANALITICA.md`: puerta de calidad, con la lista de **lo que no se pudo verificar**.
 3. `docs/comparativa_modelos.md`: qué modelo se eligió para cada problema, por qué y su límite.
 4. `data/parametros/normas_laborales.yaml`: cada regla laboral con su frase literal de la norma.
+5. `docs/modelo_de_datos/README.md`: el **modelo de datos para PostgreSQL con pgvector** (esquema, diccionario, diagrama, cargador, evidencia de la prueba contra una base real). El equipo no tiene base de datos: se crea con eso.
+6. `docs/RESUMEN_DIEGO.md` secciones 9.1 a 9.9: conectar la API final y sus límites, plantillas si cae la API, consumo de tokens, preguntas frecuentes, qué añadirle al aplicativo, RAG validado, MLflow y el orden de regeneración.
+7. `docs/presentacion/README.md`: gráficas y diagramas para la presentación (comparativa de cada modelo con su baseline, arquitectura, RAG, modelo de datos, nodos del agente, serie diaria, puntos).
 
 ## Qué usar de esta rama (portar al agente final)
 
@@ -30,7 +33,11 @@ Eres el integrador. Debes unir **dos agentes** del proyecto Lucas (copiloto de l
 | Verificador de cifras | `verificador.py` + `tests/test_verificador.py` | Acepta las dos lecturas de un número ambiguo (3.406) y rechaza código y promesas |
 | Proveedores de LLM | `proveedores.py` + `tests/test_proveedores.py`, `tests/test_agente_llm.py` | Cambiar de API es cambiar 3 variables; el camino con LLM está probado con una API falsa |
 | BCRP con frescura | `src/bcrp/cliente.py` | Un dato viejo no se presenta como actual ni dispara avisos |
-| RAG | `src/rag/`, `docs/rag/` (3 833 fragmentos) | Filtro de relevancia, siglas, aviso de fuente extranjera |
+| RAG | `src/rag/`, `docs/rag/` (3 761 fragmentos, validado con `eval/validar_rag.py`) | Filtro de relevancia, siglas, aviso de fuente extranjera; prefijos del modelo de embeddings y sin duplicados |
+| Pronóstico día por día con la forma del contrato `/forecast` | `src/agente_analitico/contrato.py` (`pronostico_contrato`), `src/models/serie_diaria.py`, `models/serie_diaria.pkl` | 30 días con banda al 80 %, cobertura medida en cada día; el día 30 es el pronóstico validado |
+| Preguntas frecuentes que ahorran tokens | `src/agente_analitico/faq.py`, `data/faq/faq_semilla.json`, `docs/PREGUNTAS_FRECUENTES.md` | Una pregunta de concepto ya verificada se reutiliza sin LLM; lo aprendido vive en una base de datos y se exporta a embeddings |
+| Modelo de datos (PostgreSQL + pgvector) y cargador | `docs/modelo_de_datos/`, `eval/cargar_a_postgres.py` | Esquema probado con la data sintética completa; separa lo observable de la verdad oculta del simulador |
+| Seguimiento y versionamiento de modelos | `eval/registrar_en_mlflow.py`, `docs/presentacion/mlflow_resumen.md` | Baseline frente a elegido por problema y Model Registry con alias `produccion` |
 | Traducción es/en/qu | `traduccion.py` | Cifras y nombres protegidos; reintento ante errores transitorios |
 | Puerta de calidad | `eval/puerta_de_calidad.py` | Un solo comando valida todo |
 
@@ -46,7 +53,9 @@ Intención «simular» con extracción de monto y su respuesta por plantilla (el
 4. **Un nombre por documento del RAG:** hay PDFs duplicados con nombres distintos; `docs/rag/fuentes.csv` es el registro (con hash) y la puerta de calidad verifica que ninguno se haya alterado.
 5. **Requirements:** une `requirements-analitica.txt` y `requirements-ia.txt`. Los pines compartidos difieren solo en parche (langgraph 1.2.22 frente a 1.2.20, pypdf 7.1.0 frente a 7.0.1); Jeffrey suma `langchain-google-genai`, `ollama`, `google-genai`, `httpx`. No está probado el entorno unido.
 6. **Simulación:** `Repositorio._pronostico(fila, neto)` vuelve a puntuar el modelo con el saldo corregido (gasto único). Ingresos y gastos recurrentes quedan por definir con Dixon.
-7. **Serie diaria del pronóstico:** el contrato la pide y **no está entrenada** (el modelo está calibrado en el día 30). Decide con Diego entre entrenar horizontes 1 a 30 o usar la trayectoria estructural del modelo; no inventes una interpolación y la presentes como validada.
+7. **Serie diaria del pronóstico (ya entrenada y validada):** usa `contrato.pronostico_contrato(repo, customer_id, dias)` para `GET /forecast`; devuelve `forecast[]` con `date`, `predicted_balance`, `lower_bound`, `upper_bound` y suma `data_as_of`, `risk_probability`, `synthetic_data` y `sample_only: false`. La cobertura de la banda al 80 % se midió en cada uno de los 30 días (0.79 a 0.86) y el día 30 es el pronóstico validado. Los días entre horizontes se interpolan y se miden igual.
+8. **Base de datos:** crea PostgreSQL con `pgvector` y carga con `python eval/cargar_a_postgres.py --crear --rag` (ver `docs/modelo_de_datos/README.md`). Los modelos solo deben leer el esquema `lucas`; el esquema `simulacion` (verdad oculta del generador) se borra con datos reales. Traslada las preguntas frecuentes de SQLite a las tablas `faq_*` (mismo esquema) y sus embeddings a `faq_embedding`.
+9. **API de IA final:** cambia `LLM_PROVIDER` y las variables de `.env` (RESUMEN 9.1). Con una API sin límite estricto conviene `LLM_USO=siempre`. Conserva las tres lecciones de la QA: reintentar errores transitorios con espera, leer **todas** las partes de la respuesta de Gemini y rechazar toda respuesta cuyo `finishReason` no sea `STOP`.
 
 ## Orden de trabajo
 
@@ -81,7 +90,7 @@ Después escribe el adaptador, une router y juez, y vuelve a correr la puerta. A
 
 ## Pendientes conocidos (no los ocultes)
 
-Calidad del quechua sin hablante nativo; Google Cloud Translation sin clave propia; 17 de 18 parámetros de eventos simulados son supuestos o parciales; sentimiento sin set independiente; programa de puntos sin piloto (pierde unos S/ 5.5 por usuario al año sin consumo nuevo); la libre disposición de la CTS después de 2026 depende de si se aprueba el proyecto que la amplía (hoy **no es ley**).
+Quechua: medido contra FLORES-200 (chrF 34 frente a un piso de 18) pero sin revisión de un hablante nativo; Google Cloud Translation: el contrato está probado con respuestas simuladas y la documentación, pero no hay una llamada real (una clave de Gemini da 401 en esa API); datos reales de un banco (todo es sintético); programa de puntos sin piloto: con solo lo medido pierde unos S/ 5.5 por usuario al año y se paga con ~3 % más de ahorro apartado (supuestos del equipo, a validar con un piloto con grupo de control); sentimiento medido con un set independiente escrito por un LLM, no por personas, y no está en producción; la libre disposición de la CTS después de 2026 (vence el 31-12-2026; hay un proyecto de ley en evaluación, no es ley) hay que volver a contrastarla.
 
 ## Entregable
 
