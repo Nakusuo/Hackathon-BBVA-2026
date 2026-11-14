@@ -15,7 +15,7 @@ Plan del modelo de datos y su esquema **listo para crear** en PostgreSQL 15 o su
 2. **Los defectos sembrados se conservan a proposito.** Los movimientos traen faltantes (glosa 2 %, categoria 3 %, saldo 1,5 %, monto 0,2 %) y duplicados, para probar la limpieza. Por eso `lucas.transaccion` tiene clave propia (`movimiento_id`, identidad), `transaction_id` no es unico y las columnas son nulas donde corresponde. La vista `lucas.transaccion_limpia` quita los duplicados exactos; los cercanos los quita `src/generador/calidad.py::limpiar`.
 3. **Derecho de supresion.** Todo lo que cuelga de un cliente se borra con el (`ON DELETE CASCADE`), igual que `memoria.olvidar`. Se probo: borrar un cliente borra sus movimientos, saldos, panel, mensajes y su verdad oculta, sin filas huerfanas.
 4. **Dinero en `NUMERIC(14,2)`**, nunca en flotantes; tasas y porcentajes en `NUMERIC`; parametros del simulador en `DOUBLE PRECISION`. Fechas como `DATE`, `TIMESTAMP` o `CHAR(7)` (`AAAA-MM`) segun el dato.
-5. **Vectores en la misma base.** El RAG (3.833 fragmentos) y las preguntas frecuentes viven con `pgvector`: columnas `vector(768)` (nomic-embed-text, vectores normalizados) con indice HNSW de **producto interno**, que equivale al coseno. Ademas `rag_fragmento.texto_tsv` (texto completo en espanol) reemplaza al BM25 local para una busqueda hibrida dentro de SQL.
+5. **Vectores en la misma base.** El RAG (3.761 fragmentos tras depurar los repetidos) y las preguntas frecuentes viven con `pgvector`: columnas `vector(768)` (nomic-embed-text, vectores normalizados) con indice HNSW de **producto interno**, que equivale al coseno. Ademas `rag_fragmento.texto_tsv` (texto completo en espanol) reemplaza al BM25 local para una busqueda hibrida dentro de SQL.
 6. **Observabilidad sin texto.** `lucas.consulta_chat` guarda por respuesta el proveedor, las llamadas y tokens, las cifras verificadas y el estado del RAG, pero **no** la pregunta ni la respuesta.
 7. **Particion.** Con millones de movimientos conviene particionar `lucas.transaccion` por `fecha_hora` (rango anual); el SQL deja la nota (con la particion declarativa la clave primaria debe incluir `fecha_hora`).
 
@@ -448,9 +448,9 @@ Probado el 2026-11-14 con PostgreSQL 16.16 (Debian 16.16-1.pgdg12+1) y pgvector 
 | Borrar un cliente borra todo lo suyo (cascada) | OK: del cliente `C00001` desaparecen 24,539 filas y no queda ninguna huerfana |
 | `movimiento_id` es identidad (la app inserta sin darlo) | OK |
 | Las restricciones rechazan lo invalido (tipo, cliente inexistente, banda cruzada) | CheckViolation, ForeignKeyViolation, CheckViolation |
-| Busqueda vectorial en SQL = busqueda del indice local | mismos 3 fragmentos (3414, 2137, 3393), similitud 0.7602 |
+| Busqueda vectorial en SQL = busqueda del indice local | mismos 3 fragmentos (3342, 2097, 3321), similitud 0.7602 |
 | Busqueda por palabras en SQL (`texto_tsv`) | OK (3 resultados) |
-| El indice HNSW se puede usar | OK: con 3.833 filas el planificador prefiere un barrido exacto; con el barrido apagado el plan usa el indice HNSW |
+| El indice HNSW se puede usar | OK: con 3.761 filas el planificador prefiere un barrido exacto; con el barrido apagado el plan usa el indice HNSW |
 
 **Lo que la validacion corrigio:** el comentario del esquema decia que la similitud era `1 + (embedding <#> consulta)`; `<#>` devuelve el producto interno **negativo**, asi que la similitud coseno es `-(embedding <#> consulta)` (0,76 y no 0,24 en la prueba). Ya esta corregido en el SQL.
 

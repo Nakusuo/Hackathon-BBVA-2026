@@ -80,7 +80,7 @@
  },
  "el_indice_hnsw_se_puede_usar": {
   "ok": true,
-  "nota": "con 3.833 filas el planificador prefiere un barrido exacto; con el barrido apagado el plan usa el indice HNSW"
+  "nota": "con 3.761 filas el planificador prefiere un barrido exacto; con el barrido apagado el plan usa el indice HNSW"
  },
  "version_de_postgres": "PostgreSQL 16.16 (Debian 16.16-1.pgdg12+1) on x86_64-pc-linu",
  "version_de_pgvector": "0.8.7",
