@@ -51,10 +51,17 @@ test('las cifras verificadas del agente se muestran con el formato de la app', a
   assert.deepEqual(r.fuentes, [{ id: 'sbs-1', titulo: 'Guía de presupuesto', enlace: 'https://ejemplo.pe/guia' }])
 })
 
-test('si el agente no verificó, no se muestra ninguna cifra como verificada y se avisa', () => {
-  const r = desdeAgente({ ...RESPUESTA, verified: false })
-  assert.equal(r.cifras.length, 0)
+test('si el agente no verificó, su texto no se muestra y responde la plantilla con aviso', async () => {
+  const r = await preguntarALucas('¿Llego a mi cobro?', opciones({ fetchImpl: falsoFetch({ ...RESPUESTA, verified: false }) }))
+  assert.equal(r.origen, 'plantilla')
   assert.equal(r.aviso, AVISOS.sinVerificar)
+  assert.doesNotMatch(r.texto, /310/)
+  assert.equal(r.conversacion, 'conv-001')
+})
+
+test('sin `unit`, una cifra en soles usa el mismo signo «−» de la app', () => {
+  const r = desdeAgente({ ...RESPUESTA, figures: [{ label: 'Saldo mínimo probable', value: -310, text: '-S/ 310' }] })
+  assert.equal(r.cifras[0].valor, `−S/${NBSP}310`)
 })
 
 test('una fuente con enlace que no es http(s) se muestra sin enlace', () => {
@@ -63,12 +70,25 @@ test('una fuente con enlace que no es http(s) se muestra sin enlace', () => {
 })
 
 test('error de red, HTTP 500 o respuesta sin texto caen a la plantilla con aviso claro', async () => {
-  for (const respuesta of [new TypeError('Failed to fetch'), { status: 500 }, { verified: true }]) {
+  const casos = [
+    [new TypeError('Failed to fetch'), AVISOS.sinConexion],
+    [{ status: 500 }, AVISOS.sinConexion],
+    [{ verified: true }, AVISOS.ilegible],
+  ]
+  for (const [respuesta, aviso] of casos) {
     const r = await preguntarALucas('¿Llego a mi cobro?', opciones({ fetchImpl: falsoFetch(respuesta) }))
     assert.equal(r.origen, 'plantilla')
-    assert.equal(r.aviso, AVISOS.sinConexion)
+    assert.equal(r.aviso, aviso)
     assert.match(r.texto, /cobro/)
   }
+})
+
+test('preguntas normales con «transacción» o «mueve» no se confunden con pedir operaciones', async () => {
+  const registro = []
+  for (const p of ['¿Cuántas transacciones hice?', '¿Qué mueve mi gasto?']) {
+    await preguntarALucas(p, opciones({ fetchImpl: falsoFetch(RESPUESTA, registro) }))
+  }
+  assert.equal(registro.length, 2)
 })
 
 test('si el agente tarda demasiado, se corta y responde la plantilla', async () => {

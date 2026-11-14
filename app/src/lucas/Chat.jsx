@@ -22,8 +22,8 @@ function Cifras({ mensaje }) {
       className={`lista-limpia cifras-verificadas${verificadas ? ' con-verificador' : ''}`}
       aria-label={verificadas ? 'Cifras verificadas con tus datos' : 'Calculado con tus datos'}
     >
-      {mensaje.cifras.map((c) => (
-        <li key={c.etiqueta}>
+      {mensaje.cifras.map((c, i) => (
+        <li key={`${i}-${c.etiqueta}`}>
           <Icono size={18} weight={verificadas ? 'fill' : 'regular'} aria-hidden="true" />
           <span>{c.etiqueta}</span>
           <strong>
@@ -43,8 +43,8 @@ function Fuentes({ fuentes }) {
         <BookOpen size={18} aria-hidden="true" /> Fuentes
       </p>
       <ul className="lista-limpia">
-        {fuentes.map((f) => (
-          <li key={f.id}>
+        {fuentes.map((f, i) => (
+          <li key={`${i}-${f.id}`}>
             {f.enlace ? (
               <a href={f.enlace} target="_blank" rel="noopener noreferrer">
                 {f.titulo}
@@ -109,11 +109,24 @@ export default function Chat({ cliente, persona }) {
   const [borrador, setBorrador] = useState('')
   const [pensando, setPensando] = useState(false)
   const conversacion = useRef(null)
+  // Ref y no estado: dos clics en el mismo ciclo verían `pensando` aún en false.
+  const ocupado = useRef(false)
+  const montado = useRef(false)
   const final = useRef(null)
+
+  // No se aborta el pedido al salir: en modo estricto React desmonta y vuelve a montar, y la
+  // pregunta que llega desde el Resumen se perdería. La espera ya tiene tope en clienteChat.js.
+  useEffect(() => {
+    montado.current = true
+    return () => {
+      montado.current = false
+    }
+  }, [])
 
   async function preguntar(texto) {
     const limpio = texto.trim()
-    if (!limpio || pensando) return
+    if (!limpio || ocupado.current) return
+    ocupado.current = true
     setMensajes((previos) => [...previos, { autor: 'tu', texto: limpio }])
     setBorrador('')
     setPensando(true)
@@ -123,6 +136,8 @@ export default function Chat({ cliente, persona }) {
       base: API,
       conversacion: conversacion.current,
     })
+    ocupado.current = false
+    if (!montado.current) return
     if (respuesta.conversacion) conversacion.current = respuesta.conversacion
     setMensajes((previos) => [...previos, { autor: 'lucas', ...respuesta }])
     setPensando(false)

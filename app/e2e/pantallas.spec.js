@@ -236,6 +236,19 @@ test('si el agente falla, el chat lo dice y responde con sus cálculos', async (
   await expect(page.getByText('No es asesoría')).toBeVisible()
 })
 
+test('si el agente no verificó sus cifras, su texto no se muestra', async ({ page }) => {
+  await sinGuia(page)
+  await page.route('**/api/v1/chat', (ruta) =>
+    ruta.fulfill({ json: { conversation_id: 'c', answer: 'Te quedan S/ 9 999. Tú decides.', verified: false, sources: [] } }),
+  )
+  await page.goto('/lucas/chat')
+  await page.getByRole('button', { name: '¿Llego a mi cobro?' }).click()
+  const ultima = page.locator('.mensaje-lucas').last()
+  await expect(ultima).toContainText('no pudo comprobar sus cifras')
+  await expect(ultima).not.toContainText('9 999')
+  await expect(ultima.getByRole('list', { name: 'Calculado con tus datos' })).toBeVisible()
+})
+
 test('una pregunta sugerida desde el Resumen llega al chat una sola vez', async ({ page }) => {
   await sinGuia(page)
   await agenteCaido(page)
