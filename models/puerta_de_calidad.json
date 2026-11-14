@@ -1,20 +1,27 @@
 {
- "fecha": "2026-11-14T15:31:58",
+ "fecha": "2026-11-14T15:52:19",
  "reloj": "2026-11-14",
- "segundos": 59.9,
+ "segundos": 65.6,
  "cuenta": {
-  "PASS": 35,
-  "WARN": 5,
+  "PASS": 34,
+  "WARN": 6,
   "FAIL": 0,
-  "NOT RUN": 2
+  "NOT RUN": 3
  },
  "verificaciones": [
   {
    "area": "Pruebas",
    "id": "P1",
-   "que": "Toda la suite de pruebas (pytest)",
+   "que": "Suite de pruebas de analitica e IA (pytest, sin red ni Gemini)",
    "estado": "PASS",
-   "detalle": "371 passed in 33.98s"
+   "detalle": "374 passed in 33.93s"
+  },
+  {
+   "area": "Pruebas",
+   "id": "P1b",
+   "que": "Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte",
+   "estado": "NOT RUN",
+   "detalle": "no hay pruebas del agente del producto en esta rama"
   },
   {
    "area": "Pruebas",
@@ -175,7 +182,7 @@
    "id": "C8",
    "que": "Traduccion es->en con cifras y nombres protegidos",
    "estado": "PASS",
-   "detalle": "es->en por gemini en 1.84 s, cifras intactas"
+   "detalle": "es->en por gemini en 1.77 s, cifras intactas"
   },
   {
    "area": "Conexiones",
@@ -231,7 +238,7 @@
    "id": "G2",
    "que": "QA con Gemini real (una sola corrida): perfil, calendario, premisa falsa, datos vivos, idiomas y adversarios",
    "estado": "PASS",
-   "detalle": "Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 17 llamadas y 44,570 tokens de entrada"
+   "detalle": "Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 17 llamadas y 44,571 tokens de entrada"
   },
   {
    "area": "Agente",
@@ -252,7 +259,7 @@
    "id": "S1",
    "que": "Ninguna clave de API en lo versionado",
    "estado": "PASS",
-   "detalle": "156 archivos versionados sin claves de API"
+   "detalle": "170 archivos versionados sin claves de API"
   },
   {
    "area": "Seguridad",
@@ -266,7 +273,7 @@
    "id": "S3",
    "que": "Sin rutas absolutas de ninguna laptop en codigo, parametros, metricas ni documentos",
    "estado": "PASS",
-   "detalle": "87 archivos propios sin rutas absolutas"
+   "detalle": "99 archivos propios sin rutas absolutas"
   },
   {
    "area": "Seguridad",
@@ -278,9 +285,9 @@
   {
    "area": "Seguridad",
    "id": "S5",
-   "que": "Sin archivos pesados ni datos generados en el repositorio (solo data/sample)",
-   "estado": "PASS",
-   "detalle": "ningun archivo de mas de 50 MB ni datos generados versionados"
+   "que": "Sin archivos pesados ni datos generados en el repositorio (solo data/sample), salvo la carga temporal documentada",
+   "estado": "WARN",
+   "detalle": "56 archivos de data/generado cargados A PROPOSITO para la integracion final (ver _manifiesto.json, todo sintetico); quitarlos al terminar con: git rm -r --cached data/generado"
   },
   {
    "area": "Reproducibilidad",
@@ -292,9 +299,9 @@
   {
    "area": "Reproducibilidad",
    "id": "R2",
-   "que": "Nada desfasado: metricas posteriores al codigo del agente y del RAG, y documentos posteriores a las metricas",
+   "que": "Nada desfasado: cada evaluacion corresponde al codigo actual y cada informe a las metricas actuales (huella de contenido)",
    "estado": "PASS",
-   "detalle": "metricas y documentos son posteriores al codigo y a los datos de los que dependen"
+   "detalle": "las evaluaciones corresponden al codigo actual y los informes a las metricas actuales (huella de contenido)"
   },
   {
    "area": "Reproducibilidad",
