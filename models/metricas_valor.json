@@ -135,5 +135,190 @@
    }
   },
   "nota": "retencion, mora evitada y venta cruzada idonea no se valoran sin un piloto con grupo de control"
+ },
+ "proyeccion_a_futuro": {
+  "supuestos_generales": {
+   "abandono_anual_base": 0.2,
+   "retiro_anual_de_lo_apartado": 0.3,
+   "anos": 5
+  },
+  "saldo_apartado_promedio_por_anio": [
+   5528.768256459563,
+   14927.67429244082,
+   21506.9085176277,
+   26112.37247525852,
+   29336.197245600088
+  ],
+  "escenarios": {
+   "solo_lo_medido": {
+    "supuestos": {
+     "consumo_mas": 0.0,
+     "ahorro_mas": 0.0,
+     "abandono_menos": 0.0
+    },
+    "por_anio": [
+     {
+      "anio": 1,
+      "usuarios_activos_con_programa": 1.0,
+      "neto_por_usuario_que_entra": -5.5170772046174825,
+      "neto_acumulado": -5.5170772046174825
+     },
+     {
+      "anio": 2,
+      "usuarios_activos_con_programa": 0.8,
+      "neto_por_usuario_que_entra": -4.4136617636939866,
+      "neto_acumulado": -9.93073896831147
+     },
+     {
+      "anio": 3,
+      "usuarios_activos_con_programa": 0.6400000000000001,
+      "neto_por_usuario_que_entra": -3.5309294109551894,
+      "neto_acumulado": -13.461668379266658
+     },
+     {
+      "anio": 4,
+      "usuarios_activos_con_programa": 0.5120000000000001,
+      "neto_por_usuario_que_entra": -2.824743528764152,
+      "neto_acumulado": -16.28641190803081
+     },
+     {
+      "anio": 5,
+      "usuarios_activos_con_programa": 0.4096000000000001,
+      "neto_por_usuario_que_entra": -2.259794823011321,
+      "neto_acumulado": -18.546206731042133
+     }
+    ],
+    "se_paga_en_el_anio": null
+   },
+   "prudente": {
+    "supuestos": {
+     "consumo_mas": 0.02,
+     "ahorro_mas": 0.05,
+     "abandono_menos": 0.05
+    },
+    "por_anio": [
+     {
+      "anio": 1,
+      "usuarios_activos_con_programa": 1.0,
+      "neto_por_usuario_que_entra": 4.3680248312530665,
+      "neto_acumulado": 4.3680248312530665
+     },
+     {
+      "anio": 2,
+      "usuarios_activos_con_programa": 0.81,
+      "neto_por_usuario_que_entra": 20.232048060355062,
+      "neto_acumulado": 24.60007289160813
+     },
+     {
+      "anio": 3,
+      "usuarios_activos_con_programa": 0.6561000000000001,
+      "neto_por_usuario_que_entra": 30.260104113028806,
+      "neto_acumulado": 54.86017700463694
+     },
+     {
+      "anio": 4,
+      "usuarios_activos_con_programa": 0.531441,
+      "neto_por_usuario_que_entra": 35.506777955985726,
+      "neto_acumulado": 90.36695496062266
+     },
+     {
+      "anio": 5,
+      "usuarios_activos_con_programa": 0.4304672100000001,
+      "neto_por_usuario_que_entra": 37.27868280345493,
+      "neto_acumulado": 127.64563776407759
+     }
+    ],
+    "se_paga_en_el_anio": 1
+   },
+   "base": {
+    "supuestos": {
+     "consumo_mas": 0.05,
+     "ahorro_mas": 0.1,
+     "abandono_menos": 0.1
+    },
+    "por_anio": [
+     {
+      "anio": 1,
+      "usuarios_activos_con_programa": 1.0,
+      "neto_por_usuario_que_entra": 15.049101692714217,
+      "neto_acumulado": 15.049101692714217
+     },
+     {
+      "anio": 2,
+      "usuarios_activos_con_programa": 0.82,
+      "neto_por_usuario_que_entra": 46.0101264631852,
+      "neto_acumulado": 61.05922815589942
+     },
+     {
+      "anio": 3,
+      "usuarios_activos_con_programa": 0.6723999999999999,
+      "neto_por_usuario_que_entra": 65.8337940270569,
+      "neto_acumulado": 126.89302218295632
+     },
+     {
+      "anio": 4,
+      "usuarios_activos_con_programa": 0.5513679999999999,
+      "neto_por_usuario_que_entra": 76.31836525640485,
+      "neto_acumulado": 203.21138743936115
+     },
+     {
+      "anio": 5,
+      "usuarios_activos_con_programa": 0.4521217599999999,
+      "neto_por_usuario_que_entra": 79.90302363834701,
+      "neto_acumulado": 283.11441107770816
+     }
+    ],
+    "se_paga_en_el_anio": 1
+   },
+   "optimista": {
+    "supuestos": {
+     "consumo_mas": 0.1,
+     "ahorro_mas": 0.2,
+     "abandono_menos": 0.2
+    },
+    "por_anio": [
+     {
+      "anio": 1,
+      "usuarios_activos_con_programa": 1.0,
+      "neto_por_usuario_que_entra": 35.61528059004591,
+      "neto_acumulado": 35.61528059004591
+     },
+     {
+      "anio": 2,
+      "usuarios_activos_con_programa": 0.84,
+      "neto_por_usuario_que_entra": 98.38443057027544,
+      "neto_acumulado": 133.99971116032134
+     },
+     {
+      "anio": 3,
+      "usuarios_activos_con_programa": 0.7055999999999999,
+      "neto_por_usuario_que_entra": 140.32238741258328,
+      "neto_acumulado": 274.3220985729046
+     },
+     {
+      "anio": 4,
+      "usuarios_activos_con_programa": 0.5927039999999999,
+      "neto_por_usuario_que_entra": 163.95424907598075,
+      "neto_acumulado": 438.27634764888535
+     },
+     {
+      "anio": 5,
+      "usuarios_activos_con_programa": 0.49787135999999993,
+      "neto_por_usuario_que_entra": 173.56260935869426,
+      "neto_acumulado": 611.8389570075797
+     }
+    ],
+    "se_paga_en_el_anio": 1
+   }
+  },
+  "consumo_adicional_necesario_para_pagarse_en_n_anios": {
+   "1": 0.069312207211125,
+   "2": 0.06931220721112501,
+   "3": 0.069312207211125,
+   "4": 0.069312207211125,
+   "5": 0.06931220721112502
+  },
+  "ahorro_adicional_necesario_para_pagarse_en_el_anio_1": 0.03326284715811446,
+  "aviso": "Supuestos del equipo sin piloto: sirve para ver cuando se paga y que debe cumplirse, no para prometer un resultado."
  }
 }

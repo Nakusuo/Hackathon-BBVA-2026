@@ -1,0 +1,61 @@
+{
+ "semilla_de_entrenamiento": 2026,
+ "semilla_de_la_muestra_nueva": 2027,
+ "clientes": 500,
+ "origenes_de_prueba": 50000,
+ "sin_reentrenar": true,
+ "saldo_30d_en_la_muestra_nueva": {
+  "lightgbm": {
+   "mae_s": 840.0402486232575,
+   "mae_rel_ingreso": 0.4171900933384342,
+   "mape_acotado": 0.3288101800735995,
+   "cobertura_80": 0.77158,
+   "ancho_rel": 1.2400605626892454
+  },
+  "ma3": {
+   "mae_s": 1643.79248046875,
+   "mae_rel_ingreso": 0.7074186205863953,
+   "mape_acotado": 0.5883377194404602,
+   "cobertura_80": 0.71952,
+   "ancho_rel": 1.659608244895935
+  },
+  "perfil_estructural": {
+   "mae_s": 1727.6885986328125,
+   "mae_rel_ingreso": 0.7492703199386597,
+   "mape_acotado": 0.6311814188957214,
+   "cobertura_80": 0.71892,
+   "ancho_rel": 1.6940361261367798
+  }
+ },
+ "saldo_30d_en_la_muestra_de_entrenamiento": {
+  "cobertura_80": 0.8063,
+  "mae_rel_ingreso": 0.42630358658852463
+ },
+ "rojo_30d_en_la_muestra_nueva": {
+  "tasa_positivos": 0.08558,
+  "pr_auc": 0.8699115050791747,
+  "roc_auc": 0.9852916598784813,
+  "brier": 0.0255811119808074,
+  "ece": 0.004240336177171745
+ },
+ "rojo_30d_en_la_muestra_de_entrenamiento": {
+  "pr_auc": 0.5939896805971716,
+  "roc_auc": 0.9765047977317076
+ },
+ "serie_diaria_en_la_muestra_nueva": {
+  "cobertura_media": 0.7754186666666667,
+  "cobertura_minima": 0.7504,
+  "cobertura_maxima": 0.80616,
+  "mae_rel_medio": 0.28379178476916633
+ },
+ "segmentacion": {
+  "ari_con_los_arquetipos_en_la_muestra_nueva": 0.2683368122706947,
+  "ari_en_la_muestra_de_entrenamiento": 0.2531153297,
+  "segmentos_asignados": {
+   "0": 77,
+   "1": 169,
+   "2": 254
+  }
+ },
+ "lectura": "Los modelos se entrenaron con la semilla 2026 y aqui se prueban en 500 clientes nuevos (otra semilla, mismos parametros): miden si generalizan al proceso del generador, no a datos reales. La muestra nueva comparte los supuestos del generador, asi que no corrige un sesgo del diseno del generador."
+}

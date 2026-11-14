@@ -1,0 +1,91 @@
+{
+ "vista_limpia_quita_duplicados_exactos": {
+  "filas": 3264148,
+  "ids_distintos": 3256382,
+  "vista": 3256382,
+  "ok": true
+ },
+ "borrar_un_cliente_borra_todo_lo_suyo": {
+  "cliente": "C00001",
+  "antes": {
+   "lucas.transaccion": 10905,
+   "lucas.saldo_diario": 2557,
+   "lucas.panel_mensual": 84,
+   "lucas.mensaje": 87,
+   "simulacion.cliente_verdad": 1,
+   "simulacion.transaccion_verdad": 10905
+  },
+  "despues": {
+   "lucas.transaccion": 0,
+   "lucas.saldo_diario": 0,
+   "lucas.panel_mensual": 0,
+   "lucas.mensaje": 0,
+   "simulacion.cliente_verdad": 0,
+   "simulacion.transaccion_verdad_huerfanas": 0
+  },
+  "ok": true
+ },
+ "identidad_de_movimiento_id": {
+  "ultimo_cargado": 3264148,
+  "nuevo": 3264155,
+  "ok": true,
+  "nota": "la secuencia no vuelve atras con un rollback: el id nuevo es mayor, no necesariamente el siguiente"
+ },
+ "restricciones_rechazan_lo_invalido": {
+  "resultado": {
+   "tipo_invalido": "CheckViolation",
+   "cliente_inexistente": "ForeignKeyViolation",
+   "pronostico_con_banda_cruzada": "CheckViolation"
+  },
+  "ok": true
+ },
+ "busqueda_vectorial_sql_igual_a_la_local": {
+  "sql": [
+   [
+    3342,
+    0.2398
+   ],
+   [
+    2097,
+    0.2786
+   ],
+   [
+    3321,
+    0.2839
+   ]
+  ],
+  "local": [
+   [
+    3342,
+    0.7602
+   ],
+   [
+    2097,
+    0.7214
+   ],
+   [
+    3321,
+    0.7161
+   ]
+  ],
+  "ok": true
+ },
+ "busqueda_por_palabras_en_sql": {
+  "ids": [
+   2097,
+   2099,
+   2174
+  ],
+  "ok": true
+ },
+ "el_indice_hnsw_se_puede_usar": {
+  "ok": true,
+  "nota": "con 3.833 filas el planificador prefiere un barrido exacto; con el barrido apagado el plan usa el indice HNSW"
+ },
+ "version_de_postgres": "PostgreSQL 16.16 (Debian 16.16-1.pgdg12+1) on x86_64-pc-linu",
+ "version_de_pgvector": "0.8.7",
+ "tablas": 25,
+ "tamano_de_la_base_con_todo_cargado": "1283 MB",
+ "fecha": "2026-11-14",
+ "todo_ok": true
+}
