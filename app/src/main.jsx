@@ -16,6 +16,7 @@ import './estilos/chat.css'
 import './estilos/guia.css'
 import './estilos/avisos.css'
 import './estilos/evidencia.css'
+import './estilos/planificar.css'
 
 document.documentElement.dataset.tema = temaGuardado()
 

@@ -6,6 +6,10 @@ import { PERSONA_INICIAL, PERSONAS } from './motor/personas.js'
 const CLAVE_PERSONA = 'lucas-persona'
 const CLAVE_PERMISOS = 'lucas-consentimiento'
 export const CLAVE_TIPS = 'lucas-tips-elegidos'
+export const CLAVE_PLANIFICADOS = 'lucas-planificados'
+export const CLAVE_METAS = 'lucas-metas'
+// Lo que Lucas guarda de una persona en este navegador; se olvida al cambiar de persona o al retirar el permiso.
+const DE_LA_PERSONA = [CLAVE_TIPS, CLAVE_PLANIFICADOS, CLAVE_METAS]
 
 function leer(clave) {
   try {
@@ -29,9 +33,9 @@ export function personaGuardada() {
   return PERSONAS.some((p) => p.id === id) ? id : PERSONA_INICIAL
 }
 
-// Los tips elegidos son de una persona: al cambiar de persona se descartan.
+// Los tips, lo planificado y las metas son de una persona: al cambiar de persona se descartan.
 export function guardarPersona(id) {
-  if (id !== personaGuardada()) escribir(CLAVE_TIPS, null)
+  if (id !== personaGuardada()) for (const clave of DE_LA_PERSONA) escribir(clave, null)
   escribir(CLAVE_PERSONA, id)
 }
 
@@ -58,5 +62,5 @@ export function retirarPermiso(personaId) {
   const resto = { ...permisos() }
   delete resto[personaId]
   escribir(CLAVE_PERMISOS, JSON.stringify(resto))
-  escribir(CLAVE_TIPS, null)
+  for (const clave of DE_LA_PERSONA) escribir(clave, null)
 }
