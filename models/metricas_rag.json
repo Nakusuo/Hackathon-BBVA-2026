@@ -1,49 +1,150 @@
 {
  "recuperacion": {
   "denso": {
-   "recall@4": 0.85,
-   "mrr": 0.825,
-   "n": 20
+   "recall@4": 0.7941176470588235,
+   "mrr": 0.7254901960784315,
+   "documentos_distintos_en_top": 2.1176470588235294,
+   "n": 34,
+   "recall@4_simples": 0.75,
+   "recall@4_compuestas": 1.0,
+   "n_compuestas": 6
   },
   "denso + filtro de modulo": {
-   "recall@4": 0.95,
-   "mrr": 0.8875,
-   "n": 20
+   "recall@4": 0.9411764705882353,
+   "mrr": 0.8308823529411765,
+   "documentos_distintos_en_top": 1.9705882352941178,
+   "n": 34,
+   "recall@4_simples": 0.9285714285714286,
+   "recall@4_compuestas": 1.0,
+   "n_compuestas": 6
   },
   "bm25": {
-   "recall@4": 0.75,
-   "mrr": 0.7125,
-   "n": 20
+   "recall@4": 0.8235294117647058,
+   "mrr": 0.7892156862745098,
+   "documentos_distintos_en_top": 2.3529411764705883,
+   "n": 34,
+   "recall@4_simples": 0.8214285714285714,
+   "recall@4_compuestas": 0.8333333333333334,
+   "n_compuestas": 6
   },
   "bm25 + filtro de modulo": {
-   "recall@4": 0.8,
-   "mrr": 0.8,
-   "n": 20
+   "recall@4": 0.8823529411764706,
+   "mrr": 0.8602941176470589,
+   "documentos_distintos_en_top": 1.9705882352941178,
+   "n": 34,
+   "recall@4_simples": 0.8571428571428571,
+   "recall@4_compuestas": 1.0,
+   "n_compuestas": 6
   },
   "hibrido": {
-   "recall@4": 0.8,
-   "mrr": 0.7375,
-   "n": 20
+   "recall@4": 0.8823529411764706,
+   "mrr": 0.803921568627451,
+   "documentos_distintos_en_top": 2.264705882352941,
+   "n": 34,
+   "recall@4_simples": 0.8571428571428571,
+   "recall@4_compuestas": 1.0,
+   "n_compuestas": 6
   },
   "hibrido + filtro de modulo": {
-   "recall@4": 0.9,
-   "mrr": 0.8666666666666666,
-   "n": 20
+   "recall@4": 0.9411764705882353,
+   "mrr": 0.892156862745098,
+   "documentos_distintos_en_top": 2.0588235294117645,
+   "n": 34,
+   "recall@4_simples": 0.9285714285714286,
+   "recall@4_compuestas": 1.0,
+   "n_compuestas": 6
+  },
+  "hibrido + multiconsulta": {
+   "recall@4": 0.8529411764705882,
+   "mrr": 0.7892156862745099,
+   "documentos_distintos_en_top": 2.235294117647059,
+   "n": 34,
+   "recall@4_simples": 0.8571428571428571,
+   "recall@4_compuestas": 0.8333333333333334,
+   "n_compuestas": 6
+  },
+  "hibrido + multiconsulta + filtro de modulo": {
+   "recall@4": 0.9411764705882353,
+   "mrr": 0.892156862745098,
+   "documentos_distintos_en_top": 2.088235294117647,
+   "n": 34,
+   "recall@4_simples": 0.9285714285714286,
+   "recall@4_compuestas": 1.0,
+   "n_compuestas": 6
+  },
+  "hibrido + multiconsulta + MMR": {
+   "recall@4": 0.8529411764705882,
+   "mrr": 0.7867647058823529,
+   "documentos_distintos_en_top": 2.176470588235294,
+   "n": 34,
+   "recall@4_simples": 0.8571428571428571,
+   "recall@4_compuestas": 0.8333333333333334,
+   "n_compuestas": 6
+  },
+  "hibrido + multiconsulta + MMR + filtro de modulo": {
+   "recall@4": 0.9411764705882353,
+   "mrr": 0.892156862745098,
+   "documentos_distintos_en_top": 2.0294117647058822,
+   "n": 34,
+   "recall@4_simples": 0.9285714285714286,
+   "recall@4_compuestas": 1.0,
+   "n_compuestas": 6
   }
  },
  "filtro_relevancia": {
   "umbral": 0.7057,
-  "exactitud_balanceada": 1.0,
-  "auc": 1.0,
+  "exactitud_balanceada": 0.9398395721925134,
+  "auc": 0.9786096256684492,
   "similitud_con_respuesta": {
-   "media": 0.7719100000000001,
-   "min": 0.7057
+   "media": 0.7708705882352941,
+   "min": 0.6925
   },
   "similitud_fuera_del_indice": {
-   "media": 0.6609,
-   "max": 0.7054
+   "media": 0.6697090909090909,
+   "max": 0.7316
   },
-  "n_con_respuesta": 20,
-  "n_fuera": 8
- }
+  "n_con_respuesta": 34,
+  "n_fuera": 11,
+  "con_los_umbrales_actuales": {
+   "umbral_en_uso": 0.7,
+   "con_respuesta_aceptadas": 0.9705882352941176,
+   "fuera_rechazadas": 0.9090909090909091
+  }
+ },
+ "filtro_relevancia_multiconsulta": {
+  "umbral": 0.7033,
+  "exactitud_balanceada": 0.9251336898395721,
+  "auc": 0.9705882352941176,
+  "similitud_con_respuesta": {
+   "media": 0.7674882352941177,
+   "min": 0.69
+  },
+  "similitud_fuera_del_indice": {
+   "media": 0.6697090909090909,
+   "max": 0.7316
+  },
+  "n_con_respuesta": 34,
+  "n_fuera": 11,
+  "con_los_umbrales_actuales": {
+   "umbral_en_uso": 0.7,
+   "con_respuesta_aceptadas": 0.9411764705882353,
+   "fuera_rechazadas": 0.9090909090909091
+  }
+ },
+ "indice": {
+  "fragmentos": 3833,
+  "dimension": 768,
+  "modulos": [
+   "contexto",
+   "derechos",
+   "deudas",
+   "fenomeno_el_nino",
+   "salud_financiera"
+  ],
+  "segundos": 934.6,
+  "modelo_embeddings": "nomic-embed-text",
+  "tam_fragmento": 900,
+  "solape": 120
+ },
+ "segundos": 115.8
 }

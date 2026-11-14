@@ -126,8 +126,44 @@ def actualizar_incremental(verbose: bool = True) -> dict:
     return {"nuevos": len(nuevos), "total": len(frags)}
 
 
+# Siglas del dominio: el modelo de embeddings casi no sabe que significan ("TCEA" sola rinde menos que "tasa de costo efectivo anual"). Se agrega la forma larga a la consulta.
+ACRONIMOS = {"TCEA": "tasa de costo efectivo anual", "TEA": "tasa efectiva anual", "TREA": "tasa de rendimiento efectivo anual", "CTS": "compensacion por tiempo de servicios",
+             "AFP": "administradora de fondos de pensiones", "ONP": "oficina de normalizacion previsional", "EPS": "entidad prestadora de salud", "SBS": "Superintendencia de Banca, Seguros y AFP",
+             "SMV": "Superintendencia del Mercado de Valores", "BCRP": "Banco Central de Reserva del Peru", "ENFEN": "estudio nacional del fenomeno El Nino", "UIT": "unidad impositiva tributaria"}
+_SIGLAS = re.compile(r"\b(" + "|".join(ACRONIMOS) + r")\b", re.I)
+
+
+def expandir_siglas(consulta: str) -> str:
+    """'que es la TCEA' -> 'que es la TCEA (tasa de costo efectivo anual)'. Cada sigla se expande una sola vez."""
+    vistas: set[str] = set()
+
+    def reemplazo(m):
+        s = m.group(1).upper()
+        if s in vistas:
+            return m.group(0)
+        vistas.add(s)
+        return f"{m.group(0)} ({ACRONIMOS[s]})"
+    return _SIGLAS.sub(reemplazo, consulta)
+
+
+_PARTES = re.compile(r"\s+y\s+(?=(?:qu[eé]|cu[aá]l(?:es)?|c[oó]mo|cu[aá]ndo|cu[aá]nto|d[oó]nde|puedo|tengo|debo|me|si)\b)", re.I)
+
+
+def descomponer(pregunta: str) -> list[str]:
+    """Una pregunta compuesta ('que es la TCEA y que derechos tengo si me atraso') se parte en subpreguntas. La original va primero.
+    Si no hay mas de una parte, devuelve solo la original."""
+    piezas = []
+    for trozo in re.split(r"[?¿]+", pregunta):
+        for p in _PARTES.split(trozo):
+            p = p.strip(" ,;.")
+            if len(p.split()) >= 3:
+                piezas.append(p)
+    return [pregunta] + piezas if len(piezas) > 1 else [pregunta]
+
+
 class Buscador:
-    """Busqueda hibrida: vectores (FAISS) + palabras (BM25) fusionados con RRF, con filtro por modulo."""
+    """Busqueda hibrida: vectores (FAISS) + palabras (BM25) fusionados con RRF, con filtro por modulo.
+    Opcionales: multiconsulta (descompone preguntas compuestas y fusiona las listas de cada parte) y MMR (evita fragmentos casi repetidos)."""
 
     def __init__(self):
         self.idx = faiss.read_index(os.path.join(INDICE_RAG, "vectores.faiss"))
@@ -135,33 +171,50 @@ class Buscador:
             self.frags = json.load(f)
         self.bm25 = BM25Okapi([self._tok(f["texto"]) for f in self.frags])
         self.modulos = np.array([f["modulo"] for f in self.frags])
+        self._qcache: dict[str, np.ndarray] = {}   # la misma pregunta no se vuelve a embeber
 
     @staticmethod
     def _tok(t: str) -> list[str]:
         return re.findall(r"\w+", t.lower())
 
-    def buscar(self, pregunta: str, k: int = 4, modulo: str | list | None = None, modo: str = "hibrido") -> list[dict]:
-        """modo: 'denso' (vectores), 'bm25' (palabras) o 'hibrido' (fusion RRF). Cada resultado trae su similitud coseno para el filtro de relevancia."""
+    def _vectores_consulta(self, consultas: list[str]) -> np.ndarray:
+        faltan = [c for c in dict.fromkeys(consultas) if c not in self._qcache]
+        if faltan:
+            for c, v in zip(faltan, embeber(faltan, "query")):
+                self._qcache[c] = v
+        return np.stack([self._qcache[c] for c in consultas])
+
+    def buscar(self, pregunta: str, k: int = 4, modulo: str | list | None = None, modo: str = "hibrido", multiconsulta: bool = False, mmr: float | None = None) -> list[dict]:
+        """modo: 'denso' (vectores), 'bm25' (palabras) o 'hibrido' (fusion RRF). Cada resultado trae su similitud coseno (la mayor entre las subpreguntas) para el filtro de relevancia.
+        mmr: peso de la relevancia frente a la diversidad (0 a 1); None lo desactiva."""
         mods = [modulo] if isinstance(modulo, str) else modulo
         permitido = np.ones(len(self.frags), bool) if not mods else np.isin(self.modulos, mods)
-        q = embeber([pregunta], "query")
-        sc, ix = self.idx.search(q, min(80, len(self.frags)))
-        rango_denso = {int(i): r for r, i in enumerate(ix[0]) if permitido[i]}
-        s_bm = np.where(permitido, self.bm25.get_scores(self._tok(pregunta)), -1)
-        rango_bm = {int(i): r for r, i in enumerate(np.argsort(-s_bm)[:80]) if permitido[i]}
-        if modo == "denso":
-            orden = list(rango_denso)
-        elif modo == "bm25":
-            orden = list(rango_bm)
-        else:
-            rrf = {}
-            for rangos in (rango_denso, rango_bm):
-                for i, r in rangos.items():
+        consultas = descomponer(pregunta) if multiconsulta else [pregunta]
+        consultas = [expandir_siglas(c) for c in consultas]
+        Q = self._vectores_consulta(consultas)
+        rrf: dict[int, float] = {}
+        for qi, texto in enumerate(consultas):
+            _, ix = self.idx.search(Q[qi:qi + 1], min(80, len(self.frags)))
+            denso = [int(i) for i in ix[0] if i >= 0 and permitido[i]]
+            s_bm = np.where(permitido, self.bm25.get_scores(self._tok(texto)), -1)
+            palabras = [int(i) for i in np.argsort(-s_bm)[:80] if permitido[i]]
+            for lista in ({"denso": [denso], "bm25": [palabras]}.get(modo, [denso, palabras])):
+                for r, i in enumerate(lista):
                     rrf[i] = rrf.get(i, 0.0) + 1.0 / (60 + r)
-            orden = sorted(rrf, key=rrf.get, reverse=True)
+        orden = sorted(rrf, key=rrf.get, reverse=True)
+        if mmr is not None and len(orden) > k:
+            pool = orden[:max(5 * k, 20)]
+            V = np.stack([self.idx.reconstruct(i) for i in pool])
+            tope = max(rrf[i] for i in pool)
+            rel = np.array([rrf[i] / tope for i in pool])
+            elegidos: list[int] = []
+            while len(elegidos) < min(k, len(pool)):
+                mejor = max((j for j in range(len(pool)) if j not in elegidos), key=lambda j: mmr * rel[j] - (1 - mmr) * max((float(V[j] @ V[e]) for e in elegidos), default=0.0))
+                elegidos.append(mejor)
+            orden = [pool[j] for j in elegidos]
         sal = []
         for i in orden[:k]:
-            sim = float(q[0] @ self.idx.reconstruct(int(i)))
+            sim = float((Q @ self.idx.reconstruct(int(i))).max())
             sal.append({**{k_: v for k_, v in self.frags[i].items() if k_ != "id"}, "fragmento_id": i, "similitud": round(sim, 4)})
         return sal
 
