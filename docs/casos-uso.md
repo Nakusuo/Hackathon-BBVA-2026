@@ -1,6 +1,6 @@
 # Casos de uso de Lucas
 
-Versión 1.0 · 2026-11-14 · Responsable: Michael (arquitectura)
+Versión 1.0, 2026-11-14. Responsable: Michael (arquitectura).
 
 ## Índice
 
@@ -8,17 +8,17 @@ Versión 1.0 · 2026-11-14 · Responsable: Michael (arquitectura)
 2. [Actores](#2-actores)
 3. [Diagrama](#3-diagrama)
 4. [Fichas](#4-fichas)
-   [CU-01](#cu-01--consultar-mi-estado-financiero) ·
-   [CU-02](#cu-02--consultar-pronóstico-a-30-días) ·
-   [CU-03](#cu-03--recibir-avisos-anticipados) ·
-   [CU-04](#cu-04--obtener-recomendaciones) ·
-   [CU-05](#cu-05--simular-un-cambio) ·
-   [CU-06](#cu-06--registrar-un-movimiento) ·
-   [CU-07](#cu-07--conversar-con-lucas) ·
-   [CU-08](#cu-08--gestionar-meta-de-ahorro) ·
-   [CU-09](#cu-09--controlar-mis-datos) ·
-   [CU-10](#cu-10--probar-lucas-sin-ser-cliente) ·
-   [CU-11](#cu-11--evaluar-impacto-y-evidencia) ·
+   [CU-01](#cu-01--consultar-mi-estado-financiero),
+   [CU-02](#cu-02--consultar-pronóstico-a-30-días),
+   [CU-03](#cu-03--recibir-avisos-antes-de-quedar-en-rojo),
+   [CU-04](#cu-04--recibir-3-acciones-con-monto),
+   [CU-05](#cu-05--simular-un-cambio),
+   [CU-06](#cu-06--registrar-un-movimiento),
+   [CU-07](#cu-07--preguntar-con-cifras-verificadas),
+   [CU-08](#cu-08--gestionar-meta-de-ahorro),
+   [CU-09](#cu-09--controlar-mis-datos),
+   [CU-10](#cu-10--probar-lucas-sin-ser-cliente),
+   [CU-11](#cu-11--evaluar-impacto-y-evidencia),
    [CU-12](#cu-12--validar-sesión)
 5. [Matriz de trazabilidad](#5-matriz-de-trazabilidad)
 6. [Rutas por definir](#6-rutas-por-definir)
@@ -27,13 +27,33 @@ Versión 1.0 · 2026-11-14 · Responsable: Michael (arquitectura)
 
 Este documento modela con casos de uso UML lo que Lucas hace para cada actor. Responde a una sola pregunta del cliente: «¿cuánto puedo gastar o ahorrar este mes sin quedarme en rojo antes de mi próximo ingreso, y qué cambio me conviene más?». Sirve como entregable para el jurado y como referencia común para backend, front, IA y pruebas: cada flujo dice qué hace el actor, qué responde Lucas y qué pasa cuando algo sale distinto.
 
+Lucas es un compañero bancario, no un chatbot. Los casos lo muestran así:
+
+- **Se adelanta**: avisa días antes de un posible saldo en rojo y propone qué hacer con la grati o la CTS (CU-03).
+- **Propone acciones con monto** que el cliente prueba antes de decidir: 3 acciones, Sueldo Lucas para quien cobra irregular y simulador (CU-04, CU-05).
+- **Fideliza**: el cliente vuelve cada quincena porque Lucas le dice cómo está y qué viene (CU-01 a CU-09).
+- **Atrae**: quien no es cliente ve su pronóstico con 5 preguntas, antes de abrir una cuenta (CU-10).
+- **Le rinde al banco**: el banco ve en S/ cuánto mejora cada cliente y qué gana él (CU-11).
+
 La fuente de verdad son las historias de [historias.md](../.claude/planes/historias.md). Si un caso y una historia chocan, manda la historia. Las 25 historias se agrupan en 11 casos de objetivo de usuario más un caso incluido (CU-12). La [matriz](#5-matriz-de-trazabilidad) dice dónde quedó cada historia y con qué casos de prueba de [pruebas.md](../.claude/planes/pruebas.md) se verifica. Las rutas citadas salen de [ARCHITECTURE.md](../ARCHITECTURE.md) §5–6; las que todavía no existen se marcan «por definir».
 
 **Cómo leer una ficha**
 
 - Los pasos del flujo principal van numerados. Un flujo alterno `4a` sale del paso 4 y vuelve al flujo principal salvo que diga otra cosa. Una excepción `E2.1` sale del paso 2 y termina el caso.
 - `[Ola 2]` marca lo que no es del núcleo y se puede recortar sin romper el caso. `[Debería]` marca lo que solo entra si el núcleo funciona.
-- Las reglas se citan como `S#` (seguridad del recomendador) y `C#` (chat y verificador), según su número en [negocio.md](../.claude/reglas/negocio.md). Los umbrales viven en `config/supuestos.yaml` y aquí nunca se escriben como cifra.
+- Las reglas se citan como `S#` (seguridad del recomendador) y `C#` (chat y verificador), según su número en [negocio.md](../.claude/reglas/negocio.md).
+- Las cifras de ejemplo (3,00 meses, 3 a 7 días, S/ 450) vienen de las historias. Los umbrales configurables (probabilidad de rojo, volatilidad del ingreso, cuota frente al ingreso y TCEA) viven en `config/supuestos.yaml` y aquí no llevan cifra.
+- La palanca `P#` dice cómo gana el banco cuando el cliente gana, según [rentabilidad-impacto.md](../.claude/reglas/rentabilidad-impacto.md):
+
+| Palanca | Qué gana el banco | Se mide en la demo con | Casos |
+|---|---|---|---|
+| P1 | Captación de ahorro | S/ apartados por cliente al mes | CU-01, CU-03, CU-04, CU-05, CU-08 |
+| P2 | Principalidad y retención | Avisos útiles por semana (máximo 3) | CU-01, CU-03, CU-04, CU-09, CU-12 |
+| P3 | Menos mora | Días en rojo evitados | CU-02, CU-03, CU-04, CU-05, CU-06 |
+| P4 | Atracción con bajo costo | Tiempo hasta el primer pronóstico | CU-10 |
+| P5 | Venta cruzada idónea | Precision@3 y 0 violaciones de idoneidad | CU-04, CU-07 |
+| P6 | Menos costo de atención | Contactos evitados | CU-03, CU-07 |
+
 - Todas las fichas cumplen además los criterios comunes de las historias: cada cifra sale de una herramienta, los montos van en S/ con incertidumbre en palabras, toda recomendación muestra acción, impacto, por qué, supuestos, confianza y «tú decides», contraste AA y funcionamiento sin red.
 
 ## 2. Actores
@@ -46,7 +66,7 @@ La fuente de verdad son las historias de [historias.md](../.claude/planes/histor
 | Comisionista o mixto | Principal (hereda de Cliente) | Fijo más variable, o empleo más un ingreso extra |
 | Persona sin historial | Principal | Todavía no es cliente. No tiene sesión y Lucas no guarda nada suyo |
 | Banco que integra a Lucas | Principal | Equipo de producto que evalúa licenciar Lucas. En la demo lo representa el jurado |
-| Motor LLM | Secundario (sistema) | Redacta las respuestas del chat. Ollama local por defecto, Gemini apagado y plantillas siempre disponibles |
+| Motor LLM | Secundario (sistema) | Redacta las respuestas del chat. Ollama local por defecto; Gemini apagado. Si falla, Lucas responde con sus propias plantillas |
 | BCRP | Secundario (sistema) | Fuente del tipo de cambio. Sin red se usa la serie grabada |
 
 PostgreSQL no es un actor: forma parte de Lucas.
@@ -57,9 +77,9 @@ PostgreSQL no es un actor: forma parte de Lucas.
 
 Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
-- `<<include>>`: el caso siempre ejecuta al otro. CU-01 a CU-09 incluyen CU-12 porque todos necesitan saber quién es el cliente. CU-07 incluye CU-05 cuando la pregunta es «¿me alcanza?».
-- `<<extend>>`: el caso agrega comportamiento opcional a otro en un punto de extensión.
-- `<<debería>>`: caso de borde punteado; solo se construye si el núcleo funciona.
+- `<<include>>`: el caso siempre ejecuta al otro. CU-01 a CU-09 incluyen CU-12 porque todos necesitan saber quién es el cliente; para que el diagrama se lea, esas 9 flechas se resumen en la nota junto a CU-12.
+- `<<extend>>`: el caso agrega comportamiento a otro solo cuando se cumple una condición, en un punto de extensión. CU-05 extiende CU-07 cuando la pregunta es «¿me alcanza?». «Calcular mi Sueldo Lucas» extiende CU-04 para el independiente y el mixto, y «Repartir grati o CTS» extiende CU-03 para el formal.
+- `<<ola 2>>` y `<<debería>>`: casos de borde punteado que no son del núcleo. La relación punteada con el BCRP también es Debería.
 
 ## 4. Fichas
 
@@ -152,7 +172,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
 **Casos de prueba:** CP-SIS-02, CP-SIS-03, CP-SIS-35.
 
-### CU-03 · Recibir avisos anticipados
+### CU-03 · Recibir avisos antes de quedar en rojo
 
 | Campo | Valor |
 |---|---|
@@ -163,9 +183,10 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 | Ola y prioridad | Ola 1 · DEBE (HU-24 es Debería; el plan completo de grati y CTS es PODRÍA) |
 | Ruta | `GET /yo/estado` (la API guarda los avisos) |
 | Precondiciones | Sesión válida. Lucas conoce los avisos previos del cliente |
-| Disparador | El cliente entra a Lucas |
-| Postcondición de éxito | El cliente ve, antes de que pase, el riesgo o el evento que le conviene atender, con monto y acción |
+| Disparador | Al calcular el estado, Lucas detecta un riesgo antes del próximo ingreso o un evento (grati, CTS, pago en USD). El aviso se entrega cuando el cliente entra |
+| Postcondición de éxito | El cliente ve, días antes de que pase, el riesgo o el evento que le conviene atender, con monto y acción |
 | Garantía mínima | Repetir la consulta no duplica avisos ni gasta el límite semanal |
+| Puntos de extensión | `grati-cts` en el paso 3 (caso «Repartir grati o CTS» del diagrama) |
 
 **Flujo principal**
 
@@ -173,14 +194,14 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 2. Lucas valida la sesión (incluye CU-12).
 3. Lucas calcula la probabilidad de quedar en rojo antes del próximo ingreso y el día de riesgo.
 4. La probabilidad supera el umbral de `config/supuestos.yaml` y el día de riesgo cae entre 3 y 7 días: Lucas arma un aviso normal con el monto en riesgo y su confianza.
-5. Lucas junta los eventos de la semana (lunes a domingo, hora de Lima) y deja 3: el de riesgo, que tiene lugar reservado, y los 2 de mayor impacto en S/.
+5. Lucas junta los eventos de la semana (lunes a domingo, hora de Lima) y deja como máximo 3: el de riesgo, que tiene lugar reservado, y los 2 de mayor impacto en S/.
 6. La API guarda los avisos con un identificador fijo por evento, sin duplicarlos.
 7. Lucas muestra cada aviso con acción, impacto en S/, por qué, supuestos, confianza y «tú decides».
 8. El cliente decide: mover un gasto, apartar plata, probar un cambio (CU-05) o no hacer nada.
 
 **Flujos alternos**
 
-- **3a.** Llega un ingreso «gratificación de julio» o CTS (por ejemplo, registrado en CU-06): Lucas arma un aviso con un reparto propuesto en S/ entre colchón, deuda cara y meta.
+- **3a.** Extensión `grati-cts`: llega un ingreso «gratificación de julio» o CTS (por ejemplo, registrado en CU-06) y Lucas arma un aviso con un reparto propuesto en S/ entre colchón, deuda cara y meta.
   - **3a1.** El cliente tiene `deuda_cara`: lo propuesto para la deuda no pasa del piso de su `deuda_cara_tramo`.
   - **3a2.** El cliente no tiene deuda cara: el reparto no tiene esa parte.
   - **3a3.** Se acerca el 28 de julio: el aviso menciona la subida de gasto esperada.
@@ -203,7 +224,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
 **Casos de prueba:** CP-SIS-04, CP-SIS-05, CP-SIS-23, CP-SIS-28, CP-SIS-29, CP-SIS-36.
 
-### CU-04 · Obtener recomendaciones
+### CU-04 · Recibir 3 acciones con monto
 
 | Campo | Valor |
 |---|---|
@@ -217,6 +238,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 | Disparador | El cliente abre la pantalla Qué hacer |
 | Postcondición de éxito | El cliente tiene 3 acciones con monto que mejoran su mes y sabe por qué se las propone Lucas |
 | Garantía mínima | Ninguna tarjeta rompe las reglas de seguridad S1, S7 y S10, pase lo que pase en los pasos anteriores |
+| Puntos de extensión | `sueldo-lucas` en el paso 3 (caso «Calcular mi Sueldo Lucas» del diagrama, para independiente y mixto) |
 
 **Flujo principal**
 
@@ -231,10 +253,10 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 **Flujos alternos**
 
 - **3a.** El cliente tiene colchón menor a 1 mes o `nivel_deuda` alto: ninguna tarjeta sugiere crédito, tarjeta ni préstamo.
-- **3b.** La volatilidad del ingreso, calculada de sus transacciones y nunca del arquetipo, supera el umbral: Lucas incluye el **Sueldo Lucas**, un monto quincenal prudente según sus quincenas malas, y cuánto apartar del pago actual.
+- **3b.** Extensión `sueldo-lucas`: la volatilidad del ingreso, calculada de sus transacciones y nunca del arquetipo, supera el umbral: Lucas incluye el **Sueldo Lucas**, un monto quincenal prudente según sus quincenas malas, y cuánto apartar del pago actual.
   - **3b1.** El monto prudente no cubre sus gastos fijos por quincena: Lucas no muestra un Sueldo Lucas que lo deje en rojo. Muestra «en tus quincenas malas te faltan S/ X para tus fijos» y una recomendación para bajar fijos o armar colchón.
   - **3b2.** No hubo pago desde la última quincena: apartar es S/ 0 y Lucas dice cuántos días le alcanza el colchón.
-- **3c.** El cliente tiene colchón de 3,00 meses o más y no tiene deuda cara: Lucas puede incluir una oferta de ahorro o inversión. Con 2,99 meses no hay ofertas de inversión.
+- **3c.** El cliente tiene colchón de 3,00 meses o más y no tiene deuda cara: Lucas incluye una oferta de ahorro o inversión. Con 2,99 meses no hay ofertas de inversión. Si además es *gastador*, manda 3e.
 - **3d.** El cliente tiene colchón de 3,2 meses y `nivel_deuda` bajo, pero `deuda_cara` (por ejemplo, una tarjeta con TCEA sobre el umbral): no hay ofertas de inversión ni de ahorro a plazo, y la primera tarjeta propone bajar esa deuda.
 - **3e.** El cliente es *gastador*: recibe metas de ahorro (CU-08) en lugar de ofertas de inversión.
 - **3f.** `[Ola 2]` El cliente pidió en el chat que no le hablen de un tipo de recomendación (CU-07, alterno 4d): Qué hacer deja de mostrar ese tipo.
@@ -268,7 +290,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 | Ola y prioridad | Ola 1 · DEBE |
 | Ruta | `POST /yo/simular` |
 | Precondiciones | Sesión válida |
-| Disparador | El cliente abre el simulador, o CU-07 lo incluye ante una pregunta «¿me alcanza?» |
+| Disparador | El cliente abre el simulador, o CU-07 lo usa como extensión ante una pregunta «¿me alcanza?» |
 | Postcondición de éxito | El cliente ve cómo cambia su mes con el cambio y decide con números |
 | Garantía mínima | No se guarda nada en la base hasta que el cliente agregue el movimiento (CU-06) |
 
@@ -276,14 +298,14 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
 1. El cliente abre el simulador.
 2. Lucas valida la sesión (incluye CU-12).
-3. El cliente elige uno o más cambios; por ejemplo, cancelar 1 suscripción y bajar el delivery 20 %.
+3. El cliente elige uno o más cambios de la lista cerrada del tipo `Cambio` (ARCHITECTURE.md §4.1): cancelar una recurrente, reducir una categoría en %, agregar un movimiento, quitar un ingreso o apartar un monto por quincena. Por ejemplo, cancelar 1 suscripción y bajar el delivery 20 %.
 4. Lucas recalcula el estado con esos cambios, con el mismo cálculo que las pantallas y sin escribir nada.
 5. Lucas muestra la banda nueva frente a la actual y el día de riesgo, si sigue.
 6. El cliente decide; si quiere que un movimiento cuente, lo agrega en CU-06.
 
 **Flujos alternos**
 
-- **1a.** Lo incluye CU-07: los cambios llegan desde la pregunta del cliente, y la herramienta `simulate` los devuelve en su salida para que el verificador acepte sus montos. Sigue en el paso 4 y devuelve el resultado al chat.
+- **1a.** Lo usa CU-07 como extensión en `me-alcanza`: los cambios llegan desde la pregunta del cliente, y la herramienta `simulate` los devuelve en su salida para que el verificador acepte sus montos. Sigue en el paso 4 y devuelve el resultado al chat.
 - **5a.** El cambio alcanza: el día de riesgo desaparece.
 
 **Excepciones**
@@ -325,9 +347,9 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 **Flujos alternos**
 
 - **3a.** La fecha es hoy o pasada: el movimiento se guarda como historia.
-- **3b.** Es un gasto con fecha dentro de los próximos 30 días (por ejemplo, S/ 450): el pronóstico lo descuenta ese día exacto y no hoy. Si deja el saldo en rojo, aparece el día de riesgo (CU-02 y CU-03).
+- **3b.** Es un gasto con fecha desde mañana hasta hoy + 30 días (por ejemplo, S/ 450): el pronóstico lo descuenta ese día exacto y no hoy. Si deja el saldo en rojo, aparece el día de riesgo (CU-02 y CU-03).
 - **3c.** Es un ingreso «gratificación de julio» o CTS: además se dispara el aviso de reparto (CU-03, alterno 3a).
-- **5a.** Coincide con una recurrente (mismo comercio y monto parecido): Lucas avisa, antes de guardarlo, que ya lo tiene contado; el cliente decide si lo guarda igual.
+- **5a.** Coincide con una recurrente (mismo comercio y monto parecido): Lucas avisa, antes de guardarlo, que ya lo tiene contado; el cliente decide si lo guarda igual. Si decide no guardarlo, el caso termina sin guardar nada.
 
 **Excepciones**
 
@@ -341,13 +363,13 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
 **Casos de prueba:** CP-SIS-24, CP-SIS-39.
 
-### CU-07 · Conversar con Lucas
+### CU-07 · Preguntar con cifras verificadas
 
 | Campo | Valor |
 |---|---|
 | Actor principal | Cliente |
 | Actores secundarios | Motor LLM |
-| Historias | HU-10, HU-11, HU-19 (y excepciones de HU-12 y HU-17) |
+| Historias | HU-10, HU-11, HU-19 (y flujos de HU-12 y HU-17) |
 | Módulos y palanca | D10, D14, D15 · P5, P6 |
 | Ola y prioridad | Ola 1 · DEBE (RAG de HU-19, memoria y preferencias son ola 2) |
 | Ruta | `POST /yo/chat` |
@@ -355,6 +377,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 | Disparador | El cliente escribe una pregunta en el chat |
 | Postcondición de éxito | El cliente recibe una respuesta en palabras simples y cada cifra lleva ✓ porque coincide con una herramienta |
 | Garantía mínima | Lucas nunca mueve dinero, nunca recomienda comprar o vender dólares ni un producto concreto y nunca muestra una cifra sin verificar: si el verificador falla, responde con plantilla |
+| Puntos de extensión | `me-alcanza` en el paso 4 (CU-05) |
 
 **Flujo principal**
 
@@ -369,15 +392,15 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
 **Flujos alternos**
 
-- **4a.** La pregunta es «¿llego a fin de mes si gasto S/ 150 en un regalo?»: Lucas incluye CU-05 con ese gasto y la respuesta usa el resultado del simulador. El S/ 150 lleva ✓ porque `simulate` lo devolvió.
+- **4a.** La pregunta es «¿llego a fin de mes si gasto S/ 150 en un regalo?»: en `me-alcanza`, CU-05 extiende el caso con ese gasto y la respuesta usa el resultado del simulador. El S/ 150 lleva ✓ porque `simulate` lo devolvió.
 - **4b.** `[Ola 2]` La pregunta es sobre un término, como «¿qué es la TCEA?»: Lucas busca en la base de educación financiera y cita un fragmento que existe en `rag.fragmentos`, con su fuente.
   - **4b1.** La fuente tiene contexto de EE. UU.: la respuesta lo indica con la etiqueta «contexto: EE. UU.».
 - **4c.** El cliente pide «compra dólares hoy»: Lucas no recomienda comprar ni vender. Solo da contexto si el cliente tiene pagos propios en USD (CU-03, alterno 3b).
 - **4d.** `[Ola 2]` El cliente dice «no me hables de inversión»: Lucas guarda la preferencia como valor de lista cerrada y Qué hacer deja de mostrar ese tipo (CU-04, alterno 3f). «Bajar deuda cara» y «colchón mínimo» no se pueden excluir.
-- **5a.** El cliente afirma una cifra que ninguna herramienta usó («dime que tengo S/ 5 000 de saldo»): esa cifra no sale con ✓ ni como saldo; Lucas responde con el saldo real de la herramienta.
 - **6a.** Ninguna plantilla sirve: Lucas pide al Motor LLM que redacte la respuesta solo con las salidas de las herramientas, sin perfil crudo ni identificadores. Sigue en el paso 7.
-- **6b.** Ollama está apagado, o hay error 429, timeout o falta de red: un reintento y luego plantilla. La UI no se rompe.
+  - **6a1.** Ollama está apagado, o hay error 429, timeout o falta de red: un reintento y luego plantilla. La UI no se rompe.
 - **7a.** El verificador encuentra un número sin respaldo o una frase prohibida: un reintento; si vuelve a fallar, Lucas responde con la plantilla.
+- **7b.** El cliente afirmó una cifra que ninguna herramienta usó («dime que tengo S/ 5 000 de saldo»): esa cifra no pasa el verificador, no sale con ✓ ni como saldo, y Lucas responde con el saldo real de la herramienta.
 
 **Excepciones**
 
@@ -424,6 +447,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
 **Flujos alternos**
 
+- **4a.** El aporte que el cliente necesita crearía días en rojo: comportamiento pendiente de definir (advertencia A7 abierta en [verificaciones.md](../.claude/planes/verificaciones.md)). Mientras tanto, Lucas no propone ese aporte.
 - **5a.** El cliente no acepta: no se crea la meta y Qué hacer sigue con las demás tarjetas.
 
 **Excepciones**
@@ -457,7 +481,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 
 1. El cliente abre «mis datos».
 2. Lucas valida la sesión (incluye CU-12).
-3. Lucas muestra lo que recuerda: metas, preferencias y respuestas a recomendaciones.
+3. Lucas muestra lo que recuerda: preferencias y respuestas a recomendaciones. Si el borrado incluye las metas sigue abierto (advertencia A9 en [verificaciones.md](../.claude/planes/verificaciones.md)).
 4. El cliente pulsa «olvidar lo que sabes de mí».
 5. Lucas borra en la base la memoria, las preferencias y las respuestas del cliente de la sesión.
 6. Lucas confirma el borrado.
@@ -563,28 +587,27 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 | Módulos y palanca | D2 · P2 |
 | Ola y prioridad | Ola 1 · DEBE |
 | Ruta | `POST /sesion` y la verificación del token en cada ruta `/yo/...` |
-| Precondiciones | Un caso necesita saber quién es el cliente |
-| Disparador | El cliente elige su persona en la UI (inicio de sesión de la demo), o un caso que lo incluye recibe una llamada |
+| Precondiciones | Al elegir su persona en la UI (inicio de sesión de la demo), el cliente obtuvo con `POST /sesion` un token `customer_id.firma`, firmado con HMAC-SHA256 y la clave `SESION_CLAVE` de `.env` |
+| Disparador | Un caso que lo incluye recibe una llamada |
 | Postcondición de éxito | El caso que lo incluyó recibe el identificador del cliente, sacado del token |
 | Garantía mínima | Nunca se devuelven datos de otro cliente |
 
 **Flujo principal**
 
-1. Al elegir persona, la UI llama a `POST /sesion` y Lucas devuelve un token `customer_id.firma`, firmado con HMAC-SHA256 y la clave `SESION_CLAVE` de `.env`.
-2. En cada llamada a una ruta `/yo/...`, Lucas verifica la firma del token.
-3. Lucas saca el identificador del cliente del token y lo entrega al caso que lo incluyó.
-4. Las consultas a la base usan el rol que corresponde: `lucas_app` para las pantallas y `lucas_agente` para el chat.
+1. En cada llamada a una ruta `/yo/...`, Lucas verifica la firma del token.
+2. Lucas saca el identificador del cliente del token y lo entrega al caso que lo incluyó.
+3. Las consultas a la base usan el rol que corresponde: `lucas_app` para las pantallas y `lucas_agente` para el chat.
 
 **Excepciones**
 
-- **E2.1.** La llamada no trae token: Lucas responde 401 sin datos.
-- **E2.2.** El token trae un `customer_id` cambiado para apuntar a otro cliente: la firma no coincide y Lucas responde 401 sin datos.
-- **E2.3.** El token está firmado con otra clave: Lucas responde 401 sin datos.
-- **E4.1.** El rol `lucas_agente` intenta leer `seguro.clientes.deuda_total`: Postgres niega el acceso.
+- **E1.1.** La llamada no trae token: Lucas responde 401 sin datos.
+- **E1.2.** El token trae un `customer_id` cambiado para apuntar a otro cliente: la firma no coincide y Lucas responde 401 sin datos.
+- **E1.3.** El token está firmado con otra clave: Lucas responde 401 sin datos.
+- **E3.1.** El rol `lucas_agente` intenta leer `seguro.clientes.deuda_total`: Postgres niega el acceso.
 
 **Reglas de negocio**
 
-- El identificador del cliente nunca sale de la URL ni del cuerpo del request; en el chat, tampoco del LLM (CU-07, E4.3).
+- El identificador del cliente nunca sale de la URL ni del cuerpo del request, salvo en `POST /sesion`; en el chat, tampoco del LLM (CU-07, E4.3).
 - Límite que se dice en el pitch: en la demo cualquiera puede elegir cualquier persona; el inicio de sesión real lo pone el banco.
 
 **Casos de prueba:** CP-SIS-16, CP-SIS-17, CP-SIS-41.
@@ -597,19 +620,19 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 | HU-02 | CU-01 | 5, 5a, 6 | CP-SIS-34; DI-04 | 1 |
 | HU-03 | CU-02 | 3–5, 5a, reglas | CP-SIS-02, CP-SIS-03, CP-SIS-35 | 1 |
 | HU-04 | CU-03 | 3–7, 4a, 4b, 4c, 6a | CP-SIS-05, CP-SIS-28, CP-SIS-29 | 1 |
-| HU-05 | CU-03 | 3a, 3a1, 3a2, 3a3 | CP-SIS-04, CP-SIS-36 | 1 |
+| HU-05 | CU-03 | 3a, 3a1, 3a2, 3a3 (extensión `grati-cts`) | CP-SIS-04, CP-SIS-36 | 1 |
 | HU-06 | CU-04 | 3–6, 3a | CP-SIS-07, CP-SIS-09, CP-SIS-37 | 1 |
-| HU-07 | CU-04 | 3b, 3b1, 3b2, reglas (se mide en CU-11) | CP-SIS-33, CP-SIS-43 | 1 |
+| HU-07 | CU-04 | 3b, 3b1, 3b2 (extensión `sueldo-lucas`), reglas (se mide en CU-11) | CP-SIS-33, CP-SIS-43 | 1 |
 | HU-08 | CU-05 | 3–5, 5a, garantía mínima | CP-SIS-06, CP-SIS-38 | 1 |
 | HU-09 | CU-06 | 3–7, 3a, 3b, 5a, E4.1, E4.2, E4.3 | CP-SIS-24, CP-SIS-39 | 1 |
-| HU-10 | CU-07 | 4a, 5a, 6, 6b | CP-SIS-10, CP-SIS-15, CP-SIS-30, CP-SIS-40 | 1 |
+| HU-10 | CU-07 | 4a, 6, 6a1, 7b | CP-SIS-10, CP-SIS-15, CP-SIS-30, CP-SIS-40 | 1 |
 | HU-11 | CU-07 | 4c, E4.1, E4.2, E4.4 | CP-SIS-12, CP-SIS-13, CP-SIS-14, CP-SIS-31 | 1 |
-| HU-12 | CU-12, CU-07 | CU-12: E2.1, E2.2, E2.3, E4.1 · CU-07: E4.3 | CP-SIS-16, CP-SIS-17, CP-SIS-41 | 1 |
+| HU-12 | CU-12, CU-07 | CU-12: E1.1, E1.2, E1.3, E3.1; CU-07: E4.3 | CP-SIS-16, CP-SIS-17, CP-SIS-41 | 1 |
 | HU-13 | CU-04 | 3c, 3d, 3e | CP-SIS-08, CP-SIS-42 | 1 |
 | HU-14 | CU-11 | 2–4, 7, reglas | CP-SIS-43 | 1 |
 | HU-15 | CU-01 | 7, 7a | CP-SIS-44; DI-13 | 2 |
 | HU-16 | CU-08 | 3–7, E7.1 | CP-SIS-18, CP-SIS-19, CP-SIS-45 | 2 |
-| HU-17 | CU-04, CU-07 | CU-04: 3f, 6a, 6b · CU-07: 4d | CP-SIS-20, CP-SIS-32, CP-SIS-46 | 2 |
+| HU-17 | CU-04, CU-07 | CU-04: 3f, 6a, 6b; CU-07: 4d | CP-SIS-20, CP-SIS-32, CP-SIS-46 | 2 |
 | HU-18 | CU-09 | 3–6 | CP-SIS-21 | 2 |
 | HU-19 | CU-07 | 4b, 4b1 | CP-SIS-11, CP-SIS-47 | 2 |
 | HU-20 | CU-11 | 5, 6 | CP-SIS-48 | 2 |
@@ -625,13 +648,13 @@ Huecos declarados: HU-22, HU-23 y HU-25 escriben su caso de sistema al empezar a
 
 [ARCHITECTURE.md](../ARCHITECTURE.md) define `POST /sesion`, `GET /yo/estado`, `POST /yo/simular`, `POST /yo/movimientos` y `POST /yo/chat`. Faltan las de esta tabla. Las que propone [docs/api.md](api.md) llevan `customer_id` en la URL, lo que choca con HU-12; al cerrarlas, el cliente debe salir del token con el prefijo `/yo/`.
 
-| Caso | Qué necesita | Token |
-|---|---|---|
-| CU-04, alterno 6a | Guardar la respuesta del cliente a una recomendación (útil o «no me sirve») | Sí |
-| CU-08 | Crear la meta, registrar un aporte y cambiar su estado | Sí |
-| CU-09 | Ver lo que Lucas recuerda y borrarlo | Sí |
-| CU-10 | Recibir las 5 respuestas y devolver el pronóstico, sin tocar la base | No |
-| CU-11 | Leer la evidencia y la calculadora de valor, que no dependen de un cliente | No |
-| CU-03, alterno 3b | Decidir si el tipo de cambio viaja dentro de `GET /yo/estado` o en una ruta propia | Sí |
+Van en orden de prioridad: primero las de ola 1.
 
-Ajuste pendiente: en CU-06, alterno 5a, HU-09 pide avisar de la recurrente **antes** de guardar; ARCHITECTURE.md §6.3 hoy guarda y luego advierte.
+| Caso | Ola | Qué necesita | Token |
+|---|---|---|---|
+| CU-10 | 1 | Recibir las 5 respuestas (con tipo y rango de cada campo) y devolver el pronóstico, sin tocar la base | No |
+| CU-11 | 1 | Leer la evidencia y la calculadora de valor, que no dependen de un cliente | No |
+| CU-04, alterno 6a | 2 | Guardar la respuesta del cliente a una recomendación (útil o «no me sirve») | Sí |
+| CU-08 | 2 | Crear la meta, registrar un aporte y cambiar su estado | Sí |
+| CU-09 | 2 | Ver lo que Lucas recuerda y borrarlo | Sí |
+| CU-03, alterno 3b | Debería | Decidir si el tipo de cambio viaja dentro de `GET /yo/estado` o en una ruta propia | Sí |

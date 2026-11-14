@@ -1,13 +1,14 @@
 ' Regenerar: java -jar plantuml.jar -charset UTF-8 -tsvg docs/diagramas/casos-uso.puml
 @startuml casos-uso
 !pragma layout smetana
+left to right direction
 skinparam actorStyle awesome
 skinparam usecase {
-  BackgroundColor<<debería>> #FFFFFF
   BorderStyle<<debería>> dashed
+  BorderStyle<<ola 2>> dashed
 }
 
-title Lucas · Diagrama de casos de uso
+title Lucas: diagrama de casos de uso
 
 actor "Cliente" as Cliente <<abstracto>>
 actor "Independiente" as Independiente
@@ -16,30 +17,38 @@ actor "Comisionista\no mixto" as Mixto
 actor "Persona\nsin historial" as Prospecto
 actor "Banco que\nintegra a Lucas" as Banco
 
-Cliente <|-- Independiente
-Cliente <|-- Formal
-Cliente <|-- Mixto
-
-actor "Motor LLM\n(Ollama · plantillas)" as LLM <<sistema>>
-actor "BCRP\n(tipo de cambio)" as BCRP <<sistema>>
+Independiente --|> Cliente
+Formal --|> Cliente
+Mixto --|> Cliente
 
 rectangle "Lucas" {
-  usecase "CU-01\nConsultar mi estado\nfinanciero" as CU01
-  usecase "CU-02\nConsultar pronóstico\na 30 días" as CU02
-  usecase "CU-03\nRecibir avisos\nanticipados" as CU03
-  usecase "CU-04\nObtener\nrecomendaciones" as CU04
-  usecase "CU-05\nSimular un cambio" as CU05
-  usecase "CU-06\nRegistrar un\nmovimiento" as CU06
-  usecase "CU-07\nConversar con Lucas" as CU07
-  usecase "CU-08\nGestionar meta\nde ahorro" as CU08
-  usecase "CU-09\nControlar mis datos" as CU09
+  package "Mi mes" {
+    usecase "CU-01\nConsultar mi estado\nfinanciero" as CU01
+    usecase "CU-02\nConsultar pronóstico\na 30 días" as CU02
+    usecase "CU-03\nRecibir avisos antes\nde quedar en rojo" as CU03
+    usecase "Repartir grati\no CTS" as EXT05
+    usecase "Ver resumen\nde quincena" as EXT22 <<debería>>
+    usecase "Separar negocio\ny casa" as EXT25 <<debería>>
+  }
+  package "Qué hago" {
+    usecase "CU-04\nRecibir 3 acciones\ncon monto" as CU04
+    usecase "Calcular mi\nSueldo Lucas" as EXT07
+    usecase "CU-05\nSimular un cambio" as CU05
+    usecase "CU-06\nRegistrar un\nmovimiento" as CU06
+    usecase "CU-08\nGestionar meta\nde ahorro" as CU08 <<ola 2>>
+  }
+  package "Pregunto y controlo" {
+    usecase "CU-07\nPreguntar con cifras\nverificadas" as CU07
+    usecase "CU-09\nControlar mis datos" as CU09 <<ola 2>>
+  }
   usecase "CU-10\nProbar Lucas sin\nser cliente" as CU10
   usecase "CU-11\nEvaluar impacto\ny evidencia" as CU11
   usecase "CU-12\nValidar sesión" as CU12
-
-  usecase "Ver resumen\nde quincena" as EXT22 <<debería>>
-  usecase "Separar negocio\ny casa" as EXT25 <<debería>>
+  note bottom of CU12 : CU-01 a CU-09 lo incluyen\n(<<include>>)
 }
+
+actor "Motor LLM\n(Ollama; Gemini apagado)" as LLM <<sistema>>
+actor "BCRP\n(tipo de cambio)" as BCRP <<sistema>>
 
 Cliente --> CU01
 Cliente --> CU02
@@ -50,23 +59,18 @@ Cliente --> CU06
 Cliente --> CU07
 Cliente --> CU08
 Cliente --> CU09
+Formal --> EXT05
+Independiente --> EXT07
+Mixto --> EXT07
 Prospecto --> CU10
 Banco --> CU11
 
 CU07 --> LLM
-CU03 --> BCRP
+CU03 ..> BCRP : <<debería>>
 
-CU01 ..> CU12 : <<include>>
-CU02 ..> CU12 : <<include>>
-CU03 ..> CU12 : <<include>>
-CU04 ..> CU12 : <<include>>
-CU05 ..> CU12 : <<include>>
-CU06 ..> CU12 : <<include>>
-CU07 ..> CU12 : <<include>>
-CU08 ..> CU12 : <<include>>
-CU09 ..> CU12 : <<include>>
-CU07 ..> CU05 : <<include>>
-
+EXT05 ..> CU03 : <<extend>>
+EXT07 ..> CU04 : <<extend>>
+CU05 ..> CU07 : <<extend>>
 EXT22 ..> CU01 : <<extend>>
 EXT25 ..> CU01 : <<extend>>
 

@@ -53,6 +53,7 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 | 2026-11-14 | LLM local `qwen2.5:3b` 100 % en la RTX 3050 (4 GB), contexto 4096, flash attention, KV q8 y modelo siempre cargado (Michael) | Cabe entero en VRAM y cumple < 8 s; el resto del pipeline va en CPU |
 | 2026-11-14 | UI: React + Recharts con Vite, en `app/`. Identidad propia de Lucas: grises azulados para leer (tinta `#1b2433`), petróleo para datos (`#1f6b8a`) y ámbar como único acento de marca (`#e8a33d`); títulos Source Serif 4 y texto Plus Jakarta Sans, instaladas como paquete. Inspirada en los principios de banca empática (claridad, calma, accesibilidad), sin logos, tipografías ni colores de BBVA. Pantallas: Cómo estás, Qué viene, Qué hacer; las demás cuando hagan falta. Cada pantalla cabe en 1366×768 (Nakusuo/Marcela) | App que se ve real y lista para integrarse en un banco sin aparentar producto oficial; el juez-cumplimiento marcó dos azules muy cercanos a BBVA y se cambiaron |
 | 2026-11-14 | UI v2 (Nakusuo/Marcela): Lucas dentro de una banca genérica «Mi Banca» (ingreso con datos ficticios → inicio de banca → Lucas al centro de la barra y tarjeta de aviso → espacio Lucas con Resumen, Gastos, Qué viene y Chat → guía de 3 pasos la primera vez). Solo modo claro, blancos y azul petróleo `#1b6378`, crema `#f5eedd` para Lucas. Íconos Phosphor. Chat por plantillas con cifras del motor hasta que exista el agente (JF-02) | Mostrar a Lucas como lo usaría un cliente dentro de su banca; investigación en `.claude/investigacion/ui-banca.md` |
+| 2026-11-14 | Casos de uso UML en `docs/casos-uso.md`: 11 casos de objetivo + CU-12 incluido, agrupados por objetivo con matriz HU → CU → CP-SIS; diagrama PlantUML exportado a SVG. Las fichas solo citan rutas de ARCHITECTURE.md (Michael) | Entregable formal para el jurado y referencia del equipo; `docs/api.md` pone `customer_id` en la URL y choca con HU-12 |
 
 ## Respuestas de la organización
 
@@ -81,4 +82,5 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 
 | Fecha y hora | Qué | Acción |
 |---|---|---|
-| — | — | — |
+| 2026-11-14 | Rutas sin definir para CU-10 y CU-11 (ola 1) y CU-04 6a, CU-08, CU-09 (ola 2); `docs/api.md` debe pasar a `/yo/...` | Backend (Miguel) las cierra en ARCHITECTURE.md; lista en `docs/casos-uso.md` §6 |
+| 2026-11-14 | HU-09 pide avisar de una recurrente duplicada antes de guardar; ARCHITECTURE §6.3 guarda y luego advierte | Backend (Miguel) ajusta el contrato de `POST /yo/movimientos` (confirmación previa) |
