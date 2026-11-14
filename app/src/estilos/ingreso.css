@@ -1,0 +1,135 @@
+.ingreso {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  overflow: hidden;
+  background: var(--carbon);
+  color: var(--texto-claro);
+  isolation: isolate;
+}
+
+.ingreso-fondo {
+  position: absolute;
+  z-index: -1;
+  width: min(115vw, 560px);
+  aspect-ratio: 1;
+  overflow: visible;
+}
+
+.ingreso-fondo-arriba {
+  top: -180px;
+  right: -160px;
+}
+
+.ingreso-fondo-abajo {
+  bottom: -200px;
+  left: -180px;
+}
+
+.ingreso-halo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 45% at 85% 15%, rgb(58 125 255 / 0.22), transparent 70%),
+    radial-gradient(55% 40% at 10% 90%, rgb(58 125 255 / 0.16), transparent 70%);
+}
+
+.ingreso-arco {
+  fill: none;
+  stroke: var(--electrico);
+  stroke-width: 6;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 10px rgb(58 125 255 / 0.8));
+}
+
+.ingreso-tarjeta {
+  width: min(100%, 400px);
+  display: grid;
+  gap: 14px;
+  padding: 24px;
+  border: 1px solid var(--vidrio-borde);
+  border-radius: 28px;
+  background: var(--vidrio);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+}
+
+.ingreso-marca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ingreso .logotipo {
+  color: var(--texto-claro);
+}
+
+.ingreso .etiqueta-demo {
+  background: var(--vidrio);
+  border: 1px solid var(--vidrio-borde);
+  color: var(--texto-claro);
+}
+
+.ingreso h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.15;
+}
+
+.ingreso-bajada {
+  margin: -8px 0 4px;
+  color: var(--texto-claro-suave);
+}
+
+.campo {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--texto-claro-suave);
+}
+
+.campo input {
+  min-height: 52px;
+  padding: 0 20px;
+  border: 1px solid var(--vidrio-borde);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.04);
+  color: var(--texto-claro);
+  font: inherit;
+  font-weight: 500;
+}
+
+.campo input:focus-visible {
+  outline: 2px solid var(--electrico-claro);
+  outline-offset: 2px;
+}
+
+.ingreso .boton {
+  min-height: 52px;
+  margin-top: 4px;
+  background: var(--texto-claro);
+  color: var(--carbon);
+}
+
+.ingreso .boton:hover {
+  background: var(--electrico-claro);
+}
+
+.ingreso .boton:focus-visible {
+  outline: 2px solid var(--electrico-claro);
+  outline-offset: 3px;
+}
+
+.nota-seguridad {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--texto-claro-suave);
+}

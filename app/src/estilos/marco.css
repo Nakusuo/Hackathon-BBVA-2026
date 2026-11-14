@@ -23,14 +23,14 @@
   color: var(--crema);
   font-family: var(--titulos);
   font-size: calc(var(--tamano) * 0.55);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
 }
 
 .logotipo {
   font-family: var(--titulos);
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--azul);
 }
 
@@ -105,30 +105,6 @@
   display: none;
 }
 
-.ingreso {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 16px;
-  background: var(--azul);
-}
-
-.ingreso-tarjeta {
-  width: min(100%, 400px);
-  display: grid;
-  gap: 16px;
-  padding: 24px;
-  border-radius: var(--radio);
-  background: var(--superficie);
-}
-
-.ingreso-marca {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
 .etiqueta-demo {
   padding: 2px 10px;
   border-radius: 999px;
@@ -136,30 +112,6 @@
   color: var(--tinta);
   font-weight: 600;
   white-space: nowrap;
-}
-
-.campo {
-  display: grid;
-  gap: 6px;
-  font-weight: 600;
-}
-
-.campo input {
-  min-height: 48px;
-  padding: 0 14px;
-  border: 1px solid var(--borde);
-  border-radius: var(--radio-chico);
-  background: var(--superficie-suave);
-  color: var(--tinta);
-  font: inherit;
-  font-weight: 500;
-}
-
-.nota-seguridad {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--tinta-suave);
 }
 
 @media (min-width: 760px) {

@@ -1,5 +1,4 @@
-@import '@fontsource-variable/plus-jakarta-sans';
-@import '@fontsource-variable/source-serif-4';
+@import '@fontsource-variable/manrope';
 
 /* Blancos y azules para la banca; el crema marca el espacio propio de Lucas.
    El azul claro solo va en fondos y rellenos: sobre blanco no llega al contraste de texto.
@@ -25,10 +24,21 @@
   --riesgo-claro: #ff8a80;
   --riesgo-fondo: #fdeeec;
   --bien: #1d6b46;
+
+  /* Modo oscuro (normas v2): carbón neutro, no azul marino, para quedar lejos de los azules de BBVA.
+     El azul eléctrico es el único acento; el vidrio y el brillo se reservan para la tarjeta protagonista. */
+  --carbon: #0e1013;
+  --carbon-elevado: #15181d;
+  --texto-claro: #ffffff;
+  --texto-claro-suave: #a9b1bd;
+  --electrico: #3a7dff;
+  --electrico-claro: #8fb4ff;
+  --vidrio: rgb(255 255 255 / 0.06);
+  --vidrio-borde: rgb(255 255 255 / 0.14);
   --bien-fondo: #e8f4ee;
 
-  --letra: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
-  --titulos: 'Source Serif 4 Variable', Georgia, serif;
+  --letra: 'Manrope Variable', system-ui, sans-serif;
+  --titulos: 'Manrope Variable', system-ui, sans-serif;
   --radio: 18px;
   --radio-chico: 12px;
 

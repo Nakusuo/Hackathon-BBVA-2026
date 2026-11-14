@@ -96,7 +96,7 @@
 .recuadro-cifra {
   font-family: var(--titulos);
   font-size: 2.25rem;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1.15;
 }
 
@@ -234,7 +234,7 @@
 .anillo-valor {
   font-family: var(--titulos);
   font-size: 2.25rem;
-  font-weight: 600;
+  font-weight: 800;
   line-height: 1;
 }
 
