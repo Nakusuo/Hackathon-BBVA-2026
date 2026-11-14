@@ -1,7 +1,7 @@
 # Guion de la demo de 60 s
 
-Flujo: banca → tarjeta «Lucas te avisa» → «Lo hago» → el rojo desaparece → apartar al cobrar.
-Persona: independiente con recibo por honorarios, hoy 14 de noviembre, cobra S/ 2,000 el 30 nov.
+Flujo: banca → tarjeta «Lucas lo ve venir» → «Lo hago» → el rojo desaparece → apartar al cobrar.
+Persona: independiente con recibo por honorarios, hoy 14 de noviembre, cobra S/ 2,000 el 30 nov. El rojo cae en 14 días, así que la banca muestra «Lucas lo ve venir» (la regla de avisos reserva «Lucas te avisa» para 7 días o menos); dentro de Lucas, el aviso sí dice «Lucas te avisa».
 
 Las cifras de este guion son las que da el motor del front (`app/src/motor/motor.js` y `cliente.js`), no se escribieron a mano. La prueba `app/e2e/guion-demo.spec.js` revisa que cada cifra de abajo siga saliendo igual en la pantalla. Si alguien cambia el motor y la prueba falla, se actualiza este guion antes de ensayar.
 
@@ -16,8 +16,8 @@ Las cifras de este guion son las que da el motor del front (`app/src/motor/motor
 
 | Tiempo | Pantalla | Qué se toca | Qué se dice |
 |---|---|---|---|
-| 0:00–0:10 | Banca de Banco Vértice | Nada; señalar la tarjeta «Lucas te avisa» | «Una independiente cobra el 30. Esta es su banca, de un banco ficticio: Lucas podría integrarse en la app de cualquier banco.» |
-| 0:10–0:20 | Banca → Resumen de Lucas | La tarjeta «Lucas te avisa» | «Lucas se adelanta: entre el sábado 28 y el domingo 29 podría quedar en rojo. En el peor caso, −S/ 60.» |
+| 0:00–0:10 | Banca de Banco Vértice | Nada; señalar la tarjeta «Lucas lo ve venir» | «Una independiente cobra el 30. Esta es su banca, de un banco ficticio: Lucas podría integrarse en la app de cualquier banco.» |
+| 0:10–0:20 | Banca → Resumen de Lucas | La tarjeta «Lucas lo ve venir» | «Lucas se adelanta dos semanas: entre el sábado 28 y el domingo 29 podría quedar en rojo. En el peor caso, −S/ 60.» |
 | 0:20–0:27 | Resumen, tip 1 | Bajar hasta los tips y «Lo hago» en «Pide RapiFood una vez por semana hasta el 30» | «Le propone cambios con monto. Pedir delivery una vez por semana: +S/ 31 para su día más justo.» |
 | 0:27–0:32 | Resumen, tip 2 | Deslizar a la izquierda y «Lo hago» en «Pausa MusiKa Plus hasta tu próximo cobro» | «Pausar una suscripción que no usa: +S/ 22.» |
 | 0:32–0:38 | Resumen, tip 3 | Deslizar y «Lo hago» en «Toma café fuera 3 veces por semana»; señalar «Días en rojo 0» | «Menos café fuera: +S/ 19. Ya no queda en rojo.» |

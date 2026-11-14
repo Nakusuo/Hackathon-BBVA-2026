@@ -4,6 +4,7 @@ import { expect, test } from '@playwright/test'
 import { conSigno, enSoles, textoDiasEnRojo } from '../src/formato.js'
 import { vistaCon } from '../src/motor/cliente.js'
 import { PERSONA_INICIAL } from '../src/motor/personas.js'
+import { candidatos } from '../src/lucas/avisos.js'
 
 // Recorre demo/GUION.md paso a paso. Las cifras esperadas salen del mismo motor que usa la app,
 // así que si el motor cambia, esta prueba avisa que el guion quedó viejo.
@@ -14,6 +15,15 @@ const inicio = vistaCon()
 const orden = inicio.recomendaciones.map((r) => r.id)
 const pasos = orden.map((_, i) => vistaCon(orden.slice(0, i + 1)))
 const final = pasos.at(-1)
+
+// La tarjeta de la banca sigue la regla de avisos: con el rojo a más de 7 días, «Lucas lo ve venir».
+const { riesgoLejano } = candidatos(inicio)
+const tarjetaBanca = {
+  titulo: riesgoLejano ? 'Lucas lo ve venir' : 'Lucas te avisa',
+  texto: riesgoLejano
+    ? `En ${riesgoLejano.dias} días, ${textoDiasEnRojo(inicio.riesgo).toLowerCase()}`
+    : textoDiasEnRojo(inicio.riesgo),
+}
 
 const cifras = {
   peorInicial: enSoles(inicio.riesgo.peorMonto),
@@ -29,6 +39,7 @@ test('el guion cita las cifras que da el motor', () => {
   expect(inicio.riesgo).not.toBeNull()
   expect(final.riesgo).toBeNull()
   expect(GUION).toContain(textoDiasEnRojo(inicio.riesgo).toLowerCase())
+  expect(GUION).toContain(`«${tarjetaBanca.titulo}»`)
   for (const cifra of [
     cifras.peorInicial,
     cifras.diasEnRojo,
@@ -62,8 +73,8 @@ test('guion de 60 s: banca → aviso → «Lo hago» → sin rojo → apartar', 
 
   // Paso 1: la banca de siempre, con la tarjeta de Lucas.
   await expect(page).toHaveURL(/banca/)
-  const tarjeta = page.getByRole('link', { name: /Lucas te avisa/ })
-  await expect(tarjeta).toContainText(textoDiasEnRojo(inicio.riesgo))
+  const tarjeta = page.getByRole('link', { name: new RegExp(tarjetaBanca.titulo) })
+  await expect(tarjeta).toContainText(tarjetaBanca.texto)
   await expect(tarjeta).toBeInViewport()
   await captura('01-banca')
 
