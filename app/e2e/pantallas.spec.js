@@ -44,7 +44,6 @@ for (const { ruta, titulo } of PANTALLAS) {
         const alto = await page.evaluate(() => document.documentElement.scrollHeight)
         expect(alto).toBeLessThanOrEqual(768)
       }
-
     })
   })
 }

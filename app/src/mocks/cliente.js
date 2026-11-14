@@ -18,10 +18,10 @@ const persona = {
   banda: { inicial: 25, porDia: 8.6 },
   pagos: [
     { id: 'streamflix', fecha: '2026-11-16', concepto: 'StreamFlix', monto: 39.9 },
-    { id: 'prestamo', fecha: '2026-11-18', concepto: 'Cuota préstamo personal', monto: 210 },
+    { id: 'prestamo', fecha: '2026-11-18', concepto: 'Cuota préstamo personal', monto: 210, deuda: true },
     { id: 'musika', fecha: '2026-11-20', concepto: 'MusiKa Plus', monto: 21.9 },
     { id: 'alquiler', fecha: '2026-11-25', concepto: 'Alquiler de cuarto', monto: 420 },
-    { id: 'tarjeta', fecha: '2026-12-01', concepto: 'Tarjeta de crédito', monto: 950 },
+    { id: 'tarjeta', fecha: '2026-12-01', concepto: 'Tarjeta de crédito', monto: 950, deuda: true },
     { id: 'internet', fecha: '2026-12-05', concepto: 'Internet y celular', monto: 180 },
   ],
   gastosFrecuentes: [
@@ -69,9 +69,17 @@ const rojo = diasEnRojo(persona, pronostico)
 const recomendaciones = CAMBIOS.map((c) => evaluarCambio(persona, c)).sort((a, b) => b.mejora - a.mejora)
 const conTodos = evaluarTodos(persona, CAMBIOS)
 
+const cuotasMes = persona.pagos.filter((p) => p.deuda).reduce((s, p) => s + p.monto, 0)
+const pesoDeudas = Math.round((cuotasMes / persona.ingreso.monto) * 100)
+
+// Mientras no exista el modelo de salud (DI-07), el puntaje de deudas baja en línea recta con el peso de las cuotas.
 const componentesSalud = [
   { nombre: 'Colchón', valor: 35, explicacion: 'Cubre 2 semanas de gastos; lo sano son 3 meses.' },
-  { nombre: 'Deudas', valor: 62, explicacion: 'Tus cuotas son el 24 % de lo que ganas.' },
+  {
+    nombre: 'Deudas',
+    valor: Math.max(0, 100 - pesoDeudas),
+    explicacion: `Tus cuotas son el ${pesoDeudas}\u00a0% de lo que cobras.`,
+  },
   { nombre: 'Regularidad del ingreso', valor: 48, explicacion: 'Cobraste entre S/ 1,900 y S/ 3,400 al mes.' },
   { nombre: 'Control del gasto', valor: 71, explicacion: 'Gastaste menos de lo que entró en 4 de 6 meses.' },
 ]

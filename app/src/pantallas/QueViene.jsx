@@ -86,7 +86,8 @@ export default function QueViene({ cliente }) {
             <p>Llegas a tu cobro sin quedar en rojo, incluso en el peor caso.</p>
           )}
 
-          <div className="grafico" role="img" aria-label={resumen}>
+          <p className="solo-lector">{resumen}</p>
+          <div className="grafico" aria-hidden="true">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={datos} margin={{ top: 8, right: 24, bottom: 0, left: 4 }}>
                 <CartesianGrid stroke="var(--borde)" vertical={false} />
