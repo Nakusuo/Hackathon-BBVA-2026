@@ -36,6 +36,7 @@ Indicación del juez: Lucas debe ser **el compañero bancario** del cliente. Se 
 | [estadisticas/metricas.md](estadisticas/metricas.md) | Criterios de éxito, baselines y métricas por módulo | Al tocar modelos o evaluación |
 | [estadisticas/cifras-publicas.md](estadisticas/cifras-publicas.md) | Cifras de calibración y su estado de verificación | Al calibrar el generador o escribir el pitch/README |
 | [agents/](agents/) | Subagentes por rol del equipo | Delegar trabajo de un rol concreto |
+| [equipo/](equipo/) | Registro de cada persona: lo que hizo, lo que acordó y lo que falta | Al empezar y terminar cada tarea |
 
 ## Reglas que no se rompen
 

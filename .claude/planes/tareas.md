@@ -56,7 +56,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **MI-02** `docker-compose.yml` con Postgres 16 + pgvector y `make db`. *Hecho:* `make db` levanta y `make psql` conecta. Rama `feature/arq-docker`
 - [ ] **DX-01** Diccionario de datos v1 (`data/dictionary.md`) junto con Michael y Diego: tablas, columnas, tipos, etiquetas. *Hecho:* los tres lo aprueban. Rama `feature/datos-diccionario`
 - [ ] **MG-01** Contrato de la API (`docs/api.md`) junto con Marcela y Jeffrey: endpoints y JSON de ejemplo en `data/sample/mocks/`. *Hecho:* los tres lo aprueban. Rama `feature/backend-contrato`
-- [ ] **MC-01** Decidir la UI a las 11:30 (React + Recharts o Streamlit) y esqueleto que navega las 6 pantallas vacías. *Hecho:* se abre en el navegador. Rama `feature/front-esqueleto`
+- [x] **MC-01** Decidir la UI a las 11:30 (React + Recharts o Streamlit) y esqueleto que navega las 6 pantallas vacías. *Hecho:* se abre en el navegador. Rama `feature/front-esqueleto` — Nakusuo/Marcela, 2026-11-14: React + Recharts; pantallas Cómo estás, Qué viene y Qué hacer con datos de prueba (las demás se agregan cuando hagan falta)
 - [ ] **JF-01** Instalar Ollama con `qwen2.5:3b` (ajustes de GPU del plan maestro, sección 3) y un modelo de embeddings; anotar versiones en `PROMPTS.md`. Descargar los PDFs del «núcleo del RAG» de `.claude/investigacion/rag-fuentes.md` en `docs/rag/<modulo>/` y armar `docs/rag/fuentes.csv`. Buscar el texto oficial de la Ley 29571. Rama `feature/ia-setup`
 - [ ] **DI-01** Lista de variables por cliente y firma de las funciones de baseline (`src/models/baselines.py` con tests vacíos). Rama `feature/ml-baselines`
 

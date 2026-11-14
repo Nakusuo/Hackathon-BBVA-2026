@@ -1,0 +1,36 @@
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/source-serif-4';
+
+/* Blancos y azules para la banca; el crema marca el espacio propio de Lucas.
+   El azul claro solo va en fondos y rellenos: sobre blanco no llega al contraste de texto.
+   Rojo y verde solo marcan estado y siempre van con texto. */
+:root {
+  --fondo: #f4f8fb;
+  --superficie: #ffffff;
+  --superficie-suave: #eaf2f7;
+  --borde: #d9e5ee;
+  --tinta: #1f2a30;
+  --tinta-suave: #4a5d6b;
+  --azul: #1b6378;
+  --azul-profundo: #134e5e;
+  --azul-claro: #84b3ce;
+  --azul-palido: #d6e7f1;
+  --sobre-azul: #ffffff;
+  --crema: #f5eedd;
+  --crema-borde: #e4d8bb;
+  --sobre-azul-suave: #d6e7f1;
+  --exterior: #e2ebf1;
+  --banda: #b9d6e6;
+  --riesgo: #b42318;
+  --riesgo-claro: #ff8a80;
+  --riesgo-fondo: #fdeeec;
+  --bien: #1d6b46;
+  --bien-fondo: #e8f4ee;
+
+  --letra: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --titulos: 'Source Serif 4 Variable', Georgia, serif;
+  --radio: 18px;
+  --radio-chico: 12px;
+
+  color-scheme: light;
+}
