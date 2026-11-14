@@ -163,7 +163,7 @@ test('Qué viene cambia de periodo y muestra los pagos de diciembre', async ({ p
   await expect(pagos).toContainText('Pago total de tarjeta')
 })
 
-test('el chat responde con cifras verificadas y no da asesoría', async ({ page }) => {
+test('el chat responde «Calculado con tus datos» y no da asesoría', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/lucas/chat')
   await page.getByRole('button', { name: '¿Puedo gastar S/ 150 en un regalo?' }).click()

@@ -53,6 +53,13 @@ test('un gasto mayor que el saldo dice que no alcanza, sin decir «Puedes»', ()
   assert.doesNotMatch(r.texto, /Puedes/)
 })
 
+test('un gasto igual al saldo no se rechaza por saldo; un sol más, sí', () => {
+  const justo = preguntar(`¿puedo gastar ${cliente.saldoHoy}?`).texto
+  const pasado = preguntar(`¿puedo gastar ${cliente.saldoHoy + 1}?`).texto
+  assert.doesNotMatch(justo, /^No te alcanza/)
+  assert.match(pasado, /^No te alcanza/)
+})
+
 test('si el peor caso ya está en rojo, nunca responde «Sí, te alcanza»', () => {
   assert.doesNotMatch(preguntar('¿puedo gastar 5 en un chocolate?').texto, /Sí, te alcanza/)
 })

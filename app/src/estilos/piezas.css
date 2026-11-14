@@ -159,11 +159,6 @@
   font-weight: 700;
 }
 
-.texto-riesgo {
-  color: var(--riesgo);
-  font-weight: 700;
-}
-
 .chips {
   display: flex;
   flex-wrap: wrap;
