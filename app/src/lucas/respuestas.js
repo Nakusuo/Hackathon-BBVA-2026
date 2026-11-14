@@ -147,7 +147,7 @@ const NO_ENTIENDO = {
 
 export function esPedidoDeOperacion(pregunta) {
   // Con límites de palabra: «transacción» no es «acción» y «¿qué mueve mi gasto?» no pide mover plata.
-  return /\b(invert|inviert|inversion|dolar|acciones?\b|cripto|transfer|transfier|paga por mi|mueve\w*\s+(mi|mis|la|el|tu)?\s*(plata|dinero|ahorro))/.test(
+  return /\b(invert|inviert|inversion|dolar|acciones?\b|cripto|transfer|transfier|paga por mi|mueve\w*\s+(mi|mis|la|el|tu)?\s*(plata|dinero|ahorro|s\/|\d))/.test(
     normalizar(pregunta),
   )
 }

@@ -100,7 +100,7 @@ test('si el agente tarda demasiado, se corta y responde la plantilla', async () 
 
 test('pedir comprar dólares o mover plata no sale al servidor', async () => {
   const registro = []
-  for (const p of ['¿compro dólares?', 'transfiere 100 a mi mamá']) {
+  for (const p of ['¿compro dólares?', 'transfiere 100 a mi mamá', 'mueve 100 a mi ahorro', 'muéveme S/ 100']) {
     const r = await preguntarALucas(p, opciones({ fetchImpl: falsoFetch(RESPUESTA, registro) }))
     assert.match(r.texto, /no lo hago/)
   }
