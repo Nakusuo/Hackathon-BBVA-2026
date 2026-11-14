@@ -22,6 +22,7 @@ Actualizar al terminar cada tarea y en cada checkpoint (10 min: qué está hecho
 | 2026-11-14 | Problema principal: liquidez a 30 días | Bases piden un problema y una población |
 | 2026-11-14 | Datos: generador propio + DuckDB, calibrado con cifras públicas | No hay dataset peruano a nivel transacción |
 | 2026-11-14 | LLM intercambiable: Ollama → API opcional → plantillas | BBVA no da claves; demo offline |
+| 2026-11-14 | LLM local `qwen2.5:3b` 100 % en la RTX 3050 (4 GB), contexto 4096, flash attention, KV q8 y modelo siempre cargado | Cabe entero en VRAM y cumple < 8 s; el resto del pipeline va en CPU |
 | 2026-11-14 | Lucas como compañero bancario: avisos anticipados y Sueldo Lucas pasan a DEBE; Lucas en 5 preguntas a DEBERÍA alta | Indicación del juez: fidelización, atracción, nada cosmético |
 | 2026-11-14 | Gitflow simplificado y flujo investigador, codificador y jueces | Control del avance y verificación |
 | — | UI: Streamlit o React + Recharts (decidir en la 1.ª hora y no cambiar) | — |

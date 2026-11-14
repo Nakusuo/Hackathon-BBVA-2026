@@ -130,6 +130,13 @@ Las bases piden separar **ingesta/preparación**, **lógica analítica/IA** e **
 **UI:** Streamlit si el equipo es pequeño o falta tiempo; React + Recharts si alguien lo domina. Se decide en la primera hora y no se cambia después.
 **LLM:** interfaz `LLMProvider` con tres implementaciones: `OllamaProvider` (por defecto, offline), `APIProvider` (opcional, con clave propia en `.env`) y `TemplateProvider` (fallback sin LLM). La demo tiene que funcionar **con la red apagada**.
 
+**GPU (RTX 3050 Laptop, 4 GB de VRAM):** solo el LLM usa la GPU; datos, pronóstico y clustering son tablas pequeñas y van en CPU. El modelo tiene que caber **entero** en VRAM (si una capa cae a CPU, la latencia se multiplica):
+- Modelo: `qwen2.5:3b` (Q4_K_M, ~1,9 GB; buen español y tool calling). Alternativa: `llama3.2:3b`. Nada de 7B/8B: no caben con el escritorio ocupando ~0,5 GB.
+- Variables del servidor Ollama (variables de usuario en Windows, reiniciar Ollama): `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_KEEP_ALIVE=-1` (el modelo no se descarga entre preguntas de la demo).
+- En cada llamada: `options.num_ctx = 4096`. El prompt lleva solo las salidas de las tools, así que alcanza.
+- Al arrancar la API se hace una llamada de calentamiento para que la primera pregunta del jurado no pague la carga del modelo.
+- Comprobar con `ollama ps`: la columna PROCESSOR debe decir `100% GPU`.
+
 ---
 
 ## 4. Datos sintéticos
@@ -340,7 +347,7 @@ Sincronización corta (10 min) en cada checkpoint: qué está hecho, qué bloque
 
 | Riesgo | Mitigación |
 |---|---|
-| Sin LLM disponible o lento | Ollama con modelo pequeño ya descargado + TemplateProvider |
+| Sin LLM disponible o lento | `qwen2.5:3b` ya descargado, 100 % en GPU y precalentado + TemplateProvider |
 | WiFi cae en la demo | Todo local; FX con serie grabada; video de respaldo |
 | Alcance demasiado grande | MoSCoW estricto, flujo de punta a punta primero, regla de recorte |
 | Métricas «demasiado buenas» por datos sintéticos | Decirlo; pruebas con perturbaciones; mostrar errores; escenarios difíciles; intervalos por bootstrap |

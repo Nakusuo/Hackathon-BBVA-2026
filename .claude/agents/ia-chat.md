@@ -20,6 +20,7 @@ Lee primero: la sección «Chat y verificador de cifras» de `.claude/reglas/neg
 - Ningún dato personal sale a un LLM externo.
 - No agregues más agentes salvo que una métrica demuestre que aportan.
 - Timeout del LLM → plantilla; la UI nunca se rompe. Meta: < 8 s con LLM local.
+- GPU: sigue la nota «GPU» de `.claude/planes/plan-maestro.md` (modelo `qwen2.5:3b`, `num_ctx` 4096, calentamiento al arrancar). Mide la latencia con `ollama ps` en `100% GPU`.
 - Mide groundedness, exactitud y tasa de bloqueo; reporta en `.claude/estadisticas/metricas.md`.
 
 ## Forma de trabajo
