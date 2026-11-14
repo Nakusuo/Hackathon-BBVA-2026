@@ -72,7 +72,8 @@ function Mensaje({ mensaje }) {
   }
   return (
     <li className="mensaje mensaje-lucas">
-      <MarcaLucas tamano={40} pose={mensaje.pose} />
+      {/* Con un aviso de falla Lucas no puede salir celebrando ni ahorrando. */}
+      <MarcaLucas tamano={40} pose={mensaje.aviso ? 'alerta' : mensaje.pose} />
       <div className="mensaje-cuerpo">
         <span className="solo-lector">Lucas: </span>
         {mensaje.aviso && (
@@ -92,7 +93,7 @@ function Mensaje({ mensaje }) {
 function Pensando() {
   return (
     <li className="mensaje mensaje-lucas" aria-busy="true">
-      <MarcaLucas tamano={32} />
+      <MarcaLucas tamano={40} pose="pensando" />
       <div className="mensaje-cuerpo pensando">
         <span>Lucas está pensando</span>
         <span className="puntos" aria-hidden="true">
