@@ -171,6 +171,8 @@ test('«Lo hago» recalcula el plan en todas las pantallas y se recuerda', async
   await expect(salud).toContainText('55, vas regular · 63 con los tips')
   const botones = tips.getByRole('button', { name: 'Lo hago' })
   await expect(botones).toHaveCount(3)
+  await expect(tips.locator('.tip').nth(0)).toContainText('Evitas 1 día en rojo')
+  await expect(tips.locator('.tip').nth(2)).not.toContainText('Evitas')
 
   await botones.nth(0).click()
   await expect(botones.nth(0)).toHaveAttribute('aria-pressed', 'true')

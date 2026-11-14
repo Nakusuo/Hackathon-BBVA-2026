@@ -135,3 +135,10 @@ test('la salud sube con cada día en rojo que se evita y es el promedio de sus p
   assert.match(sinTips.componentes.at(-1).explicacion, /2 días en rojo/)
   assert.match(conTodos.componentes.at(-1).explicacion, /sin quedar en rojo/)
 })
+
+test('«evitas N días en rojo» de cada tip cuadra con el pronóstico de ese tip solo', () => {
+  for (const r of cliente.recomendaciones) {
+    assert.equal(r.diasEvitados, cliente.diasEnRojo - vistaCon([r.id]).diasEnRojo, r.id)
+  }
+  assert.equal(cliente.recomendaciones.find((r) => r.id === 'cafe').diasEvitados, 0)
+})

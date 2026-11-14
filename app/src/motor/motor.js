@@ -83,7 +83,8 @@ export function gastoDiarioSeguro(persona, ajuste = {}) {
 }
 
 export function evaluarCambio(persona, cambio) {
-  const antes = peorDia(persona, simular(persona))
+  const sinCambio = simular(persona)
+  const antes = peorDia(persona, sinCambio)
   const despues = simular(persona, cambio.ajuste)
   const peorDespues = despues.find((p) => p.fecha === antes.fecha)
   return {
@@ -92,6 +93,7 @@ export function evaluarCambio(persona, cambio) {
     peorAntes: antes.banda[0],
     peorDespues: peorDespues.banda[0],
     mejora: redondear(peorDespues.banda[0] - antes.banda[0]),
+    diasEvitados: diasEnRojo(persona, sinCambio).length - diasEnRojo(persona, despues).length,
   }
 }
 

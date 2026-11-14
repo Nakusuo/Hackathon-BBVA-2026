@@ -147,6 +147,12 @@
   box-shadow: 0 0 0 1px var(--azul);
 }
 
+.tip-evita {
+  margin: -6px 0 0;
+  color: var(--bien);
+  font-weight: 700;
+}
+
 .seguimiento {
   display: grid;
   gap: 6px;
