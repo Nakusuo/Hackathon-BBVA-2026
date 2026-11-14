@@ -1,0 +1,28 @@
+{
+  "customer_id": "demo-001",
+  "currency": "PEN",
+  "horizon_days": 30,
+  "baseline": {
+    "final_balance": -50.0,
+    "negative_balance_days": 3,
+    "forecast": [
+      {
+        "date": "2026-12-14",
+        "predicted_balance": -50.0
+      }
+    ]
+  },
+  "simulated": {
+    "final_balance": 150.0,
+    "negative_balance_days": 0,
+    "forecast": [
+      {
+        "date": "2026-12-14",
+        "predicted_balance": 150.0
+      }
+    ]
+  },
+  "difference": 200.0,
+  "disclaimer": "Resultados hipotéticos basados en datos simulados. Tú decides.",
+  "sample_only": true
+}

@@ -1,0 +1,9 @@
+{
+  "base": "USD",
+  "quote": "PEN",
+  "rate": 3.75,
+  "date": "2026-11-14",
+  "source": "recorded_demo",
+  "is_fallback": true,
+  "is_stale": true
+}
