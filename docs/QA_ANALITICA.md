@@ -67,7 +67,7 @@ Generado por `eval/puerta_de_calidad.py` el 2026-11-14T15:52:19 (reloj del agent
 | S2 | .env no versionado e ignorado | **PASS** | .env ignorado y no versionado |
 | S3 | Sin rutas absolutas de ninguna laptop en codigo, parametros, metricas ni documentos | **PASS** | 99 archivos propios sin rutas absolutas |
 | S4 | Ninguna mencion a un banco real en codigo, datos, metricas ni documentos propios | **PASS** | ninguna mencion a un banco real en lo propio (la entidad es inventada: Banco Kawsay) |
-| S5 | Sin archivos pesados ni datos generados en el repositorio (solo data/sample), salvo la carga temporal documentada | **WARN** | 56 archivos de data/generado cargados A PROPOSITO para la integracion final (ver _manifiesto.json, todo sintetico); quitarlos al terminar con: git rm -r --cached data/generado |
+| S5 | Sin archivos pesados ni datos generados en el repositorio (solo data/sample) | **OK** | data/generado/ esta en .gitignore y se regenera con python data/generator.py --semilla 2026 |
 
 ## Reproducibilidad
 

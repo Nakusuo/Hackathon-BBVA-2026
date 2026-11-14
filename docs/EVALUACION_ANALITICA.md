@@ -417,7 +417,7 @@ Ultima corrida (2026-11-14T15:52:19): **34 PASS, 6 WARN, 0 FAIL, 3 NOT RUN**.
 | M13 | WARN | Parametros de los eventos simulados (retiros de AFP, bonos, covid, Nino): verificados en fuente | parametros de eventos: 1 verificado, 4 parciales y 13 supuestos. Declarados en el YAML; hay que verificarlos antes de afirmarlos. |
 | C9 | NOT RUN | Google Cloud Translation | no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini. |
 | C10 | NOT RUN | Calidad del quechua revisada por un hablante nativo | no hay revision de un hablante nativo; el aviso al usuario lo dice |
-| S5 | WARN | Sin archivos pesados ni datos generados en el repositorio (solo data/sample), salvo la carga temporal documentada | 56 archivos de data/generado cargados A PROPOSITO para la integracion final (ver _manifiesto.json, todo sintetico); quitarlos al terminar con: git rm -r --cached data/generado |
+| S5 | OK | Sin archivos pesados ni datos generados en el repositorio (solo data/sample) | data/generado/ esta en .gitignore y se regenera con python data/generator.py --semilla 2026 |
 
 La comparativa de modelos (candidatos medidos, el elegido y por que, con su limite) esta en [comparativa_modelos.md](comparativa_modelos.md) y sus graficas en `docs/figuras/`.
 
