@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 import { conSigno, enSoles, textoDiasEnRojo } from '../src/formato.js'
 import { vistaCon } from '../src/mocks/cliente.js'
+import { PERSONA_INICIAL } from '../src/mocks/personas.js'
 
 // Recorre demo/GUION.md paso a paso. Las cifras esperadas salen del mismo motor que usa la app,
 // así que si el motor cambia, esta prueba avisa que el guion quedó viejo.
@@ -46,13 +47,16 @@ test('el guion cita las cifras que da el motor', () => {
 test('guion de 60 s: banca → aviso → «Lo hago» → sin rojo → apartar', async ({ page }, info) => {
   const captura = (nombre) => page.screenshot({ path: `${CAPTURAS}${info.project.name}-${nombre}.png` })
 
-  // Preparación (antes de empezar el reloj): guía ya vista y ningún tip activo, como en el ensayo.
+  // Preparación (antes de empezar el reloj), como en el ensayo: persona independiente con su permiso dado,
+  // guía ya vista y ningún tip activo.
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
-  await page.evaluate(() => {
+  await page.evaluate((persona) => {
     window.localStorage.clear()
+    window.localStorage.setItem('lucas-persona', persona)
+    window.localStorage.setItem('lucas-consentimiento', JSON.stringify({ [persona]: '2026-11-14' }))
     window.localStorage.setItem('lucas-guia-vista', 'si')
-  })
+  }, PERSONA_INICIAL)
   await page.reload()
   await page.getByRole('button', { name: 'Ingresar' }).click()
 
