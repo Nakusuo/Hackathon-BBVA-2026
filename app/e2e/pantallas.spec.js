@@ -226,6 +226,20 @@ test('MusiKa se pausa desde Suscripciones y queda elegida en los tips', async ({
   await expect(tip).toContainText('antes del 20 nov')
 })
 
+test('cada parte de la salud lleva a una acción', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/salud')
+  const salud = page.getByRole('region', { name: /Tu salud financiera/ })
+  await expect(salud.getByRole('link')).toHaveCount(4)
+  await salud.getByRole('link', { name: 'Ver tips para tu día más justo' }).click()
+  await expect(page).toHaveURL(/lucas\/resumen#tips/)
+  await expect(page.getByRole('region', { name: 'Tips para tu día más justo' })).toBeInViewport()
+
+  await page.goto('/lucas/salud')
+  await salud.getByRole('link', { name: 'Ver tus próximos pagos' }).click()
+  await expect(page.getByRole('region', { name: 'Pagos y cobros' })).toBeVisible()
+})
+
 test('Qué viene cambia de periodo y muestra los pagos de diciembre', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/lucas/que-viene')
