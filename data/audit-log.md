@@ -33,7 +33,17 @@ Este registro documenta todas las auditorías automáticas y manuales realizadas
   - Correcta delimitación de los accesos sin token (restringidos a sesión y onboarding de 5 preguntas) alineado con los controles de acceso ISO/IEC 27001 (5.15).
   - Integridad documental y ausencia de datos reales en los diagramas UML.
 
+### Auditoría #04 — Sábado, 2026-11-14 (Script de DB, Cargador PKL y Frontend Metas - PR #30)
+- **Commit / PR analizado:** Rama `develop` (Commit `ba2d405` con `db/init.sql` y `src/api/loader_pkl.py`, y PR #30 con Metas de Ahorro en Frontend).
+- **Alcance evaluado:** Script de creación de base de datos PostgreSQL, patrón lifespan de FastAPI para modelos analíticos `.pkl`, y flujo UI de metas de ahorro con contexto del chat.
+- **Resultado de Auditoría:** ✅ **APRUEBA sin observaciones.**
+- **Detalle de cumplimiento:**
+  - **Base de Datos:** `db/init.sql` establece correctamente la separación entre esquemas `seguro` y `app`, configurando RLS y encriptación `pgcrypto` según ISO 27001 (5.12 y 8.24).
+  - **Carga de Modelos:** `src/api/loader_pkl.py` implementa la carga asíncrona con `joblib` al iniciar FastAPI, garantizando inferencia en memoria con baja latencia (< 8s).
+  - **Frontend Metas:** La UI interactiva gestiona metas de ahorro sin exponer datos sensibles y manteniendo coherencia con el motor de recomendaciones.
+
 ---
 
 *Registro actualizado automáticamente por el Auditor Técnico Principal (Rol DX).*
+
 
