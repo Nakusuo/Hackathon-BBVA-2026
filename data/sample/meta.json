@@ -4,13 +4,13 @@
   "inicio": "2025-01-01",
   "fin": "2025-12-31",
   "lote": 40,
-  "movimientos": 37433,
-  "segundos": 0.8,
+  "movimientos": 38157,
+  "segundos": 0.7,
   "python": "3.13.2",
   "numpy": "2.5.4",
   "pandas": "3.1.1",
   "huella_parametros": {
-    "generador.yaml": "9f6975d2b322a103",
+    "generador.yaml": "f532ab0d7d20e4f4",
     "eventos.yaml": "90b8415d9f9d66fa"
   },
   "incluye_prospectivos": false,

@@ -26,6 +26,7 @@ pytest==9.2.0
 PyYAML==6.0.3
 rank-bm25==0.2.2
 requests==2.34.2
+ruff==0.17.4
 scikit-learn==1.9.1
 scipy==1.18.1
 shap==0.54.1

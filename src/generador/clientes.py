@@ -62,6 +62,11 @@ def generar_clientes(n: int, gen: dict, rng: np.random.Generator, tabla_semilla:
             filas.append((a, ah, ga, subtipos[j], region[j], edad[j], peso_muestral))
     cl = pd.DataFrame(filas, columns=["arquetipo", "perfil_ahorro_real", "perfil_gasto_real", "subtipo", "region", "rango_edad", "peso_muestral"])
     cl = cl.sample(frac=1.0, random_state=int(rng.integers(0, 2**31 - 1))).reset_index(drop=True)
+    cl["departamento"] = ""
+    for reg, pesos in pob["departamento"]["values"].items():
+        m = (cl["region"] == reg).to_numpy()
+        if m.any():
+            cl.loc[m, "departamento"] = _asignar(int(m.sum()), pesos, rng)
     cl["segmento"] = np.where(cl["arquetipo"] == "independiente", "independiente_" + cl["subtipo"], cl["arquetipo"])
     N = len(cl)
 

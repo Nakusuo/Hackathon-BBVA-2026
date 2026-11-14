@@ -83,7 +83,7 @@ def test_el_confinamiento_reduce_el_ingreso_de_independientes(tmp_path):
 
 
 def test_no_hay_rutas_absolutas_en_el_codigo():
-    patron = re.compile(r"[A-Za-z]:[\\/]|/c/Users|/home/\w+|\\Users\\")
+    patron = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]|/c/Users|/home/\w+|\\Users\\")
     archivos = glob.glob(os.path.join(RAIZ, "src", "**", "*.py"), recursive=True) + [os.path.join(RAIZ, "data", "generator.py")]
     sucios = []
     for a in archivos:

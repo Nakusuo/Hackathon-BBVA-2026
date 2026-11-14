@@ -8,11 +8,11 @@ Generado por `src/generador/reporte.py` a partir de las tablas de `generado`. To
 | Semilla | 2026 |
 | Clientes | 500 |
 | Ventana | 2019-01-01 a 2025-12-31 |
-| Movimientos | 3,229,332 (incluye duplicados sembrados) |
-| Mensajes | 44,942 |
-| Tiempo de generacion | 45.6 s, lotes de 50 clientes |
+| Movimientos | 3,264,148 (incluye duplicados sembrados) |
+| Mensajes | 44,924 |
+| Tiempo de generacion | 39.9 s, lotes de 50 clientes |
 | Python, numpy, pandas | 3.13.2, 2.5.4, 3.1.1 |
-| Huella de parametros | `{'generador.yaml': '9f6975d2b322a103', 'eventos.yaml': '90b8415d9f9d66fa'}` |
+| Huella de parametros | `{'generador.yaml': 'f532ab0d7d20e4f4', 'eventos.yaml': '90b8415d9f9d66fa'}` |
 | Perfiles semilla | parametrica |
 
 Misma semilla y mismos parametros dan las mismas tablas (lo comprueba `tests/test_generador.py`).
@@ -62,27 +62,27 @@ Edad (muestra frente a objetivo):
 ## 3. Montos (S/)
 | tipo | count | min | 1% | 50% | 99% | max |
 |---|---|---|---|---|---|---|
-| gasto | 2,580,702.0 | 0.0 | 0.5 | 10.8 | 489.9 | 19,737.9 |
-| ingreso | 648,630.0 | 0.4 | 2.6 | 18.2 | 1,996.2 | 21,682.4 |
+| gasto | 2,611,898.0 | 0.0 | 0.6 | 10.4 | 485.0 | 18,079.7 |
+| ingreso | 652,250.0 | 0.4 | 2.3 | 17.2 | 2,039.1 | 20,600.0 |
 
 ## 4. Calidad sembrada para probar el tratamiento
-- Faltantes (fraccion de movimientos): glosa 1.99%, categoria 3.00%, saldo 1.50%, monto 0.20%.
-- Duplicados y faltantes etiquetados en `etiquetas_calidad`: falta_categoria 96,460, falta_glosa 63,984, falta_saldo 48,325, duplicado_exacto 7,788, falta_monto 6,402, duplicado_cercano 5,097.
-- Gastos atipicos: 0.203% de los movimientos. Salen del presupuesto del mes, de modo que el saldo no se desvia.
-- Movimientos recurrentes: 9.7%. Clientes con una suscripcion duplicada: 36.
+- Faltantes (fraccion de movimientos): glosa 1.99%, categoria 3.01%, saldo 1.50%, monto 0.20%.
+- Duplicados y faltantes etiquetados en `etiquetas_calidad`: falta_categoria 97,758, falta_glosa 64,809, falta_saldo 48,770, duplicado_exacto 7,766, falta_monto 6,508, duplicado_cercano 5,164.
+- Gastos atipicos: 0.205% de los movimientos. Salen del presupuesto del mes, de modo que el saldo no se desvia.
+- Movimientos recurrentes: 9.6%. Clientes con una suscripcion duplicada: 36.
 
 ## 5. Contraste con una fuente oficial
 Ingreso operativo mensual medio de 2025 por segmento (S/):
 
 | seg | ingreso_2025 |
 |---|---|
-| base_comision | 2,276 |
-| formal_quincena | 2,907 |
-| independiente_diario | 1,457 |
-| independiente_proyectos | 2,750 |
-| mixto | 1,845 |
+| base_comision | 2,409 |
+| formal_quincena | 3,023 |
+| independiente_diario | 1,405 |
+| independiente_proyectos | 2,508 |
+| mixto | 1,928 |
 
-Ponderado por el peso muestral: **S/ 2,303**. Ancla INEI EPEN abr-2025 a mar-2026: S/ 1,925.9 nacional y S/ 2,093.7 urbano (cuadros 1.28 y 1.30). La poblacion objetivo es bancarizada y por eso queda algo por encima del promedio nacional.
+Ponderado por el peso muestral: **S/ 2,316**. Ancla INEI EPEN abr-2025 a mar-2026: S/ 1,925.9 nacional y S/ 2,093.7 urbano (cuadros 1.28 y 1.30). La poblacion objetivo es bancarizada y por eso queda algo por encima del promedio nacional.
 
 ## 6. Irregularidad y eventos
 CV mensual del ingreso (sin los meses de gratificacion), mediana por segmento:
@@ -92,45 +92,45 @@ CV mensual del ingreso (sin los meses de gratificacion), mediana por segmento:
 | base_comision | 0.19 |
 | formal_quincena | 0.07 |
 | independiente_diario | 0.43 |
-| independiente_proyectos | 0.75 |
+| independiente_proyectos | 0.73 |
 | mixto | 0.57 |
 
 Ingreso de abril de 2020 sobre el de febrero de 2020, por segmento:
 
 | seg | abr/feb |
 |---|---|
-| base_comision | 0.68 |
+| base_comision | 0.66 |
 | formal_quincena | 0.91 |
-| independiente_diario | 0.45 |
-| independiente_proyectos | 0.44 |
-| mixto | 0.74 |
+| independiente_diario | 0.39 |
+| independiente_proyectos | 0.40 |
+| mixto | 0.51 |
 
 Dias con saldo negativo: por segmento
 
 | seg | fraccion_de_dias |
 |---|---|
-| base_comision | 0.015 |
-| formal_quincena | 0.004 |
-| independiente_diario | 0.042 |
-| independiente_proyectos | 0.082 |
-| mixto | 0.057 |
+| base_comision | 0.008 |
+| formal_quincena | 0.006 |
+| independiente_diario | 0.039 |
+| independiente_proyectos | 0.091 |
+| mixto | 0.063 |
 
 y por anio
 
 | fecha | fraccion_de_dias |
 |---|---|
-| 2019 | 0.024 |
-| 2020 | 0.066 |
-| 2021 | 0.050 |
-| 2022 | 0.023 |
-| 2023 | 0.035 |
-| 2024 | 0.033 |
-| 2025 | 0.020 |
+| 2019 | 0.025 |
+| 2020 | 0.067 |
+| 2021 | 0.055 |
+| 2022 | 0.028 |
+| 2023 | 0.032 |
+| 2024 | 0.031 |
+| 2025 | 0.025 |
 
-Clientes con al menos un dia en rojo: 59%.
+Clientes con al menos un dia en rojo: 57%.
 
 ## 7. Texto
-Reparto de sentimiento de los mensajes: neutro 38.0%, positivo 25.0%, preocupado 22.0%, negativo 15.0%. Fraccion con saldo en rojo ese dia: negativo 23.1%, neutro 0.0%, positivo 0.0%, preocupado 0.3%.
+Reparto de sentimiento de los mensajes: neutro 38.0%, positivo 25.0%, preocupado 22.0%, negativo 15.0%. Fraccion con saldo en rojo ese dia: negativo 25.0%, neutro 0.0%, positivo 0.0%, preocupado 0.3%.
 
 ## 8. Controles automaticos
 | Estado | Control |

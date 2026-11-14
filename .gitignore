@@ -223,4 +223,3 @@ __marimo__/
 data/generado/
 models/*.tmp
 .ipynb_checkpoints/
-indice_rag/

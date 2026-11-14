@@ -8,7 +8,7 @@ from src.generador import catalogo as K
 
 NOMBRES = ["JUAN P.", "MARIA L.", "CARLOS R.", "ROSA M.", "LUIS A.", "ANA C.", "PEDRO S.", "LUCIA V.", "JORGE T.", "CARMEN D.",
            "MIGUEL H.", "SOFIA G.", "DANIEL F.", "ELENA B.", "RAUL Q.", "PATRICIA N.", "VICTOR Z.", "GLORIA K.", "OSCAR W.", "FLOR Y."]
-PREFIJO = {"yape": "YAPE", "plin": "PLIN", "tarjeta_debito": "COMPRA POS", "tarjeta_credito": "CONSUMO TC", "transferencia": "TRANSF",
+PREFIJO = {"billetera": "BILLETERA", "pago_qr": "PAGO QR", "tarjeta_debito": "COMPRA POS", "tarjeta_credito": "CONSUMO TC", "transferencia": "TRANSF",
            "debito_automatico": "DEB AUT", "cajero": "RETIRO ATM", "deposito_efectivo": "DEP EFECTIVO"}
 PLANILLA = {"sueldo": "ABONO REMUNERACION", "gratificacion": "ABONO GRATIFICACION", "comision": "ABONO COMISIONES"}
 

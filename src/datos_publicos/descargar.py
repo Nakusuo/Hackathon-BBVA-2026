@@ -7,6 +7,7 @@ import csv
 import hashlib
 import json
 import os
+import shutil
 import sys
 from datetime import date
 
@@ -36,6 +37,14 @@ RAG = [
      "https://documents1.worldbank.org/curated/en/492761513113437043/pdf/Good-practices-for-financial-consumer-protection-2017-edition.pdf", "A", "internacional", "intermedio"),
     ("contexto", "mef_plan_estrategico_inclusion_financiera.pdf", "Plan Estrategico Multisectorial de la Politica Nacional de Inclusion Financiera", "MEF",
      "https://www.mef.gob.pe/contenidos/archivos-descarga/Plan_Estrategico_Multisectorial_PEM.pdf", "A", "Peru", "intermedio"),
+]
+
+# Nivel C: se registran y enlazan, pero no se descargan ni entran al RAG hasta confirmar su licencia (regla de docs/investigacion/rag-fuentes.md).
+PENDIENTES_LICENCIA = [
+    ("fenomeno_el_nino", "Plan familiar de emergencia ante lluvias y El Nino", "Ministerio de Vivienda", "https://ww3.vivienda.gob.pe/grd/documentos/PLAN-FAMILIAR.pdf", "C", "Peru",
+     "Guia educativa; confirmar licencia o reemplazar por un texto normativo"),
+    ("ahorro", "Cartilla de educacion economica para profesores de 5.o de secundaria", "BCRP", "https://www.bcrp.gob.pe/docs/Proyeccion-Institucional/sala-economia/cartillas/cartilla-profesores-5-secundaria.pdf", "A",
+     "Peru", "El sitio bloquea la descarga automatica (anti-bot); bajarla a mano. Las condiciones del BCRP permiten reproducir citando la fuente"),
 ]
 
 # carpeta, archivo, titulo, institucion, url, uso
@@ -179,7 +188,20 @@ def _csv(ruta_csv: str, filas: list[dict]) -> None:
 
 
 def main() -> int:
-    _csv(os.path.join(DOCS_RAG, "fuentes.csv"), descargar_rag())
+    filas = descargar_rag()
+    for modulo, titulo, inst, url, nivel, contexto, nota in PENDIENTES_LICENCIA:
+        filas.append({"modulo": modulo, "archivo": "", "titulo": titulo, "institucion": inst, "enlace": url, "fecha_consulta": HOY, "licencia_nivel": nivel,
+                      "contexto": contexto, "nivel_lectura": "basico", "estado": "pendiente", "detalle": nota, "mb": 0, "sha256": ""})
+    for n in ENFEN:  # comunicados del ENFEN: textos oficiales de caracter administrativo (nivel A, DL 822 art. 9), guardados como texto
+        origen = os.path.join(DOCS_FUENTES, "enfen", f"enfen_comunicado_{n}_2026.txt")
+        destino = os.path.join(DOCS_RAG, "fenomeno_el_nino", f"enfen_comunicado_{n}_2026.txt")
+        if os.path.isfile(origen):
+            os.makedirs(os.path.dirname(destino), exist_ok=True)
+            shutil.copyfile(origen, destino)
+            filas.append({"modulo": "fenomeno_el_nino", "archivo": f"fenomeno_el_nino/enfen_comunicado_{n}_2026.txt", "titulo": f"Comunicado Oficial ENFEN N.o {n}-2026",
+                          "institucion": "ENFEN", "enlace": f"https://enfen.imarpe.gob.pe/download/comunicado-oficial-enfen-n-{n}-2026/", "fecha_consulta": HOY, "licencia_nivel": "A",
+                          "contexto": "Peru", "nivel_lectura": "basico", "estado": "ok", "detalle": "texto de la pagina oficial", "mb": 0, "sha256": _sha(destino)})
+    _csv(os.path.join(DOCS_RAG, "fuentes.csv"), filas)
     _csv(os.path.join(DOCS_FUENTES, "fuentes.csv"), descargar_fuentes() + descargar_enfen())
     _csv(os.path.join(DOCS_FUENTES, "bcrp_series.csv"), descargar_bcrp())
     return 0

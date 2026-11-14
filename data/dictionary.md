@@ -12,6 +12,7 @@ Un cliente por fila. Contrato de datos del plan (seguro.clientes) mas los parame
 | `customer_id` | texto | observable | Identificador ficticio |
 | `rango_edad` | texto | observable | 18-24, 25-34, 35-44, 45-54, 55+ |
 | `region` | texto | observable | lima, norte, sur, centro, oriente |
+| `departamento` | texto | observable | Departamento de residencia (ubicacion gruesa, no coordenadas). Sirve para la alerta por zona de riesgo |
 | `tipo_trabajo` | texto | observable | dependiente, dependiente_con_comision, independiente, mixto |
 | `frecuencia_ingreso` | texto | observable | quincenal, mensual_mas_comision, diaria, irregular, mensual_mas_extra |
 | `personas_a_cargo` | entero | observable | 0 a 5 |
@@ -66,7 +67,7 @@ Un movimiento por fila, con el problema de calidad sembrado (faltantes, duplicad
 | `categoria` | categoria | observable | Categoria del movimiento (puede faltar) |
 | `comercio` | categoria | observable | Comercio o contraparte ficticia |
 | `glosa` | texto | observable | Texto del movimiento, con ruido de escritura (puede faltar) |
-| `canal` | categoria | observable | yape, plin, tarjeta_debito, tarjeta_credito, transferencia, debito_automatico, cajero, deposito_efectivo |
+| `canal` | categoria | observable | billetera, pago_qr, tarjeta_debito, tarjeta_credito, transferencia, debito_automatico, cajero, deposito_efectivo |
 | `saldo` | decimal | observable | Saldo despues del movimiento (puede faltar) |
 | `es_recurrente` | booleano | etiqueta | Compromiso que se repite cada mes |
 | `es_atipico` | booleano | etiqueta | Gasto fuera de patron |

@@ -32,7 +32,7 @@ DATA_RAW = ruta("data", "raw")
 MODELOS = ruta("models")
 DOCS_RAG = ruta("docs", "rag")
 DOCS_FUENTES = ruta("docs", "fuentes")
-INDICE_RAG = ruta("indice_rag")
+INDICE_RAG = ruta("docs", "rag", "indice")
 
 
 def cargar_env() -> None:

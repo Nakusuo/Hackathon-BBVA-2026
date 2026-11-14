@@ -50,6 +50,15 @@ poblacion:
   region:
     values: {lima: 0.45, norte: 0.18, sur: 0.17, centro: 0.12, oriente: 0.08}
     estado: supuesto
+  departamento:
+    # Ubicacion gruesa (departamento), no coordenadas. Pesos internos de cada region: supuesto del equipo.
+    values:
+      lima: {Lima: 0.93, Callao: 0.07}
+      norte: {Piura: 0.30, La Libertad: 0.26, Lambayeque: 0.22, Cajamarca: 0.14, Tumbes: 0.08}
+      sur: {Arequipa: 0.30, Cusco: 0.20, Ica: 0.15, Puno: 0.12, Tacna: 0.08, Moquegua: 0.05, Apurimac: 0.10}
+      centro: {Junin: 0.35, Ancash: 0.25, Huanuco: 0.15, Ayacucho: 0.15, Pasco: 0.05, Huancavelica: 0.05}
+      oriente: {Loreto: 0.30, San Martin: 0.25, Ucayali: 0.20, Amazonas: 0.15, Madre de Dios: 0.10}
+    estado: supuesto
   edad:
     values: {"18-24": 0.12, "25-34": 0.32, "35-44": 0.26, "45-54": 0.18, "55+": 0.12}
     estado: supuesto
