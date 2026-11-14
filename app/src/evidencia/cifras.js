@@ -1,11 +1,11 @@
 // Toda cifra del panel Evidencia se lee aquí, con su archivo y su ruta de claves.
 // Si `make eval` cambia el nombre de una clave, la build y las pruebas fallan en vez de mostrar un número viejo.
 import agentePlantillas from '../../../models/metricas_agente_plantillas.json' with { type: 'json' }
-import agenteGemini from '../../../models/metricas_agente_gemini.json' with { type: 'json' }
 import clasificacion from '../../../models/metricas_clasificacion.json' with { type: 'json' }
 import escala from '../../../models/metricas_escala.json' with { type: 'json' }
 import impacto from '../../../models/metricas_impacto.json' with { type: 'json' }
 import principal from '../../../models/metricas.json' with { type: 'json' }
+import qaAgente from '../../../models/metricas_qa_agente.json' with { type: 'json' }
 import rag from '../../../models/metricas_rag.json' with { type: 'json' }
 import valor from '../../../models/metricas_valor.json' with { type: 'json' }
 
@@ -16,7 +16,7 @@ export const ARCHIVOS = {
   clasificacion: { ruta: 'models/metricas_clasificacion.json', datos: clasificacion },
   rag: { ruta: 'models/metricas_rag.json', datos: rag },
   agentePlantillas: { ruta: 'models/metricas_agente_plantillas.json', datos: agentePlantillas },
-  agenteGemini: { ruta: 'models/metricas_agente_gemini.json', datos: agenteGemini },
+  qaAgente: { ruta: 'models/metricas_qa_agente.json', datos: qaAgente },
   escala: { ruta: 'models/metricas_escala.json', datos: escala },
 }
 
