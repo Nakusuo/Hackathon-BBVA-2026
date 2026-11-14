@@ -26,7 +26,10 @@ Indicación del juez: Lucas debe ser **el compañero bancario** del cliente. Se 
 | [reglas/negocio.md](reglas/negocio.md) | Reglas de producto, seguridad del recomendador y privacidad | Al tocar recomendador, chat, datos o UI |
 | [reglas/gitflow.md](reglas/gitflow.md) | Ramas, commits y merges | Antes de empezar cualquier tarea |
 | [reglas/calidad-codigo.md](reglas/calidad-codigo.md) | Anti AI-slop: comentarios, limpieza, textos y UI | Al escribir código, docs o pantallas |
-| [reglas/flujo-trabajo.md](reglas/flujo-trabajo.md) | Investigador, codificador y jueces | Para organizar y verificar cada tarea |
+| [reglas/flujo-trabajo.md](reglas/flujo-trabajo.md) | Investigador, codificador, tester y jueces | Para organizar y verificar cada tarea |
+| [reglas/seguridad-iso27001.md](reglas/seguridad-iso27001.md) | Declaración de aplicabilidad ISO/IEC 27001:2022 | Al tocar datos, accesos, logs o dependencias |
+| [reglas/pruebas-istqb.md](reglas/pruebas-istqb.md) | Estrategia de pruebas ISTQB | Al escribir tests o ejecutar un ciclo |
+| [planes/pruebas.md](planes/pruebas.md) | Catálogo de casos, trazabilidad y resultados por ciclo | En cada ciclo de pruebas |
 | [investigacion/](investigacion/) | Informes del investigador | Antes de codificar algo con dudas |
 | [estadisticas/metricas.md](estadisticas/metricas.md) | Criterios de éxito, baselines y métricas por módulo | Al tocar modelos o evaluación |
 | [estadisticas/cifras-publicas.md](estadisticas/cifras-publicas.md) | Cifras de calibración y su estado de verificación | Al calibrar el generador o escribir el pitch/README |
@@ -45,6 +48,7 @@ Indicación del juez: Lucas debe ser **el compañero bancario** del cliente. Se 
 9. **Gitflow**: nunca trabajar directo en `main` ni `develop`; cada tarea en `feature/<rol>-<tema>`.
 10. **Anti AI-slop**: comentarios solo para explicar el porqué, sin código muerto ni textos de plantilla.
 11. **Nada se une sin juez**: cada rama pasa por `juez-tecnico` y, si se ve en la demo, por `juez-producto`.
+12. **Seguridad ISO 27001 y pruebas ISTQB**: decimos «alineado con», nunca «certificado»; nada se entrega sin cumplir los criterios de salida de pruebas.
 
 ## Agentes
 
@@ -52,6 +56,7 @@ Indicación del juez: Lucas debe ser **el compañero bancario** del cliente. Se 
 |---|---|
 | Investigador | `investigador` |
 | Codificadores | `codificador` (general) y por área: `datos`, `ml-analitica`, `ia-chat`, `backend`, `frontend-ux`, `pitch-docs` |
+| Tester (ISTQB) | `tester` |
 | Jueces | `juez-tecnico`, `juez-producto`, `juez-cumplimiento` |
 
 ## Forma de trabajar

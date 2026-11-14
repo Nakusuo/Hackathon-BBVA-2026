@@ -25,6 +25,8 @@ Versión 1 (brief del 13/11 y bases finales): `~/Escritorio/PLAN_MAESTRO_LUCAS.m
 | Segmentos sin nombre de negocio | **Matriz ahorro × gasto** (ahorrador/no ahorrador × gasta mucho/gasta poco) encima de los clusters | Segmentos que el banco entiende |
 | Datos generados solo por reglas | **Generación estratificada** + **bootstrap** de perfiles para que ningún segmento quede sub o sobrerrepresentado | Evitar sesgo |
 | RAG con manuales sueltos | **RAG por módulos**: salud financiera, ahorro, deudas, inversión básica, seguros y derechos del usuario | Educación que acompaña cada recomendación |
+| Controles de seguridad sueltos | **Alineado con 23 controles de ISO/IEC 27001:2022** (sin certificación), con declaración de aplicabilidad | Calidad técnica y confianza bancaria |
+| Tests sin método | **Estrategia de pruebas ISTQB**: 4 niveles, técnicas de diseño, riesgo, criterios de salida, 3 ciclos y catálogo de 27 casos de sistema | Pruebas funcionales del sistema demostrables |
 
 **Se descarta:** segunda base NoSQL (Postgres con JSONB la cubre), GraphRAG, deep learning entrenado desde cero, multimodal, varios agentes, ubicación exacta.
 
@@ -282,9 +284,29 @@ Accesibilidad: contraste AA, texto ≥ 16 px, no depender solo del color, incert
 
 ---
 
-## 7. Seguridad y controles
+## 7. Seguridad y pruebas
 
-Secretos en `.env` (nunca en el repo). Validación Pydantic. Timeouts del LLM y del BCRP con fallback. Latencia: < 2 s sin LLM, < 8 s con LLM. System prompt fijo, tools de solo lectura, casos de prompt injection en tests. Dependencias con versión fija. Sin marca ni colores de BBVA. Licencias de los manuales del RAG y del modelo de sentimiento revisadas.
+### Seguridad alineada con ISO/IEC 27001:2022
+Responsable: Michael. Declaración de aplicabilidad completa en [../reglas/seguridad-iso27001.md](../reglas/seguridad-iso27001.md).
+
+- **Acceso:** roles por componente, mínimo privilegio, RLS por cliente (5.15, 8.2, 8.3).
+- **Datos:** clasificación en 3 niveles, cifrado con pgcrypto, enmascaramiento en logs, borrado a pedido, solo datos sintéticos en pruebas (5.12, 8.24, 8.11, 8.10, 8.33).
+- **Privacidad:** consentimiento y memoria borrable, alineado con la Ley 29733 (5.34).
+- **Desarrollo seguro:** Gitflow, revisión cruzada, jueces, `ruff`, `pip-audit`, pruebas de seguridad (8.25, 8.28, 8.29, 8.8, 8.32).
+- **Operación:** logging sin datos sensibles, monitoreo de latencia y errores, configuración como código (8.15, 8.16, 8.9).
+- Además: secretos solo en `.env`, validación Pydantic, timeouts con fallback, tools de solo lectura, sin marca ni colores de BBVA.
+
+Decimos **«alineado con»**, nunca «certificado».
+
+### Pruebas con método ISTQB
+Coordina: Dixon. Estrategia en [../reglas/pruebas-istqb.md](../reglas/pruebas-istqb.md); catálogo en [pruebas.md](pruebas.md).
+
+- **Niveles:** componente (autor), integración (autor + revisor), sistema (Dixon + todos), aceptación (equipo + `juez-producto`).
+- **Técnicas:** partición de equivalencia, valores límite, tabla de decisión, transición de estados, predicción de errores, exploratoria; para ML y agente, metamórficas y adversas.
+- **Prioridad por riesgo:** crítica (daña al usuario o rompe las bases), alta (rompe la demo), media, baja.
+- **Ciclos:** sábado 23:00, domingo 10:00 (regresión) y domingo 12:00 (aceptación sobre `release/entrega`).
+- **Criterios de salida:** 100 % de críticos pasan, ≥ 90 % de altos, 0 defectos críticos o altos abiertos, todos los DEBE trazados a casos, cobertura ≥ 70 % en modelos y recomendador.
+- **Defectos:** issues de GitHub con etiqueta `defecto`, cerrados solo con prueba de confirmación.
 
 ---
 
@@ -334,8 +356,8 @@ Protocolo: leer el cambio → escenario en el generador → test que falla → a
 | **Miguel** | Desarrollo backend | FastAPI, ingesta, recomendador, ofertas, motor de eventos, simulador | `backend` | Michael |
 | **Jeffrey** | Desarrollo IA (AI Engineer) | Agente LangGraph, tools, RAG pgvector, juez, providers, BCRP | `ia-chat` | Diego |
 | **Marcela** | Desarrollo frontend | UI interactiva, avisos, simulador, chat, evidencia, accesibilidad | `frontend-ux` | Dixon |
-| **Michael** | Arquitectura de sistema | Postgres seguro, Docker, contratos de API, Makefile, CI de tests, ARCHITECTURE.md | `backend` / `juez-cumplimiento` | Miguel |
-| **Dixon** | Arquitectura de datos y diagramas | Generador sintético, diccionario, QUALITY.md, diagramas, README, guion del pitch | `datos` / `pitch-docs` | Marcela |
+| **Michael** | Arquitectura de sistema y seguridad | Postgres seguro, Docker, contratos de API, Makefile, pruebas de punta a punta, **ISO 27001**, ARCHITECTURE.md | `backend` / `juez-cumplimiento` | Miguel |
+| **Dixon** | Arquitectura de datos, diagramas y QA | Generador sintético, diccionario, QUALITY.md, diagramas, README, guion del pitch, **coordinación de pruebas ISTQB** | `datos` / `pitch-docs` / `tester` | Marcela |
 
 - **Revisión cruzada:** cada persona revisa los PR de su pareja antes del merge, además del juez correspondiente.
 - **El pitch es de todos:** Dixon lo coordina; cada persona presenta su parte.
@@ -402,7 +424,8 @@ LLM externo permitido · dataset común · APIs públicas en la demo · formato 
 - [ ] MVP ejecutable (`make run`, también offline)
 - [ ] IA/ML con valor medido (EVALUATION.md)
 - [ ] Baselines y casos adversos
-- [ ] Seguridad y explicabilidad
+- [ ] Seguridad y explicabilidad (declaración de aplicabilidad ISO 27001 con evidencia)
+- [ ] Pruebas funcionales del sistema: 3 ciclos ejecutados y criterios de salida cumplidos
 - [ ] README y ARCHITECTURE
 - [ ] Demo ensayada 3 veces + video de respaldo
 - [ ] Entrega en `main`, repo accesible al jurado

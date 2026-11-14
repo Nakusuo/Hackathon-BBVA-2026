@@ -3,8 +3,8 @@
 Cada tarea pasa por tres roles. Así se verifica lo que avanza y no solo se acumula código.
 
 ```
-Investigador ──► Codificador ──► Jueces ──► merge a develop
-   (qué y cómo)    (rama feature)   (aprueban o devuelven)
+Investigador ──► Codificador ──► Tester ──► Jueces ──► merge a develop
+   (qué y cómo)    (rama feature)   (casos ISTQB)  (aprueban o devuelven)
 ```
 
 ## 1. Investigador (`investigador`)
@@ -21,6 +21,11 @@ Investigador ──► Codificador ──► Jueces ──► merge a develop
 - Primero el test o el baseline, luego la implementación.
 - Cumple [calidad-codigo.md](calidad-codigo.md).
 - Al terminar: `make test`, commit y aviso a los jueces con la lista de archivos tocados.
+
+## 2b. Tester (`tester`)
+
+- Diseña casos con técnicas ISTQB y ejecuta los ciclos de pruebas del sistema ([pruebas-istqb.md](pruebas-istqb.md)).
+- Registra resultados en [../planes/pruebas.md](../planes/pruebas.md) y abre defectos.
 
 ## 3. Jueces
 

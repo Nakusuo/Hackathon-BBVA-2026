@@ -16,7 +16,9 @@ Lee: `.claude/reglas/bases-hackathon.md`, `.claude/reglas/negocio.md`, `.claude/
 5. **Verificador:** el chat no puede devolver cifras sin pasar por el verificador; existe fallback a plantillas.
 6. **Recomendador:** reglas de seguridad presentes y testeadas (crédito, dólares, «tú decides»).
 7. **Reproducibilidad:** `make data`, `make test` (< 1 min), `make eval`, `make run` existen y corren.
-8. **Checklist de salida** de las bases.
+8. **ISO 27001:** cada control de `.claude/reglas/seguridad-iso27001.md` tiene evidencia real; nunca se dice «certificado».
+9. **Pruebas:** `.claude/planes/pruebas.md` con los 3 ciclos y criterios de salida cumplidos.
+10. **Checklist de salida** de las bases.
 
 ## Formato del informe
 Tabla con: punto · cumple (sí/no/parcial) · evidencia (archivo:línea) · qué falta. Primero lo bloqueante.

@@ -11,8 +11,8 @@ El avance tarea por tarea se marca en [tareas.md](tareas.md).
 | Miguel | Backend | `backend` | Michael |
 | Jeffrey | IA Engineer (agente) | `ia-chat` | Diego |
 | Marcela | Frontend | `frontend-ux` | Dixon |
-| Michael | Arquitectura de sistema | `backend`, `juez-cumplimiento` | Miguel |
-| Dixon | Arquitectura de datos y diagramas | `datos`, `pitch-docs` | Marcela |
+| Michael | Arquitectura de sistema y seguridad (ISO 27001) | `backend`, `juez-cumplimiento` | Miguel |
+| Dixon | Arquitectura de datos, diagramas y QA (ISTQB) | `datos`, `pitch-docs`, `tester` | Marcela |
 
 Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto`.
 
@@ -32,6 +32,8 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 | 2026-11-14 | Ofertas y promociones desde un catálogo ficticio configurable, no productos reales de BBVA | Bases: prohibido aparentar producto oficial |
 | 2026-11-14 | Datos: generación estratificada + bootstrap de perfiles; ENAHO como base semilla si la licencia lo permite | Evitar sesgo |
 | 2026-11-14 | RAG por módulos (salud, ahorro, deudas, inversión básica, seguros, derechos) con fuentes y licencia | Educación ligada a cada recomendación |
+| 2026-11-14 | Seguridad alineada con 23 controles de ISO/IEC 27001:2022 (sin certificación); responsable Michael | Confianza bancaria y calidad técnica |
+| 2026-11-14 | Pruebas con método ISTQB: 4 niveles, 3 ciclos, criterios de salida; coordina Dixon con el agente tester | Pruebas funcionales del sistema demostrables |
 | 2026-11-14 | Descartado: NoSQL, GraphRAG, deep learning desde cero, multimodal, varios agentes, ubicación exacta | Sin puntos extra y riesgo de tiempo |
 | 2026-11-14 | Gitflow simplificado; flujo investigador, codificador y jueces; revisión cruzada en parejas | Control y verificación |
 | — | UI: React + Recharts o Streamlit (Marcela decide a las 11:30) | — |

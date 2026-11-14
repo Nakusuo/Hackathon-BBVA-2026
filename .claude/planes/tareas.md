@@ -11,8 +11,8 @@ Comandos para todo: [comandos.md](comandos.md). Plan completo: [plan-maestro.md]
 | MG | Miguel | Backend | Michael |
 | JF | Jeffrey | IA Engineer (agente) | Diego |
 | MC | Marcela | Frontend | Dixon |
-| MI | Michael | Arquitectura de sistema | Miguel |
-| DX | Dixon | Arquitectura de datos y diagramas | Marcela |
+| MI | Michael | Arquitectura de sistema y seguridad ISO 27001 | Miguel |
+| DX | Dixon | Arquitectura de datos, diagramas y QA ISTQB | Marcela |
 
 ## Cómo nos avisamos
 
@@ -90,7 +90,10 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **JF-04** Nodo juez: verificador de cifras con tolerancia, reintento y plantilla; tests con respuestas trampa. Rama `feature/ia-juez`
 - [ ] **MC-03** Pantallas Qué hacer (tarjetas con «¿por qué?») y Avisos (bandeja). Rama `feature/front-recos-avisos`
 - [ ] **MC-04** Conectar la UI a la API real. *Depende:* MG-06
-- [ ] **MI-04** Makefile completo: `data`, `db`, `test`, `check` (ruff + tests), `eval`, `run`, `e2e`. Rama `feature/arq-makefile`
+- [ ] **MI-04** Makefile completo: `data`, `db`, `test`, `check` (ruff + tests con cobertura + `pip-audit`), `eval`, `run`, `e2e`. Rama `feature/arq-makefile`
+- [ ] **MI-10** ISO 27001: completar la evidencia de la declaración de aplicabilidad (`reglas/seguridad-iso27001.md`), sección Activos en `ARCHITECTURE.md`, proteger las ramas `main` y `develop` en GitHub. Rama `feature/arq-iso27001`
+- [ ] **DX-13** Plan de pruebas: revisar el catálogo de `planes/pruebas.md` con el agente `tester`, crear la etiqueta `defecto` y la plantilla de issue en GitHub, armar `tests/sistema/` para los casos automatizables. Rama `feature/docs-pruebas-plan`
+- [ ] **TODOS-05** Cada persona agrega al catálogo los casos de su módulo (`CP-<código>-NN`) con al menos una técnica de caja negra.
 - [ ] **MI-05** `make e2e`: genera muestra → carga → llama a cada endpoint → valida respuestas. Middleware de latencia por endpoint. Rama `feature/arq-e2e`
 - [ ] **DX-05** Escenarios difíciles: ingresos irregulares, duplicadas, cambio de patrón, faltantes, atípicos y necesidades ocultas sembradas. Rama `feature/datos-escenarios`
 - [ ] **DX-06** Diagramas v1 (Mermaid): arquitectura en 3 capas, flujo de datos, grafo del agente. En `ARCHITECTURE.md`. Rama `feature/docs-diagramas`
@@ -111,6 +114,8 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **DI-08** Pronóstico global frente a global + cluster frente a uno por cluster; MAE por segmento. Rama `feature/ml-por-segmento`
 - [ ] **DI-09** Clasificador de glosa TF-IDF frente a diccionario; F1 por categoría. Rama `feature/ml-glosa`
 - [ ] **MI-06** Demo de seguridad: script que muestra a `lucas_agente` bloqueado por Postgres; documentarlo. Rama `feature/arq-demo-seguridad`
+- [ ] **MI-11** Pruebas de seguridad (ISO 8.29): `tests/seguridad/` con inyección SQL, acceso a otro cliente, logs sin datos sensibles (8.11) y `pip-audit` sin vulnerabilidades altas. Rama `feature/arq-pruebas-seguridad`
+- [ ] **DX-14** **Ciclo 1 de pruebas de sistema (23:00)** con el agente `tester`: ejecutar el catálogo, registrar resultados y abrir defectos. Resumen en el checkpoint.
 - [ ] **MI-07** Instalar desde cero en la laptop de la demo siguiendo solo el README; anotar lo que falte. 
 - [ ] **DX-07** `QUALITY.md` generado por script y calibración con cifras públicas (con el agente `investigador`). Rama `feature/datos-calidad`
 - [ ] **TODOS-01** Cada persona escribe 17 frases reales sobre plata (alegría, preocupación, neutras) para el set de 100 de sentimiento. Dixon las junta en `data/eval/frases.csv`.
@@ -125,6 +130,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **MG-09** Manejo de errores y timeouts; tests de la API. Rama `feature/backend-robustez`
 - [ ] **MI-08** Pasar el agente `juez-cumplimiento`; `git grep` de secretos; corregir lo bloqueante. Rama `fix/arq-cumplimiento`
 - [ ] **DX-08** README v1 y guion del pitch v1. Rama `feature/docs-readme-pitch`
+- [ ] **DX-15** **Ciclo 2: regresión completa (10:00)**. Pruebas de confirmación de los defectos cerrados. Informe de pruebas en `EVALUATION.md`.
 
 ## Bloque 6 · Domingo 10:00–12:00 · DEBERÍA y pulido
 
@@ -141,7 +147,8 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 
 ## Bloque 7 · Domingo 12:00 en adelante · Entrega
 
-- [ ] **MI-09** Rama `release/entrega`, `make check` y `make e2e` en verde, merge a `main` y etiqueta `v1.0-entrega`.
+- [ ] **DX-16** **Prueba de aceptación** sobre `release/entrega`: casos críticos y flujo de la demo. Solo si cumple los criterios de salida se hace el merge a `main`.
+- [ ] **MI-09** Rama `release/entrega`, `make check` y `make e2e` en verde, DX-16 aprobada, merge a `main` y etiqueta `v1.0-entrega`.
 - [ ] **DX-09** `ARCHITECTURE.md` final con diagramas y `PROMPTS.md` revisado con Jeffrey.
 - [ ] **MC-10 / DX-10** Video de respaldo de la demo (3 a 4 min) y capturas en `demo/`.
 - [ ] **TODOS-04** 3 ensayos cronometrados (10:00 exactos) y simulacro de preguntas del jurado.

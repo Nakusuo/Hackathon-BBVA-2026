@@ -17,7 +17,8 @@ Lee: `.claude/reglas/calidad-codigo.md`, `.claude/reglas/gitflow.md`, `.claude/e
 4. **Fugas de datos:** splits temporales o por cliente; el arquetipo no entra como variable.
 5. **Anti-slop:** comentarios que narran, código muerto, `print`, `TODO` sin dueño, `except` que traga errores, abstracciones sin uso, dependencias sin versión.
 6. **Seguridad:** secretos en el código, entradas sin validar, tools que mueven dinero, cifras del LLM sin verificador.
-7. **Corre el código** si es posible; no confíes en que «funciona».
+7. **Pruebas ISTQB:** ¿hay tests del nivel que corresponde (componente, integración)? ¿Se usó al menos una técnica de caja negra (partición, valores límite, tabla de decisión)? ¿La cobertura de `src/models` y `src/recommender` sigue ≥ 70 %?
+8. **Corre el código** si es posible; no confíes en que «funciona».
 
 ## Formato del veredicto
 **Veredicto:** APRUEBA / CAMBIOS / RECHAZA
