@@ -13,6 +13,7 @@ _CITA = re.compile(r"\[fuente:\s*([^\]]+?)\s*\]")
 # «1.» o «2)» al inicio de línea numeran una lista, no son cifras.
 _VINETA = re.compile(r"^\s*\d{1,2}[.)]\s", re.MULTILINE)
 _FECHA_ISO = re.compile(r"^\d{4}-\d{2}(-\d{2})?$|^\d{4}-\d{2}-\d{2}T")
+_DECIMAL_EN_TEXTO = re.compile(r"^-?\d+(\.\d+)?$")
 
 # Al hablar se redondea a la decena desde 100 y a la centena desde 1 000; nada intermedio.
 _REDONDEOS = ((100, -1), (1000, -2))
@@ -117,6 +118,10 @@ def valores_permitidos(datos) -> Permitidos:
     def visitar(x, clave: str = ""):
         if isinstance(x, bool):
             return
+        # FastAPI manda los `Decimal` como texto («"rate": "3.75"»), y el contrato pide Decimal
+        # para montos; sin esto el juez rechaza cifras reales de la API de Miguel.
+        if isinstance(x, str) and _DECIMAL_EN_TEXTO.match(x):
+            x = float(x)
         if isinstance(x, (int, float)):
             p.cifras.add(float(x))
             p.campo.setdefault(float(x), clave)

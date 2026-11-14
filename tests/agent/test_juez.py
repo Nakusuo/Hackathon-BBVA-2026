@@ -313,3 +313,10 @@ def test_rechaza_puntaje_llamado_saldo():
 def test_salud_del_llm_con_escala_pasa():
     datos = resumen_para_llm("salud", SALUD)
     assert juzgar("Tu salud está en 72 de 100, estable.", datos, exigir_cifra=True).ok
+
+
+def test_acepta_decimales_que_la_api_manda_como_texto():
+    # Así responde /fx en la rama de Miguel: Pydantic serializa Decimal como texto.
+    datos = {"get_fx": {"rate": "3.75", "date": "2026-01-01", "customer_id": "demo-001"}}
+    v = juzgar("El tipo de cambio es S/ 3.75 por dólar.", datos)
+    assert v.ok and v.detalle == [(3.75, "rate")]

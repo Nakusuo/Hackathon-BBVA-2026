@@ -21,6 +21,10 @@ RESPUESTAS_FIJAS = {
         "No te entendí bien. Puedes preguntarme si llegas a fin de mes, cómo está tu salud "
         "financiera, qué te conviene hacer o qué pasa si gastas un monto."
     ),
+    "sin_datos": (
+        "Ahora no puedo ver tus datos, así que prefiero no darte cifras. "
+        "Prueba de nuevo en un momento."
+    ),
 }
 
 _IMPACTO = {"expense_reduction": "dejas de gastar", "savings_allocation": "apartas"}

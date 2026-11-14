@@ -1,16 +1,28 @@
 """Tools de solo lectura del agente, con la forma del contrato `docs/api.md` (MG-01).
 
-`HerramientasMock` responde con los mocks de `data/sample/mocks/` para probar el grafo antes
-de que exista la API (MG-03). JF-03 agrega la versión que llama a la API real con el rol
-`lucas_agente`. Ninguna tool mueve dinero.
+- `HerramientasAPI` (JF-03) llama a la API de Miguel. Cuando la API pase de mocks a los modelos
+  de Diego (MG-06), el agente recibe datos reales sin cambiar nada aquí.
+- `HerramientasMock` lee `data/sample/mocks/` para probar sin servidor.
+
+El `customer_id` llega del estado del grafo (lo pone la API con la sesión), nunca del LLM.
+Ninguna tool mueve dinero: `simulate` solo pide un escenario hipotético.
 """
 
 import copy
 import json
+import os
 from pathlib import Path
 from typing import Protocol
+from urllib.parse import quote
+
+import httpx
 
 RUTA_MOCKS = Path(__file__).resolve().parents[2] / "data" / "sample" / "mocks"
+TIMEOUT_TOOLS_S = 5
+
+
+class HerramientaNoDisponible(Exception):
+    """La API no respondió o devolvió un error: el agente responde sin cifras."""
 
 
 class Herramientas(Protocol):
@@ -75,3 +87,40 @@ class HerramientasMock:
 
     def get_fx(self) -> dict:
         return self._mock("fx")
+
+
+class HerramientasAPI:
+    """Tools sobre la API REST del contrato (`LUCAS_API_URL`, por defecto localhost:8000)."""
+
+    def __init__(self, base_url: str | None = None, cliente: httpx.Client | None = None):
+        url = base_url or os.getenv("LUCAS_API_URL", "http://localhost:8000")
+        self.cliente = cliente or httpx.Client(base_url=url, timeout=TIMEOUT_TOOLS_S)
+
+    def _pedir(self, metodo: str, ruta: str, **kwargs) -> dict:
+        try:
+            respuesta = self.cliente.request(metodo, ruta, **kwargs)
+            respuesta.raise_for_status()
+            return respuesta.json()
+        except (httpx.HTTPError, ValueError) as e:
+            raise HerramientaNoDisponible(f"{metodo} {ruta}: {type(e).__name__}") from e
+
+    def get_health(self, customer_id: str) -> dict:
+        return self._pedir("GET", f"/api/v1/customers/{quote(customer_id, safe='')}/health")
+
+    def get_forecast(self, customer_id: str) -> dict:
+        return self._pedir("GET", f"/api/v1/customers/{quote(customer_id, safe='')}/forecast")
+
+    def get_recos(self, customer_id: str) -> dict:
+        return self._pedir(
+            "GET", f"/api/v1/customers/{quote(customer_id, safe='')}/recommendations"
+        )
+
+    def simulate(self, customer_id: str, monto_gasto: float) -> dict:
+        pedido = pedido_simulacion(customer_id, monto_gasto)
+        respuesta = self._pedir("POST", "/api/v1/simulations", json=pedido)
+        # La respuesta del contrato no repite lo pedido; se agrega para que el juez acepte
+        # el monto que el usuario preguntó (la tool devuelve también sus entradas).
+        return {**respuesta, "request": pedido}
+
+    def get_fx(self) -> dict:
+        return self._pedir("GET", "/api/v1/fx")

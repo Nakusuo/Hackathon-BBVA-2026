@@ -19,6 +19,7 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 | 2026-11-14 | Correcciones de la medición de Michael (JF-07) | `feature/ia-jeffrey-actividades` | `OLLAMA_HOST=0.0.0.0` normalizado a localhost. Salud vuelve al LLM (faltaba el 100 de «72 de 100»). El juez rechaza cifras mal descritas: «saldo» que no es saldo, «actual» que es final y negativos escritos como positivos. Prompt v4. Opción `--simular-con-llm` para que Michael pruebe CP-SIS-10. 166 tests en verde |
 | 2026-11-14 | PR #5 unido a `develop` (por Marcela) | — | Marcela subió 2 arreglos al juez antes de unirlo: regla de signo con negaciones y «a favor», redondeo solo a decena (≥ 100) o centena (≥ 1 000), y prohibidas «préstamo», «un crédito» y «sin riesgo». Sin aprobación formal de Diego en GitHub |
 | 2026-11-14 | Correcciones de la medición en rama nueva | `feature/ia-medicion-rtx` | Las correcciones de la medición de Michael no alcanzaron a entrar al PR #5. Van sobre `develop` y se combinan con la regla de signo de Marcela (se queda la suya, que es más completa, y se le suma «S/ 200 te faltaron»). 210 tests en verde |
+| 2026-11-14 | JF-03 Tools sobre la API de Miguel | `feature/ia-tools` | `HerramientasAPI` llama a los endpoints del contrato (`/health`, `/forecast`, `/recommendations`, `POST /simulations`, `/fx`); `simulate` devuelve también lo que pidió. Si la API cae, el agente responde «no puedo ver tus datos» sin cifras (CP-SIS-15). Probado de punta a punta contra el servidor real de `feature/backend-fastapi`: todo verificado. El juez ahora acepta montos que FastAPI manda como texto (`"rate": "3.75"`). `python -m agent --api URL`. 222 tests en verde |
 
 ## Lo que acordamos
 
@@ -42,7 +43,9 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 - [ ] Michael: repetir la medición con el prompt v4 y con `--simular-con-llm` (CP-SIS-10); pasarle el resultado a Dixon
 - [x] Campo `figures` acordado con Marcela y Miguel
 - [ ] Miguel anota `figures` en `docs/api.md` y lo declara en la respuesta de `/chat`
-- [ ] JF-03 Tools reales sobre `estado_cliente` y `src/tipos.py` (espera MG-03 de Miguel y MI-03 de Michael)
+- [x] JF-03 sobre la API de Miguel (`feature/ia-tools`)
+- [ ] JF-03 con el rol `lucas_agente` directo a Postgres o a `estado_cliente` de `ARCHITECTURE.md`, cuando existan (MI-03, `src/nucleo.py`). Hoy las tools pasan por la API
+- [ ] Miguel: agregar `first_risk_date` a `ForecastResponse` (sin eso Lucas no avisa el día en rojo; confirmado con su servidor)
 - [ ] JF-04 Números del fragmento citado (con JF-05)
 - [ ] JF-05 RAG en pgvector por módulo (espera MI-02 de Michael)
 - [ ] JF-09 Memoria con listas cerradas y «olvidar lo que sabes de mí» (espera MI-03)

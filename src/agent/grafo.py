@@ -13,7 +13,7 @@ from agent import plantillas, router
 from agent.juez import juzgar
 from agent.prompts import resumen_para_llm
 from agent.providers import LLMProvider, TemplateProvider, redactar_con_respaldo
-from agent.tools import Herramientas
+from agent.tools import HerramientaNoDisponible, Herramientas
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +61,13 @@ def construir(
         }
         nombres = plantillas.TOOLS_POR_INTENCION[e["intencion"]]
         log.info("tools %s para intención %s", nombres, e["intencion"])
-        return {"datos": {n: llamadas[n]() for n in nombres}, "tools_usadas": nombres}
+        try:
+            datos = {n: llamadas[n]() for n in nombres}
+        except HerramientaNoDisponible as error:
+            # Sin datos no hay cifras que verificar: se avisa sin inventar nada (CP-SIS-15).
+            log.warning("tools no disponibles: %s", error)
+            return {"intencion": "sin_datos", "tools_usadas": nombres}
+        return {"datos": datos, "tools_usadas": nombres}
 
     def nodo_redaccion(e: Estado) -> Estado:
         texto, proveedor = redactar_con_respaldo(cadena, e["intencion"], e["datos"], espera_s)
@@ -101,7 +107,9 @@ def construir(
         return "plantilla" if e["intencion"] in _BLOQUEADAS else "tools"
 
     def tras_tools(e: Estado) -> str:
-        return "plantilla" if e["intencion"] in sin_llm else "redaccion"
+        if e["intencion"] in sin_llm or e["intencion"] in _BLOQUEADAS:
+            return "plantilla"
+        return "redaccion"
 
     def tras_juez(e: Estado) -> str:
         if e["aprobado"]:
