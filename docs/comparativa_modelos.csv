@@ -1,0 +1,39 @@
+problema,metrica,mejor,candidato,valor,elegido
+Segmentación de clientes,Silueta de Gower,mayor,K-Prototypes,0.204821,si
+Segmentación de clientes,Silueta de Gower,mayor,K-means (one-hot),0.203635,no
+Segmentación de clientes,Silueta de Gower,mayor,Reglas 2×2,0.057972,no
+Pronóstico del saldo a 30 días,Error medio / ingreso mensual,menor,LightGBM + bandas conformales,0.426304,si
+Pronóstico del saldo a 30 días,Error medio / ingreso mensual,menor,Promedio móvil de 3 meses,0.720867,no
+Pronóstico del saldo a 30 días,Error medio / ingreso mensual,menor,Perfil estructural,0.769442,no
+Alerta de saldo en rojo a 30 días,PR-AUC (evento raro),mayor,LightGBM calibrado,0.59399,si
+Alerta de saldo en rojo a 30 días,PR-AUC (evento raro),mayor,Regla de saldo bajo,0.580533,no
+Alerta de saldo en rojo a 30 días,PR-AUC (evento raro),mayor,Perfil estructural,0.265954,no
+Día en que el saldo cae a rojo,Error medio en días,menor,LightGBM,5.401125,si
+Día en que el saldo cae a rojo,Error medio en días,menor,Perfil estructural,7.844424,no
+Día en que el saldo cae a rojo,Error medio en días,menor,Tendencia lineal,12.473758,no
+Proyección mensual de ingresos (1 a 6 meses),Error medio / ingreso mensual (promedio de los 6 horizontes),menor,"LightGBM, recalibración continua",0.40301,si
+Proyección mensual de ingresos (1 a 6 meses),Error medio / ingreso mensual (promedio de los 6 horizontes),menor,"LightGBM, calibración fija",0.40301,no
+Proyección mensual de ingresos (1 a 6 meses),Error medio / ingreso mensual (promedio de los 6 horizontes),menor,Mismo mes del año previo,0.567137,no
+Proyección mensual de ingresos (1 a 6 meses),Error medio / ingreso mensual (promedio de los 6 horizontes),menor,Promedio de 3 meses,0.557229,no
+Proyección mensual: cobertura de la banda al 80 %,Cobertura de ingresos (objetivo 0.80),objetivo,"LightGBM, recalibración continua",0.793902,si
+Proyección mensual: cobertura de la banda al 80 %,Cobertura de ingresos (objetivo 0.80),objetivo,"LightGBM, calibración fija",0.731388,no
+Proyección mensual: cobertura de la banda al 80 %,Cobertura de ingresos (objetivo 0.80),objetivo,Mismo mes del año previo,0.816344,no
+Proyección mensual: cobertura de la banda al 80 %,Cobertura de ingresos (objetivo 0.80),objetivo,Promedio de 3 meses,0.745034,no
+Categoría de cada movimiento (glosa),F1 macro,mayor,TF-IDF por caracteres + SGD lineal,0.893654,si
+Categoría de cada movimiento (glosa),F1 macro,mayor,Diccionario de palabras,0.864218,no
+Gastos fijos y suscripciones,F1,mayor,Periodicidad + estabilidad del monto,0.932835,si
+Gastos fijos y suscripciones,F1,mayor,«Mismo comercio 3 veces»,0.16862,no
+Movimientos atípicos,Precisión en los k más sospechosos,mayor,Isolation Forest,0.750242,si
+Movimientos atípicos,Precisión en los k más sospechosos,mayor,Z-score robusto,0.687803,no
+Sentimiento de los mensajes,F1 en frases escritas a mano,mayor,Léxico (provisional),0.916375,si
+Sentimiento de los mensajes,F1 en frases escritas a mano,mayor,TF-IDF + regresión logística,0.730692,no
+Política de ahorro (reproducción contrafactual),Días en rojo por cliente al mes,menor,Lucas (alerta + Sueldo Lucas),0.594102,si
+Política de ahorro (reproducción contrafactual),Días en rojo por cliente al mes,menor,No hacer nada,0.837462,no
+Política de ahorro (reproducción contrafactual),Días en rojo por cliente al mes,menor,"Apartar 10 % fijo, ajustado",0.837462,no
+Arquitectura del agente,Ruteo correcto,mayor,Agente único,1.0,si
+Arquitectura del agente,Ruteo correcto,mayor,Multiagente (supervisor),1.0,no
+Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Denso + filtro de módulo,0.941176,si
+Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Híbrido + filtro de módulo,0.941176,no
+Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Solo palabras (BM25) + filtro,0.882353,no
+Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Híbrido + preguntas partidas,0.941176,no
+Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Híbrido + partidas + MMR,0.941176,no
