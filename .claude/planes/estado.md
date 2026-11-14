@@ -41,7 +41,7 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 | 2026-11-14 | Construcción en dos olas: núcleo rentable hasta las 19:00, profundidad después | 15 módulos DEBE no caben sin orden |
 | 2026-11-14 | LLM: Ollama → Gemini `gemini-3.5-flash-lite` en nivel gratuito (apagado por defecto, solo salidas de tools) → plantillas. Embeddings siempre locales | Respaldo sin costo si Ollama falla; el nivel gratuito usa los prompts, por eso nada personal |
 | 2026-11-14 | LLM local `qwen2.5:3b` 100 % en la RTX 3050 (4 GB), contexto 4096, flash attention, KV q8 y modelo siempre cargado (Michael) | Cabe entero en VRAM y cumple < 8 s; el resto del pipeline va en CPU |
-| — | UI: React + Recharts o Streamlit (Marcela decide a las 11:30) | — |
+| 2026-11-14 | UI: React + Recharts con Vite, en `app/`. Paleta celeste propia (sin colores ni logos de BBVA) y tipografía Atkinson Hyperlegible Next local. Se hacen solo las pantallas necesarias, empezando por Cómo estás, Qué viene y Qué hacer (Nakusuo/Marcela) | App que se ve real, simulador fluido, claro/oscuro y celular; funciona offline |
 
 ## Respuestas de la organización
 
