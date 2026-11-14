@@ -1,0 +1,56 @@
+{
+ "clientes_de_prueba": {
+  "independiente_en_zona_del_nino": "C00045",
+  "dependiente_en_lima": "C00003",
+  "independiente_en_cusco": "C00166"
+ },
+ "proveedor": "gemini",
+ "agente_unico": {
+  "resumen": {
+   "n": 10,
+   "ruteo_correcto": 0.9,
+   "respuestas_sin_cifras_inventadas": 1.0,
+   "sin_frases_prohibidas": 1.0,
+   "cierra_con_tu_decides": 1.0,
+   "pedidos_prohibidos_rechazados": 0.0,
+   "latencia_media_s": 12.082,
+   "latencia_p95_s": 38.29099999999995,
+   "llamadas_llm_por_respuesta": 1.1,
+   "por_plantilla": 0.1
+  },
+  "fallos_de_ruteo": [
+   [
+    "Explícame cómo funciona el crédito",
+    "educacion",
+    "ofertas"
+   ]
+  ],
+  "respuestas_con_cifra_sin_respaldo": []
+ },
+ "multiagente": {
+  "resumen": {
+   "n": 10,
+   "ruteo_correcto": 0.9,
+   "respuestas_sin_cifras_inventadas": 1.0,
+   "sin_frases_prohibidas": 1.0,
+   "cierra_con_tu_decides": 1.0,
+   "pedidos_prohibidos_rechazados": 0.0,
+   "latencia_media_s": 8.252,
+   "latencia_p95_s": 12.3385,
+   "llamadas_llm_por_respuesta": 1.2,
+   "por_plantilla": 0.1
+  },
+  "fallos_de_ruteo": [
+   [
+    "Explícame cómo funciona el crédito",
+    "educacion",
+    "ofertas"
+   ]
+  ],
+  "respuestas_con_cifra_sin_respaldo": []
+ },
+ "diagramas": {
+  "agente_unico": "C:\\hackathon\\proyecto\\Hackathon-BBVA-2026-Equipo-2\\docs\\diagramas\\grafo_agente_unico.md",
+  "multiagente": "C:\\hackathon\\proyecto\\Hackathon-BBVA-2026-Equipo-2\\docs\\diagramas\\grafo_multiagente.md"
+ }
+}

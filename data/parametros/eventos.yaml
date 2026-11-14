@@ -1,0 +1,139 @@
+# Eventos que mueven ingresos y consumo. Un multiplicador de 1 = sin efecto; el efecto pleno se aplica durante el evento
+# y se disipa linealmente en "recuperacion_dias". "severidad_region" escala el efecto por region (1 = igual).
+# Segmentos de ingreso: formal_quincena, base_comision, independiente_diario, independiente_proyectos, mixto.
+# Lo verificado va en "fuente"; las magnitudes por segmento y categoria son supuestos del equipo para estresar los modelos.
+version: 1
+eventos:
+  - id: covid_confinamiento
+    nombre: "Confinamiento por covid-19"
+    tipo: historico
+    inicio: "2020-03-16"
+    fin: "2020-06-30"
+    recuperacion_dias: 120
+    ingreso: {formal_quincena: 0.93, base_comision: 0.70, independiente_diario: 0.40, independiente_proyectos: 0.55, mixto: 0.65}
+    prob_corte_total: {formal_quincena: 0.07, base_comision: 0.10, independiente_diario: 0.25, independiente_proyectos: 0.12, mixto: 0.12}
+    categorias: {transporte: 0.25, ocio: 0.15, delivery: 1.8, alimentos: 1.1, salud: 1.5, compras: 0.5, restaurantes: 0.2}
+    severidad_region: {lima: 1.0, norte: 0.9, sur: 0.7, centro: 0.8, oriente: 0.8}
+    estado: parcial
+    fuente: "INEI: ocupados de Lima Metropolitana -25 % (feb-abr 2020) y -55,1 % (abr-jun 2020); ingreso promedio de Lima -9,4 % interanual. Magnitudes por segmento: supuesto"
+
+  - id: covid_reapertura
+    nombre: "Reapertura gradual 2020"
+    tipo: historico
+    inicio: "2020-07-01"
+    fin: "2020-12-31"
+    recuperacion_dias: 90
+    ingreso: {formal_quincena: 0.97, base_comision: 0.85, independiente_diario: 0.75, independiente_proyectos: 0.80, mixto: 0.82}
+    prob_corte_total: {independiente_diario: 0.05}
+    categorias: {transporte: 0.6, ocio: 0.5, delivery: 1.5, salud: 1.2, restaurantes: 0.5}
+    severidad_region: {lima: 1.0, norte: 1.0, sur: 0.8, centro: 0.9, oriente: 0.9}
+    estado: supuesto
+    fuente: "Supuesto del equipo con la forma de recuperacion descrita en el boletin del MTPE de diciembre 2020"
+
+  - id: covid_segunda_ola
+    nombre: "Segunda ola y restricciones 2021"
+    tipo: historico
+    inicio: "2021-01-15"
+    fin: "2021-06-30"
+    recuperacion_dias: 90
+    ingreso: {formal_quincena: 0.97, base_comision: 0.88, independiente_diario: 0.72, independiente_proyectos: 0.80, mixto: 0.85}
+    prob_corte_total: {independiente_diario: 0.05}
+    categorias: {transporte: 0.65, ocio: 0.45, delivery: 1.4, salud: 1.4, restaurantes: 0.4}
+    severidad_region: {lima: 1.0, norte: 0.9, sur: 0.8, centro: 0.9, oriente: 0.9}
+    estado: supuesto
+    fuente: "Supuesto del equipo"
+
+  - id: protestas_2022_2023
+    nombre: "Protestas y bloqueos de vias"
+    tipo: historico
+    inicio: "2022-12-07"
+    fin: "2023-03-31"
+    recuperacion_dias: 45
+    ingreso: {independiente_diario: 0.88, independiente_proyectos: 0.92, base_comision: 0.94}
+    categorias: {transporte: 0.8, alimentos: 1.0}
+    severidad_region: {lima: 0.4, norte: 0.5, sur: 1.0, centro: 0.9, oriente: 0.5}
+    estado: supuesto
+    fuente: "Supuesto del equipo"
+
+  - id: nino_costero_2023
+    nombre: "El Nino costero 2023"
+    tipo: historico
+    inicio: "2023-03-01"
+    fin: "2023-07-31"
+    recuperacion_dias: 60
+    ingreso: {independiente_diario: 0.85, independiente_proyectos: 0.90, base_comision: 0.93, mixto: 0.92}
+    categorias: {transporte: 0.85, salud: 1.15, alimentos: 1.0}
+    precio_categorias: {alimentos: 1.08}
+    severidad_region: {lima: 0.3, norte: 1.0, sur: 0.2, centro: 0.2, oriente: 0.3}
+    estado: supuesto
+    fuente: "Supuesto del equipo; la declaratoria de alerta existio, la magnitud del efecto es del equipo"
+
+  - id: nino_2026_2027
+    nombre: "El Nino 2026-2027 (escenario prospectivo)"
+    tipo: prospectivo
+    inicio: "2026-09-01"
+    fin: "2027-06-30"
+    recuperacion_dias: 60
+    ingreso: {independiente_diario: 0.80, independiente_proyectos: 0.88, base_comision: 0.90, mixto: 0.90, formal_quincena: 0.98}
+    categorias: {transporte: 0.8, salud: 1.2, alimentos: 1.0}
+    precio_categorias: {alimentos: 1.12}
+    severidad_region: {lima: 0.3, norte: 1.0, sur: 0.2, centro: 0.2, oriente: 0.3}
+    estado: parcial
+    fuente: "ENFEN, comunicados 15 a 19 de 2026 (docs/fuentes/enfen): alerta de El Nino costero; magnitud extraordinaria hasta febrero de 2027 y declive hasta junio de 2027 (comunicado 19). Efectos economicos: supuesto"
+
+# Ingresos extraordinarios de una sola vez. "elegibles" es la probabilidad de recibirlo por segmento.
+shocks:
+  - id: bono_760_2020
+    nombre: "Bono familiar de S/ 760 (2020)"
+    fecha: "2020-05-20"
+    ventana_dias: 40
+    elegibles: {independiente_diario: 0.35, independiente_proyectos: 0.15, mixto: 0.15, base_comision: 0.05, formal_quincena: 0.0}
+    monto: {mediana: 760, sigma: 0.0, tope: 760}
+    categoria: bono_estado
+    estado: parcial
+    fuente: "Monto de S/ 760 reportado por prensa (DU 052-2020 segun nota consultada); fecha y elegibilidad: supuesto"
+  - id: retiro_afp_1
+    nombre: "Primer retiro AFP (Ley 31017)"
+    fecha: "2020-05-10"
+    ventana_dias: 60
+    elegibles: {formal_quincena: 0.60, base_comision: 0.55, mixto: 0.45, independiente_proyectos: 0.30, independiente_diario: 0.10}
+    monto: {mediana: 6000, sigma: 0.45, tope: 12900}
+    categoria: retiro_afp
+    estado: parcial
+    fuente: "Ley 31017 publicada el 1/5/2020: hasta 25 % del fondo con maximo de 3 UIT (S/ 12 900) segun la nota consultada; probabilidad y mediana: supuesto"
+  - id: retiro_afp_2
+    nombre: "Segundo retiro AFP"
+    fecha: "2020-11-25"
+    ventana_dias: 60
+    elegibles: {formal_quincena: 0.60, base_comision: 0.55, mixto: 0.50, independiente_proyectos: 0.35, independiente_diario: 0.15}
+    monto: {mediana: 9000, sigma: 0.45, tope: 17200}
+    categoria: retiro_afp
+    estado: supuesto
+    fuente: "Supuesto del equipo; verificar norma y fecha antes de citar"
+  - id: retiro_afp_3
+    nombre: "Tercer retiro AFP"
+    fecha: "2021-05-15"
+    ventana_dias: 60
+    elegibles: {formal_quincena: 0.55, base_comision: 0.50, mixto: 0.45, independiente_proyectos: 0.30, independiente_diario: 0.15}
+    monto: {mediana: 9500, sigma: 0.45, tope: 17600}
+    categoria: retiro_afp
+    estado: supuesto
+    fuente: "Supuesto del equipo; verificar norma y fecha antes de citar"
+  - id: retiro_afp_4
+    nombre: "Cuarto retiro AFP"
+    fecha: "2022-04-20"
+    ventana_dias: 60
+    elegibles: {formal_quincena: 0.45, base_comision: 0.40, mixto: 0.35, independiente_proyectos: 0.25, independiente_diario: 0.12}
+    monto: {mediana: 10000, sigma: 0.45, tope: 18400}
+    categoria: retiro_afp
+    estado: supuesto
+    fuente: "Supuesto del equipo; verificar norma y fecha antes de citar"
+  - id: retiro_afp_2024
+    nombre: "Retiro extraordinario AFP de hasta 4 UIT (2024)"
+    fecha: "2024-11-15"
+    ventana_dias: 60
+    elegibles: {formal_quincena: 0.50, base_comision: 0.45, mixto: 0.40, independiente_proyectos: 0.30, independiente_diario: 0.15}
+    monto: {mediana: 12000, sigma: 0.45, tope: 20600}
+    categoria: retiro_afp
+    estado: supuesto
+    fuente: "Una nota de prensa consultada habla de un retiro de hasta 4 UIT publicado en setiembre; el ano y el tope se verifican en El Peruano o la SBS antes de citar"

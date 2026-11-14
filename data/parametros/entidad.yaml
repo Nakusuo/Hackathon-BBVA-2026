@@ -1,0 +1,12 @@
+# Identidad de la entidad y de la app. Todo es inventado: no corresponde a ningun banco ni marca real.
+# Para escalar a otra entidad (banco, caja municipal, cooperativa) se cambia este archivo, el catalogo de ofertas y los parametros de politica.
+version: 1
+entidad:
+  nombre: "Banco Kawsay"
+  descripcion: "Banco ficticio creado para este proyecto."
+  aviso: "Entidad inventada. No representa ni se parece a ninguna institucion financiera real."
+app:
+  nombre: "Lucas"
+  lema: "Tu copiloto de plata"
+programa_puntos:
+  nombre: "Puntos Kawsay"

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "aviso": "Catalogo ficticio y generico. No representa productos, tasas ni marcas reales; un banco que integre a Lucas lo reemplaza con el suyo.",
+  "ofertas": [
+    {
+      "id": "mejora_vivienda_prevencion",
+      "tipo_producto": "credito para mejoras de vivienda con prevencion ante lluvias",
+      "para": "Hogares en zona expuesta al Nino que necesitan reparar techos, canaletas o drenaje",
+      "supuestos": {"tea_sobre_tasa_referencia_pp": 14.0, "descuento_preferencial_pp": 3.0, "plazo_meses": [12, 24], "monto_soles": [2000, 8000], "fuente": "supuesto del equipo; el banco pone sus condiciones"},
+      "idoneidad": {"colchon_meses_min": 1.0, "cuota_total_max_sobre_ingreso": 0.30, "dias_rojo_3m_max": 0, "prob_rojo_30d_max": 0.30}
+    },
+    {
+      "id": "cuenta_apartados_meta",
+      "tipo_producto": "cuenta con apartados para una meta de ahorro",
+      "para": "Quien quiere separar plata sin mezclarla con el gasto diario",
+      "supuestos": {"fuente": "tipo generico"},
+      "idoneidad": {"colchon_meses_min": 0.0, "dias_rojo_3m_max": 99}
+    },
+    {
+      "id": "deposito_a_plazo",
+      "tipo_producto": "deposito a plazo fijo",
+      "para": "Quien ya tiene colchon y no tiene deuda cara; se muestra solo como educacion y simulacion con tasa supuesta",
+      "supuestos": {"tasa_demo": "supuesto visible; nunca una promesa de rentabilidad", "fuente": "tipo generico"},
+      "idoneidad": {"colchon_meses_min": 3.0, "sin_deuda_cara": true}
+    }
+  ]
+}
