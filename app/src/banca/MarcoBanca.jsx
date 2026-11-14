@@ -52,7 +52,7 @@ export default function MarcoBanca() {
   const [elegidos, setElegidos] = useListaGuardada(CLAVE_TIPS, (id) => typeof id === 'string')
   const [planificados, setPlanificados] = useListaGuardada(CLAVE_PLANIFICADOS, esPlanificadoValido)
   const [metas, setMetas] = useListaGuardada(CLAVE_METAS, esMetaValida)
-  const vista = useMemo(() => vistaCon(elegidos, personaId, planificados), [elegidos, personaId, planificados])
+  const vista = useMemo(() => vistaCon(elegidos, personaId, [], planificados), [elegidos, personaId, planificados])
   const persona = personaPorId(personaId).persona
   const datosApi = useDatosApi()
 

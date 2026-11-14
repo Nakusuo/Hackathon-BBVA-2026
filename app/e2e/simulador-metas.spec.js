@@ -1,7 +1,25 @@
+import { readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
+
+const mock = (nombre) => readFileSync(new URL(`../../data/sample/mocks/${nombre}.json`, import.meta.url), 'utf-8')
+const RUTAS_API = {
+  '/api/v1/customers/demo-001/health': 'health',
+  '/api/v1/customers/demo-001/forecast': 'forecast',
+  '/api/v1/customers/demo-001/recommendations': 'recommendations',
+  '/api/v1/customers/demo-001/events': 'events',
+  '/api/v1/fx': 'fx',
+}
 
 // Permiso ya dado y guía vista, una sola vez por pestaña: así una prueba puede retirar el permiso y recargar.
 test.beforeEach(async ({ page }) => {
+  // La API responde con los JSON del contrato: si FastAPI no está, el aviso de datos movería la página a mitad
+  // de un clic.
+  await page.route('**/api/v1/**', (ruta) => {
+    const nombre = RUTAS_API[new URL(ruta.request().url()).pathname]
+    return nombre
+      ? ruta.fulfill({ contentType: 'application/json', body: mock(nombre) })
+      : ruta.fulfill({ status: 404, contentType: 'application/json', body: '{"detail":"No existe"}' })
+  })
   await page.addInitScript(() => {
     if (window.sessionStorage.getItem('e2e-preparado')) return
     window.localStorage.setItem('lucas-consentimiento', JSON.stringify({ independiente: '2026-11-14' }))

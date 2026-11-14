@@ -115,7 +115,9 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
   const revision = validarPlanificado(cliente, borrador)
   const { movimiento } = revision
   // Mientras el borrador es válido, todo el panel muestra cómo quedaría; nada se guarda hasta «Agregar».
-  const prueba = movimiento ? vistaCon(cliente.elegidos, cliente.personaId, [...cliente.planificados, { ...movimiento, id: 'borrador' }]) : null
+  const prueba = movimiento
+    ? vistaCon(cliente.elegidos, cliente.personaId, [], [...cliente.planificados, { ...movimiento, id: 'borrador' }])
+    : null
   const vista = prueba ?? cliente
   const { pronostico, proximoIngreso, proximosPagos, saldoHoy, ingresos } = vista
 
