@@ -271,3 +271,27 @@
   color: var(--tinta-suave);
 }
 
+
+.ajuste-permiso {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+}
+
+.ajuste-lineas {
+  display: grid;
+}
+
+.confirmar-retiro {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--radio-chico);
+  background: var(--riesgo-fondo);
+}
+
+.confirmar-retiro-botones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

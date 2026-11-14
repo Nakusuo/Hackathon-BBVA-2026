@@ -32,7 +32,7 @@ function agruparPorDia(movimientos, hoy) {
 }
 
 export default function InicioBanca() {
-  const { avisarSinDemo, vista: cliente } = useOutletContext()
+  const { avisarSinDemo, vista: cliente, permiso } = useOutletContext()
   const [montosVisibles, setMontosVisibles] = useState(true)
   const monto = (valor) => (montosVisibles ? enSoles(valor) : OCULTO)
   const { riesgo, cuenta, tarjeta, hoy, proximoIngreso } = cliente
@@ -110,7 +110,15 @@ export default function InicioBanca() {
           ))}
         </ul>
 
-        {riesgo ? (
+        {!permiso ? (
+          <Link to="/consentimiento" state={{ volver: '/lucas/resumen' }} className="tarjeta-lucas">
+            <MarcaLucas tamano={44} />
+            <span className="tarjeta-lucas-texto">
+              <strong>Activa Lucas</strong>
+              <span>Te avisa antes de quedar en rojo. Primero te cuento qué datos uso.</span>
+            </span>
+          </Link>
+        ) : riesgo ? (
           <Link to="/lucas/resumen" className="tarjeta-lucas">
             <MarcaLucas tamano={44} />
             <span className="tarjeta-lucas-texto">

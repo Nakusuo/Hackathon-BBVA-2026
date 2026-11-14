@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 
 const PANTALLAS = [
   { ruta: '/ingresar', titulo: 'Ingresa a tu banca' },
+  { ruta: '/consentimiento', titulo: 'Antes de activar Lucas' },
   { ruta: '/banca', titulo: 'Hola' },
   { ruta: '/lucas/resumen', titulo: 'Lucas' },
   { ruta: '/lucas/gastos', titulo: 'Lucas' },
@@ -13,13 +14,25 @@ const PANTALLAS = [
   { ruta: '/preferencias', titulo: 'Preferencias' },
 ]
 
+// Permiso ya dado para la persona de la demo, como quien ya pasó por el consentimiento.
+async function conPermiso(page) {
+  await page.addInitScript(() => {
+    if (!window.sessionStorage.getItem('e2e-preparado')) {
+      window.localStorage.setItem('lucas-consentimiento', JSON.stringify({ independiente: '2026-11-14' }))
+      window.sessionStorage.setItem('e2e-preparado', 'si')
+    }
+  })
+}
+
 async function sinGuia(page) {
+  await conPermiso(page)
   await page.addInitScript(() => window.localStorage.setItem('lucas-guia-vista', 'si'))
 }
 
-for (const { ruta, titulo } of PANTALLAS) {
-  test(`${ruta} abre sin errores, sin scroll horizontal y con texto de 16 px o más`, async ({ page }, info) => {
+for (const { ruta, titulo } of PANTALLAS) for (const tema of ['claro', 'oscuro']) {
+  test(`${ruta} en ${tema} abre sin errores, sin scroll horizontal y con texto de 16 px o más`, async ({ page }, info) => {
     await sinGuia(page)
+    await page.addInitScript((t) => window.localStorage.setItem('lucas-tema', t), tema)
     const errores = []
     page.on('pageerror', (e) => errores.push(e.message))
     page.on('console', (m) => m.type() === 'error' && errores.push(m.text()))
@@ -48,7 +61,9 @@ for (const { ruta, titulo } of PANTALLAS) {
       }
       return chicos
     })
-    await page.screenshot({ path: `capturas/${info.project.name}${ruta.replaceAll('/', '-')}.png`, fullPage: true })
+    // Movimiento reducido no apaga los desvanecidos de entrada: sin esperar, la captura salía a medio aparecer.
+    await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'))
+    await page.screenshot({ path: `capturas/${info.project.name}-${tema}${ruta.replaceAll('/', '-')}.png`, fullPage: true })
     expect(textosChicos).toEqual([])
     expect(errores).toEqual([])
   })
@@ -71,9 +86,11 @@ test('lo importante se ve sin bajar: aviso de Lucas en la banca y gasto diario e
   await expect(page.getByRole('region', { name: 'Cuánto puedes gastar' })).toBeInViewport()
 })
 
-test('ingreso, banca, Lucas y guía de primera vez', async ({ page }) => {
+test('ingreso, permiso, banca, Lucas y guía de primera vez', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'Ingresar' }).click()
+  await expect(page).toHaveURL(/consentimiento/)
+  await page.getByRole('button', { name: 'Acepto, activar Lucas' }).click()
   await expect(page).toHaveURL(/banca/)
 
   await page.getByRole('link', { name: /Lucas te avisa/ }).click()
@@ -270,6 +287,7 @@ test('el aviso de «solo Lucas» dura completo aunque se toquen dos botones segu
 })
 
 test('la guía retiene el foco con Tab y lo devuelve al botón «?» al cerrar', async ({ page }) => {
+  await conPermiso(page)
   await page.goto('/lucas/resumen')
   await expect(page.getByRole('dialog')).toBeVisible()
   for (let i = 0; i < 4; i++) await page.keyboard.press('Tab')
@@ -305,7 +323,99 @@ test('el botón «?» abre la guía desde cualquier pestaña de Lucas', async ({
 })
 
 test('la guía no aparece sola si la primera entrada a Lucas no es el Resumen', async ({ page }) => {
+  await conPermiso(page)
   await page.goto('/lucas/chat')
   await page.getByRole('link', { name: 'Resumen' }).click()
   await expect(page.getByRole('dialog')).toBeHidden()
 })
+
+test('consentimiento: «Ahora no» deja la banca sin Lucas, y aceptar vuelve a donde se iba', async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem('lucas-guia-vista', 'si'))
+  await page.goto('/ingresar')
+  await page.getByRole('button', { name: 'Ingresar' }).click()
+  const permiso = page.getByRole('region', { name: 'Antes de activar Lucas' })
+  await expect(permiso).toContainText('Datos sintéticos')
+  await expect(permiso).toContainText('Qué uso')
+  await expect(permiso).toContainText('Para qué')
+  await expect(permiso).toContainText('Más → Preferencias → Privacidad')
+  await page.getByRole('button', { name: 'Ahora no' }).click()
+
+  await expect(page).toHaveURL(/banca/)
+  await expect(page.getByRole('link', { name: /Activa Lucas/ })).toBeVisible()
+  await expect(page.getByText('Lucas te avisa')).toHaveCount(0)
+
+  await page.getByRole('navigation', { name: 'Menú principal' }).getByRole('link', { name: 'Lucas' }).click()
+  await expect(page).toHaveURL(/consentimiento/)
+  await page.getByRole('button', { name: 'Acepto, activar Lucas' }).click()
+  await expect(page).toHaveURL(/lucas\/resumen/)
+  await expect(page.getByRole('region', { name: 'Cuánto puedes gastar' })).toBeVisible()
+})
+
+test('retirar el permiso desde Preferencias apaga Lucas y borra los tips elegidos', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/resumen')
+  await page.getByRole('button', { name: 'Lo hago' }).first().click()
+
+  await page.goto('/preferencias')
+  const privacidad = page.getByRole('region', { name: 'Privacidad' })
+  await expect(privacidad).toContainText('Activo desde el')
+  await privacidad.getByRole('button', { name: 'Retirar permiso' }).click()
+  await privacidad.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(privacidad).toContainText('Activo desde el')
+  await privacidad.getByRole('button', { name: 'Retirar permiso' }).click()
+  await privacidad.getByRole('button', { name: 'Sí, retirar' }).click()
+  await expect(privacidad.getByRole('status')).toContainText('Lucas está apagado')
+  expect(await page.evaluate(() => window.localStorage.getItem('lucas-tips-elegidos'))).toBe('[]')
+
+  await page.goto('/lucas/que-viene')
+  await expect(page).toHaveURL(/consentimiento/)
+  await page.getByRole('button', { name: 'Acepto, activar Lucas' }).click()
+  await expect(page).toHaveURL(/lucas\/que-viene/)
+  await page.getByRole('link', { name: 'Resumen' }).click()
+  await expect(page.getByRole('button', { name: 'Lo hago' }).first()).toHaveAttribute('aria-pressed', 'false')
+})
+
+test('selector de persona: el formal cambia todas las cifras y su banda es angosta', async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem('lucas-guia-vista', 'si'))
+  await page.goto('/ingresar')
+  await page.getByRole('radio', { name: 'Formal con quincena' }).check()
+  await expect(page.getByText('Sueldo fijo el 15 y a fin de mes')).toBeVisible()
+  await page.getByRole('button', { name: 'Ingresar' }).click()
+  await expect(page.getByRole('region', { name: 'Antes de activar Lucas' })).toContainText('Formal con quincena')
+  await page.getByRole('button', { name: 'Acepto, activar Lucas' }).click()
+
+  await expect(page.getByText('S/ 1,610')).toBeVisible()
+  await page.goto('/lucas/resumen')
+  await expect(page.getByRole('region', { name: 'Cuánto puedes gastar' })).toContainText('S/ 1,300')
+  await expect(page.getByRole('button', { name: 'Lo hago' })).toHaveCount(3)
+  await expect(page.getByText('Pausa FitZona este mes')).toBeVisible()
+  await page.getByRole('link', { name: 'Qué viene' }).click()
+  await expect(page.getByRole('region', { name: 'Pagos y cobros' })).toContainText('El rango es angosto')
+
+  // Volver al independiente desde Preferencias: su permiso es aparte y su banda se explica distinto.
+  await page.goto('/preferencias')
+  await page.getByRole('radio', { name: 'Independiente' }).check()
+  await page.getByRole('link', { name: 'Inicio' }).first().click()
+  await expect(page.getByText('S/ 1,240')).toBeVisible()
+  await expect(page.getByRole('link', { name: /Activa Lucas/ })).toBeVisible()
+})
+
+for (const { ruta, frase } of [
+  { ruta: '/lucas/resumen', frase: 'Lo que puedes gastar' },
+  { ruta: '/lucas/que-viene', frase: 'La franja de color' },
+]) {
+  test(`«Explícamelo fácil» en ${ruta} explica el peor caso y devuelve el foco al cerrar`, async ({ page }) => {
+    await sinGuia(page)
+    await page.goto(ruta)
+    const boton = page.getByRole('button', { name: 'Explícamelo fácil' })
+    await expect(boton).toHaveAttribute('aria-expanded', 'false')
+    await boton.click()
+    const panel = page.getByRole('region', { name: 'Explicación fácil' })
+    await expect(panel).toContainText('Peor caso')
+    await expect(panel).toContainText(frase)
+    await page.screenshot({ path: `capturas/${test.info().project.name}-facil${ruta.replaceAll('/', '-')}.png`, fullPage: true })
+    await panel.getByRole('button', { name: 'Entendido' }).click()
+    await expect(panel).toBeHidden()
+    await expect(boton).toBeFocused()
+  })
+}

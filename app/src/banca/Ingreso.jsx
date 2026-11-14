@@ -1,53 +1,28 @@
 import { LockSimple } from '@phosphor-icons/react'
-import { motion, useReducedMotion } from 'motion/react'
+import { motion } from 'motion/react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import FondoIngreso from '../componentes/FondoIngreso.jsx'
 import Mascota from '../componentes/Mascota.jsx'
+import SelectorPersona from '../componentes/SelectorPersona.jsx'
 import { SUAVE } from '../movimiento.js'
-
-const ARCOS = [
-  { lado: 'arriba', retraso: 0 },
-  { lado: 'abajo', retraso: 0.25 },
-]
-
-function Fondo() {
-  const reducido = useReducedMotion()
-  return (
-    <>
-      <div className="ingreso-halo" aria-hidden="true" />
-      {ARCOS.map((a) => (
-        <motion.svg
-          key={a.lado}
-          className={`ingreso-fondo ingreso-fondo-${a.lado}`}
-          viewBox="0 0 200 200"
-          aria-hidden="true"
-        >
-          <motion.circle
-            className="ingreso-arco"
-            cx="100"
-            cy="100"
-            r="94"
-            initial={reducido ? false : { pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            transition={{ duration: 1.4, ease: SUAVE, delay: a.retraso }}
-          />
-        </motion.svg>
-      ))}
-    </>
-  )
-}
+import { guardarPersona, permisoDe, personaGuardada } from '../sesion.js'
 
 // Formulario solo visual: los campos vienen llenos y bloqueados para que nadie escriba datos reales en la demo.
+// Elegir la persona es el inicio de sesión de la demo; el permiso a Lucas se pide después, una vez por persona.
 export default function Ingreso() {
   const navegar = useNavigate()
+  const [personaId, setPersonaId] = useState(personaGuardada)
 
   function ingresar(evento) {
     evento.preventDefault()
-    navegar('/banca')
+    guardarPersona(personaId)
+    navegar(permisoDe(personaId) ? '/banca' : '/consentimiento')
   }
 
   return (
     <main className="ingreso">
-      <Fondo />
+      <FondoIngreso />
       <motion.form
         className="ingreso-tarjeta"
         onSubmit={ingresar}
@@ -65,6 +40,8 @@ export default function Ingreso() {
           <span className="etiqueta-demo">Banco ficticio</span>
         </div>
         <h1 id="ingreso-titulo">Ingresa a tu banca</h1>
+
+        <SelectorPersona valor={personaId} alCambiar={setPersonaId} leyenda="Entra como" />
 
         <label className="campo">
           <span>Número de DNI</span>

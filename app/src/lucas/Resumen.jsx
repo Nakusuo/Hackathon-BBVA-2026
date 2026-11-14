@@ -1,6 +1,7 @@
 import {
   ChatCircleDots,
   CheckCircle,
+  Barbell,
   Coffee,
   ForkKnife,
   Heartbeat,
@@ -8,6 +9,7 @@ import {
   PauseCircle,
   PiggyBank,
   SealCheck,
+  Taxi,
   Warning,
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
@@ -15,9 +17,11 @@ import { Link } from 'react-router-dom'
 import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
 import { diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
 import { entrada } from '../movimiento.js'
+import ExplicameFacil from './ExplicameFacil.jsx'
+import { explicarResumen } from './explicaciones.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
-const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee }
+const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee, fitzona: Barbell, taxi: Taxi }
 const DIAS_DEL_CICLO = 30
 
 function Tip({ tip, activo, alAlternar }) {
@@ -70,7 +74,7 @@ function Apartado({ cliente }) {
             El {fechaCorta(proximoIngreso.fecha)} podrías apartar {enSoles(apartado.monto)}
           </h3>
           <p className="suave">
-            No te deja en rojo hasta el {fechaCorta(apartado.hasta)}. En {apartado.repeticiones} meses juntarías{' '}
+            No te deja en rojo hasta el {fechaCorta(apartado.hasta)}. Si lo repites en tus próximos {apartado.repeticiones} cobros, juntarías{' '}
             {enSoles(apartado.total)}.
           </p>
         </>
@@ -140,6 +144,7 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
             </p>
           </section>
         )}
+        <ExplicameFacil puntos={explicarResumen(cliente)} />
       </motion.div>
 
       <motion.section {...entra(2)} id="tips" className="seccion" aria-labelledby="tips-titulo">

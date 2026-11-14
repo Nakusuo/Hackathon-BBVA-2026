@@ -24,9 +24,9 @@ const DETALLES = { aprendido: 'resumen', salud: 'resumen', 'gastos-detalle': 'ga
 
 export default function EspacioLucas() {
   const { seccion } = useParams()
-  const { vista, persona, alternarTip } = useOutletContext()
+  const { vista, persona, alternarTip, permiso } = useOutletContext()
   const navegar = useNavigate()
-  const { hash } = useLocation()
+  const { hash, pathname } = useLocation()
   // Solo se abre sola si la primera entrada es al Resumen, que es donde están sus tres marcas.
   const [guiaAbierta, setGuiaAbierta] = useState(() => !guiaYaVista() && seccion === 'resumen')
   const botonGuia = useRef(null)
@@ -46,6 +46,9 @@ export default function EspacioLucas() {
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' })
   }, [hash, seccion])
 
+  // Sin permiso no se muestra nada de Lucas: primero se pide, y luego se vuelve aquí. Con la API, el servidor también
+  // tendrá que negar `/yo/...` sin permiso; hoy el cálculo local sigue corriendo aunque no se muestre.
+  if (!permiso) return <Navigate to="/consentimiento" replace state={{ volver: pathname }} />
   if (!SECCIONES.some((s) => s.id === seccion) && !DETALLES[seccion]) return <Navigate to="/lucas/resumen" replace />
 
   return (
