@@ -9,9 +9,10 @@
   --superficie: #ffffff;
   --superficie-suave: #eaf2f7;
   --borde: #d9e5ee;
-  --tinta: #14303f;
+  --tinta: #1f2a30;
   --tinta-suave: #4a5d6b;
   --azul: #1b6378;
+  --azul-profundo: #134e5e;
   --azul-claro: #84b3ce;
   --azul-palido: #d6e7f1;
   --sobre-azul: #ffffff;
@@ -21,6 +22,7 @@
   --exterior: #e2ebf1;
   --banda: #b9d6e6;
   --riesgo: #b42318;
+  --riesgo-claro: #ff8a80;
   --riesgo-fondo: #fdeeec;
   --bien: #1d6b46;
 

@@ -24,6 +24,7 @@ export default function Guia({ alCerrar }) {
   const [paso, setPaso] = useState(0)
   const [caja, setCaja] = useState(null)
   const siguiente = useRef(null)
+  const tarjeta = useRef(null)
   const actual = PASOS[paso]
   const esUltimo = paso === PASOS.length - 1
 
@@ -48,7 +49,27 @@ export default function Guia({ alCerrar }) {
 
   useEffect(() => {
     siguiente.current?.focus()
-    const alTeclear = (e) => e.key === 'Escape' && cerrar()
+  }, [paso])
+
+  // Mientras la guía está abierta, Tab no sale de ella y Escape la cierra.
+  useEffect(() => {
+    const alTeclear = (e) => {
+      if (e.key === 'Escape') cerrar()
+      if (e.key !== 'Tab' || !tarjeta.current) return
+      const enfocables = [...tarjeta.current.querySelectorAll('button')]
+      const primero = enfocables[0]
+      const ultimo = enfocables.at(-1)
+      if (e.shiftKey && document.activeElement === primero) {
+        e.preventDefault()
+        ultimo.focus()
+      } else if (!e.shiftKey && document.activeElement === ultimo) {
+        e.preventDefault()
+        primero.focus()
+      } else if (!tarjeta.current.contains(document.activeElement)) {
+        e.preventDefault()
+        primero.focus()
+      }
+    }
     window.addEventListener('keydown', alTeclear)
     return () => window.removeEventListener('keydown', alTeclear)
   })
@@ -70,6 +91,7 @@ export default function Guia({ alCerrar }) {
         />
       )}
       <div
+        ref={tarjeta}
         className="guia-tarjeta"
         style={caja ? (abajo ? { top: caja.bottom + 16 } : { bottom: window.innerHeight - caja.top + 16 }) : {}}
       >

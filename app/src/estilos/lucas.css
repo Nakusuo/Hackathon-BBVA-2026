@@ -66,36 +66,42 @@
   scroll-margin-top: 180px;
 }
 
-.tarjeta-cobro {
+.recuadros {
   display: grid;
-  gap: 6px;
-  padding: 20px;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.recuadro {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+  padding: 16px;
+  border: 1px solid var(--borde);
   border-radius: var(--radio);
-  background: var(--azul);
+  background: var(--superficie);
+  line-height: 1.3;
+}
+
+.recuadro-azul {
+  border-color: var(--azul-profundo);
+  background: var(--azul-profundo);
   color: var(--sobre-azul);
 }
 
-.cobro-etiqueta,
-.tarjeta-cobro .suave,
-.cobro-cifra small {
+.recuadro-azul span {
   color: var(--sobre-azul-suave);
 }
 
-.cobro-etiqueta {
-  font-weight: 600;
-}
-
-.cobro-cifra {
+.recuadro-cifra {
   font-family: var(--titulos);
-  font-size: 2.75rem;
+  font-size: 2.25rem;
   font-weight: 600;
-  line-height: 1.05;
+  line-height: 1.15;
 }
 
-.cobro-cifra small {
-  font-family: var(--letra);
-  font-size: 1rem;
-  font-weight: 600;
+.recuadros-pie {
+  grid-column: 1 / -1;
 }
 
 .lista-aprendido .aprendido {
@@ -113,6 +119,20 @@
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.marcado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--tinta-suave);
+  font-weight: 600;
+}
+
+.por-revisar > p:first-child {
+  text-decoration: line-through;
+  color: var(--tinta-suave);
 }
 
 .confirmado {
@@ -238,49 +258,4 @@
 
 .baja {
   color: var(--bien);
-}
-
-.grafico {
-  width: 100%;
-  height: 230px;
-}
-
-.leyenda {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  color: var(--tinta-suave);
-}
-
-.leyenda span::before {
-  content: '';
-  display: inline-block;
-  width: 16px;
-  height: 10px;
-  margin-right: 6px;
-  border-radius: 2px;
-  vertical-align: middle;
-}
-
-.leyenda .clave-esperado::before {
-  height: 3px;
-  background: var(--azul);
-}
-
-.leyenda .clave-banda::before {
-  background: var(--banda);
-}
-
-.leyenda .clave-cero::before {
-  height: 0;
-  border-top: 2px dashed var(--riesgo);
-}
-
-.globo {
-  display: grid;
-  gap: 2px;
-  padding: 10px 14px;
-  border-radius: var(--radio-chico);
-  background: var(--tinta);
-  color: var(--sobre-azul);
 }

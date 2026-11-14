@@ -1,5 +1,5 @@
 import { ArrowsLeftRight, CreditCard, DotsThreeOutline, House } from '@phosphor-icons/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
 
@@ -7,11 +7,16 @@ const SIN_DEMO = 'En esta demo solo está activo Lucas.'
 
 export default function MarcoBanca() {
   const [aviso, setAviso] = useState('')
+  const temporizador = useRef(null)
 
+  // Cada clic reinicia el tiempo; si no, el temporizador de un clic anterior borraba el aviso nuevo antes de leerlo.
   function avisarSinDemo() {
     setAviso(SIN_DEMO)
-    window.setTimeout(() => setAviso(''), 2500)
+    window.clearTimeout(temporizador.current)
+    temporizador.current = window.setTimeout(() => setAviso(''), 2500)
   }
+
+  useEffect(() => () => window.clearTimeout(temporizador.current), [])
 
   return (
     <div className="exterior">

@@ -1,4 +1,4 @@
-import { CheckCircle, Coffee, ForkKnife, PauseCircle, PiggyBank, Warning } from '@phosphor-icons/react'
+import { CheckCircle, Coffee, ForkKnife, PauseCircle, PiggyBank, Question, Warning } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import AnilloSalud from '../componentes/AnilloSalud.jsx'
@@ -17,7 +17,7 @@ function nivel(puntaje) {
 function DatoAprendido({ dato }) {
   const [respuesta, setRespuesta] = useState(null)
   return (
-    <li className="aprendido">
+    <li className={`aprendido ${respuesta === 'no' ? 'por-revisar' : ''}`}>
       <p>{dato.dato}</p>
       <p className="suave">Lo saqué de: {dato.fuente.toLowerCase()}</p>
       {respuesta === null ? (
@@ -31,9 +31,14 @@ function DatoAprendido({ dato }) {
           </button>
         </div>
       ) : (
-        <p className="confirmado">
-          <CheckCircle size={20} aria-hidden="true" />
-          {respuesta === 'si' ? 'Gracias, lo sigo usando.' : 'Gracias, lo reviso y dejo de usarlo hasta confirmarlo.'}
+        <p className={respuesta === 'si' ? 'confirmado' : 'marcado'}>
+          {respuesta === 'si' ? <CheckCircle size={20} aria-hidden="true" /> : <Question size={20} aria-hidden="true" />}
+          {respuesta === 'si' ? 'Gracias, lo sigo usando.' : 'Marcado como por revisar.'}
+          {respuesta === 'no' && (
+            <button type="button" className="boton-texto" onClick={() => setRespuesta(null)}>
+              Deshacer
+            </button>
+          )}
         </p>
       )}
     </li>
@@ -67,20 +72,24 @@ export default function Resumen({ cliente }) {
   const { riesgo, proximoIngreso, recomendaciones, conTodos, apartado, salud } = cliente
   const [todosLosTips, setTodosLosTips] = useState(false)
   const tips = todosLosTips ? recomendaciones : recomendaciones.slice(0, TIPS_VISIBLES)
+  const exceso = cliente.gastoDiarioActual - cliente.gastoDiarioSeguro
 
   return (
     <>
-      <section className="tarjeta-cobro" data-guia="cobro" aria-labelledby="cobro-titulo">
-        <p id="cobro-titulo" className="cobro-etiqueta">
-          Hasta tu cobro del {fechaDia(proximoIngreso.fecha)}
-        </p>
-        <p className="cobro-cifra">
-          {enSoles(cliente.gastoDiarioSeguro)} <small>al día</small>
-        </p>
-        <p>
-          Es lo que puedes gastar sin quedar en rojo. Hoy gastas unos {enSoles(cliente.gastoDiarioActual)} al día.
-        </p>
-        <p className="suave">
+      <section className="recuadros" data-guia="cobro" aria-label="Cuánto puedes gastar">
+        <div className="recuadro recuadro-azul">
+          <span>Puedes gastar al día</span>
+          <strong className="recuadro-cifra">{enSoles(cliente.gastoDiarioSeguro)}</strong>
+          <span>sin quedar en rojo hasta el {fechaDia(proximoIngreso.fecha)}</span>
+        </div>
+        <div className="recuadro">
+          <span className="suave">Hoy gastas al día</span>
+          <strong className="recuadro-cifra">{enSoles(cliente.gastoDiarioActual)}</strong>
+          <span className="suave">
+            {exceso > 0 ? `${enSoles(exceso)} más de lo que te conviene` : 'Dentro de lo que te conviene'}
+          </span>
+        </div>
+        <p className="recuadros-pie suave">
           Cobras {enSoles(proximoIngreso.monto)} en {diasEntre(cliente.hoy, proximoIngreso.fecha)} días.
         </p>
       </section>

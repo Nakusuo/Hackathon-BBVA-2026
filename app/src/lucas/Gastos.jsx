@@ -39,16 +39,24 @@ function Comparacion({ total, promedio }) {
 export default function Gastos({ cliente }) {
   const { categorias, suscripciones } = cliente
   const total = categorias.reduce((s, c) => s + c.total, 0)
+  const promedio = categorias.reduce((s, c) => s + c.promedio3m, 0)
+  const diferencia = Math.round(total - promedio)
   const mayor = Math.max(...categorias.map((c) => c.total))
 
   return (
     <>
-      <section className="tarjeta" aria-labelledby="categorias-titulo">
-        <div className="tarjeta-titulo">
-          <h2 id="categorias-titulo">Tus gastos por categoría</h2>
-          <span className="cifra">{enSoles(Math.round(total))}</span>
-        </div>
-        <p className="suave">Últimos 30 días, comparado con tu promedio de 3 meses.</p>
+      <section className="panel-azul" aria-labelledby="total-titulo">
+        <p id="total-titulo">Gastaste en los últimos 30 días</p>
+        <p className="panel-cifra">{enSoles(Math.round(total))}</p>
+        <p>
+          {Math.abs(diferencia) <= UMBRAL
+            ? 'Igual que tu promedio de 3 meses.'
+            : `${enSoles(Math.abs(diferencia))} ${diferencia > 0 ? 'más' : 'menos'} que tu promedio de 3 meses.`}
+        </p>
+      </section>
+
+      <section className="tarjeta hoja" aria-labelledby="categorias-titulo">
+        <h2 id="categorias-titulo">Tus gastos por categoría</h2>
         <ul className="lista-limpia">
           {categorias.map((c) => {
             const Icono = ICONOS[c.id] ?? DotsThree

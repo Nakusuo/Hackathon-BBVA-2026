@@ -1,18 +1,8 @@
-import {
-  ArrowsLeftRight,
-  Bell,
-  CreditCard,
-  DeviceMobile,
-  Eye,
-  EyeSlash,
-  QrCode,
-  Receipt,
-  UserCircle,
-} from '@phosphor-icons/react'
+import { ArrowsLeftRight, Bell, DeviceMobile, Eye, EyeSlash, QrCode, Receipt, UserCircle } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
-import { enSoles, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
+import { diasEntre, enSoles, fechaCorta, fechaDia, iniciales, textoDiasEnRojo } from '../formato.js'
 import { cliente } from '../mocks/cliente.js'
 
 const ACCESOS = [
@@ -24,38 +14,56 @@ const ACCESOS = [
 
 const OCULTO = 'S/ ••••'
 
+function nombreDelDia(fecha, hoy) {
+  const dias = diasEntre(fecha, hoy)
+  if (dias === 0) return 'Hoy'
+  if (dias === 1) return 'Ayer'
+  return fechaCorta(fecha)
+}
+
+function agruparPorDia(movimientos, hoy) {
+  const grupos = []
+  for (const m of movimientos) {
+    const nombre = nombreDelDia(m.fecha, hoy)
+    const grupo = grupos.at(-1)
+    if (grupo?.nombre === nombre) grupo.movimientos.push(m)
+    else grupos.push({ nombre, movimientos: [m] })
+  }
+  return grupos
+}
+
 export default function InicioBanca() {
   const { avisarSinDemo } = useOutletContext()
   const [montosVisibles, setMontosVisibles] = useState(true)
   const monto = (valor) => (montosVisibles ? enSoles(valor) : OCULTO)
-  const { riesgo, cuenta, tarjeta } = cliente
+  const { riesgo, cuenta, tarjeta, hoy, proximoIngreso } = cliente
+  const pagosAntesDelCobro = cliente.proximosPagos.filter((p) => p.fecha < proximoIngreso.fecha)
 
   return (
     <>
       <header className="banca-cabecera">
         <div className="banca-barra">
-          <span className="logotipo logotipo-claro">Mi Banca</span>
-          <div className="banca-iconos">
-            <button type="button" className="icono-boton" aria-label="Notificaciones" onClick={avisarSinDemo}>
-              <Bell size={24} aria-hidden="true" />
-            </button>
-            <button type="button" className="icono-boton" aria-label="Mi perfil" onClick={avisarSinDemo}>
-              <UserCircle size={24} aria-hidden="true" />
-            </button>
+          <button type="button" className="icono-boton" aria-label="Mi perfil" onClick={avisarSinDemo}>
+            <UserCircle size={26} aria-hidden="true" />
+          </button>
+          <div className="banca-saludo">
+            <h1>Hola</h1>
+            <p>Bienvenido a Mi Banca</p>
           </div>
+          <button type="button" className="icono-boton" aria-label="Notificaciones" onClick={avisarSinDemo}>
+            <Bell size={24} aria-hidden="true" />
+          </button>
         </div>
-        <h1 className="saludo">Hola</h1>
-      </header>
 
-      <main className="banca-contenido">
-        <section className="tarjeta cuenta" aria-labelledby="cuenta-titulo">
-          <div className="tarjeta-titulo">
-            <h2 id="cuenta-titulo" className="titulo-chico">
-              {cuenta.nombre} ••• {cuenta.terminacion}
-            </h2>
+        <div className="saldo-total">
+          <p>
+            {cuenta.nombre} ••• {cuenta.terminacion}
+          </p>
+          <div className="saldo-fila">
+            <p className="saldo">{monto(cliente.saldoHoy)}</p>
             <button
               type="button"
-              className="icono-boton icono-boton-suave"
+              className="icono-boton"
               aria-pressed={!montosVisibles}
               aria-label={montosVisibles ? 'Ocultar montos' : 'Mostrar montos'}
               onClick={() => setMontosVisibles(!montosVisibles)}
@@ -63,17 +71,27 @@ export default function InicioBanca() {
               {montosVisibles ? <EyeSlash size={22} aria-hidden="true" /> : <Eye size={22} aria-hidden="true" />}
             </button>
           </div>
-          <p className="suave">Saldo disponible</p>
-          <p className="saldo">{monto(cliente.saldoHoy)}</p>
-          <div className="fila fila-tarjeta">
-            <CreditCard size={24} aria-hidden="true" />
-            <span className="fila-texto">
-              <span>
-                {tarjeta.nombre} ••• {tarjeta.terminacion}
-              </span>
-              <span className="suave">Pago del mes, vence el {fechaDia(tarjeta.vence)}</span>
+          <p>Saldo disponible</p>
+        </div>
+      </header>
+
+      <main className="banca-contenido">
+        <section className="tarjeta-credito" aria-label={`${tarjeta.nombre} terminada en ${tarjeta.terminacion}`}>
+          <div className="tarjeta-credito-frente">
+            <span className="logotipo logotipo-claro">Mi Banca</span>
+            <span className="tarjeta-credito-numero" aria-hidden="true">
+              •••• •••• •••• {tarjeta.terminacion}
             </span>
-            <span className="fila-monto">{monto(tarjeta.pagoMes)}</span>
+          </div>
+          <div className="tarjeta-credito-pie">
+            <div>
+              <span>Pago del mes</span>
+              <strong>{monto(tarjeta.pagoMes)}</strong>
+            </div>
+            <div>
+              <span>Vence</span>
+              <strong>{fechaDia(tarjeta.vence)}</strong>
+            </div>
           </div>
         </section>
 
@@ -91,34 +109,62 @@ export default function InicioBanca() {
         </ul>
 
         {riesgo && (
-          <Link to="/lucas/resumen" className="tarjeta-lucas" aria-label="Lucas te avisa: ver tu plan">
+          <Link to="/lucas/resumen" className="tarjeta-lucas">
             <MarcaLucas tamano={44} />
             <span className="tarjeta-lucas-texto">
               <strong>Lucas te avisa</strong>
-              <span>
-                {textoDiasEnRojo(riesgo)} podrías quedar en rojo. Mira cómo evitarlo.
-              </span>
+              <span>{textoDiasEnRojo(riesgo)} podrías quedar en rojo. Mira cómo evitarlo.</span>
             </span>
           </Link>
         )}
+
+        <section aria-labelledby="programados-titulo" className="seccion-banca">
+          <div className="tarjeta-titulo">
+            <h2 id="programados-titulo" className="titulo-chico">
+              Pagos programados
+            </h2>
+            <Link className="enlace" to="/lucas/que-viene">
+              Ver todos
+            </Link>
+          </div>
+          <ul className="programados" aria-label="Pagos antes de tu cobro">
+            {pagosAntesDelCobro.map((p) => (
+              <li key={p.id} className="programado">
+                <span className="circulo" aria-hidden="true">
+                  {iniciales(p.concepto)}
+                </span>
+                <span className="programado-texto">
+                  <span>{p.concepto}</span>
+                  <strong>{monto(p.monto)}</strong>
+                  <span className="suave">{fechaDia(p.fecha)}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <section className="tarjeta" aria-labelledby="movimientos-titulo">
           <h2 id="movimientos-titulo" className="titulo-chico">
             Últimos movimientos
           </h2>
-          <ul className="lista-limpia">
-            {cliente.movimientosRecientes.map((m) => (
-              <li key={m.id} className="fila">
-                <span className="fila-texto">
-                  <span>{m.concepto}</span>
-                  <span className="suave">{fechaCorta(m.fecha)}</span>
-                </span>
-                <span className={`fila-monto ${m.monto > 0 ? 'entra' : ''}`}>
-                  {montosVisibles ? `${m.monto > 0 ? '+' : ''}${enSoles(m.monto)}` : OCULTO}
-                </span>
-              </li>
-            ))}
-          </ul>
+          {agruparPorDia(cliente.movimientosRecientes, hoy).map((g) => (
+            <div key={g.nombre} className="grupo-dia">
+              <h3 className="grupo-nombre">{g.nombre}</h3>
+              <ul className="lista-limpia">
+                {g.movimientos.map((m) => (
+                  <li key={m.id} className="fila">
+                    <span className="circulo" aria-hidden="true">
+                      {iniciales(m.concepto)}
+                    </span>
+                    <span className="fila-texto">{m.concepto}</span>
+                    <span className={`fila-monto ${m.monto > 0 ? 'entra' : ''}`}>
+                      {montosVisibles ? `${m.monto > 0 ? '+' : ''}${enSoles(m.monto)}` : OCULTO}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </section>
       </main>
     </>

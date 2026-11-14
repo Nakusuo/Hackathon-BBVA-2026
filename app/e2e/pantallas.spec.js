@@ -51,9 +51,9 @@ for (const { ruta, titulo } of PANTALLAS) {
 test('lo importante se ve sin bajar: aviso de Lucas en la banca y gasto diario en Lucas', async ({ page }) => {
   await sinGuia(page)
   await page.goto('/banca')
-  await expect(page.getByRole('link', { name: 'Lucas te avisa: ver tu plan' })).toBeInViewport()
+  await expect(page.getByRole('link', { name: /Lucas te avisa/ })).toBeInViewport()
   await page.goto('/lucas/resumen')
-  await expect(page.getByText('Es lo que puedes gastar sin quedar en rojo')).toBeInViewport()
+  await expect(page.getByRole('region', { name: 'Cuánto puedes gastar' })).toBeInViewport()
 })
 
 test('ingreso, banca, Lucas y guía de primera vez', async ({ page }) => {
@@ -61,7 +61,7 @@ test('ingreso, banca, Lucas y guía de primera vez', async ({ page }) => {
   await page.getByRole('button', { name: 'Ingresar' }).click()
   await expect(page).toHaveURL(/banca/)
 
-  await page.getByRole('link', { name: 'Lucas te avisa: ver tu plan' }).click()
+  await page.getByRole('link', { name: /Lucas te avisa/ }).click()
   const guia = page.getByRole('dialog')
   await expect(guia).toContainText('Paso 1 de 3')
   await page.screenshot({ path: `capturas/${test.info().project.name}-guia.png` })
@@ -140,4 +140,41 @@ test('una pregunta sugerida desde el Resumen llega al chat una sola vez', async 
   await expect(page).toHaveURL(/lucas\/chat$/)
   await expect(page.locator('.mensaje-tu')).toHaveCount(1)
   await expect(page.locator('.mensaje-lucas').last()).toContainText('podrías quedar en rojo')
+})
+
+test('el aviso de «solo Lucas» dura completo aunque se toquen dos botones seguidos', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/banca')
+  await page.getByRole('button', { name: 'Notificaciones' }).click()
+  await page.waitForTimeout(2000)
+  await page.getByRole('button', { name: 'Mi perfil' }).click()
+  await page.waitForTimeout(800)
+  await expect(page.getByText('En esta demo solo está activo Lucas.')).toBeVisible()
+})
+
+test('la guía retiene el foco con Tab y lo devuelve al botón «?» al cerrar', async ({ page }) => {
+  await page.goto('/lucas/resumen')
+  await expect(page.getByRole('dialog')).toBeVisible()
+  for (let i = 0; i < 4; i++) await page.keyboard.press('Tab')
+  expect(await page.evaluate(() => !!document.activeElement?.closest('.guia'))).toBe(true)
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Ver la guía' })).toBeFocused()
+})
+
+test('responder «No» marca el dato como por revisar y se puede deshacer', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/resumen')
+  const dato = page.locator('.aprendido').nth(1)
+  await dato.getByRole('button', { name: 'No' }).click()
+  await expect(dato).toContainText('Marcado como por revisar.')
+  await dato.getByRole('button', { name: 'Deshacer' }).click()
+  await expect(dato.getByRole('button', { name: 'No' })).toBeVisible()
+})
+
+test('los botones del selector de periodo caben en una línea', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/que-viene')
+  const altos = await page.locator('.selector button').evaluateAll((bs) => bs.map((b) => b.getBoundingClientRect().height))
+  for (const alto of altos) expect(alto).toBeLessThanOrEqual(40)
 })

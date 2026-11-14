@@ -15,6 +15,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Push y PR #3 | `feature/front-esqueleto` | Rama subida y PR a `develop` abierto: https://github.com/MaickolO/Hackathon-BBVA-2026-Equipo-2/pull/3 (revisa Dixon) |
 | 2026-11-14 | Investigación de UI bancaria | — | Informe `.claude/investigacion/ui-banca.md` (agente investigador): ocultar saldo es estándar en Perú, categorías comparadas con el promedio, entrada al asistente con tarjeta proactiva + acceso fijo, guía corta (estudio NN/g) |
 | 2026-11-14 | Banca + Lucas v2 | `feature/front-banca-lucas` | Ingreso visual de Mi Banca, inicio con saldo ocultable, cuentas, accesos, tarjeta «Lucas te avisa» y Lucas al centro de la barra; espacio Lucas con Resumen (gasto diario, aviso, lo que aprendí con «¿Es correcto?», tips con efecto, apartado comprobado, salud), Gastos (7 categorías frente al promedio), Qué viene y Chat (respuestas con cifras verificadas y límites de asesoría); guía de 3 pasos. 19 pruebas de funciones y 28 de Playwright en verde |
+| 2026-11-14 | Revisión y corrección de errores + estructura de referencias | `feature/front-banca-lucas` | Corregidos: aviso «solo Lucas» que se borraba antes de tiempo, foco que escapaba de la guía y no volvía al «?», selector partido en celular, «No» de lo aprendido que no hacía nada visible, lector de pantalla que no leía el aviso de la tarjeta de Lucas, leyenda del gráfico con color equivocado. Nueva estructura (referencias de apps financieras, en azules): cabecera azul profunda con saldo, tarjeta de crédito visual, accesos en bloque blanco, pagos programados deslizables, movimientos por día; Resumen con dos recuadros; Gastos y Qué viene con panel azul y hoja blanca. 19 pruebas de funciones y 36 de Playwright en verde |
 
 ## Lo que acordamos
 
@@ -35,6 +36,8 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Íconos: Phosphor Icons (`@phosphor-icons/react`) en vez de Lucide | Pedido de Marcela |
 | 2026-11-14 | Lucas entra por la tarjeta de aviso en el inicio y por un botón destacado al centro de la barra inferior, no por burbuja flotante | Investigación: la burbuja tapa contenido y se ignora; la tarjeta muestra valor antes de abrir |
 | 2026-11-14 | Guía de primera vez: 3 pasos en contexto, con «Saltar» y botón «?» para volver a verla | Estudio NN/g: los tutoriales largos no mejoran el uso |
+| 2026-11-14 | Texto en gris tinta `#1f2a30` (antes `#14303f`, a ≤ 15 puntos del marino `#072146` de BBVA) y cabeceras en azul profundo `#134e5e` | Mantener el límite de marca del juez-cumplimiento |
+| 2026-11-14 | Estructura tomada de referencias de apps financieras, siempre en azules: número grande sobre azul, hoja blanca con la lista, recuadros de presupuesto, botón central | Pedido de Marcela |
 | 2026-11-14 | Rojo solo para riesgo y siempre con texto («Aviso», «podrías quedar en rojo») | No depender solo del color |
 
 ## Lo que falta

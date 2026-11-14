@@ -10,9 +10,10 @@
 
 .tarjeta-titulo {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 8px 12px;
 }
 
 .titulo-chico {
@@ -232,6 +233,7 @@ details[open] summary::after {
   color: var(--tinta-suave);
   font: inherit;
   font-weight: 600;
+  white-space: nowrap;
   cursor: pointer;
 }
 

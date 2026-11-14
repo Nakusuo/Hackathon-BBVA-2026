@@ -1,5 +1,5 @@
 import { CaretLeft, Question } from '@phosphor-icons/react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, Navigate, NavLink, useParams } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import { cliente, persona } from '../mocks/cliente.js'
@@ -20,6 +20,12 @@ const SECCIONES = [
 export default function EspacioLucas() {
   const { seccion } = useParams()
   const [guiaAbierta, setGuiaAbierta] = useState(() => !guiaYaVista())
+  const botonGuia = useRef(null)
+
+  function cerrarGuia() {
+    setGuiaAbierta(false)
+    botonGuia.current?.focus()
+  }
 
   if (!SECCIONES.some((s) => s.id === seccion)) return <Navigate to="/lucas/resumen" replace />
 
@@ -31,7 +37,13 @@ export default function EspacioLucas() {
             <CaretLeft size={20} aria-hidden="true" />
             Mi Banca
           </Link>
-          <button type="button" className="icono-boton icono-boton-suave" aria-label="Ver la guía" onClick={() => setGuiaAbierta(true)}>
+          <button
+            ref={botonGuia}
+            type="button"
+            className="icono-boton icono-boton-suave"
+            aria-label="Ver la guía"
+            onClick={() => setGuiaAbierta(true)}
+          >
             <Question size={24} aria-hidden="true" />
           </button>
         </div>
@@ -58,7 +70,7 @@ export default function EspacioLucas() {
         {seccion === 'chat' && <Chat cliente={cliente} persona={persona} />}
       </main>
 
-      {guiaAbierta && seccion === 'resumen' && <Guia alCerrar={() => setGuiaAbierta(false)} />}
+      {guiaAbierta && seccion === 'resumen' && <Guia alCerrar={cerrarGuia} />}
     </div>
   )
 }
