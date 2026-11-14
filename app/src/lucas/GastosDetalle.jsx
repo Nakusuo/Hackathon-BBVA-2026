@@ -15,16 +15,29 @@ function Comparacion({ categoria }) {
 }
 
 // Una suscripción que Lucas propone pausar se puede elegir desde aquí: es el mismo tip del Resumen.
+// Lucas no toca la suscripción: el botón dice lo que hará la persona y luego le recuerda la fecha.
 function PausarSuscripcion({ tip, activo, alAlternar }) {
+  const { comercio, fecha } = tip.seguimiento
   return (
-    <span className="suscripcion-accion">
-      <button type="button" className="boton-lo-hago" aria-pressed={activo} onClick={() => alAlternar(tip.id)}>
+    <span className="suscripcion-accion" aria-live="polite">
+      <button
+        type="button"
+        className="boton-lo-hago"
+        aria-pressed={activo}
+        aria-label={`La pausaré hasta mi cobro: ${comercio}`}
+        onClick={() => alAlternar(tip.id)}
+      >
         {activo && <CheckCircle size={20} weight="fill" aria-hidden="true" />}
-        Pausar hasta tu cobro
+        La pausaré hasta mi cobro
       </button>
-      <span className="cifra cifra-azul">
-        +{enSoles(tip.mejora)} el {fechaCorta(tip.fechaPeorDia)}
-      </span>
+      {activo ? (
+        <span className="suave">Recuerda pausarla antes del {fechaCorta(fecha)}, que es cuando se cobra.</span>
+      ) : (
+        <span className="cifra cifra-azul">
+          +{enSoles(tip.mejora)} el {fechaCorta(tip.fechaPeorDia)}
+          {tip.diasEvitados > 0 && `. Evitas ${tip.diasEvitados === 1 ? '1 día' : `${tip.diasEvitados} días`} en rojo`}
+        </span>
+      )}
     </span>
   )
 }
@@ -68,7 +81,7 @@ export default function GastosDetalle({ cliente, alternarTip }) {
         <h2 id="suscripciones-titulo">Suscripciones</h2>
         <ul className="lista-limpia">
           {suscripciones.map((s) => {
-            const tip = recomendaciones.find((r) => r.id === s.id)
+            const tip = recomendaciones.find((r) => r.ajuste.pagosOmitidos?.includes(s.id))
             return (
               <li key={s.id} className="fila">
                 <span className="circulo" aria-hidden="true">
