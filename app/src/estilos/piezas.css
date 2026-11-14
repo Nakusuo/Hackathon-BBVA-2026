@@ -383,6 +383,10 @@ details[open] summary::after {
 }
 
 .facil-cerrar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
 
 /* Va sobre el contenido, no como cinta de color: es información, no una alerta de plata. */
 .estado-datos {
@@ -402,7 +406,6 @@ details[open] summary::after {
   align-items: center;
   gap: 6px;
 }
-
 
 .marca-verificada {
   color: var(--bien);
