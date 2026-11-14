@@ -11,6 +11,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | MC-01 Rediseño con referencias + Playwright | `feature/front-esqueleto` | Barra lateral oscura con píldora activa (abajo y flotante en celular), tarjeta principal «Puedes gastar S/ 34 al día», aviso de Lucas, anillo de salud por componentes, filas con iniciales, selector «Hasta mi ingreso / 30 días», lista de pagos que vienen, montos destacados en Qué hacer. 21 pruebas de Playwright en verde (claro, oscuro, celular) |
 
 | 2026-11-14 | Correcciones de los jueces | `feature/front-esqueleto` | Motor único de cifras (`app/src/mocks/motor.js`): gasto seguro S/ 26 al día, riesgo 28–29 con peor caso −S/ 60, cada recomendación con su efecto real y juntas dejan +S/ 12 sin días en rojo. Salud = promedio real (54). Cada pantalla cabe en 1366×768 (lo vigila una prueba). Paleta con ámbar. 14 pruebas de funciones (`npm test`) y 21 de Playwright en verde |
+| 2026-11-14 | Segunda revisión de jueces | `feature/front-esqueleto` | juez-tecnico APRUEBA, juez-producto APRUEBA (~61/100, antes ~46), juez-cumplimiento CUMPLE. Se aplicaron también dos opcionales: % de deudas calculado de los pagos (45 %, salud 52) y resumen del gráfico para lectores de pantalla |
 
 ## Lo que acordamos
 
@@ -24,12 +25,14 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Todo texto ≥ 16 px, verificado por una prueba de Playwright | Regla de accesibilidad de negocio.md |
 | 2026-11-14 | Playwright para probar la UI; puede usar un navegador ya instalado con `PW_CHROMIUM` | Pruebas de sistema ISTQB y capturas para la demo |
 | 2026-11-14 | Todas las cifras de las pantallas salen de un solo motor, nunca escritas a mano en textos | Los jueces encontraron contradicciones (S/ 34 al día frente a rojo; 80 por quincena = 240) |
+| 2026-11-14 | Límite de marca (juez-cumplimiento): ningún azul a menos de ~20 puntos por canal de `#004481`, `#072146`, `#1464A5`, `#1973B8`, `#5BBEFF`, `#2DCCCD`; sin tipografías de BBVA; el ámbar es la firma de Lucas; en el pitch «podría integrarse» | Que el front se sienta bancario sin aparentar producto oficial |
 | 2026-11-14 | Rojo solo para riesgo y siempre con texto («Aviso», «podrías quedar en rojo») | No depender solo del color |
 
 ## Lo que falta
 
 - [ ] Firecrawl: conectar en claude.ai (Settings → Connectors) para investigación web
-- [ ] Segunda revisión de `juez-tecnico`, `juez-producto` y `juez-cumplimiento` tras las correcciones
+- [ ] Mejoras del juez-producto: apartado S/ 150 calculado por el motor (entrada a Sueldo Lucas); explicar «peor caso» con palabras simples y mostrar «evitas 2 días en rojo»; enlazar MusiKa (Suscripciones) y la salud a acciones
+- [ ] Con la API: «veces este mes» como ritmo diario, explicaciones de salud desde el modelo (DI-07)
 - [ ] Lugar para la marca ✓ de cifra verificada cuando exista la API
 - [ ] Push de `feature/front-esqueleto` y PR a `develop` (revisa Dixon + `juez-tecnico`, y `juez-producto` porque se ve en la demo)
 - [ ] MG-01: acordar con Miguel y Jeffrey el contrato de la API; cambiar `app/src/mocks/` por los JSON de `data/sample/mocks/`
