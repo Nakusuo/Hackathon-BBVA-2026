@@ -6,11 +6,12 @@ from src.api.schemas.onboarding import (
     OnboardingResponse,
 )
 
-
 router = APIRouter(
     prefix="/api/v1",
     tags=["Onboarding"]
 )
+
+CLIENTES_DEMO = {"demo-001", "demo-002"}
 
 
 @router.post(
@@ -18,19 +19,20 @@ router = APIRouter(
     response_model=OnboardingResponse
 )
 def create_onboarding(request: OnboardingRequest):
-    if request.customer_id != "demo-001":
+    if request.customer_id not in CLIENTES_DEMO:
         raise HTTPException(
             status_code=404,
             detail="Cliente no encontrado"
         )
 
-    # Validación inicial para MG-03.
-    # La clasificación depende del modelo de Diego.
-    # No asignamos perfiles financieros arbitrarios.
+    # El perfil lo asigna el modelo DI-12; hasta conectarlo no se inventa uno.
     return {
         "customer_id": request.customer_id,
-        "profile": None,
+        "profile": {
+            "segment": "pending_model_assignment",
+            "quadrant": None
+        },
         "confidence": None,
-        "model": "pending-integration",
+        "model": "pending-di-12",
         "is_estimate": True
     }

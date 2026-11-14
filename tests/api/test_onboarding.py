@@ -1,14 +1,30 @@
+import json
+from pathlib import Path
 
 import pytest
-
 from fastapi.testclient import TestClient
 
 from src.api.main import app
 
-
 client = TestClient(app)
 
 BASE_URL = "/api/v1/onboarding"
+
+MOCKS = Path(__file__).resolve().parents[2] / "data" / "sample" / "mocks"
+
+
+def leer_mock(nombre):
+    return json.loads((MOCKS / nombre).read_text(encoding="utf-8"))
+
+
+def test_onboarding_con_request_del_mock():
+    response = client.post(
+        BASE_URL,
+        json=leer_mock("onboarding-request.json")
+    )
+
+    assert response.status_code == 200
+    assert response.json() == leer_mock("onboarding.json")
 
 
 def valid_onboarding():
@@ -35,9 +51,12 @@ def test_onboarding_success():
     data = response.json()
 
     assert data["customer_id"] == "demo-001"
-    assert data["profile"] is None
+    assert data["profile"] == {
+        "segment": "pending_model_assignment",
+        "quadrant": None
+    }
     assert data["confidence"] is None
-    assert data["model"] == "pending-integration"
+    assert data["model"] == "pending-di-12"
     assert data["is_estimate"] is True
 
 

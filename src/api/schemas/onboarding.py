@@ -22,9 +22,14 @@ class OnboardingRequest(BaseModel):
     answers: OnboardingAnswers
 
 
+class OnboardingProfile(BaseModel):
+    segment: str = Field(min_length=1)
+    quadrant: str | None = None
+
+
 class OnboardingResponse(BaseModel):
     customer_id: str = Field(min_length=1)
-    profile: str | None = None
+    profile: OnboardingProfile
     confidence: float | None = Field(
         default=None,
         ge=0,
