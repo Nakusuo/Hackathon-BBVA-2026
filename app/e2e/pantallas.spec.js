@@ -406,6 +406,7 @@ test('si la API tarda demasiado, Lucas pasa a los datos guardados sin quedarse c
   await page.goto('/lucas/resumen')
   await expect(page.getByText('Puedes gastar al día')).toBeVisible()
   await expect(page.getByRole('status').filter({ hasText: 'No llegaron tus datos del servidor' })).toBeVisible({ timeout: 8000 })
+})
 
 test('Avisos: la campana abre la bandeja; hoy el riesgo está a 14 días y no gasta aviso', async ({ page }) => {
   await sinGuia(page)
