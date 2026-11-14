@@ -18,7 +18,7 @@
   align-items: center;
   gap: 4px;
   min-height: 44px;
-  color: var(--azul);
+  color: var(--azul-texto);
   font-weight: 700;
   text-decoration: none;
 }
@@ -172,7 +172,7 @@
   border: 2px solid var(--azul);
   border-radius: 999px;
   background: var(--superficie);
-  color: var(--azul);
+  color: var(--azul-texto);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -198,7 +198,7 @@
 }
 
 .cifra-azul {
-  color: var(--azul);
+  color: var(--azul-texto);
 }
 
 .salud {

@@ -5,8 +5,7 @@
   place-items: center;
   padding: 24px 16px;
   overflow: hidden;
-  background: var(--carbon);
-  color: var(--texto-claro);
+  background: var(--fondo);
   isolation: isolate;
 }
 
@@ -33,17 +32,18 @@
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60% 45% at 85% 15%, rgb(58 125 255 / 0.22), transparent 70%),
-    radial-gradient(55% 40% at 10% 90%, rgb(58 125 255 / 0.16), transparent 70%);
+    radial-gradient(60% 45% at 85% 15%, var(--brillo), transparent 70%),
+    radial-gradient(55% 40% at 10% 90%, var(--brillo), transparent 70%);
+  opacity: 0.6;
 }
 
 .ingreso-arco {
   fill: none;
-  stroke: var(--electrico);
+  stroke: var(--azul);
   stroke-width: 6;
   vector-effect: non-scaling-stroke;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 10px rgb(58 125 255 / 0.8));
+  filter: drop-shadow(0 0 10px var(--brillo));
 }
 
 .ingreso-tarjeta {
@@ -56,7 +56,7 @@
   background: var(--vidrio);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+  box-shadow: 0 24px 60px var(--sombra);
 }
 
 .ingreso-marca {
@@ -67,13 +67,7 @@
 }
 
 .ingreso .logotipo {
-  color: var(--texto-claro);
-}
-
-.ingreso .etiqueta-demo {
-  background: var(--vidrio);
-  border: 1px solid var(--vidrio-borde);
-  color: var(--texto-claro);
+  color: var(--tinta);
 }
 
 .ingreso h1 {
@@ -82,48 +76,54 @@
   line-height: 1.15;
 }
 
-.ingreso-bajada {
-  margin: -8px 0 4px;
-  color: var(--texto-claro-suave);
+.ingreso-saludo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: -8px;
+}
+
+.ingreso-saludo .mascota {
+  flex: none;
+}
+
+.burbuja {
+  position: relative;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 18px 18px 18px 6px;
+  background: var(--azul-palido);
+  color: var(--tinta);
+  font-weight: 600;
 }
 
 .campo {
   display: grid;
   gap: 6px;
   font-weight: 600;
-  color: var(--texto-claro-suave);
+  color: var(--tinta-suave);
 }
 
 .campo input {
   min-height: 52px;
   padding: 0 20px;
-  border: 1px solid var(--vidrio-borde);
+  border: 1px solid var(--borde);
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.04);
-  color: var(--texto-claro);
+  background: var(--superficie);
+  color: var(--tinta);
   font: inherit;
   font-weight: 500;
 }
 
-.campo input:focus-visible {
-  outline: 2px solid var(--electrico-claro);
+.campo input:focus-visible,
+.ingreso .boton:focus-visible {
+  outline: 2px solid var(--azul-texto);
   outline-offset: 2px;
 }
 
 .ingreso .boton {
   min-height: 52px;
   margin-top: 4px;
-  background: var(--texto-claro);
-  color: var(--carbon);
-}
-
-.ingreso .boton:hover {
-  background: var(--electrico-claro);
-}
-
-.ingreso .boton:focus-visible {
-  outline: 2px solid var(--electrico-claro);
-  outline-offset: 3px;
 }
 
 .nota-seguridad {
@@ -131,5 +131,5 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  color: var(--texto-claro-suave);
+  color: var(--tinta-suave);
 }

@@ -1,6 +1,7 @@
 import { LockSimple } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router-dom'
+import Mascota from '../componentes/Mascota.jsx'
 import { SUAVE } from '../movimiento.js'
 
 const ARCOS = [
@@ -55,12 +56,15 @@ export default function Ingreso() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: SUAVE, delay: 0.2 }}
       >
+        <div className="ingreso-saludo">
+          <Mascota tamano={84} />
+          <p className="burbuja">¡Hola de nuevo! Soy Lucas, tu copiloto de plata.</p>
+        </div>
         <div className="ingreso-marca">
           <span className="logotipo">Banco Vértice</span>
           <span className="etiqueta-demo">Banco ficticio</span>
         </div>
         <h1 id="ingreso-titulo">Ingresa a tu banca</h1>
-        <p className="ingreso-bajada">Con Lucas, tu copiloto de plata.</p>
 
         <label className="campo">
           <span>Número de DNI</span>
