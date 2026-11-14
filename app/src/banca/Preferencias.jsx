@@ -114,7 +114,7 @@ export default function Preferencias() {
       </section>
 
       <section className="tarjeta" aria-labelledby="guardado-titulo">
-        <h2 id="guardado-titulo">Lo que Lucas guarda en este navegador</h2>
+        <h2 id="guardado-titulo">Tus avisos guardados en este navegador</h2>
         <p className="suave">Qué avisos viste esta semana y si te sirvieron. No guarda montos ni lo que escribes.</p>
         <button
           type="button"

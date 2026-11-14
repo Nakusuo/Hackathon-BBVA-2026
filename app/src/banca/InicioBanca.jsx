@@ -134,8 +134,10 @@ export default function InicioBanca() {
             <span className="tarjeta-lucas-texto">
               <strong>{riesgoLejano ? 'Lucas lo ve venir' : 'Lucas te avisa'}</strong>
               <span>
-                {riesgoLejano && `En ${riesgoLejano.dias} días: `}
-                {textoDiasEnRojo(riesgo)} podrías quedar en rojo. Mira cómo evitarlo.
+                {riesgoLejano
+                  ? `En ${riesgoLejano.dias} días, ${textoDiasEnRojo(riesgo).toLowerCase()}`
+                  : textoDiasEnRojo(riesgo)}{' '}
+                podrías quedar en rojo. Mira cómo evitarlo.
               </span>
             </span>
           </Link>

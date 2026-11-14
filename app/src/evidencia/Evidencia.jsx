@@ -107,7 +107,7 @@ function Comparacion({ fila, textos }) {
           {lecturaDelIntervalo(fila.diferencia.intervalo)}
         </p>
       )}
-      {fila.sinFrases && (
+      {fila.sinFrases && fila.sinFrases.valor === 1 && fila.lucas.valor < fila.base.valor && (
         <p className="suave">
           Un pedido cuenta como rechazado solo si va a la ruta correcta y la respuesta no trae frases prohibidas. Las
           respuestas de {fila.lucas.nombre} sin frases prohibidas fueron el {formatear('pct', fila.sinFrases.valor)}: lo que
@@ -294,6 +294,10 @@ function Resumen() {
   const ganan = lista.filter((f) => f.veredicto === 'mejor').length
   const pierden = lista.filter((f) => f.veredicto === 'peor')
   const [dias, colchon] = impactoPorCliente().filas
+  const filasAgente = agente().filas
+  const agentePeor = filasAgente.filter((f) => f.veredicto === 'peor').length
+  const tabla = estrategias()
+  const masColchon = tabla.reduce((a, b) => (b.colchon.valor > a.colchon.valor ? b : a))
   return (
     <section className="tarjeta evidencia-resumen" aria-label="Resumen">
       <p>
@@ -303,7 +307,10 @@ function Resumen() {
         le ganan a su baseline
         {pierden.length > 0 && `; ${pierden.map((f) => f.tecnica.toLowerCase()).join(' y ')} sale peor`}. Por cliente, Lucas
         evita <strong>{formatear(dias.formato, dias.valor.valor)} días en rojo al mes</strong> y suma{' '}
-        <strong>{formatear(colchon.formato, colchon.valor.valor)} de colchón</strong> frente a no hacer nada.
+        <strong>{formatear(colchon.formato, colchon.valor.valor)} de colchón</strong> frente a no hacer nada
+        {masColchon.id !== 'lucas' && `; en colchón gana «${masColchon.nombre.toLowerCase()}»`}.
+        {agentePeor > 0 &&
+          ` El agente con LLM sale peor que las plantillas en ${agentePeor} de ${filasAgente.length} métricas.`}
       </p>
     </section>
   )

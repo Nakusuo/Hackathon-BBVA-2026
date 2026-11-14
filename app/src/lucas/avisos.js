@@ -39,7 +39,9 @@ function avisoDeRiesgo(cliente, hoy) {
       esperado: riesgo.esperado,
       peorFecha: riesgo.peorFecha,
       cobro: proximoIngreso,
-      tip: cliente.recomendaciones[0],
+      // El primer tip que la persona todavía no eligió; y si con todos sale del rojo, también se dice.
+      tip: cliente.recomendaciones.find((r) => !cliente.elegidos.includes(r.id)),
+      conTodos: cliente.conTodos.peorMonto >= 0 ? { ...cliente.conTodos, total: cliente.totalCambios } : null,
       accion: { texto: 'Ver cómo evitarlo', ruta: '/lucas/resumen#tips' },
     },
   }

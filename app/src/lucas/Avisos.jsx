@@ -46,6 +46,10 @@ function textos(aviso) {
       titulo: aviso.dias === 0 ? 'Hoy podrías quedar en rojo' : `Podrías quedar en rojo ${cuando(aviso)}`,
       detalle: `En el peor caso tu saldo baja a ${enSoles(aviso.impacto)} antes de tu cobro del ${fechaCorta(aviso.cobro.fecha)}.${
         aviso.tip ? ` Con «${aviso.tip.titulo}», ese día mejora ${enSoles(aviso.tip.mejora)}.` : ''
+      }${
+        aviso.conTodos
+          ? ` Con los ${aviso.conTodos.total} tips de tu Resumen, tu peor caso pasa a +${enSoles(aviso.conTodos.peorMonto)}.`
+          : ''
       }`,
       impacto: `${enSoles(aviso.impacto)} en el peor caso`,
       porque: 'Lucas avisa cuando faltan 7 días o menos, para que tengas tiempo de ajustar.',
@@ -53,14 +57,14 @@ function textos(aviso) {
       supuesto: 'El peor caso es el borde bajo de la banda del pronóstico, no lo más probable.',
       seguridad: masProbable
         ? `Alta: incluso lo más probable es que ese día tengas ${enSoles(aviso.esperado)}.`
-        : `Baja: lo más probable es que el ${fechaCorta(aviso.peorFecha)} tengas ${enSoles(aviso.esperado)}; el rojo es posible, no seguro.`,
+        : `Baja: es poco probable, porque lo más probable es que el ${fechaCorta(aviso.peorFecha)} tengas ${enSoles(aviso.esperado)}. Te avisamos igual porque, si pasa, pagarías intereses por cubrir el hueco.`,
     }
   }
   if (aviso.tipo === 'pago') {
     return {
       titulo: `${aviso.concepto}: ${enSoles(-aviso.impacto)} ${cuando(aviso)}`,
       detalle: `${aviso.uso}. Si la pausas, tu día más justo mejora ${enSoles(aviso.tip.mejora)}.`,
-      impacto: `${enSoles(aviso.impacto)} de tu saldo`,
+      impacto: `+${enSoles(aviso.tip.mejora)} en tu día más justo si la pausas`,
       porque: 'Se cobra en los próximos 7 días y casi no la usas.',
       datos: 'Tus pagos programados y cuántas veces usaste el servicio.',
       supuesto: 'Que la pausas antes del cobro y la retomas cuando quieras.',
@@ -156,8 +160,8 @@ function Demo({ dias, diaDemo, setDiaDemo, conGasto, setConGasto }) {
 }
 
 export default function Avisos({ cliente }) {
-  const [diaDemo, setDiaDemo] = useState(cliente.hoy)
-  const [conGasto, setConGasto] = useState(false)
+  const [diaDemo, setDiaDia] = useState(cliente.hoy)
+  const [conGasto, setConGastoDemo] = useState(false)
   const [registro, setRegistro] = useState(leerRegistro)
   // La demo usa una copia en memoria: probar otros días no gasta el tope de la semana real.
   const [registroDemo, setRegistroDemo] = useState(leerRegistro)
@@ -168,6 +172,13 @@ export default function Avisos({ cliente }) {
     [cliente, conGasto, diaDemo],
   )
   const enDemo = diaDemo !== cliente.hoy || conGasto
+  // Al entrar a la demo, su copia parte de lo que la semana real ya mostró.
+  function entrarADemo(cambio) {
+    if (!enDemo) setRegistroDemo(registro)
+    cambio()
+  }
+  const setDiaDemo = (dia) => entrarADemo(() => setDiaDia(dia))
+  const setConGasto = (valor) => entrarADemo(() => setConGastoDemo(valor))
   const actual = enDemo ? registroDemo : registro
   const { avisos: lista, riesgoLejano } = candidatos(vista, diaDemo)
   const bandeja = armarBandeja(lista, actual, diaDemo)
