@@ -131,17 +131,21 @@ export default function Chat({ cliente, persona }) {
     setMensajes((previos) => [...previos, { autor: 'tu', texto: limpio }])
     setBorrador('')
     setPensando(true)
-    const respuesta = await preguntarALucas(limpio, {
-      cliente,
-      persona,
-      activo: AGENTE,
-      conversacion: conversacion.current,
-    })
-    ocupado.current = false
-    if (!montado.current) return
-    if (respuesta.conversacion) conversacion.current = respuesta.conversacion
-    setMensajes((previos) => [...previos, { autor: 'lucas', ...respuesta }])
-    setPensando(false)
+    try {
+      const respuesta = await preguntarALucas(limpio, {
+        cliente,
+        persona,
+        activo: AGENTE,
+        conversacion: conversacion.current,
+      })
+      if (!montado.current) return
+      if (respuesta.conversacion) conversacion.current = respuesta.conversacion
+      setMensajes((previos) => [...previos, { autor: 'lucas', ...respuesta }])
+    } finally {
+      // Un fallo inesperado del front no debe dejar el chat bloqueado en «pensando».
+      ocupado.current = false
+      if (montado.current) setPensando(false)
+    }
   }
 
   // Las preguntas que llegan desde el Resumen se envían solas una vez y se quitan de la dirección.
