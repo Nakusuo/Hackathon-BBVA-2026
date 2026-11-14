@@ -1,12 +1,17 @@
 import { Link } from 'react-router-dom'
 import AnilloSalud from '../componentes/AnilloSalud.jsx'
 import { nivelDeSalud } from '../formato.js'
+import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 
 // Cada parte del puntaje lleva a la pantalla donde se puede mejorar: así la salud no es solo una nota.
 const ACCIONES = {
-  Colchón: { texto: 'Ver cuánto apartar al cobrar', a: '/lucas/resumen#tips' },
+  Colchón: { texto: 'Ver cuánto apartar al cobrar', a: '/lucas/resumen#apartado' },
   Deudas: { texto: 'Ver tus próximos pagos', a: '/lucas/que-viene' },
-  'Regularidad del ingreso': { texto: 'Ver tus próximos cobros', a: '/lucas/que-viene' },
+  // Con cobros irregulares, lo que ayuda es apartar al cobrar: se lo pregunta a Lucas.
+  'Regularidad del ingreso': {
+    texto: 'Pregúntale cuánto puedes ahorrar',
+    a: `/lucas/chat?q=${encodeURIComponent(PREGUNTAS_SUGERIDAS[3])}`,
+  },
   'Control del gasto': { texto: 'Ver tips para tu día más justo', a: '/lucas/resumen#tips' },
 }
 

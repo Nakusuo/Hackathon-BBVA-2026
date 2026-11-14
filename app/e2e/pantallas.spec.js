@@ -241,6 +241,10 @@ test('cada parte de la salud lleva a una acción', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Tips para tu día más justo' })).toBeInViewport()
 
   await page.goto('/lucas/salud')
+  await salud.getByRole('link', { name: 'Ver cuánto apartar al cobrar' }).click()
+  await expect(page.locator('#apartado')).toBeInViewport()
+
+  await page.goto('/lucas/salud')
   await salud.getByRole('link', { name: 'Ver tus próximos pagos' }).click()
   await expect(page.getByRole('region', { name: 'Pagos y cobros' })).toBeVisible()
 })

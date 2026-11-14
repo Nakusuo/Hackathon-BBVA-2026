@@ -91,7 +91,7 @@ function Tip({ tip, activo, alAlternar }) {
 function Apartado({ cliente }) {
   const { apartado, proximoIngreso } = cliente
   return (
-    <li className="tip">
+    <li className="tip" id="apartado">
       <div className="reco-cabecera">
         <span className="circulo" aria-hidden="true">
           <PiggyBank size={22} />
