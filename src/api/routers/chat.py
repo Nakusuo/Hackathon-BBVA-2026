@@ -26,8 +26,6 @@ def send_message(request: ChatRequest):
             detail="Cliente no encontrado"
         )
 
-    # Reutilizar el identificador si existe.
-    # Si no existe, generar uno nuevo.
     conversation_id = (
         request.conversation_id
         or f"conv-{uuid4().hex[:12]}"

@@ -21,11 +21,6 @@ def get_financial_offers(customer_id: str):
             detail="Cliente no encontrado"
         )
 
-    # Perfil sintético para el MVP.
-    # No representa un análisis financiero real.
-    emergency_fund_months = 1.5
-    has_expensive_debt = False
-
     offers = [
         {
             "id": "offer-001",
@@ -67,33 +62,6 @@ def get_financial_offers(customer_id: str):
             )
         }
     ]
-
-    # Una oferta de ahorro a plazo solo sería elegible
-    # con un colchón de al menos tres meses
-    # y sin deuda cara.
-    if (
-        emergency_fund_months >= 3
-        and not has_expensive_debt
-    ):
-        offers.append({
-            "id": "offer-003",
-            "name": "Ahorro a plazo referencial",
-            "category": "term_savings",
-            "description": (
-                "Producto ficticio de ahorro a plazo "
-                "para evaluar alternativas financieras."
-            ),
-            "reason": (
-                "El perfil simulado cumple las "
-                "condiciones mínimas de seguridad."
-            ),
-            "estimated_benefit": "0.00",
-            "eligible": True,
-            "disclaimer": (
-                "No garantiza rentabilidad ni "
-                "representa una oferta comercial real."
-            )
-        })
 
     return {
         "customer_id": customer_id,
