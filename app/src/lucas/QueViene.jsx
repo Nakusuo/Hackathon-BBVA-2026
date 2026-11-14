@@ -153,6 +153,17 @@ export default function QueViene({ cliente }) {
               />
               <Tooltip content={<Globo />} cursor={{ stroke: COLOR.texto, strokeDasharray: '4 4' }} />
               <Area dataKey="banda" stroke="none" fill={COLOR.banda} isAnimationActive={false} />
+              {/* Halo del color del fondo bajo la línea: la separa de la banda, que solo llega a 2.4:1 con la crema. */}
+              <Line
+                dataKey="esperado"
+                stroke={COLOR.fondo}
+                strokeWidth={7}
+                dot={false}
+                activeDot={false}
+                tooltipType="none"
+                legendType="none"
+                isAnimationActive={false}
+              />
               <Line
                 dataKey="esperado"
                 stroke={COLOR.linea}
