@@ -1,0 +1,309 @@
+{
+ "que_es": "Datos 100 % sinteticos generados por data/generator.py (semilla fija). Se cargan al repositorio de forma temporal para la integracion final; no hay datos personales reales.",
+ "creado": "2026-11-14T15:41:43",
+ "semilla": 2026,
+ "meta": {
+  "semilla": 2026,
+  "clientes": 500,
+  "inicio": "2019-01-01",
+  "fin": "2025-12-31",
+  "lote": 50,
+  "movimientos": 3264148,
+  "segundos": 39.9,
+  "python": "3.13.2",
+  "numpy": "2.5.4",
+  "pandas": "3.1.1",
+  "huella_parametros": {
+   "generador.yaml": "f532ab0d7d20e4f4",
+   "eventos.yaml": "90b8415d9f9d66fa"
+  },
+  "incluye_prospectivos": false,
+  "fuente_perfiles": "parametrica"
+ },
+ "huella_parametros": {
+  "generador.yaml": "f532ab0d7d20e4f4",
+  "eventos.yaml": "90b8415d9f9d66fa"
+ },
+ "regenerar_identica": "python data/generator.py --perfil completo   (misma semilla y mismos parametros dan las mismas tablas; lo comprueba tests/test_generador.py)",
+ "como_usar": "python eval/entrenar_modelos.py y la clase Repositorio leen estas tablas desde data/generado/",
+ "quitar_al_terminar": "git rm -r --cached data/generado   (la carpeta ya esta en .gitignore: los archivos siguen en disco y dejan de versionarse)",
+ "total_archivos": 55,
+ "total_mb": 130.1,
+ "archivos": [
+  {
+   "ruta": "clientes.parquet",
+   "bytes": 76293,
+   "sha256": "229f1062bce4d1421d52250e728b5aed939a0d123b83c10ce36c113d84704f22"
+  },
+  {
+   "ruta": "contexto_diario.parquet",
+   "bytes": 30602,
+   "sha256": "3a00c5f39e0390bb7a8199134bd257a387b30208b45b52f06a055b853c0f29f4"
+  },
+  {
+   "ruta": "eventos.parquet",
+   "bytes": 5449,
+   "sha256": "accc92fcf930311f2779569236e85632a74b51b18c003228af0f4d5915081b38"
+  },
+  {
+   "ruta": "macro_mensual.parquet",
+   "bytes": 5379,
+   "sha256": "07115ad5658a00efb4ffb1b1ad58c206cf9211aa5458aca17ca0046112afdfde"
+  },
+  {
+   "ruta": "meta.json",
+   "bytes": 409,
+   "sha256": "024a742ea438ffda313c63065434c27c2eac6f0be404a605f4e6fff8c961afd1"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_000.parquet",
+   "bytes": 182927,
+   "sha256": "7b35ee25829a9ccbf77dd8b87f1609431021d945ca9f6bb5f7788d11bf7b23f4"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_001.parquet",
+   "bytes": 175811,
+   "sha256": "c540e443ebfddc1d5301b653efc708802bce8103290f07c1e5f2baeebf7d3a2d"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_002.parquet",
+   "bytes": 186954,
+   "sha256": "d9d3082be0fc343f91914016def787340828d5a8d02957c70430932ece291079"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_003.parquet",
+   "bytes": 166322,
+   "sha256": "9d0a52b4007b74dcd4d74b79ee3d39aa59ded4cdc05437505411d3fe6acfbb59"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_004.parquet",
+   "bytes": 168086,
+   "sha256": "0308c77b0f72271b1f4639a17f6bf1920f73e9dcc584c307b73f63b3e478b846"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_005.parquet",
+   "bytes": 165012,
+   "sha256": "6fbaafdfb7d233fa90b0fea88812af5a0fdcf84e03ca6663922e7748c5b48fb0"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_006.parquet",
+   "bytes": 163402,
+   "sha256": "5d9186a6124ebb94c95b374e1d50ad3431a3a67bfc6a790b7de23bc4485f4f5e"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_007.parquet",
+   "bytes": 169387,
+   "sha256": "e2d262fb4dc505a479c67391cf7be01508b1f551ae1fbeee49801174dfea5c60"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_008.parquet",
+   "bytes": 179602,
+   "sha256": "d90b0de5110dba176572d0a532b7c11d151afe4fb5e99fe3edbae0e4e394a513"
+  },
+  {
+   "ruta": "etiquetas_calidad/lote_009.parquet",
+   "bytes": 175165,
+   "sha256": "c3cbe7034b7bd025252933b0c0345802c4d331aabf8bec248f50c371aff451a5"
+  },
+  {
+   "ruta": "mensajes/lote_000.parquet",
+   "bytes": 53180,
+   "sha256": "dff13aff5b8422edcb02327f0b95b3304c6c75a6ba0e8909c09caa1c9b6b41cf"
+  },
+  {
+   "ruta": "mensajes/lote_001.parquet",
+   "bytes": 53329,
+   "sha256": "c5d3800fc19304871de4007836bf4075dcc90980583081337367333a5e62ba48"
+  },
+  {
+   "ruta": "mensajes/lote_002.parquet",
+   "bytes": 54292,
+   "sha256": "53237cfca810086091ea4ca63d428aadb016de36b423904f7d5943307b2abbc2"
+  },
+  {
+   "ruta": "mensajes/lote_003.parquet",
+   "bytes": 52863,
+   "sha256": "003b7671cf671187f66fafbcec4f704be6672550001e39c02771e492127650ac"
+  },
+  {
+   "ruta": "mensajes/lote_004.parquet",
+   "bytes": 53972,
+   "sha256": "17b77e48ade3f78fb1273e4126cbec531c17dfbaff0ec8e22514db716a8d1b22"
+  },
+  {
+   "ruta": "mensajes/lote_005.parquet",
+   "bytes": 51904,
+   "sha256": "bf89389262f7a2af77b6b8b014e85061795fc95482facdea79bfd71f6a9e22cd"
+  },
+  {
+   "ruta": "mensajes/lote_006.parquet",
+   "bytes": 53957,
+   "sha256": "50ad521761bc19086ae5cb44abd56f8fca51d4833b03b9da4e52ff62e8af0feb"
+  },
+  {
+   "ruta": "mensajes/lote_007.parquet",
+   "bytes": 52838,
+   "sha256": "fa25491db1caceb753d6d4ca5008ac1da91aad73f4b3e7cc978715a59662fc97"
+  },
+  {
+   "ruta": "mensajes/lote_008.parquet",
+   "bytes": 53495,
+   "sha256": "6cbe778f3cff2a47b240263386c00ecd7ba807069cedcd5d849a9adcf35574b0"
+  },
+  {
+   "ruta": "mensajes/lote_009.parquet",
+   "bytes": 53389,
+   "sha256": "f5bc61473bffc729aee1f7b3c5d9779af6087e814db1a0b0964f46a91826243f"
+  },
+  {
+   "ruta": "panel_mensual/lote_000.parquet",
+   "bytes": 183915,
+   "sha256": "8fc12996113115df7f57b433e30207a7dd76970833829672b5be98a03e4f26c7"
+  },
+  {
+   "ruta": "panel_mensual/lote_001.parquet",
+   "bytes": 184542,
+   "sha256": "29002079dcef91660ef15e2d5e5c7473fd1bcbb3e832eda7b0230064562d542f"
+  },
+  {
+   "ruta": "panel_mensual/lote_002.parquet",
+   "bytes": 184534,
+   "sha256": "4b8b922ada68c82cb80fbde5a62f37d47c2d7c8779bc21830e6232be453e0dd7"
+  },
+  {
+   "ruta": "panel_mensual/lote_003.parquet",
+   "bytes": 186084,
+   "sha256": "cec808aea8a22701dae7c77d2a3314bb2d2897a5804f50c47949b07ddcff7727"
+  },
+  {
+   "ruta": "panel_mensual/lote_004.parquet",
+   "bytes": 183449,
+   "sha256": "4cb057b49ada186cf801430bd886625a163825421e49d494d8dcb290defa0011"
+  },
+  {
+   "ruta": "panel_mensual/lote_005.parquet",
+   "bytes": 184872,
+   "sha256": "5a3d65f7475148813865ce04148d4fe58a3f3650fc0d9e659ee696a01404d44c"
+  },
+  {
+   "ruta": "panel_mensual/lote_006.parquet",
+   "bytes": 184037,
+   "sha256": "070db6516b2a60cf535965309567753c2f8652d6e829d12c46ceabfdbdf4fde2"
+  },
+  {
+   "ruta": "panel_mensual/lote_007.parquet",
+   "bytes": 185666,
+   "sha256": "fb0922b23fa7e5fcfb59ff30dfd154ebc89c6f5a6997900f3e8f1fc9cc794622"
+  },
+  {
+   "ruta": "panel_mensual/lote_008.parquet",
+   "bytes": 185640,
+   "sha256": "3b511b432e3b193c299f97063b8cf92f0fce88cafcc41819bd50cdc8a1b668de"
+  },
+  {
+   "ruta": "panel_mensual/lote_009.parquet",
+   "bytes": 183411,
+   "sha256": "24033776f56e4b2c191f20ebf856a21ab331388d3d45e78104dd40ad6d73aedc"
+  },
+  {
+   "ruta": "saldo_diario/lote_000.parquet",
+   "bytes": 1799511,
+   "sha256": "dfb564b4e989f1d77bd52a75481a57fdc945af150607ff1451c9cda6041344ff"
+  },
+  {
+   "ruta": "saldo_diario/lote_001.parquet",
+   "bytes": 1764243,
+   "sha256": "25d275691c6992b75525977b4022d7c17430f7062741363bf97601d91f620238"
+  },
+  {
+   "ruta": "saldo_diario/lote_002.parquet",
+   "bytes": 1810233,
+   "sha256": "ca2bbb69043e9d162cbf48338216bb0de53357f37b18253ae0700621dbce57dd"
+  },
+  {
+   "ruta": "saldo_diario/lote_003.parquet",
+   "bytes": 1718039,
+   "sha256": "7695861f892bf08541cfb240fe1db51f0727b9f6657480093047ad969830eef0"
+  },
+  {
+   "ruta": "saldo_diario/lote_004.parquet",
+   "bytes": 1729594,
+   "sha256": "ed17b3750d831df502876dd2336ffae0d0ac37a830703f485288722db204eefa"
+  },
+  {
+   "ruta": "saldo_diario/lote_005.parquet",
+   "bytes": 1722832,
+   "sha256": "43fff3b68c8ef24f0dd498c5c3a475af57bbd91272d895a59ff1699855c7a53c"
+  },
+  {
+   "ruta": "saldo_diario/lote_006.parquet",
+   "bytes": 1721257,
+   "sha256": "8a43ee414d51ddeb8fdd72be2d101f24b988582642c25bd2e1be074a7a814633"
+  },
+  {
+   "ruta": "saldo_diario/lote_007.parquet",
+   "bytes": 1765991,
+   "sha256": "561c96b47ea4943735e89c9ed916e361f34d9e52454503058292f31fe90eca46"
+  },
+  {
+   "ruta": "saldo_diario/lote_008.parquet",
+   "bytes": 1795053,
+   "sha256": "dd95ba874fccbb190cfef608158514259db4dca7819134941732fa70ea958a77"
+  },
+  {
+   "ruta": "saldo_diario/lote_009.parquet",
+   "bytes": 1757082,
+   "sha256": "77f0e53c6369c875468e454dfdd9e70a79bc3cf9ee07a81eda9589ab43044819"
+  },
+  {
+   "ruta": "transacciones/lote_000.parquet",
+   "bytes": 11920082,
+   "sha256": "f6babbaedf980224b428cd9e1bc2710fc894682551c9fe7b90214008bc937090"
+  },
+  {
+   "ruta": "transacciones/lote_001.parquet",
+   "bytes": 11561622,
+   "sha256": "06b99feeb96a5f9aadf6d754ad6a53ae20675c9348ec787f12d596379ea721f1"
+  },
+  {
+   "ruta": "transacciones/lote_002.parquet",
+   "bytes": 12115907,
+   "sha256": "a96f735abdc40026a5074c1fb2df5b7b80b69f78415cc1ec1bd367d5dbaeb763"
+  },
+  {
+   "ruta": "transacciones/lote_003.parquet",
+   "bytes": 11097804,
+   "sha256": "9b0fd710a599bf35223bdbacf4ea96ce8371a15d1ce95bd3a52dd6536a1ee0c8"
+  },
+  {
+   "ruta": "transacciones/lote_004.parquet",
+   "bytes": 11236076,
+   "sha256": "170e4fd6afb34161c6c7042eead585fa24703417c320b75f5e92b779395dfafc"
+  },
+  {
+   "ruta": "transacciones/lote_005.parquet",
+   "bytes": 11047009,
+   "sha256": "770a16299bd2ae4f90cf4c143fddadf9fb96dae61b8100ed62f219999a4fb3d9"
+  },
+  {
+   "ruta": "transacciones/lote_006.parquet",
+   "bytes": 10924065,
+   "sha256": "f1a25a39440ecc1937c253563f57bfb9785b55ecbcdad7b80275bba50446e6bf"
+  },
+  {
+   "ruta": "transacciones/lote_007.parquet",
+   "bytes": 11384005,
+   "sha256": "2e408478761e9ea12a177bc7efd03c2a55d24b777e3613675af7d4bd57142b5d"
+  },
+  {
+   "ruta": "transacciones/lote_008.parquet",
+   "bytes": 11823091,
+   "sha256": "61ebfaf480a67023ad19ac3e8ef13d061d84c7a60f5d90a75c9f05e523670a4a"
+  },
+  {
+   "ruta": "transacciones/lote_009.parquet",
+   "bytes": 11528445,
+   "sha256": "33ae8467f940a7831cae7a87a64122f84619e83455c6334b8d9e4609fb5010f4"
+  }
+ ]
+}
