@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, DotsThree } from '@phosphor-icons/react'
-import { enSoles, iniciales } from '../formato.js'
+import { enSoles, enSolesRedondo, iniciales } from '../formato.js'
 import { diferenciaConPromedio, ICONOS_CATEGORIA } from './categorias.js'
 
 function Comparacion({ categoria }) {
@@ -33,7 +33,7 @@ export default function GastosDetalle({ cliente }) {
                 <span className="categoria-texto">
                   <span className="categoria-cabecera">
                     <span>{c.nombre}</span>
-                    <span className="cifra">{enSoles(Math.round(c.total))}</span>
+                    <span className="cifra">{enSolesRedondo(c.total)}</span>
                   </span>
                   <span className="medidor" aria-hidden="true">
                     <span style={{ width: `${(c.total / mayor) * 100}%` }} />

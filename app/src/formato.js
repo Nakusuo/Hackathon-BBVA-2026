@@ -9,6 +9,12 @@ export function enSoles(monto) {
   return `${signo}S/ ${formato.format(absoluto)}`
 }
 
+// Totales y sumas se muestran al sol: un solo redondeo para que la misma cifra no salga como
+// «S/ 62» en un lado y «S/ 61.80» en otro. Los cobros sueltos (StreamFlix S/ 39.90) van con enSoles.
+export function enSolesRedondo(monto) {
+  return enSoles(Math.round(monto))
+}
+
 export function conSigno(monto) {
   return monto > 0 ? `+${enSoles(monto)}` : enSoles(monto)
 }

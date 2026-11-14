@@ -2,7 +2,7 @@ import { ArrowUp, CaretRight } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { Cell, Pie, PieChart } from 'recharts'
-import { enSoles } from '../formato.js'
+import { enSolesRedondo } from '../formato.js'
 import { diferenciaConPromedio, partesDelGrafico, UMBRAL } from './categorias.js'
 
 const SERIES = [
@@ -46,11 +46,11 @@ export default function Gastos({ cliente }) {
           </Pie>
         </PieChart>
         <div className="dona-centro">
-          <strong>{enSoles(Math.round(total))}</strong>
+          <strong>{enSolesRedondo(total)}</strong>
           <span className="suave">
             {Math.abs(diferencia) <= UMBRAL
               ? 'como siempre'
-              : `${enSoles(Math.abs(diferencia))} ${diferencia > 0 ? 'más' : 'menos'}`}
+              : `${enSolesRedondo(Math.abs(diferencia))} ${diferencia > 0 ? 'más' : 'menos'}`}
           </span>
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function Gastos({ cliente }) {
             <span className="leyenda-punto" style={{ background: SERIES[i] }} aria-hidden="true" />
             <span className="leyenda-nombre">{p.nombre}</span>
             <span className="suave">{Math.round((p.total / total) * 100)} %</span>
-            <span className="cifra">{enSoles(Math.round(p.total))}</span>
+            <span className="cifra">{enSolesRedondo(p.total)}</span>
             {diferenciaConPromedio(p) > 0 && (
               <span className="sube" title="Más que tu promedio">
                 <ArrowUp size={16} aria-label="Más que tu promedio" />
@@ -74,7 +74,7 @@ export default function Gastos({ cliente }) {
           </motion.li>
         ))}
       </ul>
-      <p className="suave">Comparado con tu promedio de 3 meses. Suscripciones: {enSoles(enSuscripciones)} al mes.</p>
+      <p className="suave">Comparado con tu promedio de 3 meses. Suscripciones: {enSolesRedondo(enSuscripciones)} al mes.</p>
       <Link to="/lucas/gastos-detalle" className="boton boton-chico boton-secundario">
         Ver detalle
         <CaretRight size={18} aria-hidden="true" />
