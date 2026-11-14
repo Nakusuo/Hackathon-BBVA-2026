@@ -172,6 +172,14 @@ NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ub
 
 Los **embeddings del RAG son siempre locales** (Ollama): vectores de modelos distintos no se comparan y el RAG debe funcionar sin red. **La demo funciona con la red apagada.**
 
+**GPU (RTX 3050 Laptop, 4 GB de VRAM):** solo el LLM usa la GPU; datos, pronóstico y clustering son tablas pequeñas y van en CPU. El modelo tiene que caber **entero** en VRAM (si una capa cae a CPU, la latencia se multiplica):
+- Modelo: `qwen2.5:3b` (Q4_K_M, ~1,9 GB; buen español y tool calling). Alternativa: `llama3.2:3b`. Nada de 7B/8B: no caben con el escritorio ocupando ~0,5 GB.
+- Variables del servidor Ollama (variables de usuario en Windows, reiniciar Ollama): `OLLAMA_FLASH_ATTENTION=1`, `OLLAMA_KV_CACHE_TYPE=q8_0`, `OLLAMA_KEEP_ALIVE=-1` (el modelo no se descarga entre preguntas de la demo).
+- En cada llamada: `options.num_ctx = 4096`. El prompt lleva solo las salidas de las tools, así que alcanza.
+- Al arrancar la API se hace una llamada de calentamiento para que la primera pregunta del jurado no pague la carga del modelo.
+- Comprobar con `ollama ps`: la columna PROCESSOR debe decir `100% GPU`.
+- Si la GPU no da (otra laptop, se llena la VRAM, latencia > 8 s), se pasa a Gemini y luego a plantillas, en ese orden.
+
 ### Seguridad de datos demostrable
 - Roles: `lucas_app` (lee y escribe `app`), `lucas_agente` (solo lectura, sin columnas sensibles), `lucas_admin`.
 - RLS por `customer_id`. Columnas sensibles cifradas con pgcrypto.
@@ -437,7 +445,7 @@ Preguntas probables: ¿por qué no bastan reglas? ¿Cómo evitan que el LLM inve
 |---|---|
 | Alcance grande para 2 días | MoSCoW, orden de recorte, checkpoint 19:00 |
 | Postgres/Docker falla en una laptop | `data/sample/` + script que carga en un Postgres local; la máquina de demo se prueba el sábado |
-| LLM lento o sin red | Ollama con modelo pequeño ya descargado → Gemini en nivel gratuito si hay red y Ollama falla → plantillas |
+| LLM lento o sin red | `qwen2.5:3b` ya descargado, 100 % en GPU y precalentado → Gemini en nivel gratuito si hay red y Ollama falla → plantillas |
 | Gemini corta por límite de uso (error 429) o la organización no lo autoriza | Pasa solo a plantillas; la demo de punta a punta se ensaya también con la red apagada |
 | El jurado ve «otra app de presupuesto» | Abrir la demo con el aviso anticipado y el Sueldo Lucas; cerrar con impacto en S/ y la calculadora del banco |
 | Cifras de negocio inventadas | Ninguna cifra de retención o mora «de Lucas»; solo fórmula con supuestos visibles y lo que mediría un piloto |
