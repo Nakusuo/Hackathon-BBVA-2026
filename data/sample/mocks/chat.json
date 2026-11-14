@@ -1,0 +1,11 @@
+{
+  "conversation_id": "conv-001",
+  "answer": "Según tu pronóstico simulado, existe riesgo de saldo negativo. Antes de gastar S/ 150, conviene revisar tus próximos pagos. Tú decides.",
+  "provider": "template",
+  "verified": true,
+  "sources": [],
+  "tools_used": [
+    "get_forecast",
+    "get_health"
+  ]
+}
