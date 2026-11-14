@@ -16,6 +16,7 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 | 2026-11-14 | Prueba con `qwen2.5:3b` real | `feature/ia-jeffrey-actividades` | El juez atrapó cifras inventadas, pero aparecieron errores de sentido («S/ 72» por el puntaje, «invertir en un colchón nuevo», signo del saldo invertido). Se endureció el juez y el LLM ve solo un resumen por intención. Detalle en `PROMPTS.md` |
 | 2026-11-14 | Push y PR #5 | `feature/ia-jeffrey-actividades` | PR a `develop`: https://github.com/MaickolO/Hackathon-BBVA-2026-Equipo-2/pull/5 (revisa Diego). 147 tests en verde |
 | 2026-11-14 | Cifras con etiqueta para el chat de Marcela | `feature/ia-jeffrey-actividades` | `/chat` suma el campo `figures`: `[{label, value, text}]`, por ejemplo «Saldo mínimo probable: -S/ 310», con el signo real de la tool. `verified_figures` sigue igual. Rama al día con `develop` (PR #6 de Marcela). 149 tests en verde |
+| 2026-11-14 | Correcciones de la medición de Michael (JF-07) | `feature/ia-jeffrey-actividades` | `OLLAMA_HOST=0.0.0.0` normalizado a localhost. Salud vuelve al LLM (faltaba el 100 de «72 de 100»). El juez rechaza cifras mal descritas: «saldo» que no es saldo, «actual» que es final y negativos escritos como positivos. Prompt v4. Opción `--simular-con-llm` para que Michael pruebe CP-SIS-10. 166 tests en verde |
 
 ## Lo que acordamos
 
@@ -23,15 +24,20 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 |---|---|---|
 | 2026-11-14 | Una sola rama para mis primeras tareas, con commits separados por tarea | Pedido mío, para revisar todo junto |
 | 2026-11-14 | El LLM nunca recibe el texto del usuario ni `customer_id`: solo la intención y un resumen de las tools | Una inyección no llega al modelo y Gemini no recibe texto libre (ISO 8.12) |
-| 2026-11-14 | Simular un gasto, el tipo de cambio y el perfil van siempre por plantilla | Con el 3b, el LLM invirtió el signo del saldo y la unidad del tipo de cambio. **Choca con CP-SIS-10**, que pide LLM: lo deciden Diego y Dixon en el PR #5 |
+| 2026-11-14 | Simular un gasto, el tipo de cambio y el perfil van siempre por plantilla | Con el 3b, el LLM invirtió el signo del saldo y la unidad del tipo de cambio |
+| 2026-11-14 | CP-SIS-10 se mantiene; se vuelve a probar en la RTX 3050 con `--simular-con-llm` y, si el LLM se equivoca, se cambia el caso a «responde la plantilla» (Dixon) | Decisión de Dixon |
+| 2026-11-14 | Mi agente se mantiene junto a los modelos de Diego: son complementarios y él los contrasta (Diego) | Respuesta de Diego al PR #5 |
+| 2026-11-14 | Campo `figures` de `/chat` acordado con Marcela y Miguel | Su chat muestra `{etiqueta, valor}` |
+| 2026-11-14 | La demo va enchufada | En batería baja la RTX 3050 baja a 9,6 tok/s y tarda de 8 a 18 s (Michael) |
 | 2026-11-14 | `qwen2.5:3b` y no 1.5b | El 1.5b inventó cifras en 2 de 5 preguntas |
 | 2026-11-14 | Contrato `/chat` y `/fx` con Miguel | `docs/api.md`, secciones 11 y 12 |
 
 ## Lo que falta
 
-- [ ] Revisión de Diego del PR #5 y merge
-- [ ] Decidir CP-SIS-10 con Diego y Dixon (simulación por LLM o por plantilla)
-- [ ] Confirmar con Marcela y Miguel el campo nuevo `figures` de `/chat` (su pantalla usa `{etiqueta, valor}`) y anotarlo en `docs/api.md`
+- [ ] Aprobación formal de Diego del PR #5 en GitHub y merge
+- [ ] Michael: repetir la medición con el prompt v4 y con `--simular-con-llm` (CP-SIS-10); pasarle el resultado a Dixon
+- [x] Campo `figures` acordado con Marcela y Miguel
+- [ ] Miguel anota `figures` en `docs/api.md` y lo declara en la respuesta de `/chat`
 - [ ] JF-03 Tools reales sobre `estado_cliente` y `src/tipos.py` (espera MG-03 de Miguel y MI-03 de Michael)
 - [ ] JF-04 Números del fragmento citado (con JF-05)
 - [ ] JF-05 RAG en pgvector por módulo (espera MI-02 de Michael)
