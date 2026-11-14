@@ -8,13 +8,12 @@ import {
   Lightbulb,
   PauseCircle,
   PiggyBank,
-  SealCheck,
   Taxi,
-  Warning,
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import CifraVerificada from '../componentes/CifraVerificada.jsx'
+import LucasPose from '../componentes/LucasPose.jsx'
 import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
 import { avanceDelCiclo, diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
 import { entrada } from '../movimiento.js'
@@ -93,9 +92,7 @@ function Apartado({ cliente }) {
   return (
     <li className="tip" id="apartado">
       <div className="reco-cabecera">
-        <span className="circulo" aria-hidden="true">
-          <PiggyBank size={22} />
-        </span>
+        <LucasPose pose={apartado ? 'ahorra' : 'pensando'} tamano={56} />
         <span className="pildora">Después de cobrar</span>
       </div>
       {apartado ? (
@@ -158,7 +155,7 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
       <motion.div {...entra(1)}>
         {riesgo ? (
           <section className="aviso aviso-corto" role="status" aria-label="Aviso de Lucas">
-            <Warning size={24} aria-hidden="true" />
+            <LucasPose pose="alerta" tamano={56} />
             <p>
               <strong>Lucas te avisa:</strong> en el peor caso, el {fechaDia(riesgo.desde)}
               {riesgo.hasta !== riesgo.desde && ` y el ${fechaDia(riesgo.hasta)}`} quedarías en rojo (
@@ -170,7 +167,7 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
           </section>
         ) : (
           <section className="aviso aviso-corto aviso-bien" role="status" aria-label="Aviso de Lucas">
-            <SealCheck size={24} aria-hidden="true" />
+            <LucasPose pose="celebra" tamano={56} />
             <p>
               <strong>Vas bien:</strong> llegas a tu cobro sin quedar en rojo, incluso si gastas un poco más.
             </p>

@@ -410,3 +410,11 @@ details[open] summary::after {
 .marca-verificada {
   color: var(--bien);
 }
+
+/* Las poses de Lucas son imágenes con fondo transparente: nunca se estiran ni se seleccionan al tocar. */
+.lucas-pose {
+  display: block;
+  flex: none;
+  object-fit: contain;
+  user-select: none;
+}

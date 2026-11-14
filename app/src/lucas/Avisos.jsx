@@ -1,6 +1,7 @@
 import { Bell, CalendarBlank, Money, ThumbsDown, ThumbsUp, Warning } from '@phosphor-icons/react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import LucasPose from '../componentes/LucasPose.jsx'
 import { enSoles, fechaCorta, fechaDia } from '../formato.js'
 import { vistaCon } from '../motor/cliente.js'
 import { armarBandeja, candidatos, inicioDeSemana, MAXIMO_POR_SEMANA } from './avisos.js'
@@ -235,7 +236,10 @@ export default function Avisos({ cliente }) {
             ))}
           </ul>
         ) : (
-          <p className="tarjeta">No tienes avisos esta semana.</p>
+          <div className="tarjeta avisos-vacio">
+            <LucasPose pose="descansa" tamano={72} />
+            <p>No tienes avisos esta semana.</p>
+          </div>
         )}
 
         {riesgoLejano && (
