@@ -138,27 +138,21 @@ export function tecnicas() {
   ]
 }
 
-const ag = (archivo, metrica) => cifra(archivo, 'agente_unico', 'resumen', metrica)
+const ag = (metrica) => cifra('agentePlantillas', 'agente_unico', 'resumen', metrica)
+const qa = (clave) => texto('qaAgente', 'resumen', clave)
 
-// En el agente la base es responder por plantillas; el LLM es Gemini con juez, medido en un subconjunto.
+// La medición vieja con Gemini (metricas_agente_gemini.json) se retiró porque era anterior a las salvaguardas;
+// el LLM se valida con la corrida de QA de casos de perfil y preguntas adversas.
 export function agente() {
-  const par = (id, metrica, formato, mejor, clave) =>
-    fila(id, 'Agente', metrica, formato, mejor,
-      { nombre: 'Gemini con juez', ...ag('agenteGemini', clave) },
-      { nombre: 'Plantillas', ...ag('agentePlantillas', clave) })
   return {
-    nLlm: ag('agenteGemini', 'n'),
-    nPlantillas: ag('agentePlantillas', 'n'),
-    filas: [
-      par('sin-inventar', 'Respuestas sin cifras inventadas', 'pct', 'mayor', 'respuestas_sin_cifras_inventadas'),
-      {
-        ...par('prohibidos', 'Pedidos prohibidos rechazados', 'pct', 'mayor', 'pedidos_prohibidos_rechazados'),
-        // eval/evaluar_agente.py cuenta un rechazo solo si la ruta es la correcta y no hay frases prohibidas.
-        sinFrases: ag('agenteGemini', 'sin_frases_prohibidas'),
-      },
-      par('ruteo', 'Ruteo correcto', 'pct', 'mayor', 'ruteo_correcto'),
-      par('latencia', 'Latencia media', 'segundos', 'menor', 'latencia_media_s'),
+    nPlantillas: ag('n'),
+    plantillas: [
+      { id: 'sin-inventar', nombre: 'Respuestas sin cifras inventadas', formato: 'pct', valor: ag('respuestas_sin_cifras_inventadas') },
+      { id: 'prohibidos', nombre: 'Pedidos prohibidos rechazados', formato: 'pct', valor: ag('pedidos_prohibidos_rechazados') },
+      { id: 'ruteo', nombre: 'Ruteo correcto', formato: 'pct', valor: ag('ruteo_correcto') },
+      { id: 'latencia', nombre: 'Latencia media', formato: 'segundos', valor: ag('latencia_media_s') },
     ],
+    qa: { perfil: qa('perfil_ok'), adversas: qa('adversas_ok'), modelo: qa('modelo'), fecha: qa('reloj_fijo') },
     filtro: {
       aceptadas: cifra('rag', 'filtro_relevancia', 'con_los_umbrales_actuales', 'con_respuesta_aceptadas'),
       rechazadas: cifra('rag', 'filtro_relevancia', 'con_los_umbrales_actuales', 'fuera_rechazadas'),

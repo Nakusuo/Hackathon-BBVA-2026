@@ -224,18 +224,32 @@ function Impacto() {
 }
 
 function Agente() {
-  const { nLlm, nPlantillas, filas, filtro } = agente()
+  const { nPlantillas, plantillas, qa, filtro } = agente()
   return (
     <section className="evidencia-seccion" aria-labelledby="agente-titulo">
       <h2 id="agente-titulo">Agente y RAG</h2>
-      <p className="suave">
-        El baseline del agente es responder solo con plantillas ({formatear('entero', nPlantillas.valor)} preguntas). Gemini con
-        juez se midió en un subconjunto de {formatear('entero', nLlm.valor)}.
-      </p>
       <ul className="lista-limpia evidencia-grilla">
-        {filas.map((f) => (
-          <Comparacion key={f.id} fila={{ ...f, tecnica: f.metrica, metrica: 'Agente único' }} />
-        ))}
+        <li className="evidencia-fila">
+          <h3>Agente con plantillas, sin LLM</h3>
+          <p className="suave">Es el respaldo que siempre responde. Medido en {formatear('entero', nPlantillas.valor)} preguntas.</p>
+          <dl className="evidencia-lista">
+            {plantillas.map((m) => (
+              <div key={m.id}>
+                <dt>{m.nombre}</dt>
+                <dd className="cifra">{formatear(m.formato, m.valor.valor)}</dd>
+              </div>
+            ))}
+          </dl>
+          <Fuente de={[nPlantillas.fuente, ...plantillas.map((m) => m.valor.fuente)]} />
+        </li>
+        <li className="evidencia-fila">
+          <h3>Agente con LLM y juez</h3>
+          <p>
+            Con {qa.modelo.valor} pasó <span className="cifra">{qa.perfil.valor}</span> casos de perfil y{' '}
+            <span className="cifra">{qa.adversas.valor}</span> preguntas adversas (con el reloj fijo al {qa.fecha.valor}).
+          </p>
+          <Fuente de={[qa.perfil.fuente, qa.adversas.fuente]} />
+        </li>
         <li className="evidencia-fila">
           <h3>Filtro de relevancia del RAG</h3>
           <p>
@@ -294,8 +308,6 @@ function Resumen() {
   const ganan = lista.filter((f) => f.veredicto === 'mejor').length
   const pierden = lista.filter((f) => f.veredicto === 'peor')
   const [dias, colchon] = impactoPorCliente().filas
-  const filasAgente = agente().filas
-  const agentePeor = filasAgente.filter((f) => f.veredicto === 'peor').length
   const tabla = estrategias()
   const masColchon = tabla.reduce((a, b) => (b.colchon.valor > a.colchon.valor ? b : a))
   return (
@@ -309,8 +321,6 @@ function Resumen() {
         evita <strong>{formatear(dias.formato, dias.valor.valor)} días en rojo al mes</strong> y suma{' '}
         <strong>{formatear(colchon.formato, colchon.valor.valor)} de colchón</strong> frente a no hacer nada
         {masColchon.id !== 'lucas' && `; en colchón gana «${masColchon.nombre.toLowerCase()}»`}.
-        {agentePeor > 0 &&
-          ` El agente con LLM sale peor que las plantillas en ${agentePeor} de ${filasAgente.length} métricas.`}
       </p>
     </section>
   )

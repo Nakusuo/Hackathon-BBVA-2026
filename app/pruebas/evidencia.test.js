@@ -11,7 +11,7 @@ test('cada cifra del panel existe en models/metricas*.json y es un número', () 
     ...impactoPorCliente().filas.flatMap((f) => [f.valor, ...f.intervalo]),
     ...estrategias().flatMap((e) => [e.diasRojo, e.colchon]),
     ...tecnicas().flatMap((f) => [f.lucas, f.base]),
-    ...agente().filas.flatMap((f) => [f.lucas, f.base]),
+    ...agente().plantillas.map((m) => m.valor),
     ...perturbaciones().pruebas.flatMap((f) => [f.lucas, f.base]),
     ...Object.values(valorBanco()).filter((c) => typeof c.valor === 'number'),
   ]
