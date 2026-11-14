@@ -588,3 +588,50 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - Límite que se dice en el pitch: en la demo cualquiera puede elegir cualquier persona; el inicio de sesión real lo pone el banco.
 
 **Casos de prueba:** CP-SIS-16, CP-SIS-17, CP-SIS-41.
+
+## 5. Matriz de trazabilidad
+
+| Historia | Caso de uso | Paso o flujo | Casos de prueba | Ola |
+|---|---|---|---|---|
+| HU-01 | CU-01 | 3–4, reglas | CP-SIS-01; DI-07 | 1 |
+| HU-02 | CU-01 | 5, 5a, 6 | CP-SIS-34; DI-04 | 1 |
+| HU-03 | CU-02 | 3–5, 5a, reglas | CP-SIS-02, CP-SIS-03, CP-SIS-35 | 1 |
+| HU-04 | CU-03 | 3–7, 4a, 4b, 4c, 6a | CP-SIS-05, CP-SIS-28, CP-SIS-29 | 1 |
+| HU-05 | CU-03 | 3a, 3a1, 3a2, 3a3 | CP-SIS-04, CP-SIS-36 | 1 |
+| HU-06 | CU-04 | 3–6, 3a | CP-SIS-07, CP-SIS-09, CP-SIS-37 | 1 |
+| HU-07 | CU-04 | 3b, 3b1, 3b2, reglas (se mide en CU-11) | CP-SIS-33, CP-SIS-43 | 1 |
+| HU-08 | CU-05 | 3–5, 5a, garantía mínima | CP-SIS-06, CP-SIS-38 | 1 |
+| HU-09 | CU-06 | 3–7, 3a, 3b, 5a, E4.1, E4.2, E4.3 | CP-SIS-24, CP-SIS-39 | 1 |
+| HU-10 | CU-07 | 4a, 5a, 6, 6b | CP-SIS-10, CP-SIS-15, CP-SIS-30, CP-SIS-40 | 1 |
+| HU-11 | CU-07 | 4c, E4.1, E4.2, E4.4 | CP-SIS-12, CP-SIS-13, CP-SIS-14, CP-SIS-31 | 1 |
+| HU-12 | CU-12, CU-07 | CU-12: E2.1, E2.2, E2.3, E4.1 · CU-07: E4.3 | CP-SIS-16, CP-SIS-17, CP-SIS-41 | 1 |
+| HU-13 | CU-04 | 3c, 3d, 3e | CP-SIS-08, CP-SIS-42 | 1 |
+| HU-14 | CU-11 | 2–4, 7, reglas | CP-SIS-43 | 1 |
+| HU-15 | CU-01 | 7, 7a | CP-SIS-44; DI-13 | 2 |
+| HU-16 | CU-08 | 3–7, E7.1 | CP-SIS-18, CP-SIS-19, CP-SIS-45 | 2 |
+| HU-17 | CU-04, CU-07 | CU-04: 3f, 6a, 6b · CU-07: 4d | CP-SIS-20, CP-SIS-32, CP-SIS-46 | 2 |
+| HU-18 | CU-09 | 3–6 | CP-SIS-21 | 2 |
+| HU-19 | CU-07 | 4b, 4b1 | CP-SIS-11, CP-SIS-47 | 2 |
+| HU-20 | CU-11 | 5, 6 | CP-SIS-48 | 2 |
+| HU-21 | CU-10 | 1–4, reglas, garantía mínima | CP-SIS-22 | 1 |
+| HU-22 | CU-01 | Extensión `resumen-quincena` | Sin caso de sistema | Debería |
+| HU-23 | CU-09 | 1a, 1b | Sin caso de sistema | Debería |
+| HU-24 | CU-03 | 3b, 3b1 | CP-SIS-23 | Debería |
+| HU-25 | CU-01 | Extensión `negocio-casa` | Sin caso de sistema | Debería |
+
+Huecos declarados: HU-22, HU-23 y HU-25 escriben su caso de sistema al empezar a construirse, como dice [historias.md](../.claude/planes/historias.md).
+
+## 6. Rutas por definir
+
+[ARCHITECTURE.md](../ARCHITECTURE.md) define `POST /sesion`, `GET /yo/estado`, `POST /yo/simular`, `POST /yo/movimientos` y `POST /yo/chat`. Faltan las de esta tabla. Las que propone [docs/api.md](api.md) llevan `customer_id` en la URL, lo que choca con HU-12; al cerrarlas, el cliente debe salir del token con el prefijo `/yo/`.
+
+| Caso | Qué necesita | Token |
+|---|---|---|
+| CU-04, alterno 6a | Guardar la respuesta del cliente a una recomendación (útil o «no me sirve») | Sí |
+| CU-08 | Crear la meta, registrar un aporte y cambiar su estado | Sí |
+| CU-09 | Ver lo que Lucas recuerda y borrarlo | Sí |
+| CU-10 | Recibir las 5 respuestas y devolver el pronóstico, sin tocar la base | No |
+| CU-11 | Leer la evidencia y la calculadora de valor, que no dependen de un cliente | No |
+| CU-03, alterno 3b | Decidir si el tipo de cambio viaja dentro de `GET /yo/estado` o en una ruta propia | Sí |
+
+Ajuste pendiente: en CU-06, alterno 5a, HU-09 pide avisar de la recurrente **antes** de guardar; ARCHITECTURE.md §6.3 hoy guarda y luego advierte.
