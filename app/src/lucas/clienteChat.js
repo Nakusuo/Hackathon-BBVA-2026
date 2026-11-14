@@ -56,13 +56,17 @@ export function desdeAgente(cuerpo) {
   }
 }
 
-function plantilla(texto, cliente, persona, aviso = null) {
-  return { origen: 'plantilla', verificado: false, fuentes: [], aviso, ...responderConPlantilla(texto, cliente, persona) }
-}
-
-export async function preguntarALucas(texto, { cliente, persona, conversacion, activo, ...opcionesApi }) {
+export async function preguntarALucas(texto, { cliente, persona, conversacion, activo, previas = [], ...opcionesApi }) {
+  // `previas`: lo que la persona escribió antes, para seguir una meta que dio en dos mensajes.
+  const plantilla = (aviso = null) => ({
+    origen: 'plantilla',
+    verificado: false,
+    fuentes: [],
+    aviso,
+    ...responderConPlantilla(texto, cliente, persona, previas),
+  })
   // Los pedidos de operación o inversión se cortan aquí: no hace falta mandarlos a ningún servidor.
-  if (!activo || esPedidoDeOperacion(texto)) return plantilla(texto, cliente, persona)
+  if (!activo || esPedidoDeOperacion(texto)) return plantilla()
 
   let cuerpo
   try {
@@ -70,11 +74,11 @@ export async function preguntarALucas(texto, { cliente, persona, conversacion, a
   } catch (error) {
     if (!(error instanceof ErrorApi)) throw error
     const aviso = { tiempo: AVISOS.demora, formato: AVISOS.ilegible }[error.tipo] ?? AVISOS.sinConexion
-    return plantilla(texto, cliente, persona, aviso)
+    return plantilla(aviso)
   }
-  if (!esRespuestaValida(cuerpo)) return plantilla(texto, cliente, persona, AVISOS.ilegible)
+  if (!esRespuestaValida(cuerpo)) return plantilla(AVISOS.ilegible)
   if (cuerpo.verified !== true) {
-    return { ...plantilla(texto, cliente, persona, AVISOS.sinVerificar), conversacion: cuerpo.conversation_id ?? null }
+    return { ...plantilla(AVISOS.sinVerificar), conversacion: cuerpo.conversation_id ?? null }
   }
   return desdeAgente(cuerpo)
 }

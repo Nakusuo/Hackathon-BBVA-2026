@@ -75,3 +75,90 @@ test('preguntar por un ahorro concreto lo comprueba contra los pagos', () => {
   assert.match(preguntar('¿Puedo ahorrar 30?').texto, /^Sí/)
   assert.match(preguntar('¿Puedo ahorrar 900?').texto, /^Es mucho/)
 })
+
+test('el precio de una meta en dólares no se confunde con comprar dólares', () => {
+  const r = preguntar('el carro está 14000 dólares')
+  assert.doesNotMatch(r.texto, /no lo hago/)
+  assert.ok(r.cifras.some((c) => c.etiqueta === 'Tu meta' && c.valor === `S/${NBSP}52,500`))
+  assert.ok(r.cifras.some((c) => /Cambio referencial/.test(c.etiqueta)))
+  for (const p of ['¿Me conviene comprar dólares?', 'cámbiame 100 dólares', '¿ahorro en dólares?']) {
+    assert.match(preguntar(p).texto, /no lo hago/, p)
+  }
+})
+
+test('una meta dicha en dos mensajes usa la fecha del primero', () => {
+  const r = responder('el carro está 14000 dólares', cliente, persona, ['tengo una meta para fin de año'])
+  assert.match(r.texto, /^Tu carro cuesta US\$ 14,000, unos S\/.52,500\. Para fin de año/)
+  assert.ok(r.cifras.some((c) => c.etiqueta === 'Necesitas al mes'))
+})
+
+test('una meta sin monto pide el monto y la fecha, sin inventar cifras', () => {
+  const r = preguntar('tengo una meta para fin de año')
+  assert.match(r.texto, /¿Cuánto cuesta\?/)
+  assert.deepEqual(r.cifras, [])
+})
+
+test('una meta que cabe sale con el aporte mensual del mismo plan que la pantalla Metas', async () => {
+  const { planDeMeta, finDeAnio } = await import('../src/lucas/metas.js')
+  const r = preguntar('quiero juntar S/ 60 para fin de año')
+  const plan = planDeMeta(
+    { objetivo: 60, ahorrado: 0, fecha: finDeAnio(cliente.hoy) },
+    { apartado: cliente.apartado.monto, primerApartado: cliente.proximoIngreso.fecha, finPronostico: cliente.finPronostico, hoy: cliente.hoy },
+  )
+  assert.match(r.texto, /^Tu meta es de S\/.60\. Sí llegas para fin de año/)
+  assert.ok(r.cifras.some((c) => c.etiqueta === 'Apartar al mes' && c.valor === `S/${NBSP}${plan.aporte}`))
+})
+
+test('lectura de metas: «14 mil», un monto que parece año y los plazos', async () => {
+  const { montoDeMeta, fechaDeMeta } = await import('../src/lucas/respuestas.js')
+  assert.equal(montoDeMeta('una moto de 14 mil'), 14000)
+  assert.equal(montoDeMeta('meta de 2000 para fin de ano'), 2000)
+  assert.equal(montoDeMeta('juntar 3000 en 6 meses'), 3000)
+  assert.equal(fechaDeMeta('para 2027', '2026-11-14'), '2027-12-31')
+  assert.equal(fechaDeMeta('en 6 meses', '2026-11-14'), '2027-05-14')
+  assert.equal(fechaDeMeta('en un ano', '2026-11-14'), '2027-11-14')
+  assert.equal(fechaDeMeta('una laptop', '2026-11-14'), null)
+})
+
+// Una charla entera: cada respuesta se calcula con todo lo dicho antes, como en un chat de verdad.
+function charla(mensajes) {
+  const previas = []
+  return mensajes.map((m) => {
+    const r = responder(m, cliente, persona, previas)
+    previas.push(m)
+    return r
+  })
+}
+
+test('el contexto sigue la meta a lo largo de la charla, no solo el último mensaje', () => {
+  const [, , precio, plazo, otroPrecio, seguimiento] = charla([
+    'tengo una meta para fin de año',
+    'es un carro',
+    'el carro está 14000 dólares',
+    '¿y si lo hago en 3 años?',
+    'mejor uno de 8 mil soles',
+    '¿cuánto me falta por mes?',
+  ])
+  assert.match(precio.texto, /Para fin de año/)
+  assert.match(plazo.texto, /^Tu carro cuesta US\$ 14,000.*Para el 14 nov de 2029/)
+  assert.match(otroPrecio.texto, /^Tu carro cuesta S\/.8,000\. Para el 14 nov de 2029/)
+  assert.equal(seguimiento.texto, otroPrecio.texto)
+})
+
+test('cambiar de tema y volver: la meta sigue recordada', () => {
+  const r = charla(['quiero juntar 3000 para un viaje en 2027', '¿puedo gastar S/ 150 en un regalo?', '¿y 50?', '¿y mi meta?'])
+  assert.match(r[1].texto, /peor caso/)
+  assert.ok(r[2].cifras.some((c) => c.valor === `S/${NBSP}50`), 'el «¿y 50?» repite el cálculo del gasto')
+  assert.match(r[3].texto, /^Tu viaje cuesta S\/.3,000\. Para fin de 2027/)
+})
+
+test('nombrar otra cosa con su precio empieza una meta nueva', () => {
+  const r = charla(['quiero un viaje de 3000 en un año', 'y una laptop de 2500 para fin de año?'])
+  assert.match(r[1].texto, /^Tu laptop cuesta S\/.2,500\. Para fin de año/)
+})
+
+test('un pedido de operación en medio de la charla se corta sin borrar la meta', () => {
+  const r = charla(['meta: carro de 8 mil para 2029', '¿me conviene comprar dólares?', '¿y para 2030?'])
+  assert.match(r[1].texto, /no lo hago/)
+  assert.match(r[2].texto, /^Tu carro cuesta S\/.8,000\. Para fin de 2030/)
+})

@@ -148,6 +148,7 @@ export default function Chat({ cliente, persona }) {
     const limpio = texto.trim()
     if (!limpio || ocupado.current) return
     ocupado.current = true
+    const previas = mensajes.filter((m) => m.autor === 'tu').map((m) => m.texto)
     agregar({ autor: 'tu', texto: limpio })
     setBorrador('')
     sugerencias.current?.scrollTo?.({ left: 0 })
@@ -156,6 +157,7 @@ export default function Chat({ cliente, persona }) {
       const respuesta = await preguntarALucas(limpio, {
         cliente,
         persona,
+        previas,
         activo: AGENTE,
         conversacion: conversacion.current,
       })
