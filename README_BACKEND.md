@@ -2,7 +2,7 @@
 
 **Responsable:** Miguel Allca · **Proyecto:** Hackathon BBVA 2026, Equipo 2  
 **Rama de entrega:** `feature/backend-fastapi` · **Estado:** implementación mock entregada en rama, pendiente de revisión/merge  
-**Contrato de referencia:** `docs/api.md` (MG-01 v0.2, **borrador pendiente de aprobación**).
+**Contrato de referencia:** `docs/api.md` (MG-01 versión 1.0, aprobada).
 
 ## Alcance
 
