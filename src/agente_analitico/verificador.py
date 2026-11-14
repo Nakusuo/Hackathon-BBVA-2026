@@ -53,12 +53,24 @@ def aplanar(obj, salida: set | None = None) -> set:
     return salida
 
 
+def _lecturas(s: str) -> list[float]:
+    """Un numero como 3.406 es ambiguo: 3 406 (miles) o 3,406 (decimal, como un tipo de cambio o 0.005 de variacion). Se aceptan las dos lecturas; la cifra solo queda sin respaldo si ninguna lo tiene."""
+    t = s.strip()
+    if re.fullmatch(r"\d{1,3}[.,]\d{3}", t):
+        return [float(t.replace(".", "").replace(",", "")), float(t.replace(",", "."))]
+    n = _a_numero(t)
+    return [] if n is None else [n]
+
+
 def verificar(texto: str, permitidos: set, extra: set | None = None) -> dict:
     ok_const = CONSTANTES | (extra or set())
     sin_respaldo = []
-    for n in numeros_de(texto):
-        if n in ok_const or any(abs(n - p) <= max(0.51, 0.006 * abs(p)) for p in permitidos):
+    for m in PATRON.finditer(texto):
+        lecturas = _lecturas(m.group(1))
+        if not lecturas:
             continue
-        sin_respaldo.append(n)
+        if any(n in ok_const or any(abs(n - p) <= max(0.51, 0.006 * abs(p)) for p in permitidos) for n in lecturas):
+            continue
+        sin_respaldo.append(_a_numero(m.group(1)))
     prohibidos = [motivo for patron, motivo in PROHIBIDOS if re.search(patron, texto, flags=re.I)]
     return {"ok": not sin_respaldo and not prohibidos, "cifras_sin_respaldo": sin_respaldo, "prohibidos": prohibidos, "cifras_verificadas": len(numeros_de(texto)) - len(sin_respaldo)}
