@@ -4,7 +4,7 @@ Regla: **ninguna cifra se cita en README, pitch o generador sin fuente original 
 
 | Cifra | Valor | Fuente (enlace exacto) | Estado | Uso |
 |---|---|---|---|---|
-| Peruanos que no cubrirían un mes de ingresos ante una emergencia | 61 % | *pendiente de citar* | Leída por el equipo, falta enlace | Pitch (dolor) + calibrar colchón |
+| Peruanos que no cubrirían un mes de ingresos ante una emergencia | 61 % | *pendiente; candidata: Encuesta Nacional de Capacidades Financieras SBS–CAF (ver investigacion/rag-fuentes.md)* | Leída por el equipo, falta enlace | Pitch (dolor) + calibrar colchón |
 | Ingreso promedio por tipo de trabajo (formal / independiente) | — | INEI (ENAHO) — *pendiente* | Por buscar | Calibrar montos del generador |
 | Proporción de trabajadores formales e independientes | — | INEI — *pendiente* | Por buscar | Proporción de arquetipos |
 | Calendario de CTS y gratificación | Mayo/nov y jul/dic | MTPE / gob.pe — *pendiente* | Por confirmar | Calendario del generador |

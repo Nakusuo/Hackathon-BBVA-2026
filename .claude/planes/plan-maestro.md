@@ -233,16 +233,20 @@ El agente lee la memoria del usuario antes de responder y guarda lo nuevo al fin
 
 ### RAG por módulos
 
-| Módulo | Para qué lo usa Lucas | Fuentes candidatas (licencia por revisar) |
-|---|---|---|
-| Salud financiera | Explicar el puntaje y sus componentes | Material de educación financiera de la SBS |
-| Ahorro | Acompañar metas y colchón | SBS, BCRP |
-| Deudas y crédito | TCEA, costo real de cuotas, sobreendeudamiento | SBS, Indecopi |
-| Inversión básica | Para *ahorradores*: tipos de instrumentos, riesgo y plazo, sin recomendar uno | SMV, BCRP |
-| Seguros | Qué cubre cada tipo | SBS |
-| Derechos del usuario | Reclamos, transparencia de tasas | Indecopi, SBS |
+Fuentes con licencia verificada: [../investigacion/rag-fuentes.md](../investigacion/rag-fuentes.md).
 
-Cada PDF va en `docs/rag/<modulo>/` con un `fuentes.csv`: título, institución, enlace, fecha de consulta, licencia, nivel (básico/intermedio). Cada fragmento lleva su módulo para que el agente busque solo en el que toca. Sin licencia clara, no entra.
+| Módulo | Para qué lo usa Lucas | Fuentes (nivel A salvo indicación) |
+|---|---|---|
+| Salud financiera | Explicar el puntaje y sus componentes | CFPB «Su dinero, sus metas» (español), FDIC Money Smart |
+| Ahorro | Acompañar metas y colchón | CFPB, cartillas del BCRP, FDIC |
+| Deudas y crédito | TCEA, costo real de cuotas, sobreendeudamiento | Res. SBS 3274-2017, folletos de deudas del CFPB |
+| Inversión básica | Para *ahorradores*: tipos, riesgo y plazo, sin recomendar uno | Res. SMV 011-2026 (perfil de riesgo), FDIC |
+| Seguros | Qué cubre cada tipo | Res. SBS 3274-2017; guía SBS «Para vivir seguros» (nivel C, por confirmar) |
+| Derechos y privacidad | Reclamos, transparencia, memoria del usuario | Ley 29571, Res. SBS 3274-2017, Ley 29733 + DS 016-2024-JUS, Banco Mundial 2017 |
+
+Las normas peruanas se pueden cargar porque el DL 822, artículo 9, excluye del derecho de autor a los textos oficiales. Las guías del CFPB y la FDIC son de dominio público, pero hablan de EE. UU.: solo se usan sus capítulos generales, con la etiqueta `contexto: EE. UU.`.
+
+Cada PDF va en `docs/rag/<modulo>/` con su fila en `docs/rag/fuentes.csv`: título, institución, enlace, fecha de consulta, licencia, nivel de licencia (A/B), contexto (Perú/EE. UU./internacional) y nivel de lectura (básico/intermedio). Cada fragmento lleva su módulo para que el agente busque solo en el que toca. Sin licencia clara, no entra.
 
 ### Reglas de seguridad (globales)
 1. Nada de crédito a colchón < 1 mes o deuda alta.

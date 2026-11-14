@@ -57,7 +57,7 @@ Marca tus tareas con `[x]` en este archivo dentro de tu mismo PR.
 - [ ] **DX-01** Diccionario de datos v1 (`data/dictionary.md`) junto con Michael y Diego: tablas, columnas, tipos, etiquetas. *Hecho:* los tres lo aprueban. Rama `feature/datos-diccionario`
 - [ ] **MG-01** Contrato de la API (`docs/api.md`) junto con Marcela y Jeffrey: endpoints y JSON de ejemplo en `data/sample/mocks/`. *Hecho:* los tres lo aprueban. Rama `feature/backend-contrato`
 - [ ] **MC-01** Decidir la UI a las 11:30 (React + Recharts o Streamlit) y esqueleto que navega las 6 pantallas vacías. *Hecho:* se abre en el navegador. Rama `feature/front-esqueleto`
-- [ ] **JF-01** Instalar Ollama con un modelo pequeño y uno de embeddings; anotar versiones en `PROMPTS.md`. Con el agente `investigador`, buscar 1 o 2 PDFs públicos por cada módulo del RAG (salud financiera, ahorro, deudas, inversión básica, seguros, derechos) y revisar su licencia. Rama `feature/ia-setup`
+- [ ] **JF-01** Instalar Ollama con un modelo pequeño y uno de embeddings; anotar versiones en `PROMPTS.md`. Descargar los PDFs del «núcleo del RAG» de `.claude/investigacion/rag-fuentes.md` en `docs/rag/<modulo>/` y armar `docs/rag/fuentes.csv`. Buscar el texto oficial de la Ley 29571. Rama `feature/ia-setup`
 - [ ] **DI-01** Lista de variables por cliente y firma de las funciones de baseline (`src/models/baselines.py` con tests vacíos). Rama `feature/ml-baselines`
 
 ## Bloque 2 · Sábado 12:00–15:00 · Base que funciona

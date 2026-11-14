@@ -56,5 +56,6 @@ Protocolo: (1) leer el cambio → (2) agregar escenario al generador → (3) tes
 4. Formato de entrega (repo público/privado, hora de cierre); confirmar 10 + 3 min.
 5. ¿Se activa la prueba de evolución? ¿Cuándo y con qué peso?
 6. ¿Se pueden traer modelos y dependencias descargados?
+7. ¿Podemos usar en el RAG las guías de educación financiera de la SBS (con cita)?
 
 Anotar las respuestas en [../planes/estado.md](../planes/estado.md).

@@ -46,6 +46,7 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 | Formato de entrega y hora de cierre | — |
 | Prueba de evolución | — |
 | Modelos/dependencias descargados de antemano | — |
+| Uso de las guías de la SBS en el RAG | — |
 
 ## Checkpoints
 
