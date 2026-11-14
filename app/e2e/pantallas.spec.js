@@ -703,3 +703,17 @@ test('Avisos: probar la regla en la demo no gasta el tope de la semana real', as
   const guardado = await page.evaluate(() => JSON.parse(window.localStorage.getItem('lucas-avisos-semana')))
   expect(Object.keys(guardado)).toEqual(['2026-11-09'])
 })
+
+test('el chat recuerda la meta: primero «un carro a fin de año», luego el precio', async ({ page }) => {
+  await sinGuia(page)
+  await page.goto('/lucas/chat')
+  const caja = page.getByLabel('Escribe tu pregunta')
+  await caja.fill('quiero hacer una compra de carro a fin de año, cuánto debería ir ahorrando')
+  await page.getByRole('button', { name: 'Enviar' }).click()
+  await expect(page.locator('.mensaje-lucas').last()).toContainText('¿Cuánto cuesta el carro')
+  await caja.fill('pero el carro está alrededor de 12000 soles')
+  await page.getByRole('button', { name: 'Enviar' }).click()
+  const ultima = page.locator('.mensaje-lucas').last()
+  await expect(ultima).toContainText('no llegas a S/ 12,000')
+  await expect(ultima.getByRole('list', { name: 'Calculado con tus datos' })).toContainText('Meta para el carro')
+})

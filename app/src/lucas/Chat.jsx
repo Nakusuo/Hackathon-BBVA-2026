@@ -118,6 +118,8 @@ export default function Chat({ cliente, persona }) {
   const [borrador, setBorrador] = useState('')
   const [pensando, setPensando] = useState(false)
   const conversacion = useRef(null)
+  // Lo que dejó la última respuesta (p. ej. una meta a medio armar): la siguiente pregunta la continúa.
+  const contexto = useRef(null)
   // Ref y no estado: dos clics en el mismo ciclo verían `pensando` aún en false.
   const ocupado = useRef(false)
   const montado = useRef(false)
@@ -160,9 +162,11 @@ export default function Chat({ cliente, persona }) {
         previas,
         activo: AGENTE,
         conversacion: conversacion.current,
+        contexto: contexto.current,
       })
       if (!montado.current) return
       if (respuesta.conversacion) conversacion.current = respuesta.conversacion
+      contexto.current = respuesta.contexto ?? null
       agregar({ autor: 'lucas', ...respuesta })
     } finally {
       // Un fallo inesperado del front no debe dejar el chat bloqueado en «pensando».
