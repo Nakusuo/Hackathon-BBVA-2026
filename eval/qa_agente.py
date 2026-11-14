@@ -24,6 +24,7 @@ from src.agente_analitico.grafo import SIN_LLM, construir_grafo, responder  # no
 from src.agente_analitico.repositorio import Repositorio  # noqa: E402
 from src.agente_analitico.verificador import numeros_de  # noqa: E402
 from src.comun import reloj  # noqa: E402
+from src.comun.huella import AGENTE, huella  # noqa: E402
 from src.comun.rutas import MODELOS  # noqa: E402
 from src.rag.indice import Buscador  # noqa: E402
 
@@ -115,6 +116,7 @@ def main():
                       "datos_vivos_ok": bool(vivos_ok), "idiomas": {x["idioma"]: bool(x.get("traduccion_salida") and x.get("cifras_conservadas")) for x in out["idiomas"]},
                       "todo_ok": all(todos) and all(bool(x.get("traduccion_salida") and x.get("cifras_conservadas")) for x in out["idiomas"]), "reloj_fijo": str(reloj.hoy()),
                       "tokens_gemini": dict(PV.USO), "segundos": round(time.time() - t0, 1), "modelo": os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")}
+    out["huella_codigo"] = huella(AGENTE)   # la puerta de calidad compara esta huella con la del codigo actual: si cambio despues, esta corrida esta desfasada
     json.dump(out, open(os.path.join(MODELOS, "metricas_qa_agente.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(json.dumps(out["resumen"], ensure_ascii=False, indent=1))
     for x in out["perfil"]:

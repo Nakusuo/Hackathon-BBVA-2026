@@ -55,6 +55,14 @@ def pf(cond: bool, ok: str = "", mal: str = "") -> tuple[str, str]:
     return ("PASS", ok) if cond else ("FAIL", mal)
 
 
+# Lo que es de otras personas del equipo (agente del producto, API, front): esta puerta mide la parte de analitica e IA, no el codigo ajeno.
+AJENO = ("src/agent/", "tests/agent/", "tests/bcrp/", "app/", ".claude/", "backend/")
+
+
+def propio(f: str) -> bool:
+    return not f.startswith(AJENO) and f != "src/bcrp/servicio.py"
+
+
 def archivos_versionados() -> list[str]:
     out = subprocess.run(["git", "ls-files"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8").stdout.splitlines()
     return [f for f in out if os.path.isfile(os.path.join(RAIZ, f))]
@@ -70,14 +78,28 @@ def leer(f: str) -> str:
 
 # ------------------------------------------------------------------------------------------------------------------------------------ pruebas
 def area_pruebas():
-    def pytest_todo():
-        p = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
+    def pytest_propio():
+        p = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "--ignore=tests/agent", "--ignore=tests/bcrp"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
         ult = [ln for ln in p.stdout.strip().splitlines() if "passed" in ln or "failed" in ln or "error" in ln]
         return pf(p.returncode == 0, ult[-1] if ult else "", (ult[-1] if ult else p.stdout[-300:]))
-    verificar("Pruebas", "P1", "Toda la suite de pruebas (pytest)", pytest_todo)
+    verificar("Pruebas", "P1", "Suite de pruebas de analitica e IA (pytest, sin red ni Gemini)", pytest_propio)
+
+    def pytest_ajeno():
+        carpetas = [d for d in ("tests/agent", "tests/bcrp") if os.path.isdir(os.path.join(RAIZ, d))]
+        if not carpetas:
+            return "NOT RUN", "no hay pruebas del agente del producto en esta rama"
+        p = subprocess.run([sys.executable, "-m", "pytest", *carpetas, "-q", "-p", "no:cacheprovider"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
+        ult = [ln for ln in p.stdout.strip().splitlines() if "passed" in ln or "failed" in ln or "error" in ln]
+        if p.returncode != 0 and "ModuleNotFoundError" in p.stdout:
+            faltan = sorted(set(re.findall(r"No module named '([\w.]+)'", p.stdout)))
+            return "NOT RUN", f"no se pudo correr completa aqui: faltan {faltan} (instalar requirements-ia.txt). Resultado parcial: {ult[-1] if ult else '?'}"
+        return pf(p.returncode == 0, ult[-1] if ult else "", ult[-1] if ult else p.stdout[-300:])
+    verificar("Pruebas", "P1b", "Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte", pytest_ajeno)
 
     def ruff():
-        p = subprocess.run([sys.executable, "-m", "ruff", "check", "src", "eval", "tests", "--select", "F401,F821,F841,E9,PLE2510,F811"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
+        propios = [d for d in ("src/agente_analitico", "src/models", "src/rag", "src/generador", "src/datos_publicos", "src/comun", "src/bcrp/cliente.py", "eval") if os.path.exists(os.path.join(RAIZ, d))]
+        propios += [f for f in glob.glob(os.path.join(RAIZ, "tests", "test_*.py")) + [os.path.join(RAIZ, "tests", "conftest.py")] if os.path.isfile(f)]
+        p = subprocess.run([sys.executable, "-m", "ruff", "check", *propios, "--select", "F401,F821,F841,E9,PLE2510,F811"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
         if "No module named ruff" in p.stderr:
             return "NOT RUN", "ruff no esta instalado"
         return pf(p.returncode == 0, "", p.stdout[-300:])
@@ -350,7 +372,7 @@ def area_seguridad():
     verificar("Seguridad", "S2", ".env no versionado e ignorado", env)
 
     def rutas():
-        propios = [f for f in texto if f.startswith(("src/", "eval/", "tests/", "data/parametros/", "models/", "docs/RESUMEN", "docs/EVALUACION", "docs/comparativa", "docs/QA", "notebooks/"))]
+        propios = [f for f in texto if propio(f) and f.startswith(("src/", "eval/", "tests/", "data/parametros/", "models/", "docs/RESUMEN", "docs/EVALUACION", "docs/comparativa", "docs/QA", "notebooks/"))]
         pat = re.compile(r"[A-Za-z]:\\{1,2}(?:Users|hackathon)|/Users/[A-Za-z]|C:/hackathon")
         # la propia prueba que busca rutas absolutas las nombra: se excluye esta puerta y las pruebas
         hallados = [f for f in propios if pat.search(leer(f)) and not f.startswith("tests/") and f != "eval/puerta_de_calidad.py"]
@@ -358,7 +380,7 @@ def area_seguridad():
     verificar("Seguridad", "S3", "Sin rutas absolutas de ninguna laptop en codigo, parametros, metricas ni documentos", rutas)
 
     def marca():
-        propios = [f for f in texto if f.startswith(("src/", "eval/", "tests/", "data/parametros/", "docs/RESUMEN", "docs/EVALUACION", "docs/comparativa", "docs/QA", "data/catalogo", "models/")) and f != "eval/puerta_de_calidad.py"]
+        propios = [f for f in texto if propio(f) and f.startswith(("src/", "eval/", "tests/", "data/parametros/", "docs/RESUMEN", "docs/EVALUACION", "docs/comparativa", "docs/QA", "data/catalogo", "models/")) and f != "eval/puerta_de_calidad.py"]
         pat = re.compile(r"(?i)\bbbva\b|interbank|scotiabank|banco de cr[eé]dito|\bBCP\b")
         hallados = [f for f in propios if pat.search(leer(f))]
         return pf(not hallados, "ninguna mencion a un banco real en lo propio (la entidad es inventada: Banco Kawsay)", f"menciones en: {hallados[:6]}")
@@ -367,8 +389,15 @@ def area_seguridad():
     def pesados():
         grandes = [(f, os.path.getsize(os.path.join(RAIZ, f)) // 2 ** 20) for f in tracked if os.path.getsize(os.path.join(RAIZ, f)) > 50 * 2 ** 20]
         generados = [f for f in tracked if f.startswith("data/generado/")]
-        return pf(not grandes and not generados, "ningun archivo de mas de 50 MB ni datos generados versionados", f"grandes: {grandes}; generados: {generados[:3]}")
-    verificar("Seguridad", "S5", "Sin archivos pesados ni datos generados en el repositorio (solo data/sample)", pesados)
+        intrusos = [f for f in generados if any(x in f for x in ("cache_", "memoria/", "vivo/"))]   # caches y memoria de pruebas nunca se versionan
+        if grandes or intrusos:
+            return "FAIL", f"grandes: {grandes}; caches o memoria versionadas: {intrusos[:3]}"
+        if generados:
+            if "data/generado/_manifiesto.json" in generados:
+                return "WARN", f"{len(generados)} archivos de data/generado cargados A PROPOSITO para la integracion final (ver _manifiesto.json, todo sintetico); quitarlos al terminar con: git rm -r --cached data/generado"
+            return "FAIL", f"datos generados versionados sin manifiesto: {generados[:3]}"
+        return "PASS", "ningun archivo de mas de 50 MB ni datos generados versionados"
+    verificar("Seguridad", "S5", "Sin archivos pesados ni datos generados en el repositorio (solo data/sample), salvo la carga temporal documentada", pesados)
 
 
 # ------------------------------------------------------------------------------------------------------------------------------------ reproducibilidad y frescura
@@ -378,6 +407,8 @@ def area_reproducibilidad():
         usados = set()
         for carpeta in ("src", "eval", "tests"):
             for ruta in glob.glob(os.path.join(RAIZ, carpeta, "**", "*.py"), recursive=True):
+                if not propio(os.path.relpath(ruta, RAIZ).replace(os.sep, "/")):
+                    continue   # el agente del producto tiene su propio requirements-ia.txt
                 try:
                     arbol = ast.parse(open(ruta, encoding="utf-8").read())
                 except SyntaxError:
@@ -398,21 +429,24 @@ def area_reproducibilidad():
     verificar("Reproducibilidad", "R1", "Todo lo que importa el codigo esta en requirements-analitica.txt (un companero puede recrear el entorno)", dependencias)
 
     def frescura():
-        def mt(rutas):
-            fs = [f for r in rutas for f in glob.glob(os.path.join(RAIZ, r), recursive=True)]
-            return max(os.path.getmtime(f) for f in fs)
-        codigo_agente = mt(["src/agente_analitico/*.py", "src/models/calendario_laboral.py", "src/models/recomendador.py", "data/parametros/normas_laborales.yaml", "src/rag/*.py", "src/bcrp/*.py"])
-        codigo_rag = mt(["src/rag/*.py", "docs/rag/indice/*", "data/parametros/preguntas_rag.yaml"])
+        """Compara CONTENIDO, no fechas de archivo (un clon o un rebase las reescriben): cada evaluacion guarda la huella del codigo del que depende y cada informe la de las metricas."""
+        from src.comun.huella import AGENTE, METRICAS, RAG, huella
         viejos = []
-        for nombre, dep in (("metricas_qa_agente.json", codigo_agente), ("metricas_agente_plantillas.json", codigo_agente), ("metricas_rag.json", codigo_rag)):
-            if os.path.getmtime(os.path.join(MODELOS, nombre)) < dep:
-                viejos.append(nombre)
-        metricas = max(os.path.getmtime(f) for f in glob.glob(os.path.join(MODELOS, "metricas*.json")))
+        for nombre, patrones in (("metricas_qa_agente.json", AGENTE), ("metricas_agente_plantillas.json", AGENTE), ("metricas_rag.json", RAG)):
+            guardada = J(nombre).get("huella_codigo")
+            if guardada is None:
+                viejos.append(f"{nombre} (sin huella: volver a correrla)")
+            elif guardada != huella(patrones):
+                viejos.append(f"{nombre} (el codigo cambio despues de correrla)")
+        hm = huella(METRICAS)
         for doc in ("docs/RESUMEN_DIEGO.md", "docs/EVALUACION_ANALITICA.md", "docs/comparativa_modelos.md"):
-            if not os.path.isfile(os.path.join(RAIZ, doc)) or os.path.getmtime(os.path.join(RAIZ, doc)) < metricas:
-                viejos.append(doc)
-        return ("WARN", f"anteriores al codigo o a las metricas de las que dependen (regenerar): {viejos}") if viejos else ("PASS", "metricas y documentos son posteriores al codigo y a los datos de los que dependen")
-    verificar("Reproducibilidad", "R2", "Nada desfasado: metricas posteriores al codigo del agente y del RAG, y documentos posteriores a las metricas", frescura)
+            m = re.search(r"huella_metricas: ([0-9a-f]{16})", leer(doc))
+            if not m:
+                viejos.append(f"{doc} (sin huella: regenerarlo)")
+            elif m.group(1) != hm:
+                viejos.append(f"{doc} (las metricas cambiaron despues de generarlo)")
+        return ("FAIL", f"desfasado: {viejos}") if viejos else ("PASS", "las evaluaciones corresponden al codigo actual y los informes a las metricas actuales (huella de contenido)")
+    verificar("Reproducibilidad", "R2", "Nada desfasado: cada evaluacion corresponde al codigo actual y cada informe a las metricas actuales (huella de contenido)", frescura)
 
     def fuentes():
         filas = [r for r in csv.DictReader(open(os.path.join(DOCS_RAG, "fuentes.csv"), encoding="utf-8")) if r["archivo"]]
