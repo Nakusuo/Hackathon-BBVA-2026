@@ -19,7 +19,7 @@ function Comparacion({ categoria }) {
 function PausarSuscripcion({ tip, activo, alAlternar }) {
   const { comercio, fecha } = tip.seguimiento
   return (
-    <span className="suscripcion-accion" aria-live="polite">
+    <span className="suscripcion-accion">
       <button
         type="button"
         className="boton-lo-hago"
@@ -31,7 +31,9 @@ function PausarSuscripcion({ tip, activo, alAlternar }) {
         La pausaré hasta mi cobro
       </button>
       {activo ? (
-        <span className="suave">Recuerda pausarla antes del {fechaCorta(fecha)}, que es cuando se cobra.</span>
+        <span className="suave" role="status">
+          Recuerda pausarla antes del {fechaCorta(fecha)}, que es cuando se cobra.
+        </span>
       ) : (
         <span className="cifra cifra-azul">
           +{enSoles(tip.mejora)} el {fechaCorta(tip.fechaPeorDia)}
