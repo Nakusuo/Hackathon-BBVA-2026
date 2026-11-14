@@ -9,7 +9,7 @@ const preguntar = (texto) => responder(texto, cliente, persona)
 
 test('cada pregunta sugerida tiene una respuesta propia, no la de «no entiendo»', () => {
   for (const p of PREGUNTAS_SUGERIDAS) {
-    assert.doesNotMatch(preguntar(p).texto, /Todavía no sé/, p)
+    assert.doesNotMatch(preguntar(p).texto, /No te entendí/, p)
   }
 })
 
@@ -32,9 +32,17 @@ test('no da asesoría de inversión ni ofrece mover plata', () => {
 })
 
 test('lo que no entiende lo dice sin inventar cifras', () => {
-  const r = preguntar('hola')
-  assert.match(r.texto, /Todavía no sé/)
+  const r = preguntar('¿cuál es la capital de Francia?')
+  assert.match(r.texto, /No te entendí/)
   assert.deepEqual(r.cifras, [])
+})
+
+test('un saludo recibe un saludo, sin cifras', () => {
+  for (const p of ['hola', 'Hola!', 'buenas tardes']) {
+    const r = preguntar(p)
+    assert.match(r.texto, /^Hola\. ¿En qué te ayudo\?/, p)
+    assert.deepEqual(r.cifras, [])
+  }
 })
 
 test('lectura de montos: con «S/», con «soles», con punto de miles y sin confundir días', async () => {

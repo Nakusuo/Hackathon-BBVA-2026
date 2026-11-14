@@ -272,7 +272,7 @@ export default function Avisos({ cliente }) {
       </section>
 
 
-      <p className="decision">Lucas te avisa, no mueve tu plata ni es asesoría: tú decides.</p>
+      <p className="decision">Tú decides.</p>
     </>
   )
 }

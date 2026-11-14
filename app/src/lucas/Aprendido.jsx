@@ -50,7 +50,6 @@ export default function Aprendido({ cliente }) {
   return (
     <section className="tarjeta" aria-labelledby="aprendido-titulo">
       <h2 id="aprendido-titulo">Lo que aprendí de ti</h2>
-      <p className="suave">Si algo no es correcto, dímelo y dejo de usarlo.</p>
       <ul className="lista-limpia lista-aprendido">
         {cliente.aprendido.map((d) => (
           <DatoAprendido key={d.id} dato={d} />

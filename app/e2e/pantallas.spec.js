@@ -410,7 +410,7 @@ test('si el agente falla, el chat lo dice y responde con sus cálculos', async (
   const ultima = page.locator('.mensaje-lucas').last()
   await expect(ultima).toContainText('No pude hablar con el agente de Lucas')
   await expect(ultima.getByRole('list', { name: 'Calculado con tus datos' })).toBeVisible()
-  await expect(page.getByText('No es asesoría')).toBeVisible()
+  await expect(page.getByText('Orientación, no asesoría. Tú decides.')).toBeVisible()
 })
 
 test('si el agente no verificó sus cifras, su texto no se muestra', async ({ page }) => {
@@ -594,7 +594,7 @@ test('si la API se cae, Lucas lo dice y las cifras y «Lo hago» siguen funciona
   page.on('pageerror', (e) => errores.push(e.message))
   await page.route('**/api/v1/**', (ruta) => ruta.fulfill({ status: 503, body: 'caída' }))
   await page.goto('/lucas/resumen')
-  await expect(page.getByRole('status').filter({ hasText: 'No llegaron tus datos del servidor' })).toBeVisible()
+  await expect(page.getByRole('status').filter({ hasText: 'Sin conexión: te muestro tus últimos datos.' })).toBeVisible()
   await expect(page.locator('.hero-cifra [aria-hidden="true"]')).toHaveText('S/ 26')
   const primerTip = page.getByRole('region', { name: 'Tips para tu día más justo' }).getByRole('button', { name: 'Lo hago' }).first()
   await primerTip.click()
@@ -608,7 +608,7 @@ test('si la API tarda demasiado, Lucas pasa a los datos guardados sin quedarse c
   await page.route('**/api/v1/**', () => {})
   await page.goto('/lucas/resumen')
   await expect(page.getByText('Puedes gastar al día')).toBeVisible()
-  await expect(page.getByRole('status').filter({ hasText: 'No llegaron tus datos del servidor' })).toBeVisible({ timeout: 8000 })
+  await expect(page.getByRole('status').filter({ hasText: 'Sin conexión: te muestro tus últimos datos.' })).toBeVisible({ timeout: 8000 })
 })
 
 test('Avisos: la campana abre la bandeja; hoy el riesgo está a 14 días y no gasta aviso', async ({ page }) => {

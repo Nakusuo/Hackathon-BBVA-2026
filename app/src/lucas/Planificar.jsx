@@ -52,9 +52,6 @@ export default function Planificar({ cliente, prueba, borrador, revision, alCamb
   return (
     <section className="tarjeta hoja" aria-labelledby="planificar-titulo">
       <h2 id="planificar-titulo">¿Y si viene un gasto o un ingreso?</h2>
-      <p className="suave">
-        Agrégalo con su fecha y mira cómo cambia tu saldo. Nada se guarda hasta que tocas «Agregar a mi pronóstico».
-      </p>
       <form ref={formulario} className="formulario-plan" noValidate onSubmit={enviar}>
         <div className="selector" role="group" aria-label="Tipo de movimiento">
           {TIPOS.map((t) => (

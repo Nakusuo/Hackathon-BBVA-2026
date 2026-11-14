@@ -192,7 +192,7 @@ export default function Chat({ cliente, persona }) {
         <MarcaLucas tamano={56} pose="saludo" />
         <div>
           <h2>Pregúntale a Lucas</h2>
-          <p>Respondo con lo que aprendí de tus movimientos y con mi pronóstico de tu saldo.</p>
+          <p>¿En qué te ayudo hoy?</p>
         </div>
       </div>
 
@@ -235,9 +235,7 @@ export default function Chat({ cliente, persona }) {
             <PaperPlaneRight size={22} aria-hidden="true" />
           </button>
         </form>
-        <p className="decision">
-          No es asesoría: no recomiendo inversiones ni compra de dólares, y no muevo tu plata. Tú decides.
-        </p>
+        <p className="decision">Orientación, no asesoría. Tú decides.</p>
       </div>
     </section>
   )

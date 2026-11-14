@@ -32,10 +32,7 @@ function Privacidad() {
           </span>
         </span>
       </div>
-      <p className="suave">
-        Lucas usa tus movimientos, pagos, cobros y un perfil resumido solo para calcular tu pronóstico y sus tips. En esta demo los datos son
-        sintéticos.
-      </p>
+      <p className="suave">Lucas usa tus movimientos, pagos y cobros solo para tu pronóstico y tus tips.</p>
       {permiso && !confirmando && (
         <button type="button" className="boton boton-borde" onClick={() => setConfirmando(true)}>
           Retirar permiso
@@ -87,7 +84,6 @@ export default function Preferencias() {
       <section className="tarjeta" aria-labelledby="persona-titulo">
         <h2 id="persona-titulo">Demo</h2>
         <SelectorPersona valor={personaId} alCambiar={elegirPersona} />
-        <p className="suave">Cambia todas las cifras de la banca y de Lucas. Cada persona da su propio permiso.</p>
       </section>
 
       <Privacidad />
@@ -110,12 +106,10 @@ export default function Preferencias() {
             <motion.span layout transition={{ type: 'spring', stiffness: 500, damping: 32 }} />
           </button>
         </div>
-        <p className="suave">Se aplica a toda la app y se recuerda en este navegador.</p>
       </section>
 
       <section className="tarjeta" aria-labelledby="guardado-titulo">
         <h2 id="guardado-titulo">Tus avisos guardados en este navegador</h2>
-        <p className="suave">Qué avisos viste esta semana y si te sirvieron. No guarda montos ni lo que escribes.</p>
         <button
           type="button"
           className="boton boton-secundario"
@@ -133,7 +127,6 @@ export default function Preferencias() {
 
       <section className="tarjeta" aria-labelledby="evidencia-titulo">
         <h2 id="evidencia-titulo">Para el jurado</h2>
-        <p className="suave">Cada modelo de Lucas frente a su baseline, con la fuente de cada cifra.</p>
         <Link to="/evidencia" className="enlace">
           Ver la evidencia
         </Link>

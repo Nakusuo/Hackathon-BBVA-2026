@@ -246,7 +246,7 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
         </Link>
       </motion.nav>
 
-      <p className="decision">Son simulaciones con tus datos. Lucas no mueve tu plata ni es asesoría: tú decides.</p>
+      <p className="decision">Son simulaciones. Tú decides.</p>
     </>
   )
 }
