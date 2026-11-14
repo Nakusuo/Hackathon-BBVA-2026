@@ -157,17 +157,17 @@ El siguiente diagrama muestra el flujo desde la generación de datos estratifica
 ```mermaid
 graph TD
     A["Inicio: python data/generator.py --semilla 2026"] --> B["Arquetipos y distribuciones calibradas"]
-    B --> C["Bootstrap estratificado (500 clientes x 12 meses)"]
+    B --> C["Bootstrap estratificado (500 clientes, 2019 a 2025)"]
     C --> D["Calendario peruano y escenarios difíciles"]
     D --> E["Movimientos, glosas y mensajes con sentimiento"]
-    E --> F["Parquet en data/generado/ con _manifiesto.json (hashes)"]
+    E --> F["Parquet en data/generado/ con meta.json (semilla y huellas)"]
     F --> G["Ingesta: validación Pydantic y deduplicación"]
     G --> H["Carga a PostgreSQL: seguro.clientes cifrado y app.perfil derivado"]
     H --> I["RLS por customer_id y roles lucas_app, lucas_agente, lucas_batch"]
     I --> J["Fin: make data completo y verificado"]
 ```
 
-Los pasos A a F existen hoy (`src/generador/`). La ingesta y la carga a PostgreSQL (G a I) están planificadas en MG-02 y MI-03 y todavía no tienen código. `data/generado/` está en `.gitignore`: los datos se regeneran con la semilla y no se suben al repo.
+Los pasos A a F existen hoy (`src/generador/`). La ingesta y la carga a PostgreSQL (G a I) están planificadas en MG-02 y MI-03 y todavía no tienen código. Los datos de `data/generado/` se regeneran con la semilla y no se suben al repo.
 
 ---
 
