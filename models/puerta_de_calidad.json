@@ -1,0 +1,318 @@
+{
+ "fecha": "2026-11-14T15:31:58",
+ "reloj": "2026-11-14",
+ "segundos": 59.9,
+ "cuenta": {
+  "PASS": 35,
+  "WARN": 5,
+  "FAIL": 0,
+  "NOT RUN": 2
+ },
+ "verificaciones": [
+  {
+   "area": "Pruebas",
+   "id": "P1",
+   "que": "Toda la suite de pruebas (pytest)",
+   "estado": "PASS",
+   "detalle": "371 passed in 33.98s"
+  },
+  {
+   "area": "Pruebas",
+   "id": "P2",
+   "que": "Codigo sin importaciones sin uso, nombres sin definir, errores de sintaxis ni caracteres de control (ruff)",
+   "estado": "PASS",
+   "detalle": ""
+  },
+  {
+   "area": "Modelos",
+   "id": "M1",
+   "que": "Segmentacion: estable (ARI >= 0.60), silueta positiva, sin segmentos diminutos y mejor que las reglas 2x2",
+   "estado": "PASS",
+   "detalle": "k=3, estabilidad 0.744, silueta 0.205, segmento minimo 68"
+  },
+  {
+   "area": "Modelos",
+   "id": "M2",
+   "que": "Saldo a 30 dias: banda al 80 % con cobertura entre 0.77 y 0.83 y menos error que los dos baselines",
+   "estado": "PASS",
+   "detalle": "cobertura 0.806 (objetivo 0.80), error 0.43 frente a 0.72"
+  },
+  {
+   "area": "Modelos",
+   "id": "M3",
+   "que": "Alerta de rojo: bien calibrada (ECE <= 0.02), ROC-AUC >= 0.95 y mejor que la regla simple y que el azar",
+   "estado": "PASS",
+   "detalle": "PR-AUC 0.594 (azar 0.044), ROC-AUC 0.977, ECE 0.0053"
+  },
+  {
+   "area": "Modelos",
+   "id": "M4",
+   "que": "Dia de riesgo: menos error que los baselines",
+   "estado": "PASS",
+   "detalle": "error 5.4 dias; acierto a +-3 dias 43%"
+  },
+  {
+   "area": "Modelos",
+   "id": "M5",
+   "que": "Proyeccion mensual: cobertura al 80 % de ingresos, gastos y neto entre 0.75 y 0.85 en los 6 horizontes",
+   "estado": "PASS",
+   "detalle": "18 coberturas dentro de [0.75, 0.85]; la menor es 0.788"
+  },
+  {
+   "area": "Modelos",
+   "id": "M6",
+   "que": "Equidad por segmento: brecha de cobertura <= 0.05 y razon de error entre segmentos",
+   "estado": "WARN",
+   "detalle": "la cobertura es pareja (brecha 0.018) pero el error del peor segmento (0) es 1.58 veces el del mejor: el ingreso irregular es mas dificil de pronosticar. Documentado."
+  },
+  {
+   "area": "Modelos",
+   "id": "M7",
+   "que": "Glosas, recurrentes y atipicos: cada modelo elegido supera a su alternativa simple",
+   "estado": "PASS",
+   "detalle": "glosa F1 0.894, recurrentes F1 0.933, atipicos 0.750"
+  },
+  {
+   "area": "Modelos",
+   "id": "M8",
+   "que": "Sentimiento: el modelo entrenado generaliza a frases escritas a mano",
+   "estado": "WARN",
+   "detalle": "no: F1 0.73 con 24 frases contra 1.00 en plantillas. Documentado; no esta en produccion."
+  },
+  {
+   "area": "Modelos",
+   "id": "M9",
+   "que": "Politica de ahorro: reduce los dias en rojo frente a no hacer nada con IC95 que excluye 0",
+   "estado": "PASS",
+   "detalle": "0.24 dias en rojo evitados por cliente al mes (IC95 0.19 a 0.30)"
+  },
+  {
+   "area": "Modelos",
+   "id": "M10",
+   "que": "Politica de ahorro: Lucas forma al menos tanto colchon como ahorrar 10 % fijo ajustado",
+   "estado": "WARN",
+   "detalle": "el 10 % fijo ajustado forma 2.7 meses mas de colchon que Lucas. Hallazgo abierto, documentado."
+  },
+  {
+   "area": "Modelos",
+   "id": "M11",
+   "que": "Programa de puntos: ninguna tasa de puntos por consumo supera el tope de reinversion de la comision",
+   "estado": "PASS",
+   "detalle": "costo sobre la comision por nivel: {'luchador': 0.0, 'aprendiz': 0.05, 'constructor': 0.1, 'maestro': 0.2, 'campeon': 0.3}, tope 30%"
+  },
+  {
+   "area": "Modelos",
+   "id": "M12",
+   "que": "Programa de puntos: rentable sin depender de consumo nuevo",
+   "estado": "WARN",
+   "detalle": "sin consumo nuevo pierde S/ 5.52 por usuario al anio; se paga con 6.9% mas de consumo elegible. Necesita piloto."
+  },
+  {
+   "area": "Modelos",
+   "id": "M13",
+   "que": "Parametros de los eventos simulados (retiros de AFP, bonos, covid, Nino): verificados en fuente",
+   "estado": "WARN",
+   "detalle": "parametros de eventos: 1 verificado, 4 parciales y 13 supuestos. Declarados en el YAML; hay que verificarlos antes de afirmarlos."
+  },
+  {
+   "area": "Modelos",
+   "id": "M14",
+   "que": "Datos sinteticos: informe de calidad y trazabilidad presentes y sin fallas reportadas",
+   "estado": "PASS",
+   "detalle": "informe de calidad presente con trazabilidad (semilla, huella de parametros)"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C1",
+   "que": "BCRP en vivo: tasa_referencia (API, al dia, con su fecha)",
+   "estado": "PASS",
+   "detalle": "4.25 al 2026-10-01 (API en vivo, 44 dias)"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C2",
+   "que": "BCRP en vivo: tipo_cambio_venta (API, al dia, con su fecha)",
+   "estado": "PASS",
+   "detalle": "3.406 al 2026-11-12 (API en vivo, 2 dias)"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C3",
+   "que": "BCRP en vivo: ipc_var_mensual (API, al dia, con su fecha)",
+   "estado": "PASS",
+   "detalle": "0.5715 al 2026-10-01 (API en vivo, 44 dias)"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C4",
+   "que": "ENFEN en vivo: el RAG tiene el ultimo comunicado publicado",
+   "estado": "PASS",
+   "detalle": "ultimo comunicado publicado: N.o 20; el RAG tiene hasta el N.o 20"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C5",
+   "que": "Ollama local con el modelo de embeddings del RAG",
+   "estado": "PASS",
+   "detalle": "nomic-embed-text responde (768 dimensiones); modelos: qwen2.5:7b, qwen2.5:3b, nomic-embed-text:latest"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C6",
+   "que": "Agente configurado con Gemini y politica de ahorro; clave solo en .env",
+   "estado": "PASS",
+   "detalle": "LLM_PROVIDER=gemini, LLM_USO=ahorro (Gemini con politica de ahorro de tokens); la clave esta solo en .env"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C7",
+   "que": "Gemini responde en vivo",
+   "estado": "PASS",
+   "detalle": "gemini-3.5-flash-lite responde (HTTP 200)"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C8",
+   "que": "Traduccion es->en con cifras y nombres protegidos",
+   "estado": "PASS",
+   "detalle": "es->en por gemini en 1.84 s, cifras intactas"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C9",
+   "que": "Google Cloud Translation",
+   "estado": "NOT RUN",
+   "detalle": "no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini."
+  },
+  {
+   "area": "Conexiones",
+   "id": "C10",
+   "que": "Calidad del quechua revisada por un hablante nativo",
+   "estado": "NOT RUN",
+   "detalle": "no hay revision de un hablante nativo; el aviso al usuario lo dice"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C11",
+   "que": "RAG: indice consistente, documentos sin alterar (hash) y solo fuentes de nivel A",
+   "estado": "PASS",
+   "detalle": "3833 fragmentos = 3833 vectores; 21 documentos con hash verificado; solo licencia nivel A"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C12",
+   "que": "RAG: las consultas clave de CTS, retiro de CTS y TCEA recuperan su fuente oficial",
+   "estado": "PASS",
+   "detalle": "3 de 3 consultas clave recuperan su fuente oficial con similitud >= 0.70"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C13",
+   "que": "Datos vivos: registrar, no duplicar, rechazar lo invalido, resumir y borrar",
+   "estado": "PASS",
+   "detalle": "registrar, no duplicar, rechazar lo invalido, resumir y borrar"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C14",
+   "que": "Calendario laboral: reglas vigentes y verificadas recientemente",
+   "estado": "PASS",
+   "detalle": "reglas verificadas el 2026-11-14; libre disposicion hoy 100% (47 dias restantes)"
+  },
+  {
+   "area": "Agente",
+   "id": "G1",
+   "que": "Evaluacion con plantillas (reproducible): ruteo >= 0.95, cero cifras inventadas, cero frases prohibidas, todos los pedidos prohibidos rechazados",
+   "estado": "PASS",
+   "detalle": "69 preguntas x 2 arquitecturas: ruteo 1.000, 0 cifras inventadas, 0 frases prohibidas, 100% de pedidos prohibidos rechazados"
+  },
+  {
+   "area": "Agente",
+   "id": "G2",
+   "que": "QA con Gemini real (una sola corrida): perfil, calendario, premisa falsa, datos vivos, idiomas y adversarios",
+   "estado": "PASS",
+   "detalle": "Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 17 llamadas y 44,570 tokens de entrada"
+  },
+  {
+   "area": "Agente",
+   "id": "G3",
+   "que": "Diagramas de nodos del agente generados, con rutas relativas",
+   "estado": "PASS",
+   "detalle": "los dos diagramas de nodos existen y se citan con ruta relativa"
+  },
+  {
+   "area": "Agente",
+   "id": "G4",
+   "que": "No hay metricas de Gemini desfasadas (las anteriores a la seguridad se retiraron)",
+   "estado": "PASS",
+   "detalle": "no queda el JSON de Gemini anterior al endurecimiento de seguridad"
+  },
+  {
+   "area": "Seguridad",
+   "id": "S1",
+   "que": "Ninguna clave de API en lo versionado",
+   "estado": "PASS",
+   "detalle": "156 archivos versionados sin claves de API"
+  },
+  {
+   "area": "Seguridad",
+   "id": "S2",
+   "que": ".env no versionado e ignorado",
+   "estado": "PASS",
+   "detalle": ".env ignorado y no versionado"
+  },
+  {
+   "area": "Seguridad",
+   "id": "S3",
+   "que": "Sin rutas absolutas de ninguna laptop en codigo, parametros, metricas ni documentos",
+   "estado": "PASS",
+   "detalle": "87 archivos propios sin rutas absolutas"
+  },
+  {
+   "area": "Seguridad",
+   "id": "S4",
+   "que": "Ninguna mencion a un banco real en codigo, datos, metricas ni documentos propios",
+   "estado": "PASS",
+   "detalle": "ninguna mencion a un banco real en lo propio (la entidad es inventada: Banco Kawsay)"
+  },
+  {
+   "area": "Seguridad",
+   "id": "S5",
+   "que": "Sin archivos pesados ni datos generados en el repositorio (solo data/sample)",
+   "estado": "PASS",
+   "detalle": "ningun archivo de mas de 50 MB ni datos generados versionados"
+  },
+  {
+   "area": "Reproducibilidad",
+   "id": "R1",
+   "que": "Todo lo que importa el codigo esta en requirements-analitica.txt (un companero puede recrear el entorno)",
+   "estado": "PASS",
+   "detalle": "las 22 bibliotecas de terceros que importa el codigo estan en requirements-analitica.txt"
+  },
+  {
+   "area": "Reproducibilidad",
+   "id": "R2",
+   "que": "Nada desfasado: metricas posteriores al codigo del agente y del RAG, y documentos posteriores a las metricas",
+   "estado": "PASS",
+   "detalle": "metricas y documentos son posteriores al codigo y a los datos de los que dependen"
+  },
+  {
+   "area": "Reproducibilidad",
+   "id": "R3",
+   "que": "Las fuentes oficiales del RAG se consultaron en los ultimos 30 dias",
+   "estado": "PASS",
+   "detalle": "21 fuentes del RAG, ultima consulta hace 0 dias"
+  }
+ ],
+ "no_verificado": [
+  "Calidad del quechua: no la revisó un hablante nativo; la respuesta lleva un aviso.",
+  "Google Cloud Translation: no hay clave propia (la de Gemini no se usa con otras APIs); se traduce con Gemini.",
+  "Datos reales de un banco: todo se evaluó con datos sintéticos; con datos reales las métricas serán otras.",
+  "Sentimiento: no hay un set independiente de frases etiquetadas por personas (solo 24 escritas a mano por el equipo).",
+  "Parámetros de los eventos simulados (retiros de AFP, bonos, covid, Niño): solo 1 de 18 está marcado como verificado; el resto son parciales o supuestos del equipo.",
+  "Serie diaria del pronóstico: el modelo está calibrado en el día 30 y en el día de riesgo; una serie de 30 días con banda al 80 % por día no está entrenada ni validada.",
+  "Redacción con juez LLM: JUEZ_LLM está apagado por ahorro de tokens; la verificación de cifras es determinista, y la calidad de redacción de Gemini se revisó en una sola corrida de QA.",
+  "Carga en producción: se midió el costo por consulta en esta laptop, no el rendimiento con miles de usuarios simultáneos.",
+  "Fuente de la libre disposición de la CTS después de 2026: se verificó la Ley 32322 (texto oficial); cualquier cambio posterior a 2026-11-14 no se conoce hasta volver a contrastarla."
+ ]
+}
