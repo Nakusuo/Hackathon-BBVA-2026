@@ -31,6 +31,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Chat del front listo para el agente (MC-06) | `feature/front-chat-agente` | Cliente de `POST /api/v1/chat` según el contrato propuesto (pendiente de aprobar con Jeffrey y Miguel). Con `VITE_LUCAS_API` llama al agente; sin ella, o si falla, tarda más de 12 s o no verificó, responde la plantilla local con un aviso claro. ✓ solo en cifras verificadas, «Calculado con tus datos» en las plantillas, fuentes solo http(s), «Lucas está pensando» y pie de límites. Dólares, inversión y transferencias no salen a la red. E2E del celular a 390 px. Jueces: técnico APRUEBA, producto APRUEBA 3,5, cumplimiento CUMPLE CON RIESGOS. npm test 39/39, Playwright 58/58. Nakusuo/Marcela |
 | 2026-11-14 | Rediseño móvil (en curso) | `feature/front-rediseno-movil` | Limpieza de código sin uso. Manrope en todo el front. Diurno por defecto y «Modo oscuro» con interruptor en Más → Preferencias (variables por tema, `--azul-texto` para contraste). Lucas como mascota propia en SVG (créditos a @aokulova en Preferencias). Login con arcos azules y tarjeta de vidrio. Resumen sin sobrecarga: panel con la cifra del día, aviso de una línea, tips en carrusel con «Días en rojo 2 → 0» y «Apartas S/ 40 → S/ 150», y bloques que abren Lo aprendido, Salud y Chat. Gastos en gráfico circular (5 categorías + Otros) con detalle aparte. Pestañas con barra deslizante. 29 pruebas de funciones y 52 de Playwright en verde |
 | 2026-11-14 | Consentimiento, selector de persona y «explícamelo fácil» (HU-23, HU-03) | `feature/front-consentimiento-persona` | Consentimiento como segundo paso del ingreso, por persona, con «Ahora no» y retiro en Más → Preferencias → Privacidad (borra los tips). Persona independiente o formal con quincena en el ingreso y en Preferencias: todas las cifras salen del mismo motor y la banda del formal es angosta (S/ 110 frente a S/ 308 el día antes del cobro). «Explícamelo fácil» en Resumen y Qué viene, con «peor caso» y sin cifras nuevas. 57 unitarias y 86 e2e en claro y oscuro, a 1366×768 y 390 px. `PW_PUERTO` para no chocar con otra carpeta en el 5174. Jueces: producto CAMBIOS → resueltos; cumplimiento CUMPLE CON RIESGOS. Sin push |
+| 2026-11-14 | MC-03 Bandeja de avisos y MC-07 Evidencia | `feature/front-avisos-evidencia` | Bandeja en `/lucas/avisos` (campana en la banca y en Lucas): regla de estado.md (3–7 días normal, 0–2 urgente, > 7 sin aviso, 3 por semana con lugar para el riesgo, un aviso por hueco), «Urgente»/«Aviso» con texto, ícono y color, «¿Por qué?» con datos, supuesto y qué tan seguro, «útil / no me sirve», enlace a la acción, demo de la regla que no gasta el tope y botón para borrar lo guardado en Más. Panel `/evidencia` para el jurado: cada cifra leída de `models/metricas*.json` con su fuente (falla la build si falta una clave), impacto en S/ con IC 95 % primero, 12 técnicas frente a su baseline, agente y RAG, perturbaciones y alertas de equidad, incluido lo que sale peor. npm test 45/45 y Playwright 68/68 en 1366×768 y 390 px; tras el rebase sobre develop (API, consentimiento y personas), 83/83 y 112/112. Jueces ronda 1: CAMBIOS ×3, arreglados en eb95624; ronda 2: APRUEBA ×3 (producto 3,55/5), con los detalles aplicados en dd38be5. Push y PR #17 a `develop`. Nakusuo/Marcela |
 
 ## Lo que acordamos
 
@@ -72,6 +73,8 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 
 ## Lo que falta
 
+- [ ] Avisar a Diego y Miguel: `make eval` simula la alerta a 14 días con p ≥ 0,25 y la app avisa a 7 días sin probabilidad; falta una ruta de avisos con `p_rojo` (MG-05) para mostrar la confianza en cada aviso
+
 - [ ] Rediseño móvil (`feature/front-rediseno-movil`): pasar al estilo nuevo la banca (tarjeta con volumen, accesos en bento, 3 movimientos con «Ver todo»), Qué viene (gráfico según ui-ux-pro-max, sin sobrecarga) y Chat; revisar Ingreso en oscuro; luego jueces (técnico, producto, cumplimiento), push y PR a `develop`
 - [ ] Juez de producto: seguimiento del tip elegido («Pediste RapiFood 1 de 4 veces») para volver mañana; salud que se mueva con los tips o en segundo plano
 
@@ -98,7 +101,9 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [ ] MG-01: acordar con Miguel y Jeffrey el contrato de la API; cambiar `app/src/mocks/` por los JSON de `data/sample/mocks/`
 - [ ] Juntar `npm run dev` con `make run` cuando Michael tenga el Makefile (MI-01)
 - [ ] MC-02 completar Cómo estás y Qué viene con los datos del contrato
-- [ ] MC-03 Avisos (bandeja) · MC-05 Simulador · MC-06 Chat · MC-11 Metas · MC-07 Evidencia
+- [x] MC-03 Avisos (bandeja) y MC-07 Evidencia: push de `feature/front-avisos-evidencia` y PR #17 a `develop`. Nakusuo/Marcela
+- [ ] PR #17: revisión de Dixon y unión a `develop`
+- [ ] MC-05 Simulador · MC-06 Chat · MC-11 Metas
 - [x] Pantalla de consentimiento (datos sintéticos, qué se usa, se puede revocar). Nakusuo/Marcela
 - [x] Botón «explícamelo fácil» (regla de negocio de la UI). Nakusuo/Marcela
 - [x] Selector de persona (independiente / formal con quincena) para la demo. Nakusuo/Marcela
