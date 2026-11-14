@@ -17,6 +17,8 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 | 2026-11-14 | Push y PR #5 | `feature/ia-jeffrey-actividades` | PR a `develop`: https://github.com/MaickolO/Hackathon-BBVA-2026-Equipo-2/pull/5 (revisa Diego). 147 tests en verde |
 | 2026-11-14 | Cifras con etiqueta para el chat de Marcela | `feature/ia-jeffrey-actividades` | `/chat` suma el campo `figures`: `[{label, value, text}]`, por ejemplo «Saldo mínimo probable: -S/ 310», con el signo real de la tool. `verified_figures` sigue igual. Rama al día con `develop` (PR #6 de Marcela). 149 tests en verde |
 | 2026-11-14 | Correcciones de la medición de Michael (JF-07) | `feature/ia-jeffrey-actividades` | `OLLAMA_HOST=0.0.0.0` normalizado a localhost. Salud vuelve al LLM (faltaba el 100 de «72 de 100»). El juez rechaza cifras mal descritas: «saldo» que no es saldo, «actual» que es final y negativos escritos como positivos. Prompt v4. Opción `--simular-con-llm` para que Michael pruebe CP-SIS-10. 166 tests en verde |
+| 2026-11-14 | PR #5 unido a `develop` (por Marcela) | — | Marcela subió 2 arreglos al juez antes de unirlo: regla de signo con negaciones y «a favor», redondeo solo a decena (≥ 100) o centena (≥ 1 000), y prohibidas «préstamo», «un crédito» y «sin riesgo». Sin aprobación formal de Diego en GitHub |
+| 2026-11-14 | Correcciones de la medición en rama nueva | `feature/ia-medicion-rtx` | Las correcciones de la medición de Michael no alcanzaron a entrar al PR #5. Van sobre `develop` y se combinan con la regla de signo de Marcela (se queda la suya, que es más completa, y se le suma «S/ 200 te faltaron»). 210 tests en verde |
 
 ## Lo que acordamos
 
@@ -34,7 +36,9 @@ Rol: agente de Lucas (código JF). Agente de apoyo: `ia-chat`. Revisa mis PR: Di
 
 ## Lo que falta
 
-- [ ] Aprobación formal de Diego del PR #5 en GitHub y merge
+- [x] PR #5 unido a `develop` (Marcela, con sus arreglos al juez)
+- [ ] PR de `feature/ia-medicion-rtx` (revisa Diego)
+- [ ] Decidir con Diego qué agente va a la demo, qué catálogo del RAG y qué `src/bcrp` se quedan (su rama duplica las mías)
 - [ ] Michael: repetir la medición con el prompt v4 y con `--simular-con-llm` (CP-SIS-10); pasarle el resultado a Dixon
 - [x] Campo `figures` acordado con Marcela y Miguel
 - [ ] Miguel anota `figures` en `docs/api.md` y lo declara en la respuesta de `/chat`
