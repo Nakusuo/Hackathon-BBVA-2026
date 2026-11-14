@@ -1,7 +1,7 @@
 // Sustituto del pronóstico (DI-06) y del recomendador (MG-04) hasta que la API devuelva cifras de la misma persona.
 // Todas las cifras de las pantallas salen de aquí para que nunca se contradigan entre sí.
 
-function sumarDias(fechaIso, dias) {
+export function sumarDias(fechaIso, dias) {
   const d = new Date(`${fechaIso}T12:00:00`)
   d.setDate(d.getDate() + dias)
   return d.toISOString().slice(0, 10)
@@ -42,7 +42,10 @@ export function vecesDesde(movimientos, comercio, desdeIso) {
   return movimientos.filter((m) => m.concepto === comercio && m.fecha >= desdeIso).length
 }
 
-export function simular(persona, { pagosOmitidos = [], frecuencias = {}, gastoDiario, pagosExtra = [] } = {}) {
+export function simular(
+  persona,
+  { pagosOmitidos = [], frecuencias = {}, gastoDiario, pagosExtra = [], ingresosExtra = [] } = {},
+) {
   const diario = gastoDiario ?? gastoVariableDiario(persona, frecuencias)
   const puntos = []
   let saldo = persona.saldoHoy
@@ -54,7 +57,7 @@ export function simular(persona, { pagosOmitidos = [], frecuencias = {}, gastoDi
         .reduce((s, p) => s + p.monto, 0)
       saldo -= diario + pagos
     }
-    for (const cobro of persona.ingresos) if (cobro.fecha === fecha) saldo += cobro.monto
+    for (const cobro of [...persona.ingresos, ...ingresosExtra]) if (cobro.fecha === fecha) saldo += cobro.monto
     const ancho = anchoBanda(persona, i, fecha)
     puntos.push({
       fecha,
@@ -73,6 +76,26 @@ export function peorDia(persona, puntos) {
 
 export function diasEnRojo(persona, puntos) {
   return puntos.filter((p) => p.fecha < primerCobro(persona).fecha && p.banda[0] < 0).map((p) => p.fecha)
+}
+
+// El simulador mira los 30 días completos: un gasto planificado después del cobro también puede dejar en rojo.
+export function diasEnRojoDelMes(puntos) {
+  return puntos.filter((p) => p.banda[0] < 0).map((p) => p.fecha)
+}
+
+export function peorDiaDelMes(puntos) {
+  return puntos.reduce((peor, p) => (p.banda[0] < peor.banda[0] ? p : peor))
+}
+
+// Lo que la persona anuncia entra al pronóstico el día exacto que dice, no hoy. Al ingreso no se le suma
+// variación a la banda: el monto lo pone ella.
+export function conPlanificados(ajuste, planificados = []) {
+  const deTipo = (tipo) => planificados.filter((m) => m.tipo === tipo).map(({ id, fecha, monto }) => ({ id, fecha, monto }))
+  return {
+    ...ajuste,
+    pagosExtra: [...(ajuste.pagosExtra ?? []), ...deTipo('gasto')],
+    ingresosExtra: [...(ajuste.ingresosExtra ?? []), ...deTipo('ingreso')],
+  }
 }
 
 // El mayor gasto diario con el que ni el peor caso queda bajo cero antes del ingreso.
@@ -143,4 +166,24 @@ export function apartadoMaximo(persona, ajuste = {}) {
   let monto = 0
   while (monto < persona.saldoHoy && apartadoSinRojo(persona, monto + 10, ajuste)) monto += 10
   return monto
+}
+
+// El mayor gasto en esa fecha (múltiplos de S/ 10) que no suma días en rojo en los 30 días ni hunde más
+// un día que ya estaba en rojo, en el peor caso.
+export function gastoMaximoEn(persona, fecha, ajuste = {}) {
+  const medir = (puntos) => ({ dias: diasEnRojoDelMes(puntos).length, peor: Math.min(0, peorDiaDelMes(puntos).banda[0]) })
+  const base = medir(simular(persona, ajuste))
+  const cabe = (monto) => {
+    const con = medir(simular(persona, { ...ajuste, pagosExtra: [...(ajuste.pagosExtra ?? []), { id: 'tope', fecha, monto }] }))
+    return con.dias <= base.dias && con.peor >= base.peor
+  }
+  let bajo = 0
+  // Decena hacia arriba: con céntimos el punto medio podría repetirse y la búsqueda no terminaría.
+  let alto = Math.ceil((persona.saldoHoy + persona.ingresos.reduce((s, i) => s + i.monto, 0)) / 10) * 10
+  while (alto - bajo > 10) {
+    const medio = Math.floor((bajo + alto) / 20) * 10
+    if (cabe(medio)) bajo = medio
+    else alto = medio
+  }
+  return bajo
 }

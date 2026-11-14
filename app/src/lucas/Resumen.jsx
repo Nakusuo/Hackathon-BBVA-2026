@@ -8,6 +8,7 @@ import {
   Lightbulb,
   PauseCircle,
   PiggyBank,
+  Target,
   Taxi,
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
@@ -104,6 +105,9 @@ function Apartado({ cliente }) {
             No te deja en rojo hasta el {fechaCorta(apartado.hasta)}. Si lo repites en tus próximos {apartado.repeticiones} cobros, juntarías{' '}
             {enSoles(apartado.total)}.
           </p>
+          <Link className="enlace" to="/lucas/metas">
+            Llévalo a una meta
+          </Link>
         </>
       ) : (
         <>
@@ -115,8 +119,8 @@ function Apartado({ cliente }) {
   )
 }
 
-export default function Resumen({ cliente, alternarTip, animarEntrada = true }) {
-  const { riesgo, proximoIngreso, recomendaciones, apartado, apartadoConTodos, salud, elegidos, conTodos } = cliente
+export default function Resumen({ cliente, metas, alternarTip, animarEntrada = true }) {
+  const { riesgo, mes, proximoIngreso, recomendaciones, apartado, apartadoConTodos, salud, elegidos, conTodos } = cliente
   const faltanCambios = elegidos.length < cliente.totalCambios
   const exceso = cliente.gastoDiarioActual - cliente.gastoDiarioSeguro
   const faltan = diasEntre(cliente.hoy, proximoIngreso.fecha)
@@ -164,6 +168,17 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
             <a className="boton boton-chico" href="#tips">
               Cómo evitarlo
             </a>
+          </section>
+        ) : mes.diasEnRojo ? (
+          <section className="aviso aviso-corto" role="status" aria-label="Aviso de Lucas">
+            <LucasPose pose="alerta" tamano={56} />
+            <p>
+              <strong>Lucas te avisa:</strong> llegas a tu cobro, pero con lo que planificaste el{' '}
+              {fechaDia(mes.primerRojo)} quedarías en rojo (<span className="cifra">{enSoles(mes.peorMonto)}</span>).
+            </p>
+            <Link className="boton boton-chico" to="/lucas/que-viene">
+              Ver en Qué viene
+            </Link>
           </section>
         ) : (
           <section className="aviso aviso-corto aviso-bien" role="status" aria-label="Aviso de Lucas">
@@ -222,6 +237,11 @@ export default function Resumen({ cliente, alternarTip, animarEntrada = true }) 
             {salud.puntaje}, {nivelDeSalud(salud.puntaje)}
             {faltanCambios && salud.puntaje !== conTodos.salud && `. Si cumples los tips, ${conTodos.salud}`}
           </span>
+        </Link>
+        <Link to="/lucas/metas" className="bento-bloque">
+          <Target size={24} aria-hidden="true" />
+          <span className="bento-titulo">Tus metas</span>
+          <span className="suave">{metas.length ? `${metas.length} ${metas.length === 1 ? 'meta' : 'metas'}` : 'Crea la primera'}</span>
         </Link>
         <Link to={`/lucas/chat?q=${encodeURIComponent(PREGUNTAS_SUGERIDAS[0])}`} className="bento-bloque">
           <ChatCircleDots size={24} aria-hidden="true" />

@@ -3,19 +3,45 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useDatosApi } from '../api/useDatosApi.js'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
+import { aportar, crearMeta, esMetaValida } from '../lucas/metas.js'
+import { esPlanificadoValido } from '../lucas/planificar.js'
 import { vistaCon } from '../motor/cliente.js'
 import { personaPorId } from '../motor/personas.js'
-import { CLAVE_TIPS, guardarPersona, permisoDe, personaGuardada, retirarPermiso } from '../sesion.js'
+import {
+  CLAVE_METAS,
+  CLAVE_PLANIFICADOS,
+  CLAVE_TIPS,
+  guardarPersona,
+  permisoDe,
+  personaGuardada,
+  retirarPermiso,
+} from '../sesion.js'
 
 const SIN_DEMO = 'En esta demo solo está activo Lucas.'
 
-function leerElegidos() {
+function leerLista(clave, esValido) {
   try {
-    const guardado = JSON.parse(window.localStorage.getItem(CLAVE_TIPS))
-    return Array.isArray(guardado) ? guardado : []
+    const guardado = JSON.parse(window.localStorage.getItem(clave))
+    return Array.isArray(guardado) ? guardado.filter(esValido) : []
   } catch {
     return []
   }
+}
+
+function useListaGuardada(clave, esValido) {
+  const [lista, setLista] = useState(() => leerLista(clave, esValido))
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(clave, JSON.stringify(lista))
+    } catch {
+      // Sin almacenamiento lo elegido dura solo esta visita; la app sigue funcionando.
+    }
+  }, [clave, lista])
+  return [lista, setLista]
+}
+
+function nuevoId(prefijo) {
+  return `${prefijo}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`
 }
 
 export default function MarcoBanca() {
@@ -23,23 +49,32 @@ export default function MarcoBanca() {
   const temporizador = useRef(null)
   const [personaId, setPersonaId] = useState(personaGuardada)
   const [permiso, setPermiso] = useState(() => permisoDe(personaGuardada()))
-  const [elegidos, setElegidos] = useState(leerElegidos)
-  const vista = useMemo(() => vistaCon(elegidos, personaId), [elegidos, personaId])
+  const [elegidos, setElegidos] = useListaGuardada(CLAVE_TIPS, (id) => typeof id === 'string')
+  const [planificados, setPlanificados] = useListaGuardada(CLAVE_PLANIFICADOS, esPlanificadoValido)
+  const [metas, setMetas] = useListaGuardada(CLAVE_METAS, esMetaValida)
+  const vista = useMemo(() => vistaCon(elegidos, personaId, [], planificados), [elegidos, personaId, planificados])
   const persona = personaPorId(personaId).persona
   const datosApi = useDatosApi()
+
+  // Tips, lo planificado y las metas son de una persona: al cambiarla o al retirar el permiso se olvidan.
+  function olvidarLoDeLaPersona() {
+    setElegidos([])
+    setPlanificados([])
+    setMetas([])
+  }
 
   function elegirPersona(id) {
     if (id === personaId) return
     guardarPersona(id)
     setPersonaId(id)
     setPermiso(permisoDe(id))
-    setElegidos([])
+    olvidarLoDeLaPersona()
   }
 
   function retirarPermisoActual() {
     retirarPermiso(personaId)
     setPermiso(null)
-    setElegidos([])
+    olvidarLoDeLaPersona()
   }
 
   // Cada clic reinicia el tiempo; si no, el temporizador de un clic anterior borraba el aviso nuevo antes de leerlo.
@@ -55,13 +90,13 @@ export default function MarcoBanca() {
     setElegidos((previos) => (previos.includes(id) ? previos.filter((e) => e !== id) : [...previos, id]))
   }
 
-  useEffect(() => {
-    try {
-      window.localStorage.setItem(CLAVE_TIPS, JSON.stringify(elegidos))
-    } catch {
-      // Sin almacenamiento los tips elegidos duran solo esta visita; la app sigue funcionando.
-    }
-  }, [elegidos])
+  const acciones = {
+    agregarPlanificado: (movimiento) => setPlanificados((previos) => [...previos, { ...movimiento, id: nuevoId('plan') }]),
+    quitarPlanificado: (id) => setPlanificados((previos) => previos.filter((m) => m.id !== id)),
+    crearMeta: (datos) => setMetas((previas) => [...previas, crearMeta(datos, nuevoId('meta'))]),
+    aportarMeta: (id, monto) => setMetas((previas) => previas.map((m) => (m.id === id ? aportar(m, monto) : m))),
+    quitarMeta: (id) => setMetas((previas) => previas.filter((m) => m.id !== id)),
+  }
 
   useEffect(() => () => window.clearTimeout(temporizador.current), [])
 
@@ -79,6 +114,8 @@ export default function MarcoBanca() {
             permiso,
             retirarPermisoActual,
             datosApi,
+            metas,
+            ...acciones,
           }}
         />
 

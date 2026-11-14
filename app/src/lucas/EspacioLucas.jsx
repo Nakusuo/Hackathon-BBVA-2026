@@ -11,6 +11,7 @@ import Gastos from './Gastos.jsx'
 import GastosDetalle from './GastosDetalle.jsx'
 import Guia from './Guia.jsx'
 import { guiaYaVista } from './guiaVista.js'
+import Metas from './Metas.jsx'
 import QueViene from './QueViene.jsx'
 import Resumen from './Resumen.jsx'
 import Salud from './Salud.jsx'
@@ -22,11 +23,12 @@ const SECCIONES = [
   { id: 'chat', nombre: 'Chat' },
 ]
 // Pantallas de detalle: se abren desde los bloques del Resumen y no tienen pestaña propia.
-const DETALLES = { aprendido: 'resumen', salud: 'resumen', 'gastos-detalle': 'gastos', avisos: 'resumen' }
+const DETALLES = { aprendido: 'resumen', salud: 'resumen', metas: 'resumen', 'gastos-detalle': 'gastos', avisos: 'resumen' }
 
 export default function EspacioLucas() {
   const { seccion } = useParams()
-  const { vista, persona, alternarTip, permiso, datosApi } = useOutletContext()
+  const contexto = useOutletContext()
+  const { vista, persona, alternarTip, permiso, datosApi } = contexto
   const navegar = useNavigate()
   const { hash, pathname } = useLocation()
   // Solo se abre sola si la primera entrada es al Resumen, que es donde están sus tres marcas.
@@ -97,9 +99,11 @@ export default function EspacioLucas() {
       </header>
 
       <main className="lucas-contenido">
-        {seccion === 'resumen' && <Resumen cliente={vista} alternarTip={alternarTip} animarEntrada={!guiaAbierta} />}
+        {seccion === 'resumen' && <Resumen cliente={vista} metas={contexto.metas} alternarTip={alternarTip} animarEntrada={!guiaAbierta} />}
         {seccion === 'gastos' && <Gastos cliente={vista} />}
-        {seccion === 'que-viene' && <QueViene cliente={vista} />}
+        {seccion === 'que-viene' && (
+          <QueViene cliente={vista} alAgregar={contexto.agregarPlanificado} alQuitar={contexto.quitarPlanificado} />
+        )}
         {seccion === 'chat' && <Chat cliente={vista} persona={persona} />}
         {DETALLES[seccion] && (
           <Link to={`/lucas/${DETALLES[seccion]}`} className="volver">
@@ -111,6 +115,15 @@ export default function EspacioLucas() {
         {seccion === 'salud' && <Salud cliente={vista} />}
         {seccion === 'gastos-detalle' && <GastosDetalle cliente={vista} alternarTip={alternarTip} />}
         {seccion === 'avisos' && <Avisos cliente={vista} />}
+        {seccion === 'metas' && (
+          <Metas
+            cliente={vista}
+            metas={contexto.metas}
+            alCrear={contexto.crearMeta}
+            alAportar={contexto.aportarMeta}
+            alQuitar={contexto.quitarMeta}
+          />
+        )}
         {/* Al final: las cifras de arriba no dependen del servidor, así que el aviso no les quita el primer plano. */}
         <EstadoDatos estado={datosApi.estado} />
       </main>

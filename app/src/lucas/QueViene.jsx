@@ -1,4 +1,4 @@
-import { Warning } from '@phosphor-icons/react'
+import { Warning, X } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -15,8 +15,13 @@ import {
 } from 'recharts'
 import { conSigno, enSoles, fechaCorta, fechaDia, fechaLarga, textoDiasEnRojo } from '../formato.js'
 import { marcasDelEje } from '../grafico.js'
+import { vistaCon } from '../motor/cliente.js'
 import ExplicameFacil from './ExplicameFacil.jsx'
 import { explicarQueViene } from './explicaciones.js'
+import Planificar from './Planificar.jsx'
+import { validarPlanificado } from './planificar.js'
+
+const VACIO = { tipo: 'gasto', monto: '', fecha: '', concepto: '' }
 
 const PERIODOS = [
   { id: 'ingreso', nombre: 'Hasta mi cobro' },
@@ -47,7 +52,7 @@ function Globo({ active, payload }) {
   )
 }
 
-function ListaMovimientos({ titulo, movimientos }) {
+function ListaMovimientos({ titulo, movimientos, alQuitar }) {
   if (!movimientos.length) return null
   return (
     <div className="grupo-dia">
@@ -57,12 +62,25 @@ function ListaMovimientos({ titulo, movimientos }) {
           <li key={m.id} className="fila">
             <span className="fila-texto">
               <span>{m.concepto}</span>
-              <span className="suave">{fechaDia(m.fecha)}</span>
+              <span className="suave">
+                {fechaDia(m.fecha)}
+                {m.planificado && ' · lo agregaste tú'}
+              </span>
             </span>
             <span className={`fila-monto ${m.entra ? 'entra' : ''}`}>
               {m.entra ? '+' : '−'}
               {enSoles(m.monto)}
             </span>
+            {m.planificado && (
+              <button
+                type="button"
+                className="icono-boton icono-boton-suave"
+                aria-label={`Quitar ${m.concepto} del ${fechaDia(m.fecha)}`}
+                onClick={() => alQuitar(m.id)}
+              >
+                <X size={20} aria-hidden="true" />
+              </button>
+            )}
           </li>
         ))}
       </ul>
@@ -70,33 +88,75 @@ function ListaMovimientos({ titulo, movimientos }) {
   )
 }
 
-export default function QueViene({ cliente }) {
-  const { pronostico, riesgo, proximoIngreso, proximosPagos, saldoHoy, ingresos } = cliente
+// «Hasta mi cobro» cuenta el rojo antes del cobro, como el Resumen; «30 días» mira todo el pronóstico,
+// donde también cae lo que se planifica para diciembre.
+function estadoDelPanel(vista, periodo) {
+  if (periodo === 'ingreso') {
+    const { riesgo, peorDia } = vista
+    return riesgo
+      ? { peorFecha: riesgo.peorFecha, peorMonto: riesgo.peorMonto, rojo: `${textoDiasEnRojo(riesgo)} podrías quedar en rojo.` }
+      : { peorFecha: peorDia.fecha, peorMonto: peorDia.monto, bien: 'Con tus cambios llegas a tu cobro sin quedar en rojo.' }
+  }
+  const { mes } = vista
+  const base = { peorFecha: mes.peorFecha, peorMonto: mes.peorMonto }
+  if (!mes.diasEnRojo) return { ...base, bien: 'En estos 30 días no quedas en rojo.' }
+  const rojo =
+    mes.diasEnRojo === 1
+      ? `El ${fechaDia(mes.primerRojo)} podrías quedar en rojo.`
+      : `${mes.diasEnRojo} días podrías quedar en rojo, desde el ${fechaDia(mes.primerRojo)}.`
+  return { ...base, rojo }
+}
+
+export default function QueViene({ cliente, alAgregar, alQuitar }) {
   const [periodo, setPeriodo] = useState('ingreso')
+  const [borrador, setBorrador] = useState(VACIO)
+  const [agregado, setAgregado] = useState('')
+
+  const revision = validarPlanificado(cliente, borrador)
+  const { movimiento } = revision
+  // Mientras el borrador es válido, todo el panel muestra cómo quedaría; nada se guarda hasta «Agregar».
+  const prueba = movimiento
+    ? vistaCon(cliente.elegidos, cliente.personaId, [], [...cliente.planificados, { ...movimiento, id: 'borrador' }])
+    : null
+  const vista = prueba ?? cliente
+  const { pronostico, proximoIngreso, proximosPagos, saldoHoy, ingresos } = vista
 
   const datos = periodo === 'ingreso' ? pronostico.filter((p) => p.fecha <= proximoIngreso.fecha) : pronostico
   const { dominio, marcas } = marcasDelEje(datos)
-  const puntoRiesgo = riesgo && datos.find((p) => p.fecha === riesgo.peorFecha)
+  const panel = estadoDelPanel(vista, periodo)
+  const puntoRiesgo = panel.rojo && datos.find((p) => p.fecha === panel.peorFecha)
   const ultimoDia = datos.at(-1).fecha
 
   const movimientos = [
     ...proximosPagos.map((p) => ({ ...p, entra: false })),
     ...ingresos.map((i) => ({ ...i, entra: true })),
+    ...cliente.planificados.map((m) => ({ ...m, entra: m.tipo === 'ingreso', planificado: true })),
   ]
     .filter((m) => m.fecha <= ultimoDia)
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
   const antes = movimientos.filter((m) => m.fecha < proximoIngreso.fecha)
   const desde = movimientos.filter((m) => m.fecha >= proximoIngreso.fecha)
 
-  const resumen = riesgo
-    ? `Saldo de hoy ${enSoles(saldoHoy)}. Baja hasta el ${fechaDia(riesgo.peorFecha)}, donde el peor caso es ${enSoles(riesgo.peorMonto)}, y sube el ${fechaDia(proximoIngreso.fecha)} con tu cobro.`
-    : `Saldo de hoy ${enSoles(saldoHoy)}. No baja de cero antes de tu cobro.`
+  const resumen = `Saldo de hoy ${enSoles(saldoHoy)}. El peor caso es ${enSoles(panel.peorMonto)} el ${fechaDia(panel.peorFecha)}. ${panel.rojo ?? panel.bien}`
+
+  function cambiar(campo, valor) {
+    setAgregado('')
+    setBorrador((previo) => ({ ...previo, [campo]: valor }))
+    // La vista sigue a la fecha: lo que cae después del cobro no se ve en «Hasta mi cobro».
+    if (campo === 'fecha' && valor) setPeriodo(valor >= proximoIngreso.fecha ? 'mes' : 'ingreso')
+  }
+
+  function agregar(nuevo) {
+    alAgregar(nuevo)
+    setBorrador(VACIO)
+    setAgregado(`Agregué ${nuevo.concepto} (${enSoles(nuevo.monto)}) el ${fechaDia(nuevo.fecha)}. Ya está en tu pronóstico.`)
+  }
 
   return (
     <>
       <section className="panel-azul panel-grafico" aria-labelledby="pronostico-titulo">
         <div className="tarjeta-titulo">
-          <h2 id="pronostico-titulo">Tu saldo proyectado</h2>
+          <h2 id="pronostico-titulo">{prueba ? 'Así quedaría tu saldo' : 'Tu saldo proyectado'}</h2>
           <div className="selector selector-oscuro" role="group" aria-label="Periodo">
             {PERIODOS.map((p) => (
               <button key={p.id} type="button" aria-pressed={periodo === p.id} onClick={() => setPeriodo(p.id)}>
@@ -106,27 +166,23 @@ export default function QueViene({ cliente }) {
           </div>
         </div>
 
-        {riesgo ? (
-          <div className="panel-riesgo">
-            <p className="panel-etiqueta">Peor caso el {fechaDia(riesgo.peorFecha)}</p>
-            <p className="panel-cifra">{enSoles(riesgo.peorMonto)}</p>
+        <div className="panel-riesgo">
+          <p className="panel-etiqueta">Peor caso el {fechaDia(panel.peorFecha)}</p>
+          <p className="panel-cifra">{panel.rojo ? enSoles(panel.peorMonto) : conSigno(panel.peorMonto)}</p>
+          {panel.rojo ? (
             <p className="panel-aviso">
               <Warning size={20} weight="fill" aria-hidden="true" />
               <span>
-                {textoDiasEnRojo(riesgo)} podrías quedar en rojo.{' '}
+                {panel.rojo}{' '}
                 <Link className="enlace enlace-claro" to="/lucas/resumen#tips">
                   Ver tips
                 </Link>
               </span>
             </p>
-          </div>
-        ) : (
-          <div className="panel-riesgo">
-            <p className="panel-etiqueta">Peor caso el {fechaDia(cliente.peorDia.fecha)}</p>
-            <p className="panel-cifra">{conSigno(cliente.peorDia.monto)}</p>
-            <p className="panel-aviso">Con tus cambios llegas a tu cobro sin quedar en rojo.</p>
-          </div>
-        )}
+          ) : (
+            <p className="panel-aviso">{panel.bien}</p>
+          )}
+        </div>
 
         <p className="solo-lector">{resumen}</p>
         <div className="grafico" aria-hidden="true">
@@ -194,12 +250,24 @@ export default function QueViene({ cliente }) {
         </div>
       </section>
 
+      <Planificar
+        cliente={cliente}
+        prueba={prueba}
+        borrador={borrador}
+        revision={revision}
+        alCambiar={cambiar}
+        alAgregar={agregar}
+      />
+      <p className="solo-lector" role="status">
+        {agregado}
+      </p>
+
       <ExplicameFacil puntos={explicarQueViene(cliente)} />
 
-      <section className="tarjeta hoja" aria-labelledby="movimientos-titulo">
+      <section className="tarjeta" aria-labelledby="movimientos-titulo">
         <h2 id="movimientos-titulo">Pagos y cobros</h2>
-        <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} />
-        <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} />
+        <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} alQuitar={alQuitar} />
+        <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} alQuitar={alQuitar} />
         <p className="suave">
           {cliente.ingresoVariable
             ? 'El rango se abre con los días porque tu gasto varía, y se ensancha en cada cobro porque tus clientes no siempre te pagan lo mismo.'

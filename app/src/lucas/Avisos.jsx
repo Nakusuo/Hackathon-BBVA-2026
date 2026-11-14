@@ -169,7 +169,15 @@ export default function Avisos({ cliente }) {
   const [opiniones, setOpiniones] = useState(leerOpiniones)
 
   const vista = useMemo(
-    () => (conGasto ? vistaCon(cliente.elegidos, cliente.personaId, [{ id: 'prueba', fecha: sumarDias(diaDemo, 1), monto: GASTO_DE_PRUEBA }]) : cliente),
+    () =>
+      conGasto
+        ? vistaCon(
+            cliente.elegidos,
+            cliente.personaId,
+            [{ id: 'prueba', fecha: sumarDias(diaDemo, 1), monto: GASTO_DE_PRUEBA }],
+            cliente.planificados,
+          )
+        : cliente,
     [cliente, conGasto, diaDemo],
   )
   const enDemo = diaDemo !== cliente.hoy || conGasto
