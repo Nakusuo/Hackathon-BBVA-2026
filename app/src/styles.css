@@ -1,56 +1,54 @@
 @import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/source-serif-4';
 
-/* Paleta propia de Lucas: celestes con un solo acento. Rojo y verde solo marcan estado y siempre van con texto. */
+/* Paleta propia de Lucas: azul marino para leer, celeste para destacar. Rojo y verde solo marcan estado y siempre van con texto. */
 :root {
-  --fondo: #edf3f7;
+  --fondo: #f4f7fb;
   --superficie: #ffffff;
-  --superficie-suave: #e3eef4;
-  --borde: #d3e2eb;
-  --tinta: #0f2a3a;
-  --tinta-suave: #4a6574;
-  --acento: #0a6e9c;
-  --acento-fuerte: #075a80;
+  --superficie-suave: #eaf1f9;
+  --borde: #dde5ef;
+  --tinta: #0e1e3d;
+  --tinta-suave: #4b5a74;
+  --acento: #1d63b8;
+  --acento-fuerte: #164e94;
   --sobre-acento: #ffffff;
-  --principal: #0a6e9c;
-  --sobre-principal: #ffffff;
-  --sobre-principal-suave: #d4ecf7;
-  --nav: #0f2a3a;
-  --nav-texto: #c9dbe5;
-  --nav-activo: #ffffff;
-  --nav-activo-texto: #0f2a3a;
-  --banda: #9fd3ea;
+  --principal: #d5e9fb;
+  --sobre-principal: #0e1e3d;
+  --sobre-principal-suave: #33476a;
+  --boton: #0e1e3d;
+  --sobre-boton: #ffffff;
+  --banda: #b7d6f4;
   --riesgo: #b42318;
-  --riesgo-fondo: #fdecea;
+  --riesgo-fondo: #fdeeec;
   --bien: #1d6b46;
 
   --letra: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
-  --radio: 24px;
-  --radio-chico: 16px;
+  --titulos: 'Source Serif 4 Variable', Georgia, serif;
+  --radio: 18px;
+  --radio-chico: 12px;
 
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --fondo: #071219;
-    --superficie: #0f1f28;
-    --superficie-suave: #17303d;
-    --borde: #1f3a48;
-    --tinta: #e4f0f6;
-    --tinta-suave: #a2bccb;
-    --acento: #6cc4e8;
-    --acento-fuerte: #93d5f0;
-    --sobre-acento: #071219;
-    --principal: #0d5a7e;
-    --sobre-principal: #ffffff;
-    --sobre-principal-suave: #c6e6f4;
-    --nav: #17303d;
-    --nav-texto: #a2bccb;
-    --nav-activo: #e4f0f6;
-    --nav-activo-texto: #071219;
-    --banda: #1f5470;
+    --fondo: #08111f;
+    --superficie: #101c30;
+      --superficie-suave: #182842;
+    --borde: #24344f;
+    --tinta: #e8eff8;
+    --tinta-suave: #a9b8ce;
+    --acento: #7db8f0;
+    --acento-fuerte: #a3cdf5;
+    --sobre-acento: #08111f;
+    --principal: #16335a;
+    --sobre-principal: #e8eff8;
+    --sobre-principal-suave: #bcd0ea;
+    --boton: #e8eff8;
+    --sobre-boton: #08111f;
+    --banda: #234a76;
     --riesgo: #ff8a80;
-    --riesgo-fondo: #3a1c1c;
+    --riesgo-fondo: #3a1d22;
     --bien: #7dd3a8;
   }
 }
@@ -79,17 +77,21 @@ p {
   margin: 0;
 }
 
+h1,
+h2 {
+  font-family: var(--titulos);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-size: 2rem;
+  line-height: 1.15;
 }
 
 h2 {
-  font-size: 1.125rem;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size: 1.3125rem;
+  line-height: 1.25;
 }
 
 h3 {
@@ -105,9 +107,17 @@ h3 {
 /* Estructura: barra lateral en laptop, barra flotante abajo en celular */
 
 .app {
+  --ancho-lateral: 232px;
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 232px 1fr;
+  grid-template-columns: var(--ancho-lateral) 1fr;
+  /* Pinta la columna lateral hasta el final aunque la barra sea sticky y mida solo la ventana. */
+  background: linear-gradient(
+    to right,
+    var(--superficie) calc(var(--ancho-lateral) - 1px),
+    var(--borde) calc(var(--ancho-lateral) - 1px) var(--ancho-lateral),
+    var(--fondo) var(--ancho-lateral)
+  );
 }
 
 .lateral {
@@ -117,13 +127,13 @@ h3 {
   padding: 28px 16px;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 28px;
 }
 
 .marca {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-family: var(--titulos);
+  font-size: 1.75rem;
+  font-weight: 700;
   color: var(--tinta);
   text-decoration: none;
   padding: 0 12px;
@@ -132,10 +142,7 @@ h3 {
 .navegacion {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px;
-  border-radius: var(--radio);
-  background: var(--nav);
+  gap: 4px;
 }
 
 .navegacion a {
@@ -143,21 +150,22 @@ h3 {
   align-items: center;
   gap: 12px;
   min-height: 48px;
-  padding: 0 16px;
-  border-radius: 999px;
-  color: var(--nav-texto);
+  padding: 0 14px;
+  border-radius: var(--radio-chico);
+  color: var(--tinta-suave);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
 }
 
 .navegacion a:hover {
-  color: var(--nav-activo);
+  color: var(--tinta);
+  background: var(--fondo);
 }
 
 .navegacion a[aria-current='page'] {
-  background: var(--nav-activo);
-  color: var(--nav-activo-texto);
+  background: var(--superficie-suave);
+  color: var(--tinta);
 }
 
 .navegacion svg {
@@ -166,8 +174,8 @@ h3 {
 
 .contenido {
   width: 100%;
-  max-width: 1040px;
-  padding: 28px 32px 40px 8px;
+  max-width: 1080px;
+  padding: 32px 40px 48px;
   display: grid;
   gap: 20px;
   align-content: start;
@@ -199,6 +207,7 @@ h3 {
 
 .tarjeta {
   background: var(--superficie);
+  border: 1px solid var(--borde);
   border-radius: var(--radio);
   padding: 22px 24px;
   display: grid;
@@ -231,7 +240,6 @@ h3 {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 4px;
 }
 
 .boton {
@@ -243,8 +251,8 @@ h3 {
   padding: 0 20px;
   border-radius: 999px;
   border: 0;
-  background: var(--tinta);
-  color: var(--fondo);
+  background: var(--boton);
+  color: var(--sobre-boton);
   font: inherit;
   font-weight: 700;
   text-decoration: none;
@@ -288,7 +296,11 @@ h3 {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 10px 0;
+  padding: 12px 0;
+}
+
+.fila + .fila {
+  border-top: 1px solid var(--borde);
 }
 
 .fila-texto {
@@ -328,13 +340,15 @@ h3 {
 }
 
 .principal-cifra {
-  font-size: 2.5rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-family: var(--titulos);
+  font-size: 2.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   line-height: 1.1;
 }
 
 .principal-cifra small {
+  font-family: var(--letra);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: 0;
@@ -346,7 +360,7 @@ h3 {
   gap: 24px;
   flex-wrap: wrap;
   padding-top: 16px;
-  border-top: 1px solid rgb(255 255 255 / 0.25);
+  border-top: 1px solid color-mix(in srgb, var(--sobre-principal) 18%, transparent);
 }
 
 .principal-pie div {
@@ -407,8 +421,9 @@ h3 {
 }
 
 .anillo-valor {
+  font-family: var(--titulos);
   font-size: 2.5rem;
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
 }
@@ -453,8 +468,8 @@ h3 {
 }
 
 .selector button[aria-pressed='true'] {
-  background: var(--tinta);
-  color: var(--fondo);
+  background: var(--boton);
+  color: var(--sobre-boton);
 }
 
 .grafico {
@@ -495,8 +510,8 @@ h3 {
 }
 
 .globo {
-  background: var(--tinta);
-  color: var(--fondo);
+  background: var(--boton);
+  color: var(--sobre-boton);
   border-radius: var(--radio-chico);
   padding: 10px 14px;
   font-size: 1rem;
@@ -575,6 +590,7 @@ details[open] summary::after {
 @media (max-width: 760px) {
   .app {
     display: block;
+    background: var(--fondo);
     padding-bottom: 96px;
   }
 
@@ -582,6 +598,8 @@ details[open] summary::after {
     position: static;
     height: auto;
     padding: 20px 16px 0;
+    background: none;
+    border: 0;
   }
 
   .marca {
@@ -591,28 +609,29 @@ details[open] summary::after {
   .navegacion {
     position: fixed;
     z-index: 10;
-    left: 50%;
-    bottom: 16px;
-    transform: translateX(-50%);
+    left: 0;
+    right: 0;
+    bottom: 0;
     flex-direction: row;
-    gap: 4px;
-    padding: 6px;
-    border-radius: 999px;
+    justify-content: space-around;
+    gap: 0;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    background: var(--superficie);
+    border-top: 1px solid var(--borde);
   }
 
   .navegacion a {
-    min-height: 48px;
-    padding: 0 14px;
-    gap: 8px;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-height: 60px;
+    padding: 4px;
   }
 
-  /* En celular solo la pestaña activa muestra su nombre, como en las barras flotantes. */
-  .navegacion a:not([aria-current='page']) span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
+  .navegacion a[aria-current='page'] {
+    background: none;
+    color: var(--acento-fuerte);
   }
 
   .contenido {
