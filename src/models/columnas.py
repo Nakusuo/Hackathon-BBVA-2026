@@ -2,7 +2,7 @@
 
 # Atributos que el cliente declararia o que el banco conoce (contrato de datos del plan, tabla seguro.clientes).
 OBSERVABLES_CLIENTE = [
-    "rango_edad", "region", "tipo_trabajo", "frecuencia_ingreso", "personas_a_cargo", "deuda_total", "n_creditos", "cuota_mensual",
+    "rango_edad", "region", "departamento", "tipo_trabajo", "frecuencia_ingreso", "personas_a_cargo", "deuda_total", "n_creditos", "cuota_mensual",
     "tcea_promedio", "colchon_meses", "antiguedad_cliente_meses", "meta_ahorro", "paga_en_usd",
 ]
 # Etiquetas de referencia: solo para evaluar, nunca como entrada de un modelo.

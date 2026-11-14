@@ -223,3 +223,6 @@ __marimo__/
 data/generado/
 models/*.tmp
 .ipynb_checkpoints/
+models/*.log
+models/fig_*.png
+data/generado/memoria/

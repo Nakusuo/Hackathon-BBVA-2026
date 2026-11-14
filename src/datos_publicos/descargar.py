@@ -54,7 +54,7 @@ FUENTES = [
 ]
 
 # El BCRP (cartilla de 5.o de secundaria) bloquea la descarga automatica con anti-bot: bajarla a mano si se necesita.
-ENFEN = range(15, 20)
+ENFEN = range(15, 21)
 
 # codigo BCRP, archivo, descripcion, periodo
 BCRP = [
@@ -137,8 +137,11 @@ def descargar_enfen() -> list[dict]:
         try:
             r = requests.get(url, headers=CABECERAS, timeout=60)
             r.raise_for_status()
-            r.encoding = "utf-8"
-            t = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", r.text)
+            try:
+                crudo = r.content.decode("utf-8")
+            except UnicodeDecodeError:  # la pagina declara UTF-8 pero puede servir Latin-1
+                crudo = r.content.decode("cp1252", errors="replace")
+            t = re.sub(r"(?is)<(script|style|noscript)[^>]*>.*?</\1>", " ", crudo)
             t = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", t))).strip()
             if "magnitud" not in t:
                 raise ValueError("la pagina no trae el texto del comunicado")

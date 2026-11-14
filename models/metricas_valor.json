@@ -1,0 +1,49 @@
+{
+ "punto_de_equilibrio": {
+  "margen_por_usuario_al_anio_soles": 9.650942795488522,
+  "puntos_por_usuario_al_mes_que_igualan_el_margen": 80.42452329573769,
+  "lectura": "si el usuario promedio gana mas puntos que este numero, el programa cuesta mas que el fondeo que genera; hay que bajar el valor del punto o premiar solo conductas que den ingreso"
+ },
+ "sensibilidad_costo_de_puntos": {
+  "20 puntos por usuario al mes": {
+   "costo_de_puntos_soles": 240000.0,
+   "valor_neto_soles": 725094.2795488521
+  },
+  "40 puntos por usuario al mes": {
+   "costo_de_puntos_soles": 480000.0,
+   "valor_neto_soles": 485094.2795488521
+  },
+  "60 puntos por usuario al mes": {
+   "costo_de_puntos_soles": 720000.0,
+   "valor_neto_soles": 245094.27954885212
+  },
+  "80 puntos por usuario al mes": {
+   "costo_de_puntos_soles": 960000.0,
+   "valor_neto_soles": 5094.279548852122
+  },
+  "120 puntos por usuario al mes": {
+   "costo_de_puntos_soles": 1440000.0,
+   "valor_neto_soles": -474905.7204511479
+  }
+ },
+ "supuestos": {
+  "margen_anual_sobre_saldo_apartado": 0.03,
+  "usuarios_activos_escenario_conservador": 100000,
+  "puntos_promedio_por_usuario_al_mes": 120,
+  "aceptacion_de_la_recomendacion": "ya incluida: el impacto se simulo con la probabilidad de aceptacion de cada cliente",
+  "retencion_y_mora": "no se asigna valor: no hay evidencia publica causal; lo mediria un piloto con grupo de control"
+ },
+ "por_cliente": {
+  "colchon_adicional_soles": 321.69809318295074,
+  "intereses_evitados_soles_por_mes": 0.39050749806369955,
+  "dias_en_rojo_evitados_por_mes": 0.24335997572045087
+ },
+ "entidad_por_anio_escenario_conservador": {
+  "usuarios": 100000,
+  "margen_por_fondeo_de_lo_apartado_soles": 965094.2795488521,
+  "costo_de_puntos_soles": 1440000.0,
+  "valor_neto_soles": -474905.7204511479,
+  "nota": "solo cuenta el fondeo de lo apartado; retencion, mora evitada y venta cruzada idonea no se valoran sin piloto"
+ },
+ "ahorro_del_cliente_por_anio_soles": 4.686089976764395
+}
