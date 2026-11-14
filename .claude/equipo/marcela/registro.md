@@ -43,11 +43,15 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 | 2026-11-14 | Banco ficticio: «Banco Vértice» (búsqueda web sin coincidencias; falta revisar registro SBS). «Mi Banca» descartado por parecerse a Mibanco | Que funcione para cualquier banco sin imitar a uno real |
 | 2026-11-14 | Los tips se activan con «Lo hago» y todo se recalcula con el mismo motor; el chat dice «Calculado con tus datos» hasta que exista el verificador (JF-04) | Momento memorable de la demo y honestidad con las cifras |
 | 2026-11-14 | Rojo solo para riesgo y siempre con texto («Aviso», «podrías quedar en rojo») | No depender solo del color |
+| 2026-11-14 | Normas de diseño v2: modo oscuro con fondo carbón neutro (no azul marino) y un solo acento azul eléctrico con brillo, siempre a más de 20 puntos por canal de los azules de BBVA. Reemplaza «Sin modo oscuro: solo blancos y azules» | Las pantallas se veían planas; referencias de apps financieras oscuras |
+| 2026-11-14 | Vidrio esmerilado y brillo azul solo en la tarjeta protagonista de cada pantalla (login, panel de Resumen); sin morado ni rosa | Que destaque una cosa por pantalla sin caer en AI slop (regla 8 de la nota de diseño) |
+| 2026-11-14 | Celular primero: cada pantalla principal cabe en 1.5 pantallas de celular; el detalle va en pantallas u hojas aparte, sin sobrecargar | Pedido de Marcela: que el usuario no se abrume |
+| 2026-11-14 | Gráficas según ui-ux-pro-max: etiquetas y porcentajes visibles, nunca solo color; dona solo hasta 6 partes; pronóstico con línea punteada y banda | Accesibilidad y lectura rápida en celular |
 
 ## Lo que falta
 
 - [x] Segunda ronda de jueces sobre `feature/front-banca-lucas`: APRUEBA, APRUEBA (~63) y CUMPLE CON RIESGOS. Nakusuo/Marcela
-- [ ] Push de `feature/front-banca-lucas` y PR a `develop`
+- [x] Push de `feature/front-banca-lucas` y PR #6 unido a `develop`; PR #3 cerrado porque su contenido entró con el #6. Nakusuo/Marcela
 - [ ] Guion de demo de 60 s en `demo/` (banca → aviso → «Lo hago» → el rojo desaparece → apartar S/ 150)
 - [ ] Revisar «Banco Vértice» en el registro de la SBS antes del pitch
 - [ ] Conectar el chat al agente real (JF-02/JF-03) y el pronóstico al modelo de Diego (DI-06)
