@@ -87,7 +87,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [x] Juez de producto: seguimiento del tip elegido y salud que se mueve con los tips (`feature/front-ajustes-jueces`). Nakusuo/Marcela
 - [ ] Seguimiento que avance en la demo («Simular mañana»: un pedido nuevo y «1 de 2») y colchón que se mueva con lo apartado (juez-producto, 2.ª ronda)
 - [x] Rediseño móvil en `feature/front-rediseno-movil-2`: banca, Qué viene, Chat e Ingreso oscuro, con jueces. Nakusuo/Marcela
-- [ ] Push de `feature/front-rediseno-movil-2` y PR a `develop` (pedir permiso)
+- [x] Push de `feature/front-rediseno-movil-2` y PR #29 a `develop` (revisa Dixon): https://github.com/MaickolO/Hackathon-BBVA-2026-Equipo-2/pull/29. Nakusuo/Marcela
 - [ ] Juez de producto: tarjeta «Lucas te avisa» con monto, causa y acción salidos del motor (cuidar el límite de 1.5 pantallas)
 - [ ] Playwright en esta laptop: usar `PW_CHROMIUM` con Chrome y `PW_PUERTO` distinto de 5174 si otra copia tiene Vite abierto
 
