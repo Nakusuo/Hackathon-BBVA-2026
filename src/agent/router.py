@@ -65,7 +65,81 @@ _INTENCIONES = [
     ("segmento", [r"\bperfil\b", r"\bsegmento\b", r"\bque tipo de (?!cambio\b)"]),
     # Va después de las operaciones bloqueadas: «¿compro dólares?» nunca llega aquí.
     ("fx", [r"\btipo de cambio\b", r"\bdolar(es)?\b"]),
+    # Al final: «¿qué es mi perfil?» es segmento y «¿qué es el tipo de cambio?» es fx.
+    (
+        "educacion",
+        [
+            r"\bque (es|son|significa|significan)\b",
+            r"\bpara que sirve",
+            r"\bcomo funciona",
+            r"\bque derechos\b",
+            r"\b(tcea|tea|trea|cts|gratificacion|indecopi|reclamo|enfen)\b",
+            r"\bfenomeno\b|\bel nino\b",
+            r"\bdatos personales\b",
+        ],
+    ),
 ]
+
+# Tema → módulo del índice de Diego. Es una lista cerrada: lo que llega al LLM como «tema»
+# sale de aquí, nunca del texto libre del usuario (ISO 8.12).
+_TEMAS_RAG = {
+    "deudas": {
+        "tcea": "TCEA",
+        "tea": "TEA",
+        "interes": "intereses",
+        "credito": "crédito",
+        "tarjeta": "tarjeta de crédito",
+        "deuda": "deudas",
+        "cuota": "cuotas",
+        "mora": "mora",
+        "atras": "pagos atrasados",
+        "prestamo": "préstamos",
+    },
+    "derechos": {
+        "reclamo": "reclamos",
+        "derecho": "derechos del usuario",
+        "indecopi": "Indecopi",
+        "consumidor": "protección al consumidor",
+        "datos personales": "datos personales",
+        "privacidad": "privacidad",
+        "transparencia": "transparencia",
+    },
+    "salud_financiera": {
+        "presupuesto": "presupuesto",
+        "meta": "metas de ahorro",
+        "emergencia": "fondo de emergencia",
+        "colchon": "fondo de emergencia",
+        "ahorro": "ahorro",
+    },
+    "laboral": {
+        "cts": "CTS",
+        "gratificacion": "gratificación",
+        "grati": "gratificación",
+        "bonificacion": "bonificación extraordinaria",
+    },
+    "fenomeno_el_nino": {
+        "nino": "fenómeno El Niño",
+        "fenomeno": "fenómeno El Niño",
+        "enfen": "ENFEN",
+        "lluvia": "lluvias",
+    },
+}
+
+
+def temas_rag(pregunta: str) -> tuple[list[str] | None, list[str]]:
+    """(módulos donde buscar, temas de la lista cerrada). Sin módulos se busca en todos."""
+    texto = normalizar(pregunta)
+    modulos, temas = [], []
+    for modulo, palabras in _TEMAS_RAG.items():
+        for palabra, tema in palabras.items():
+            if re.search(rf"\b{palabra}", texto):
+                if modulo not in modulos:
+                    modulos.append(modulo)
+                if tema not in temas:
+                    temas.append(tema)
+    return (modulos or None), temas
+
+
 _MONTO = re.compile(r"(\d{1,3}(?:[ ,]\d{3})+|\d+)(\.\d{1,2})?")
 
 

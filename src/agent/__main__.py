@@ -10,6 +10,7 @@ from agent import plantillas
 from agent.chat import responder
 from agent.grafo import construir
 from agent.providers import TemplateProvider, cadena_desde_entorno, calentar
+from agent.rag import Buscador
 from agent.tools import HerramientasAPI, HerramientasMock
 
 
@@ -43,7 +44,7 @@ def main() -> None:
     if args.simular_con_llm:
         solo_plantilla = plantillas.INTENCIONES_SOLO_PLANTILLA - {"simular"}
     herramientas = HerramientasAPI(args.api) if args.api else HerramientasMock()
-    agente = construir(herramientas, cadena, solo_plantilla=solo_plantilla)
+    agente = construir(herramientas, cadena, solo_plantilla=solo_plantilla, buscador=Buscador())
     print("Escribe tu pregunta (Enter vacío para salir).\n")
 
     while pregunta := input("Tú: ").strip():
@@ -51,7 +52,10 @@ def main() -> None:
         r = responder(agente, {"customer_id": args.cliente, "message": pregunta})
         segundos = time.perf_counter() - inicio
         print(f"\nLucas: {r['answer']}")
-        print(f"  [{r['provider']} · verificado: {r['verified']} · {segundos:.1f} s]\n")
+        print(f"  [{r['provider']} · verificado: {r['verified']} · {segundos:.1f} s]")
+        for fuente in r["sources"]:
+            print(f"  Fuente: {fuente['title']} ({fuente['institution']}, p. {fuente['page']})")
+        print()
         if args.json:
             print(json.dumps(r, ensure_ascii=False, indent=2), "\n")
 

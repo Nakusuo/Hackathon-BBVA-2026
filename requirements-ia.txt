@@ -10,3 +10,5 @@ pydantic==2.14.3
 pypdf==7.1.0
 pytest==9.2.0
 ruff==0.17.5
+faiss-cpu==1.16.0
+numpy==2.4.6

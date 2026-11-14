@@ -26,7 +26,9 @@ def test_interpreta_formatos_de_numero(texto, valor):
     assert interpretar_numero(texto)[0] == valor
 
 
-@pytest.mark.parametrize("intencion", list(plantillas.TOOLS_POR_INTENCION))
+@pytest.mark.parametrize(
+    "intencion", [i for i in plantillas.TOOLS_POR_INTENCION if i != "educacion"]
+)
 def test_aprueba_cada_plantilla(intencion):
     llamadas = {
         "get_health": lambda: T.get_health("c-001"),

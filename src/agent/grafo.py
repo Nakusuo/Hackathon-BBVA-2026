@@ -13,6 +13,7 @@ from agent import plantillas, router
 from agent.juez import juzgar
 from agent.prompts import resumen_para_llm
 from agent.providers import LLMProvider, TemplateProvider, redactar_con_respaldo
+from agent.rag import Buscador, SinEmbeddings
 from agent.tools import HerramientaNoDisponible, Herramientas
 
 log = logging.getLogger(__name__)
@@ -34,7 +35,17 @@ class Estado(TypedDict, total=False):
     aprobado: bool
     cifras_verificadas: list[float]
     cifras_detalle: list[tuple[float, str]]
+    citas: list[str]
     respuesta: str
+
+
+def fragmentos_de(datos: dict) -> dict[str, str]:
+    """{id: título y texto} de los fragmentos del RAG, para validar citas y cifras.
+
+    Va el título porque la respuesta lo nombra y trae números («Res. SBS 3274-2017»).
+    """
+    fuentes = datos.get("buscar_fuentes", {}).get("fragmentos", [])
+    return {f["id"]: f"{f['titulo']}. {f['texto']}" for f in fuentes}
 
 
 def construir(
@@ -42,9 +53,24 @@ def construir(
     cadena: list[LLMProvider],
     espera_s: float = 1.0,
     solo_plantilla: set[str] | None = None,
+    buscador: Buscador | None = None,
 ):
-    """`solo_plantilla` cambia qué intenciones no pasan por el LLM (para probar CP-SIS-10)."""
+    """`solo_plantilla` cambia qué intenciones no pasan por el LLM (para probar CP-SIS-10).
+
+    Sin `buscador` las preguntas de educación responden «no encontré una fuente».
+    """
     sin_llm = plantillas.INTENCIONES_SOLO_PLANTILLA if solo_plantilla is None else solo_plantilla
+
+    def buscar_fuentes(pregunta: str) -> dict | None:
+        if buscador is None:
+            return None
+        modulos, temas = router.temas_rag(pregunta)
+        try:
+            fragmentos = buscador.buscar(pregunta, modulos)
+        except SinEmbeddings as error:
+            log.warning("RAG sin embeddings: %s", error)
+            return None
+        return {"tema": temas, "fragmentos": fragmentos} if fragmentos else None
 
     def nodo_router(e: Estado) -> Estado:
         intencion, monto = router.clasificar(e["pregunta"])
@@ -61,6 +87,11 @@ def construir(
         }
         nombres = plantillas.TOOLS_POR_INTENCION[e["intencion"]]
         log.info("tools %s para intención %s", nombres, e["intencion"])
+        if e["intencion"] == "educacion":
+            fuentes = buscar_fuentes(e["pregunta"])
+            if fuentes is None:
+                return {"intencion": "sin_fuente", "tools_usadas": nombres}
+            return {"datos": {"buscar_fuentes": fuentes}, "tools_usadas": nombres}
         try:
             datos = {n: llamadas[n]() for n in nombres}
         except HerramientaNoDisponible as error:
@@ -80,24 +111,34 @@ def construir(
             if e["proveedor"] == "plantilla"
             else resumen_para_llm(e["intencion"], e["datos"])
         )
-        v = juzgar(e["borrador"], vistos, exigir_cifra=True)
+        educacion = e["intencion"] == "educacion"
+        v = juzgar(
+            e["borrador"],
+            vistos,
+            fragmentos=fragmentos_de(e["datos"]),
+            exigir_cifra=not educacion,
+            exigir_cita=educacion,
+        )
         if not v.ok:
-            log.warning("juez rechaza (%s): %s", e["proveedor"], v.cifras_no_verificadas)
+            log.warning("juez rechaza (%s): %s", e["proveedor"], v)
         return {
             "aprobado": v.ok,
             "cifras_verificadas": v.cifras_verificadas,
             "cifras_detalle": v.detalle,
+            "citas": v.citas_validas,
         }
 
     def nodo_plantilla(e: Estado) -> Estado:
-        texto = TemplateProvider().redactar(e["intencion"], e.get("datos", {}))
-        v = juzgar(texto, e.get("datos", {}), revisar_frases=False)
+        datos = e.get("datos", {})
+        texto = TemplateProvider().redactar(e["intencion"], datos)
+        v = juzgar(texto, datos, fragmentos=fragmentos_de(datos), revisar_frases=False)
         return {
             "respuesta": texto,
             "proveedor": "plantilla",
             "aprobado": v.ok,
             "cifras_verificadas": v.cifras_verificadas,
             "cifras_detalle": v.detalle,
+            "citas": v.citas_validas,
         }
 
     def nodo_respuesta(e: Estado) -> Estado:

@@ -88,3 +88,16 @@ Versión `redaccion-v4`, en `src/agent/prompts.py`.
 **Todas por debajo de 8 s.** Falta repetirla con v4 y con `--simular-con-llm` (JF-07).
 
 **Laptop de Jeffrey** (Intel Core Ultra 7 155H, Intel Arc, sin GPU dedicada): entre 8 y 15 s, con timeouts. No sirve para la demo.
+
+## RAG (JF-05)
+
+Se usa el índice que construyó Diego (`docs/rag/indice/`, traído tal cual de `feature/ml-segmentos-pronostico`): 3 833 fragmentos de 6 módulos, `nomic-embed-text` (768 dimensiones), FAISS. Configuración tomada de su evaluación (`models/metricas_rag.json`): búsqueda densa con filtro de módulo (recall@4 0,94), umbral de relevancia 0,70, top 3 y expansión de siglas.
+
+- El router detecta preguntas de educación («¿qué es la TCEA?», «¿cómo funciona la CTS?») y elige el módulo con una lista cerrada de temas (`router.temas_rag`). Lo que llega al LLM como «tema» sale de esa lista, nunca del texto del usuario.
+- El embedding de la pregunta es local (Ollama): la pregunta no sale de la máquina.
+- Sin fragmento sobre el umbral, sin índice o sin Ollama, Lucas responde «no encontré una fuente oficial» y no inventa.
+- **Responde la plantilla**: cita textual de la frase del fragmento que menciona el tema, con título, institución, página y `[fuente: frag-N]`. Si la guía es de EE. UU., lo avisa (CP-SIS-47). Con `qwen2.5:3b` el LLM no citó la fuente y metió cifras ajenas al fragmento en 4 de 4 intentos (el juez lo rechazó siempre).
+- El juez (JF-04) acepta citas solo de los fragmentos que trajo el RAG y los números del fragmento citado o de su título («Res. SBS 3274-2017»), y con `exigir_cita` rechaza una respuesta educativa sin fuente.
+- `/chat` devuelve en `sources` los fragmentos citados: `id`, `title`, `institution`, `page`, `url`, `context`.
+
+Prueba con embeddings reales (laptop sin GPU): unos 2,3 s por pregunta. «¿Qué derechos tengo si me cobran de más en mi tarjeta?» no pasa el umbral y responde «no encontré una fuente»: falta ajustar con el conjunto de oro de Diego.

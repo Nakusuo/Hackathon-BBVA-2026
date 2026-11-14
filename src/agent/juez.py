@@ -26,6 +26,7 @@ class Veredicto:
     cifras_no_verificadas: list[float] = field(default_factory=list)
     cifras_mal_descritas: list[float] = field(default_factory=list)
     citas_invalidas: list[str] = field(default_factory=list)
+    citas_validas: list[str] = field(default_factory=list)
     fechas_incorrectas: list[str] = field(default_factory=list)
     frases_prohibidas: list[str] = field(default_factory=list)
     # (valor de la tool, campo del que salió) de cada cifra verificada que no es una fecha:
@@ -264,13 +265,28 @@ def juzgar(
     fuentes_validas: set[str] | None = None,
     exigir_cifra: bool = False,
     revisar_frases: bool = True,
+    fragmentos: dict[str, str] | None = None,
+    exigir_cita: bool = False,
 ) -> Veredicto:
     """Aprueba la respuesta solo si todas sus cifras y citas tienen respaldo.
 
     Con `exigir_cifra`, si las tools trajeron números la respuesta debe usar al menos uno
     que no sea parte de una fecha: un texto sin montos no es error, pero no ayuda a decidir.
+    `fragmentos` ({id: texto}) son los del RAG: citarlos es válido y los números de un
+    fragmento citado («artículo 11», «Ley 29571») también lo son. Con `exigir_cita`, la
+    respuesta tiene que citar al menos uno.
     """
+    fragmentos = fragmentos or {}
+    validas = set(fuentes_validas or ()) | set(fragmentos)
+    citas = _CITA.findall(texto)
+    citas_validas = list(dict.fromkeys(c for c in citas if c in validas))
     p = valores_permitidos(datos)
+    for cita in citas_validas:
+        for valor, _, _, _ in extraer_numeros(fragmentos.get(cita, "")):
+            for numero in (valor, abs(valor)):
+                p.cifras.add(numero)
+                p.soles.add(numero)
+                p.campo.setdefault(numero, "fragmento")
     verificadas, no_verificadas, detalle, mal_descritas = [], [], [], []
     for valor, decimales, en_soles, alrededor in extraer_numeros(texto):
         respaldo = buscar(valor, decimales, p.soles if en_soles else p.todos)
@@ -282,17 +298,21 @@ def juzgar(
             mal_descritas.append(valor)
             continue
         verificadas.append(valor)
-        if origen is not None:
+        # Un número de la norma citada se verifica, pero no es una cifra del cliente para la UI.
+        if origen is not None and p.campo[origen] != "fragmento":
             detalle.append((origen, p.campo[origen]))
     montos = len(detalle)
-    citas_invalidas = [c for c in _CITA.findall(texto) if c not in (fuentes_validas or set())]
+    citas_invalidas = [c for c in citas if c not in validas]
+    sin_cita = exigir_cita and not citas_validas
     fechas_mal = fechas_incorrectas(texto, p.fechas)
     # Las plantillas las escribe el equipo y algunas niegan a propósito («no puedo comprar dólares»).
     prohibidas = frases_prohibidas(texto) if revisar_frases else []
     sin_cifras = exigir_cifra and bool(p.cifras) and not montos
     return Veredicto(
         ok=not (no_verificadas or mal_descritas or citas_invalidas or fechas_mal or prohibidas)
-        and not sin_cifras,
+        and not sin_cifras
+        and not sin_cita,
+        citas_validas=citas_validas,
         cifras_verificadas=verificadas,
         cifras_no_verificadas=no_verificadas,
         cifras_mal_descritas=mal_descritas,

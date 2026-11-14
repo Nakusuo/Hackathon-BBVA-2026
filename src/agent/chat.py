@@ -51,7 +51,8 @@ def cifras_con_etiqueta(detalle: list[tuple[float, str]]) -> list[dict]:
     """[{label, value, text}] sin repetir, para que la UI muestre cada cifra con su ✓."""
     vistas, cifras = set(), []
     for valor, campo in detalle:
-        if (valor, campo) in vistas:
+        # Solo campos con etiqueta conocida: la página de una fuente no es una cifra del cliente.
+        if (valor, campo) in vistas or campo not in ETIQUETAS:
             continue
         vistas.add((valor, campo))
         if campo in ("confidence_level", "confianza"):
@@ -64,6 +65,25 @@ def cifras_con_etiqueta(detalle: list[tuple[float, str]]) -> list[dict]:
             texto = soles(valor)
         cifras.append({"label": ETIQUETAS.get(campo, campo), "value": valor, "text": texto})
     return cifras
+
+
+def fuentes_citadas(estado: dict) -> list[dict]:
+    """Solo los fragmentos que la respuesta cita, con lo que la UI necesita para mostrarlos."""
+    fragmentos = estado.get("datos", {}).get("buscar_fuentes", {}).get("fragmentos", [])
+    por_id = {f["id"]: f for f in fragmentos}
+    return [
+        {
+            "id": cita,
+            "title": por_id[cita]["titulo"],
+            "institution": por_id[cita]["institucion"],
+            "page": por_id[cita]["pagina"],
+            "url": por_id[cita]["enlace"],
+            # «EE. UU.» se muestra como etiqueta: la guía no habla de normas peruanas (CP-SIS-47).
+            "context": por_id[cita]["contexto"],
+        }
+        for cita in estado.get("citas", [])
+        if cita in por_id
+    ]
 
 
 def responder(agente, pedido: dict) -> dict:
@@ -81,8 +101,8 @@ def responder(agente, pedido: dict) -> dict:
         # Las mismas, con etiqueta y el valor real de la tool (con su signo): Marcela las
         # muestra como «Saldo mínimo probable: -S/ 310». Campo nuevo, no cambia los demás.
         "figures": cifras_con_etiqueta(estado.get("cifras_detalle", [])),
-        # Se llena con las citas del RAG en JF-05: [{id, titulo, enlace}].
-        "sources": [],
+        # Fragmentos del RAG que la respuesta cita y el juez validó (JF-05).
+        "sources": fuentes_citadas(estado),
         "tools_used": estado.get("tools_usadas", []),
         "intent": estado["intencion"],
     }

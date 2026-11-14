@@ -2,7 +2,7 @@
 
 import json
 
-VERSION_PROMPT = "redaccion-v4"
+VERSION_PROMPT = "redaccion-v5"
 
 # Sin cifras de ejemplo: con v2 el modelo copiaba las del ejemplo de formato como si fueran datos.
 SISTEMA = """Eres Lucas, un compañero que ayuda a trabajadores en Perú con su plata del mes.
@@ -16,7 +16,8 @@ Reglas que no rompes:
 5. Háblale de tú al usuario («tu saldo», «te conviene»). Sin tono alarmista.
 6. No des asesoría: nunca digas que compre o venda dólares, que invierta en algo ni prometas rentabilidad.
 7. No ofrezcas hacer operaciones ni mover dinero. No numeres listas.
-8. Termina con: «Es una simulación para orientarte, no una asesoría. Tú decides.»"""
+8. Si DATOS trae «fragmentos», explica el tema solo con lo que dicen, en palabras simples, y pon [fuente: id] al final de cada frase que use un fragmento. Si un fragmento es de EE. UU., avisa que las normas peruanas pueden ser distintas.
+9. Termina con: «Es una simulación para orientarte, no una asesoría. Tú decides.»"""
 
 # Claves que nunca salen hacia un LLM, ni siquiera local: así el contenido es igual en todos
 # los proveedores y se puede probar una sola vez (ISO 27001, control 8.12).
@@ -86,6 +87,22 @@ def resumen_para_llm(intencion: str, datos: dict) -> dict:
                 }
                 for r in datos["get_recos"]["recommendations"]
             ]
+        }
+    if intencion == "educacion":
+        fuentes = datos["buscar_fuentes"]
+        return {
+            # El tema sale de una lista cerrada del router, no del texto del usuario.
+            "tema": fuentes["tema"],
+            "fragmentos": [
+                {
+                    "id": f["id"],
+                    "titulo": f["titulo"],
+                    "institucion": f["institucion"],
+                    "contexto": f["contexto"],
+                    "texto": f["texto"],
+                }
+                for f in fuentes["fragmentos"]
+            ],
         }
     return datos_para_llm(datos)
 
