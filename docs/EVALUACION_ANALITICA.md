@@ -324,45 +324,102 @@ Por segmento:
 
 
 ## 6. RAG y agente
-**Recuperacion** (20 preguntas escritas a mano, k=4):
+**Recuperacion** (34 preguntas con respuesta escritas a mano, 6 de ellas compuestas; k=4; las columnas separan simples y compuestas):
 
-|  | recall@4 | mrr | n |
-|---|---|---|---|
-| denso | 0.85 | 0.82 | 20.00 |
-| denso + filtro de modulo | 0.95 | 0.89 | 20.00 |
-| bm25 | 0.75 | 0.71 | 20.00 |
-| bm25 + filtro de modulo | 0.80 | 0.80 | 20.00 |
-| hibrido | 0.80 | 0.74 | 20.00 |
-| hibrido + filtro de modulo | 0.90 | 0.87 | 20.00 |
-
-
-**Filtro de relevancia tipo CRAG**: {"umbral": 0.7057, "exactitud_balanceada": 1.0, "auc": 1.0, "similitud_con_respuesta": {"media": 0.7719100000000001, "min": 0.7057}, "similitud_fuera_del_indice": {"media": 0.6609, "max": 0.7054}, "n_con_respuesta": 20, "n_fuera": 8}
-
-**Agente con plantillas (determinista)**
-
-|  | n | ruteo_correcto | respuestas_sin_cifras_inventadas | sin_frases_prohibidas | cierra_con_tu_decides | pedidos_prohibidos_rechazados | latencia_media_s | latencia_p95_s | llamadas_llm_por_respuesta | por_plantilla |
-|---|---|---|---|---|---|---|---|---|---|---|
-| agente_unico | 45.000 | 0.978 | 1.000 | 1.000 | 1.000 | 1.000 | 1.292 | 3.558 | 0.000 | 1.000 |
-| multiagente | 45.000 | 0.978 | 1.000 | 1.000 | 1.000 | 1.000 | 1.271 | 3.496 | 0.000 | 1.000 |
+|  | recall@4 | mrr | documentos_distintos_en_top | n | recall@4_simples | recall@4_compuestas | n_compuestas |
+|---|---|---|---|---|---|---|---|
+| denso | 0.794 | 0.725 | 2.118 | 34.000 | 0.750 | 1.000 | 6.000 |
+| denso + filtro de modulo | 0.941 | 0.831 | 1.971 | 34.000 | 0.929 | 1.000 | 6.000 |
+| bm25 | 0.824 | 0.789 | 2.353 | 34.000 | 0.821 | 0.833 | 6.000 |
+| bm25 + filtro de modulo | 0.882 | 0.860 | 1.971 | 34.000 | 0.857 | 1.000 | 6.000 |
+| hibrido | 0.882 | 0.804 | 2.265 | 34.000 | 0.857 | 1.000 | 6.000 |
+| hibrido + filtro de modulo | 0.941 | 0.892 | 2.059 | 34.000 | 0.929 | 1.000 | 6.000 |
+| hibrido + multiconsulta | 0.853 | 0.789 | 2.235 | 34.000 | 0.857 | 0.833 | 6.000 |
+| hibrido + multiconsulta + filtro de modulo | 0.941 | 0.892 | 2.088 | 34.000 | 0.929 | 1.000 | 6.000 |
+| hibrido + multiconsulta + MMR | 0.853 | 0.787 | 2.176 | 34.000 | 0.857 | 0.833 | 6.000 |
+| hibrido + multiconsulta + MMR + filtro de modulo | 0.941 | 0.892 | 2.029 | 34.000 | 0.929 | 1.000 | 6.000 |
 
 
-Fallos de ruteo (agente unico): [['Explícame cómo funciona el crédito', 'educacion', 'ofertas']]
+**Filtro de relevancia tipo CRAG** (umbral 0.70 en uso, 34 preguntas con respuesta y 11 fuera del indice): acepta 33 de 34 y rechaza 10 de 11; AUC 0.979; el umbral optimo medido es 0.706. Se calibra con las mismas preguntas con las que se reporta: la cifra es optimista. Las siglas del dominio (TCEA, CTS, EPS...) se expanden antes de buscar; esa tecnica se motivo por un fallo de esta misma evaluacion, asi que ese caso no es prueba independiente. Partir las preguntas compuestas y MMR no mejoraron nada medible y quedan apagados; con 34 preguntas, una sola mueve el recall 0.029.
 
-**Agente con Gemini con juez LLM (subconjunto)**
+**Agente con plantillas (determinista, sin LLM, reproducible y sin costo)**. La politica de ahorro de tokens usa el LLM solo para lo que una plantilla no cubre bien; esta evaluacion mide el piso determinista: ruteo, cifras, salvaguardas.
 
 |  | n | ruteo_correcto | respuestas_sin_cifras_inventadas | sin_frases_prohibidas | cierra_con_tu_decides | pedidos_prohibidos_rechazados | latencia_media_s | latencia_p95_s | llamadas_llm_por_respuesta | por_plantilla |
 |---|---|---|---|---|---|---|---|---|---|---|
-| agente_unico | 10.000 | 0.900 | 1.000 | 1.000 | 1.000 | 0.000 | 12.082 | 38.291 | 1.100 | 0.100 |
-| multiagente | 10.000 | 0.900 | 1.000 | 1.000 | 1.000 | 0.000 | 8.252 | 12.338 | 1.200 | 0.100 |
+| agente_unico | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.938 | 2.888 | 0.000 | 1.000 |
+| multiagente | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.406 | 1.070 | 0.000 | 1.000 |
 
 
-Fallos de ruteo (agente unico): [['Explícame cómo funciona el crédito', 'educacion', 'ofertas']]
+Fallos de ruteo (agente unico): ninguno
+
+**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo 2026-11-14)**: preguntas de perfil 11/11, pedidos adversarios 16/16, datos vivos y vigilancia OK, traduccion ingles OK, quechua OK; 17 llamadas y 44,571 tokens de entrada con `gemini-3.5-flash-lite`; latencia media por respuesta 4.2 s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.
 
 
 ## 7. Escalabilidad y valor
 **Escalabilidad medida** (esta laptop, 500 clientes): {"clientes": 500, "carga_modelos_y_datos_s": 4.1, "contexto_por_cliente_ms": 3.32, "recomendaciones_por_cliente_ms": 0.43, "recomendaciones_por_segundo": 2319.0, "pico_memoria_gb": 0.81, "pronostico_30d_filas": 500, "pronostico_30d_ms_por_cliente": 0.084}
 
-**Valor para la entidad** (escenario conservador, supuestos visibles): por cliente, colchon adicional S/ 322, 0.24 dias en rojo evitados al mes. Con 100,000 usuarios: margen por fondeo S/ 965,094, costo de puntos S/ 1,440,000, neto S/ -474,906 al anio. solo cuenta el fondeo de lo apartado; retencion, mora evitada y venta cruzada idonea no se valoran sin piloto.
+**Programa de puntos sostenible** (supuestos del equipo, visibles en `data/parametros/niveles.yaml`): cada usuario gana en promedio 181 puntos al mes y el programa cuesta S/ 15.17 por usuario al anio, es decir 6.2% del ingreso bruto que genera (tope de reinversion: 30%). Los puntos por consumo solo se activan para quien tiene la caja ordenada; ahorrar suma siempre y mas para los niveles bajos.
 
-Supuestos: {"margen_anual_sobre_saldo_apartado": 0.03, "usuarios_activos_escenario_conservador": 100000, "puntos_promedio_por_usuario_al_mes": 120, "aceptacion_de_la_recomendacion": "ya incluida: el impacto se simulo con la probabilidad de aceptacion de cada cliente", "retencion_y_mora": "no se asigna valor: no hay evidencia publica causal; lo mediria un piloto con grupo de control"}
+Por nivel (anual por usuario, lectura bruta):
 
+|  | clientes | consumo_elegible_anual | puntos_por_mes | costo_de_puntos_anual | ingreso_anual | costo_sobre_ingreso | consumo_por_cada_sol_de_puntos |
+|---|---|---|---|---|---|---|---|
+| aprendiz | 13.00 | 4,197.80 | 82.65 | 6.94 | 136.31 | 0.05 | 423.27 |
+| campeon | 228.00 | 9,415.68 | 254.52 | 21.38 | 335.47 | 0.06 | 308.29 |
+| constructor | 153.00 | 5,045.42 | 110.19 | 9.26 | 151.55 | 0.06 | 381.55 |
+| luchador | 58.00 | 7,177.83 | 48.00 | 4.03 | 98.35 | 0.04 | 1,246.22 |
+| maestro | 48.00 | 12,289.43 | 239.12 | 20.09 | 323.17 | 0.06 | 428.28 |
+
+
+`consumo_por_cada_sol_de_puntos` es cuanto consume el cliente por cada S/ 1 de puntos que canjea (la proporcion de gasto sobre puntos).
+
+**Lectura bruta (techo, atribuye todo al programa)**: ingreso por usuario S/ 245 al anio, neto S/ 230.
+
+**Lectura conservadora**: Lucas genera 322 soles mas de colchon por cliente, que dejan S/ 9.65 al anio de fondeo; el programa cuesta S/ 15.17, asi que sin mas consumo el neto es S/ -5.52 por usuario. Se paga solo si el consumo elegible crece al menos 6.9%. Sensibilidad (neto por usuario al anio):
+
+|  | neto_por_usuario | neto_con_100_mil_usuarios |
+|---|---|---|
+| 0 % mas de consumo | -5.5 | -551,707.7 |
+| 5 % mas de consumo | -1.5 | -153,720.3 |
+| 10 % mas de consumo | 2.4 | 244,267.1 |
+| 15 % mas de consumo | 6.4 | 642,254.5 |
+| 20 % mas de consumo | 10.4 | 1,040,241.9 |
+
+
+retencion, mora evitada y venta cruzada idonea no se valoran sin un piloto con grupo de control.
+
+## 8. Calendario laboral, datos vivos y vigilancia
+Las reglas viven en `data/parametros/normas_laborales.yaml` y **cada una lleva su frase literal** de un documento oficial guardado en `docs/rag/`; `tests/test_calendario.py` comprueba que la frase siga en el documento. Se contrastaron el 2026-11-14 y el agente avisa si pasaron mas de 120 dias.
+
+| Regla | Que dice | Evidencia |
+|---|---|---|
+| Gratificacion | Se paga en la primera quincena de julio y diciembre (limite el 15); equivale a una remuneracion integra por semestre completo, proporcional por meses calendarios completos; bonificacion extraordinaria de 9% (EsSalud) o 6.75% (EPS), no remunerativa ni pensionable | `laboral/ley_30334_bonificacion_extraordinaria.pdf`, `laboral/mtpe_guia_gratificaciones.pdf` |
+| Deposito de CTS | Hasta el 15 de mayo y el 15 de noviembre; si el 15 es inhabil, el siguiente dia habil. Dozavos de la remuneracion computable (que suma un sexto de la gratificacion del semestre) por meses completos; la fraccion, por treintavos | `laboral/tuo_cts_ds_001_97_tr.pdf` |
+| Retiro de la CTS | Hasta el 2026-12-31 se puede disponer libremente del 100% de lo depositado en entidades financieras; despues rige el tope permanente de 50% (100 % por enfermedad terminal o cancer). Hay proyectos de ley para ampliar el plazo, pero todavia no son ley: por ahora solo rige lo que dice la Ley 32322. | `laboral/ley_32322_cts_libre_disposicion.txt` |
+| A quien aplica | personas dependientes en planilla del regimen laboral general con jornada de cuatro horas o mas. No aplica a independientes. Supuesto del equipo: el agente asume regimen general y semestre completo trabajado; en regimenes especiales o con menos meses el monto cambia y el aviso lo dice | `laboral/tuo_cts_ds_001_97_tr.pdf` |
+
+La base de los montos es la ultima gratificacion real del cliente (equivale a una remuneracion); si no la hay, su ingreso medio, marcado como supuesto y con confianza media. Todo monto es una estimacion y se dice asi.
+
+**Datos vivos y vigilancia.** El aplicativo envia cada movimiento (`datos_vivos.registrar`): se valida (tipo, monto finito y positivo, fecha que no sea futura), es idempotente ante reintentos, la glosa solo sirve para sugerir la categoria con el clasificador (confianza minima 0.80; si no esta seguro queda en `otros`) y **no se guarda**. El agente suma lo que entro al saldo; el riesgo a 30 dias se reestima con el modelo solo si el cierre de datos no pasa de 45 dias. La vigilancia avisa una sola vez cada hecho y como maximo 3 por semana, de lo mas urgente a lo menos: riesgo de rojo, gratificacion que no llego (solo a quien ya recibio una y con informacion reciente), ingreso extraordinario (>= 50 % de un ingreso mensual), gasto atipico (>= 30% del ingreso y que no sea un pago recurrente), fechas del calendario laboral (a 7 dias o menos), fin cercano del retiro total de la CTS, baja de la tasa del BCRP (solo con el dato al dia) y comunicado nuevo del ENFEN. Los datos publicos dicen de que fecha son y de donde vienen (API, cache o serie grabada); uno desactualizado no se presenta como actual.
+
+## 9. QA y comparativa de modelos
+La puerta de calidad (`python eval/puerta_de_calidad.py --gemini`) reune pruebas, metricas de los modelos, conexiones en tiempo real, agente, seguridad y frescura, y reporta PASS, WARN (conocido y documentado), FAIL o NOT RUN con el motivo. El detalle completo, incluida la lista de **lo que no se pudo verificar**, esta en [QA_ANALITICA.md](QA_ANALITICA.md).
+
+Ultima corrida (2026-11-14T15:52:19): **34 PASS, 6 WARN, 0 FAIL, 3 NOT RUN**.
+
+| # | Estado | Que | Detalle |
+|---|---|---|---|
+| P1b | NOT RUN | Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte | no hay pruebas del agente del producto en esta rama |
+| M6 | WARN | Equidad por segmento: brecha de cobertura <= 0.05 y razon de error entre segmentos | la cobertura es pareja (brecha 0.018) pero el error del peor segmento (0) es 1.58 veces el del mejor: el ingreso irregular es mas dificil de pronosticar. Documentado. |
+| M8 | WARN | Sentimiento: el modelo entrenado generaliza a frases escritas a mano | no: F1 0.73 con 24 frases contra 1.00 en plantillas. Documentado; no esta en produccion. |
+| M10 | WARN | Politica de ahorro: Lucas forma al menos tanto colchon como ahorrar 10 % fijo ajustado | el 10 % fijo ajustado forma 2.7 meses mas de colchon que Lucas. Hallazgo abierto, documentado. |
+| M12 | WARN | Programa de puntos: rentable sin depender de consumo nuevo | sin consumo nuevo pierde S/ 5.52 por usuario al anio; se paga con 6.9% mas de consumo elegible. Necesita piloto. |
+| M13 | WARN | Parametros de los eventos simulados (retiros de AFP, bonos, covid, Nino): verificados en fuente | parametros de eventos: 1 verificado, 4 parciales y 13 supuestos. Declarados en el YAML; hay que verificarlos antes de afirmarlos. |
+| C9 | NOT RUN | Google Cloud Translation | no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini. |
+| C10 | NOT RUN | Calidad del quechua revisada por un hablante nativo | no hay revision de un hablante nativo; el aviso al usuario lo dice |
+| S5 | OK | Sin archivos pesados ni datos generados en el repositorio (solo data/sample) | data/generado/ esta en .gitignore y se regenera con python data/generator.py --semilla 2026 |
+
+La comparativa de modelos (candidatos medidos, el elegido y por que, con su limite) esta en [comparativa_modelos.md](comparativa_modelos.md) y sus graficas en `docs/figuras/`.
+
+
+<!-- huella_metricas: 547dc044afbc5de0 (la puerta de calidad compara esta huella con la de las metricas actuales) -->

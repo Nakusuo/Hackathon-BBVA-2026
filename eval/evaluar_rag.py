@@ -10,6 +10,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 warnings.filterwarnings("ignore")
 
+from src.comun.huella import RAG, huella  # noqa: E402
 from src.comun.rutas import INDICE_RAG, MODELOS  # noqa: E402
 from src.rag import evaluar as E  # noqa: E402
 from src.rag.indice import Buscador  # noqa: E402
@@ -19,7 +20,7 @@ def main():
     t0 = time.time()
     b = Buscador()
     out = {"recuperacion": E.evaluar_recuperacion(b), "filtro_relevancia": E.calibrar_filtro_relevancia(b), "filtro_relevancia_multiconsulta": E.calibrar_filtro_relevancia(b, multiconsulta=True),
-           "indice": json.load(open(os.path.join(INDICE_RAG, "info.json"), encoding="utf-8")), "segundos": round(time.time() - t0, 1)}
+           "indice": json.load(open(os.path.join(INDICE_RAG, "info.json"), encoding="utf-8")), "segundos": round(time.time() - t0, 1), "huella_codigo": huella(RAG)}
     json.dump(out, open(os.path.join(MODELOS, "metricas_rag.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     cols = ["recall@4", "mrr", "documentos_distintos_en_top", "recall@4_simples", "recall@4_compuestas"]
     print(f"{'configuracion':52s}" + "".join(f"{c[:22]:>24s}" for c in cols))

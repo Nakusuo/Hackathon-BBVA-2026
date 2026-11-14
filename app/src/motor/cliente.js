@@ -3,11 +3,15 @@
 import {
   ajusteDe,
   apartadoMaximo,
+  conPlanificados,
   diasEnRojo,
+  diasEnRojoDelMes,
   evaluarCambio,
   gastoDiarioSeguro,
+  gastoMaximoEn,
   gastoVariableDiario,
   peorDia,
+  peorDiaDelMes,
   primerCobro,
   simular,
   vecesDesde,
@@ -61,6 +65,12 @@ function riesgoDe(p, puntos) {
   return { desde: rojo[0], hasta: rojo.at(-1), peorFecha: peor.fecha, peorMonto: peor.banda[0], esperado: peor.esperado }
 }
 
+function resumenDelMes(puntos) {
+  const rojo = diasEnRojoDelMes(puntos)
+  const peor = peorDiaDelMes(puntos)
+  return { diasEnRojo: rojo.length, primerRojo: rojo[0] ?? null, peorFecha: peor.fecha, peorMonto: peor.banda[0] }
+}
+
 function apartadoDe(p, ajuste) {
   const monto = apartadoMaximo(p, ajuste)
   if (!monto) return null
@@ -94,17 +104,20 @@ function recomendacionesCon(definicion, activos) {
     }))
 }
 
-// Todo lo que cambia con la persona elegida o con los tips activados con «Lo hago» se recalcula aquí.
+// Todo lo que cambia con la persona elegida, con «Lo hago» o con un gasto o ingreso planificado se recalcula aquí.
 // `pagosExtra` son gastos de prueba (la bandeja de avisos los usa para mostrar cómo se mueve el riesgo).
-export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra = []) {
+// `planificados` son los que la persona agregó en el simulador. Este es el único punto que cambia por
+// POST /api/v1/simulations: hoy ese contrato no lleva fecha por movimiento y el signo de `expense` sigue en
+// discusión (PR #10).
+export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra = [], planificados = []) {
   const definicion = personaPorId(personaId)
   const p = definicion.persona
   const cambios = definicion.cambios
   const activos = cambios.filter((c) => elegidos.includes(c.id))
-  const ajuste = { ...ajusteDe(activos), pagosExtra }
+  const ajuste = conPlanificados({ ...ajusteDe(activos), pagosExtra }, planificados)
   const pronostico = simular(p, ajuste)
   const peor = peorDia(p, pronostico)
-  const pronosticoConTodos = simular(p, ajusteDe(cambios))
+  const pronosticoConTodos = simular(p, conPlanificados(ajusteDe(cambios), planificados))
   const peorConTodos = peorDia(p, pronosticoConTodos)
   const totales = totalesPorCategoria(p)
   const veces = Object.fromEntries(p.gastosFrecuentes.map((g) => [g.id, g.vecesMes]))
@@ -125,9 +138,12 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
     proximosPagos: p.pagos,
     pronostico,
     riesgo: riesgoDe(p, pronostico),
+    mes: resumenDelMes(pronostico),
     diasEnRojo: diasEnRojo(p, pronostico).length,
     peorDia: { fecha: peor.fecha, monto: peor.banda[0], esperado: peor.esperado },
     elegidos: activos.map((c) => c.id),
+    planificados,
+    finPronostico: pronostico.at(-1).fecha,
     ajuste,
     salud: saludDe(definicion, diasEnRojo(p, pronostico).length),
     aprendido: [
@@ -148,12 +164,12 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
     conTodos: {
       peorFecha: peorConTodos.fecha,
       peorMonto: peorConTodos.banda[0],
-      peorAntes: peorDia(p, simular(p)).banda[0],
+      peorAntes: peorDia(p, simular(p, conPlanificados({}, planificados))).banda[0],
       diasEnRojo: diasEnRojo(p, pronosticoConTodos).length,
       salud: saludDe(definicion, diasEnRojo(p, pronosticoConTodos).length).puntaje,
     },
     apartado: apartadoDe(p, ajuste),
-    apartadoConTodos: apartadoDe(p, ajusteDe(cambios)),
+    apartadoConTodos: apartadoDe(p, conPlanificados(ajusteDe(cambios), planificados)),
     totalCambios: cambios.length,
   }
 }
@@ -163,3 +179,14 @@ const inicial = personaPorId(PERSONA_INICIAL)
 export const persona = inicial.persona
 export const CAMBIOS = inicial.cambios
 export const cliente = vistaCon()
+
+// Lo que el simulador propone cuando un gasto deja en rojo: cuánto cabe ese día y, si nada, cuánto después del
+// siguiente cobro. Usa el mismo ajuste de la vista (tips y lo planificado).
+export function cuantoCabe(vista, fecha) {
+  const p = personaPorId(vista.personaId).persona
+  const siguiente = p.ingresos.filter((i) => i.fecha > fecha).sort((a, b) => a.fecha.localeCompare(b.fecha))[0]
+  return {
+    ese: gastoMaximoEn(p, fecha, vista.ajuste),
+    despues: siguiente ? { fecha: siguiente.fecha, monto: gastoMaximoEn(p, siguiente.fecha, vista.ajuste) } : null,
+  }
+}

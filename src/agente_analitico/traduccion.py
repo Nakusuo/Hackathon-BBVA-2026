@@ -92,6 +92,19 @@ def _por_gemini(texto: str, origen: str, destino: str) -> str:
 PROVEEDORES = [("google_cloud", _google_cloud), ("gemini", _por_gemini)]
 
 
+def _codigo_http(e: Exception) -> str:
+    r = getattr(e, "response", None)
+    return f" (HTTP {r.status_code})" if r is not None else ""
+
+
+def _transitorio(e: Exception) -> bool:
+    """Tiempo agotado, red caida, limite de uso (429) o error del servidor (5xx): vale la pena reintentar. Un 4xx distinto (clave invalida, pedido malo) no."""
+    if isinstance(e, (requests.Timeout, requests.ConnectionError)):
+        return True
+    r = getattr(e, "response", None)
+    return r is not None and (r.status_code == 429 or r.status_code >= 500)
+
+
 def traducir(texto: str, origen: str, destino: str) -> dict:
     """Traduce protegiendo cifras y nombres. Si ningun proveedor devuelve una traduccion integra, devuelve el texto original con ok=False."""
     t0 = time.time()
@@ -100,10 +113,18 @@ def traducir(texto: str, origen: str, destino: str) -> dict:
     protegido, valores = proteger(texto)
     errores = []
     for nombre, f in PROVEEDORES:
-        try:
-            salida = f(protegido, origen, destino)
-        except Exception as e:  # sin red, sin clave o limite de uso: se prueba el siguiente
-            errores.append(f"{nombre}: {type(e).__name__}")
+        salida = None
+        for intento in (1, 2):
+            try:
+                salida = f(protegido, origen, destino)
+                break
+            except Exception as e:  # sin red, sin clave o limite de uso: un error transitorio se reintenta una vez; si no, se prueba el siguiente proveedor
+                if intento == 1 and _transitorio(e):
+                    time.sleep(1.5)
+                    continue
+                errores.append(f"{nombre}: {type(e).__name__}{_codigo_http(e)}")
+                break
+        if salida is None:
             continue
         if nombre == "google_cloud":  # Google no conoce los marcadores: puede espaciarlos, se normalizan
             salida = re.sub(r"⟦\s*(\d+)\s*⟧", r"⟦\1⟧", salida)

@@ -1,0 +1,77 @@
+/* Formularios del simulador (Qué viene) y de Metas. */
+.formulario-plan {
+  display: grid;
+  gap: 14px;
+}
+
+.campos-fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.campo-plan label {
+  color: var(--tinta-suave);
+}
+
+.campo-plan input {
+  min-width: 0;
+}
+
+.campo-plan input[aria-invalid='true'] {
+  border-color: var(--riesgo);
+}
+
+.campo-error {
+  color: var(--riesgo);
+  font-weight: 600;
+}
+
+.impacto-plan span {
+  background: var(--superficie-suave);
+}
+
+.nota-plan {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--superficie-suave);
+}
+
+.nota-plan > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--azul-texto);
+}
+
+.lista-metas {
+  display: grid;
+  gap: 12px;
+}
+
+.meta h3 {
+  margin: 0;
+}
+
+.meta p {
+  margin: 0;
+}
+
+.meta-avance {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.meta .medidor span {
+  background: var(--azul);
+}
+
+.meta .tip-acciones .boton-texto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
