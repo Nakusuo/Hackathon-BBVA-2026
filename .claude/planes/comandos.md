@@ -140,7 +140,13 @@ Claude Code con el modelo local (sin red ni cuota de Anthropic):
 .\.claude\ollama\claude-ollama.ps1 -p "pregunta"   # una sola respuesta
 ```
 
-La primera vez crea `qwen2.5-claude:3b` (el mismo `qwen2.5:3b` con 32k de contexto; con menos, Claude Code no cabe). En la RTX 3050 queda ~80 % en GPU y tarda ~50 s por respuesta. Un modelo de 3B sirve para tareas de un paso (leer, crear o editar un archivo); para tareas de varios pasos usar el `claude` normal. Antes de la demo, `ollama stop qwen2.5-claude:3b` para dejar la GPU libre a Lucas.
+La primera vez crea `qwen2.5-claude:3b` (el mismo `qwen2.5:3b` con 32k de contexto, su máximo). Abre Claude Code en modo `--bare`: sin plugins, hooks, MCP ni agentes, pero con este CLAUDE.md y las herramientas de archivos y Bash. En modo normal el prompt ocupa ~19k tokens y la sesión cae en «Context limit reached» enseguida.
+
+- Abrirlo desde la raíz del repo: los archivos solo se tocan dentro de esa carpeta.
+- Si aparece «Context limit reached», escribir `/clear` (compactar no funciona con este modelo).
+- En la RTX 3050 queda ~80 % en GPU y tarda de 10 a 50 s por respuesta.
+- Un modelo de 3B sirve para pedidos de un paso (leer, buscar, crear un archivo) y a veces se equivoca o inventa: revisar lo que diga. Para trabajo real, el `claude` normal.
+- Antes de la demo, `ollama stop qwen2.5-claude:3b` para dejar la GPU libre a Lucas.
 
 ## 10. Pedir ayuda a los agentes de Claude Code
 
