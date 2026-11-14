@@ -11,23 +11,21 @@ class SavingsGoal(BaseModel):
     name: str = Field(min_length=1)
     target_amount: Decimal = Field(gt=0)
     current_amount: Decimal = Field(ge=0)
-    currency: Literal["PEN"] = "PEN"
     target_date: date
     progress_percentage: float = Field(ge=0)
     suggested_biweekly_saving: Decimal | None = None
-projected_year_end_savings: Decimal | None = None
-completion_probability: float | None = Field(
-    default=None,
-    ge=0,
-    le=1
-)
+    projected_year_end_savings: Decimal | None = None
+    completion_probability: float | None = Field(
+        default=None,
+        ge=0,
+        le=1
+    )
 
 
 class GoalsResponse(BaseModel):
     customer_id: str = Field(min_length=1)
     currency: Literal["PEN"] = "PEN"
     goals: list[SavingsGoal]
-
 
 
 class GoalCreateRequest(BaseModel):
@@ -49,15 +47,3 @@ class GoalCreateRequest(BaseModel):
             )
 
         return self
-
-
-
-class GoalCreateResponse(BaseModel):
-    id: str = Field(min_length=1)
-    customer_id: str = Field(min_length=1)
-    name: str
-    target_amount: Decimal
-    current_amount: Decimal = Field(ge=0)
-    currency: Literal["PEN"] = "PEN"
-    target_date: date
-    progress_percentage: float = Field(ge=0)
