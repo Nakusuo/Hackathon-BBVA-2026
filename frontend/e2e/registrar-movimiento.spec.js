@@ -69,7 +69,9 @@ test('registrar un gasto cambia el peor caso en Resumen y Qué viene, viaja una 
   const aviso = await page.getByRole('status', { name: 'Aviso de Lucas' }).innerText()
 
   await page.reload()
-  await expect(page.getByRole('status', { name: 'Aviso de Lucas' })).toHaveText(aviso)
+  // innerText con innerText: el aviso tiene párrafo y botón, y toHaveText no pone el salto de línea entre ellos.
+  await expect(page.getByRole('status', { name: 'Aviso de Lucas' })).toContainText('quedarías en rojo')
+  expect(await page.getByRole('status', { name: 'Aviso de Lucas' }).innerText()).toBe(aviso)
   await page.goto('/banca')
   await expect(page.getByText('Cena de cumpleaños')).toBeVisible()
 })
