@@ -1086,6 +1086,8 @@ Generado por `analitica/eval/generar_docs.py` desde `models/metricas*.json`. Dat
 {seccion_qa()}
 ## 10. Idiomas: quechua y Google Cloud Translation
 {seccion_traduccion()}
+## 11. Modulos de reglas
+Ofertas (`backend/src/models/ofertas.py`), recomendador (`recomendador.py`), programa de puntos (`programa_puntos.py`), riesgo por clima (`riesgo_clima.py`), campanas (`campanas.py`) y calendario laboral (`calendario_laboral.py`) son reglas o catalogos, no modelos entrenados: no tienen baseline porque no hay nada que aprender. Se comprueban con pruebas de reglas en `backend/tests`: `test_modelos.py` (recomendador, idoneidad del credito, puntos y su tope, aviso de El Nino), `api/test_offers.py` (ofertas) y `test_calendario.py` (calendario laboral, con la frase literal de la norma). `campanas.py` no tiene prueba propia hoy.
 """
 
 
