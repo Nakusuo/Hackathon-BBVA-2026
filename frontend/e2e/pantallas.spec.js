@@ -543,9 +543,10 @@ test('retirar el permiso desde Preferencias apaga Lucas y borra los tips elegido
 
 test('selector de persona: el formal cambia todas las cifras y su banda es angosta', async ({ page }) => {
   await page.addInitScript(() => window.localStorage.setItem('lucas-guia-vista', 'si'))
-  await page.goto('/ingresar')
+  await page.goto('/preferencias')
   await page.getByRole('radio', { name: 'Formal con quincena' }).check()
   await expect(page.getByText('Sueldo fijo el 15 y a fin de mes')).toBeVisible()
+  await page.goto('/ingresar')
   await page.getByRole('button', { name: 'Ingresar' }).click()
   await expect(page.getByRole('region', { name: 'Antes de activar Lucas' })).toContainText('Formal con quincena')
   await page.getByRole('button', { name: 'Acepto, activar Lucas' }).click()

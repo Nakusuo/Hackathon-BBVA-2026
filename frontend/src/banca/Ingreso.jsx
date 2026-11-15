@@ -1,22 +1,19 @@
 import { motion, useReducedMotion } from 'motion/react'
-import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import FondoIngreso from '../componentes/FondoIngreso.jsx'
 import LucasPose from '../componentes/LucasPose.jsx'
-import SelectorPersona from '../componentes/SelectorPersona.jsx'
 import { SUAVE } from '../movimiento.js'
-import { guardarPersona, permisoDe, personaGuardada } from '../sesion.js'
+import { permisoDe, personaGuardada } from '../sesion.js'
 
 // Formulario solo visual: los campos vienen llenos y bloqueados para que nadie escriba datos reales en la demo.
-// Elegir la persona es el inicio de sesión de la demo; el permiso a Lucas se pide después, una vez por persona.
+// La persona se elige en Preferencias; aquí entra la que quedó guardada. El permiso a Lucas se pide una vez por persona.
 export default function Ingreso() {
   const navegar = useNavigate()
   const reducido = useReducedMotion()
-  const [personaId, setPersonaId] = useState(personaGuardada)
 
   function ingresar(evento) {
     evento.preventDefault()
-    guardarPersona(personaId)
+    const personaId = personaGuardada()
     navegar(permisoDe(personaId) ? '/banca' : '/consentimiento')
   }
 
@@ -37,8 +34,6 @@ export default function Ingreso() {
         </div>
         <span className="logotipo">Banco Vértice</span>
         <h1 id="ingreso-titulo">Ingresa a tu banca</h1>
-
-        <SelectorPersona valor={personaId} alCambiar={setPersonaId} leyenda="Entra como" />
 
         <label className="campo">
           <span>Número de DNI</span>

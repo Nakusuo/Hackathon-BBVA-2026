@@ -223,8 +223,9 @@ test('retirar el permiso olvida lo planificado y las metas', async ({ page }) =>
 })
 
 test('metas con la persona formal: aparta al cobrar el 30 con su propio margen', async ({ page }) => {
-  await page.goto('/ingresar')
+  await page.goto('/preferencias')
   await page.getByRole('radio', { name: 'Formal con quincena' }).check()
+  await page.goto('/ingresar')
   await page.getByRole('button', { name: 'Ingresar' }).click()
   await page.getByRole('button', { name: 'Acepto, activar Lucas' }).click()
   await page.goto('/lucas/metas')
