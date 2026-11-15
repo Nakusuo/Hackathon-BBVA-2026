@@ -48,6 +48,9 @@ CASOS = [
     ("Quiero comprar una entrada a un concierto por 450 soles, la preventa es en 2 semanas, ¿afecta mis ahorros?", {"simular"}), ("¿Qué pasa si gasto S/ 1,200 en una laptop?", {"simular"}),
     ("¿Puedo pagar 300 de matrícula este mes?", {"simular"}), ("Si me compro un celular de 899 soles, ¿llego a fin de mes?", {"simular"}), ("Pienso gastar 80 en una cena", {"simular"}),
     ("¿Puedo comprar dólares con 500 soles?", {"fuera_de_alcance"}), ("¿Qué pasa si no pago mi tarjeta a tiempo?", {"educacion"}), ("Quiero comprar un auto, ¿hay alguna oferta?", {"ofertas"}),
+    # meta de ahorro y compra sin precio
+    ("quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo", {"meta"}), ("¿Cuánto tengo que ahorrar al mes para juntar 5000 soles en 10 meses?", {"meta"}),
+    ("Quiero ahorrar para una laptop de S/ 3,500", {"meta"}), ("quiero comprar un carro", {"compra"}), ("Me gustaría comprarme una moto", {"compra"}),
     # resumen de lo ahorrado
     ("Haz un resumen de mis estadísticas de ahorro", {"ahorro"}), ("¿Cuánto llevo ahorrado?", {"ahorro"}), ("¿Cómo va mi ahorro?", {"ahorro"}), ("¿Cuánto he ahorrado este año?", {"ahorro"}),
 ]
@@ -60,7 +63,18 @@ def test_la_pregunta_no_se_desvia_a_otro_tema(pregunta, aceptables):
 
 
 @pytest.mark.parametrize("pregunta,monto", [("quiero comprar una entrada por 450 soles, la preventa es en 2 semanas", 450.0), ("¿y si gasto S/ 1,200.50?", 1200.5), ("si pago 3 cuotas de 250", 250.0),
-                                            ("puedo gastar 80 en una cena", 80.0), ("gasto el 20 % en 2 semanas", None), ("quiero comprar una casa", None)])
+                                            ("puedo gastar 80 en una cena", 80.0), ("gasto el 20 % en 2 semanas", None), ("quiero comprar una casa", None),
+                                            ("esta 12mil soles", 12000.0), ("cuesta 12 mil", 12000.0), ("son 3k", 3000.0), ("S/ 1.5 mil", 1500.0), ("me piden 8 lucas", 8000.0), ("en 12 meses", None)])
 def test_el_monto_de_la_frase_no_se_confunde_con_un_plazo_ni_un_porcentaje(pregunta, monto):
     from src.agente_analitico.grafo import monto_de
     assert monto_de(pregunta) == monto
+
+
+@pytest.mark.parametrize("pregunta,hoy,esperado", [("para fin de año", "2026-11-14", (2, "a fin de año")), ("a fin de año", "2026-11-20", (1, "a fin de año")), ("en 8 meses", "2026-11-14", (8, "en 8 meses")),
+                                                   ("en un año", "2026-11-14", (12, "en 12 meses")), ("para julio", "2026-11-14", (8, "para julio")), ("para noviembre", "2026-11-14", (12, "para noviembre")),
+                                                   ("quiero un carro", "2026-11-14", None)])
+def test_el_plazo_de_la_meta_sale_de_la_frase_y_del_reloj(pregunta, hoy, esperado):
+    from datetime import date
+
+    from src.agente_analitico.grafo import plazo_de
+    assert plazo_de(pregunta, date.fromisoformat(hoy)) == esperado

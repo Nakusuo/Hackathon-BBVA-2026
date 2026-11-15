@@ -236,7 +236,7 @@ def test_el_resumen_de_ahorro_sale_del_panel_mensual_del_cliente(agente):
     a = repo.ahorro_reciente(cid)
     assert r["intencion"] == "ahorro" and not r["cifras_sin_respaldo"] and r["cifras_verificadas"] > 0
     assert a["meses"] == 6 and (f"S/ {a['apartado_total']:,.0f}" in r["respuesta"] or "no apartaste nada" in r["respuesta"])
-    assert "colchon cubre" in r["respuesta"] and "En 30 dias" not in r["respuesta"]
+    assert "- Colchón:" in r["respuesta"] and "En 30 dias" not in r["respuesta"]
 
 
 def test_un_producto_que_no_esta_en_el_catalogo_se_dice_y_no_se_ofrece_otro_como_si_respondiera(agente):
@@ -244,9 +244,9 @@ def test_un_producto_que_no_esta_en_el_catalogo_se_dice_y_no_se_ofrece_otro_como
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, "estoy pensando comprar una camioneta, hay alguna oferta con el banco?")
     assert r["intencion"] == "ofertas" and not r["cifras_sin_respaldo"]
-    assert "no hay un credito vehicular" in r["respuesta"] and "catalogo de demostracion" in r["respuesta"]
+    assert "no hay un crédito vehicular" in r["respuesta"] and "catálogo de demostración" in r["respuesta"]
     sin_vehiculo = responder(apps["agente_unico"], cid, "¿Hay alguna oferta para mí?")
-    assert "no hay un credito" not in sin_vehiculo["respuesta"]
+    assert "no hay un crédito" not in sin_vehiculo["respuesta"]
 
 
 @pytest.mark.parametrize("saludo", ["hola", "Buenas tardes", "¿Qué puedes hacer?", "gracias"])
@@ -256,3 +256,36 @@ def test_un_saludo_se_responde_al_instante_sin_modelo_ni_cifras_del_cliente(agen
     r = responder(apps["agente_unico"], cid, saludo)
     assert r["intencion"] == "saludo" and r["proveedor"] == "plantilla" and r["llamadas_llm"] == 0
     assert "Puedo ver si llegas a fin de mes" in r["respuesta"] and "S/" not in r["respuesta"]
+
+
+def test_la_meta_dice_cuanto_apartar_al_mes_y_lo_compara_con_lo_que_la_persona_ya_aparta(agente, reloj_de_prueba):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo")
+    aparta = repo.ahorro_reciente(cid)["apartado_promedio_mensual"]
+    assert r["intencion"] == "meta" and r["proveedor"] == "plantilla" and not r["cifras_sin_respaldo"]
+    assert "S/ 12,000 a fin de año" in r["respuesta"] and "S/ 6,000 al mes" in r["respuesta"] and "S/ 12," not in r["respuesta"].replace("S/ 12,000", "")
+    assert (f"S/ {aparta:,.0f} al mes" in r["respuesta"]) or "no apartaste nada" in r["respuesta"]
+
+
+def test_sin_plazo_la_meta_se_calcula_a_doce_meses_y_lo_dice(agente):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "¿Cuánto debo ahorrar para comprar una moto de 6000 soles?")
+    assert r["intencion"] == "meta" and "S/ 500 al mes" in r["respuesta"] and "No me dijiste para cuándo" in r["respuesta"] and not r["cifras_sin_respaldo"]
+
+
+def test_una_compra_sin_precio_pide_el_precio_en_vez_de_tratarla_como_tema_ajeno(agente):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "quiero comprar un carro")
+    assert r["intencion"] == "compra" and r["llamadas_llm"] == 0 and "¿Cuánto cuesta" in r["respuesta"] and "no puedo ayudarte" not in r["respuesta"]
+
+
+@pytest.mark.parametrize("pregunta,ausente", [("¿Llego a fin de mes con mi plata?", ["salud financiera", "El Nino", "tasa de referencia"]),
+                                              ("¿Cuándo cae la gratificación?", ["En 30 dias", "El Nino", "tasa de referencia", "salud financiera"])])
+def test_la_respuesta_cuenta_solo_lo_que_se_pregunto(agente, pregunta, ausente):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, pregunta)
+    assert not [frase for frase in ausente if frase in r["respuesta"]] and not r["cifras_sin_respaldo"]

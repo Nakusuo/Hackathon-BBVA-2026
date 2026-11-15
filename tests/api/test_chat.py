@@ -7,7 +7,7 @@ from src.api.agente import Agente, obtener_agente
 from src.api.main import app
 
 BASE_URL = "/api/v1/chat"
-RESPUESTA = {"respuesta": "En 30 dias tu saldo ronda S/ 2,000. Tu decides.", "proveedor": "plantilla", "intencion": "pronostico", "cifras_sin_respaldo": [],
+RESPUESTA = {"respuesta": "Hola, Constructor.\nEn 30 dias tu saldo ronda S/ 2,000.\nTu decides.", "proveedor": "plantilla", "intencion": "pronostico", "cifras_sin_respaldo": [],
              "citas": [{"titulo": "Guia de la CTS", "pagina": 2, "documento": "cts.pdf", "enlace": ""}],
              "trazas": ["cargar_contexto", "router:pronostico", "agente:pronostico", "agente:salud", "finalizar"]}
 
@@ -40,7 +40,7 @@ def mensaje(**cambios):
 def test_responde_con_los_campos_del_contrato(client):
     data = client.post(BASE_URL, json=mensaje()).json()
     assert data["conversation_id"].startswith("conv-")
-    assert data["answer"] == RESPUESTA["respuesta"] and data["provider"] == "plantilla" and data["intent"] == "pronostico"
+    assert data["answer"] == "En 30 dias tu saldo ronda S/ 2,000." and data["provider"] == "plantilla" and data["intent"] == "pronostico"
     assert data["tools_used"] == ["pronostico", "salud"]
     assert data["sources"] == [{"id": "cts.pdf", "title": "Guia de la CTS", "page": 2, "url": None}]
 
@@ -76,3 +76,8 @@ def test_pedido_invalido(client, cambios):
 
 def test_falta_el_mensaje(client):
     assert client.post(BASE_URL, json={"customer_id": "demo-001"}).status_code == 422
+
+
+def test_el_saludo_conserva_el_hola_y_las_demas_respuestas_no_lo_repiten(client):
+    client.agente.grafo = {"intencion": "saludo", "respuesta": "Hola, Constructor. Soy Lucas.\nPuedo ver si llegas a fin de mes. Tu decides."}
+    assert client.post(BASE_URL, json=mensaje()).json()["answer"] == "Hola, Constructor. Soy Lucas.\nPuedo ver si llegas a fin de mes."

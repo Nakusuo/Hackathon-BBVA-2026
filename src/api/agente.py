@@ -2,6 +2,7 @@
 y se comparten entre pedidos; la ruta /chat solo traduce su respuesta a los nombres del contrato (docs/api.md, sección 12)."""
 import logging
 import os
+import re
 import threading
 
 from src.comun.rutas import cargar_env
@@ -22,6 +23,14 @@ def _leer_alias(texto: str) -> dict[str, str]:
     return {alias.strip(): cliente.strip() for alias, cliente in pares}
 
 
+def para_el_chat(texto: str, intencion: str) -> str:
+    """El chat ya muestra «Orientación, no asesoría. Tú decides.» bajo la caja de texto y saluda una sola vez:
+    se quitan el saludo y el cierre que el agente repite en cada respuesta."""
+    if intencion != "saludo":
+        texto = re.sub(r"^Hola, [^.\n]{1,30}\.\s*", "", texto)
+    return re.sub(r"\s*Tu decides?\.\s*$", "", texto.strip(), flags=re.I).strip() or texto.strip()
+
+
 class Agente:
     def __init__(self, repo, grafo, alias: dict[str, str]):
         self.repo, self.grafo, self.alias = repo, grafo, alias
@@ -37,7 +46,7 @@ class Agente:
 
         r = responder(self.grafo, self.cliente(customer_id), mensaje)
         return {
-            "answer": r["respuesta"],
+            "answer": para_el_chat(r["respuesta"], r["intencion"]),
             "provider": r["proveedor"],
             # Verificada = ninguna cifra del texto final quedó sin respaldo en lo que devolvieron las herramientas.
             "verified": not r["cifras_sin_respaldo"],
