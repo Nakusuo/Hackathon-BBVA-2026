@@ -98,6 +98,12 @@ export function conPlanificados(ajuste, planificados = []) {
   }
 }
 
+// Lo que la persona ya hizo y Lucas no tenía (hoy o antes) cambia el saldo de partida: el pronóstico sale de ahí.
+export function conRegistrados(persona, registrados = []) {
+  const neto = registrados.reduce((s, m) => s + (m.tipo === 'ingreso' ? m.monto : -m.monto), 0)
+  return { ...persona, saldoHoy: redondear(persona.saldoHoy + neto) }
+}
+
 // El mayor gasto diario con el que ni el peor caso queda bajo cero antes del ingreso.
 export function gastoDiarioSeguro(persona, ajuste = {}) {
   let bajo = 0

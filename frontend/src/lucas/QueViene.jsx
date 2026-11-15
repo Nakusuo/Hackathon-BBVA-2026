@@ -21,8 +21,21 @@ import ExplicameFacil from './ExplicameFacil.jsx'
 import { explicarQueViene } from './explicaciones.js'
 import Planificar from './Planificar.jsx'
 import { validarPlanificado } from './planificar.js'
+import Registrar from './Registrar.jsx'
+import { validarRegistro } from './registro.js'
 
 const VACIO = { tipo: 'gasto', monto: '', fecha: '', concepto: '' }
+const SIN_SERVIDOR = ' No pude enviarlo al servidor: queda guardado aquí.'
+
+// El id nace con el formulario y no con cada toque: reenviar el mismo movimiento no lo suma dos veces.
+const registroVacio = (cliente) => ({
+  id: `mov-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+  tipo: 'gasto',
+  monto: '',
+  fecha: cliente.hoy,
+  concepto: '',
+  categoria: cliente.categorias[0].id,
+})
 
 const PERIODOS = [
   { id: 'ingreso', nombre: 'Hasta mi cobro' },
@@ -130,19 +143,35 @@ function estadoDelPanel(vista, periodo) {
   return { ...base, rojo }
 }
 
-export default function QueViene({ cliente, alAgregar, alQuitar }) {
+export default function QueViene({ cliente, alAgregar, alQuitar, alRegistrar }) {
   const [periodo, setPeriodo] = useState('ingreso')
   const [borrador, setBorrador] = useState(VACIO)
   const [agregado, setAgregado] = useState(null)
   const cerrarAgregado = useCallback(() => setAgregado(null), [])
   // El simulador va plegado: abierto ocupa casi una pantalla y Qué viene debe caber en 1.5 de celular.
   const [simulando, setSimulando] = useState(false)
+  const [registrando, setRegistrando] = useState(false)
+  const [registro, setRegistro] = useState(() => registroVacio(cliente))
 
   const revision = validarPlanificado(cliente, borrador)
   const { movimiento } = revision
   // Mientras el borrador es válido, todo el panel muestra cómo quedaría; nada se guarda hasta «Agregar».
   const prueba = movimiento
-    ? vistaCon(cliente.elegidos, cliente.personaId, [], [...cliente.planificados, { ...movimiento, id: 'borrador' }])
+    ? vistaCon(
+        cliente.elegidos,
+        cliente.personaId,
+        [],
+        [...cliente.planificados, { ...movimiento, id: 'borrador' }],
+        cliente.registrados,
+      )
+    : null
+  const revisionRegistro = validarRegistro(cliente, registro)
+  // El panel sigue con lo real mientras se escribe; el formulario muestra el antes y el después.
+  const pruebaRegistro = revisionRegistro.movimiento
+    ? vistaCon(cliente.elegidos, cliente.personaId, [], cliente.planificados, [
+        ...cliente.registrados,
+        revisionRegistro.movimiento,
+      ])
     : null
   const vista = prueba ?? cliente
   const { pronostico, proximoIngreso, proximosPagos, saldoHoy, ingresos } = vista
@@ -177,6 +206,25 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
   function alternarSimulador() {
     if (simulando) setBorrador(VACIO)
     setSimulando(!simulando)
+    setRegistrando(false)
+  }
+
+  function alternarRegistro() {
+    if (registrando) setRegistro(registroVacio(cliente))
+    else {
+      setBorrador(VACIO)
+      setSimulando(false)
+    }
+    setRegistrando(!registrando)
+  }
+
+  async function guardarRegistro(movimiento) {
+    setRegistrando(false)
+    setRegistro(registroVacio(cliente))
+    const texto = `Registré ${movimiento.concepto} (${enSoles(movimiento.monto)}) el ${fechaDia(movimiento.fecha)}.`
+    setAgregado({ texto })
+    const envio = await alRegistrar(movimiento)
+    if (envio === 'sin-servidor') setAgregado({ texto: texto + SIN_SERVIDOR })
   }
 
   function agregar(nuevo) {
@@ -324,9 +372,34 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
         </div>
       )}
 
+      {registrando && (
+        <div id="registro">
+          <Registrar
+            cliente={cliente}
+            prueba={pruebaRegistro}
+            borrador={registro}
+            revision={revisionRegistro}
+            alCambiar={(campo, valor) => setRegistro((previo) => ({ ...previo, [campo]: valor }))}
+            alGuardar={guardarRegistro}
+          />
+        </div>
+      )}
 
       <section className="tarjeta hoja" aria-labelledby="movimientos-titulo">
-        <h2 id="movimientos-titulo">Pagos y cobros</h2>
+        {/* En la cabecera de la lista y no como otro botón del panel: Qué viene debe caber en 1.5 pantallas de celular. */}
+        <div className="tarjeta-titulo">
+          <h2 id="movimientos-titulo">Pagos y cobros</h2>
+          <button
+            type="button"
+            className="boton boton-chico"
+            aria-expanded={registrando}
+            aria-controls="registro"
+            aria-label={registrando ? 'Cerrar el registro' : 'Registrar un movimiento'}
+            onClick={alternarRegistro}
+          >
+            {registrando ? 'Cerrar' : 'Registrar'}
+          </button>
+        </div>
         <ListaMovimientos titulo="Antes de tu cobro" movimientos={antes} alQuitar={alQuitar} />
         <ListaMovimientos titulo="Desde tu cobro" movimientos={desde} alQuitar={alQuitar} />
         <ExplicameFacil puntos={explicarQueViene(cliente)} />

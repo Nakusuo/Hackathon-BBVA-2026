@@ -102,7 +102,12 @@ export default function EspacioLucas() {
         {seccion === 'resumen' && <Resumen cliente={vista} metas={contexto.metas} alternarTip={alternarTip} animarEntrada={!guiaAbierta} />}
         {seccion === 'gastos' && <Gastos cliente={vista} />}
         {seccion === 'que-viene' && (
-          <QueViene cliente={vista} alAgregar={contexto.agregarPlanificado} alQuitar={contexto.quitarPlanificado} />
+          <QueViene
+            cliente={vista}
+            alAgregar={contexto.agregarPlanificado}
+            alQuitar={contexto.quitarPlanificado}
+            alRegistrar={contexto.registrarMovimiento}
+          />
         )}
         {seccion === 'chat' && (
           <Chat

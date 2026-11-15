@@ -112,3 +112,21 @@ export function pedidoSimulacion(idCliente, cambios, horizonteDias = 30) {
     changes: cambios.map((c) => ({ type: c.tipo, amount: c.monto, frequency: c.frecuencia, description: c.descripcion })),
   }
 }
+
+/** El servidor identifica el gasto por `id`: reenviarlo no lo suma otra vez. */
+export function pedidoGasto(gasto) {
+  return {
+    id: gasto.id,
+    amount: gasto.monto,
+    currency: 'PEN',
+    category: gasto.categoria,
+    date: gasto.fecha,
+  }
+}
+
+export function leerGastoRegistrado(json) {
+  exigir(esObjeto(json) && esTexto(json.id), 'id')
+  exigir(esNumero(Number(json.amount)), 'amount')
+  exigir(esFecha(json.date), 'date')
+  return { id: json.id, duplicado: json.duplicate === true }
+}
