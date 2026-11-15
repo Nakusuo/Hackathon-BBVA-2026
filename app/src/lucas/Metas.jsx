@@ -195,7 +195,7 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar, al
               El {fechaCorta(proximoIngreso.fecha)}, al cobrar, puedes apartar{' '}
               <span className="panel-cifra">{enSoles(puedes)}</span>
             </p>
-            <p>Sin quedar en rojo, ni en el peor caso.</p>
+            <p>Sin quedar en rojo, ni en el peor caso previsto.</p>
           </>
         ) : (
           <p>Al cobrar todavía no te conviene apartar: ese margen lo necesitas para tus próximos pagos.</p>

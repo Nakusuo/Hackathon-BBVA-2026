@@ -263,4 +263,24 @@ test('metas: cada acción se confirma a la vista, «Quitar» se puede deshacer y
   await confirmacion.getByRole('button', { name: 'Deshacer' }).click()
   await expect(meta).toBeVisible()
   await expect(confirmacion).toContainText('Recuperé tu meta Viaje.')
+  // Sin nada más que deshacer, se va sola.
+  await expect(confirmacion).toHaveCount(0, { timeout: 6000 })
+})
+
+test('metas: al deshacer, la meta del medio vuelve a su lugar y el foco va a «Deshacer»', async ({ page }) => {
+  await page.goto('/lucas/metas')
+  for (const nombre of ['Colchón', 'Viaje', 'Regalos']) {
+    const nueva = page.getByRole('region', { name: /Crea tu primera meta|Otra meta/ })
+    await nueva.getByRole('button', { name: nombre }).click()
+    await nueva.getByLabel('Meta en S/').fill('300')
+    await nueva.getByRole('button', { name: 'Crear meta' }).click()
+    await expect(page.getByRole('listitem', { name: `Meta ${nombre}` })).toBeVisible()
+  }
+  const nombres = () => page.locator('.lista-metas h3').allTextContents()
+  await page.getByRole('listitem', { name: 'Meta Viaje' }).getByRole('button', { name: 'Quitar' }).click()
+  expect(await nombres()).toEqual(['Colchón', 'Regalos'])
+  const deshacer = page.getByRole('button', { name: 'Deshacer' })
+  await expect(deshacer).toBeFocused()
+  await deshacer.press('Enter')
+  expect(await nombres()).toEqual(['Colchón', 'Viaje', 'Regalos'])
 })

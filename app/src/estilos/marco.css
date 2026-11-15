@@ -157,3 +157,9 @@
     animation: none;
   }
 }
+
+/* Sobre fondos oscuros el contorno azul no se distingue: usa el color del propio texto. */
+.aviso-breve :focus-visible,
+.panel-metas :focus-visible {
+  outline-color: currentColor;
+}
