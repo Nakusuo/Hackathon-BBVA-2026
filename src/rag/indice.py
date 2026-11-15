@@ -40,6 +40,46 @@ def _metadatos_fuentes() -> dict:
     return meta
 
 
+# Pie de pagina de un sitio web que el PDF trae en cada hoja: no es contenido y repetido 27 veces ocupa espacio y tokens del prompt.
+BOILERPLATE = ("Need help \ufb01nding a job", "Need help finding a job")
+
+
+def depurar(frags: list[dict]) -> tuple[list[dict], list[int]]:
+    """Quita los fragmentos repetidos (mismo texto: avisos legales que el PDF repite en cada capitulo) y el pie de pagina de sitio web. Devuelve (fragmentos con ids nuevos 0..n-1, ids originales conservados)."""
+    vistos, nuevos, conservados = set(), [], []
+    for f in frags:
+        t = f["texto"]
+        if t in vistos or any(b in t for b in BOILERPLATE):
+            continue
+        vistos.add(t)
+        conservados.append(int(f["id"]))
+        nuevos.append({**f, "id": len(nuevos)})
+    return nuevos, conservados
+
+
+def depurar_indice(verbose: bool = True) -> dict:
+    """Aplica depurar() al indice ya hecho SIN volver a embeber: los vectores de los fragmentos que se conservan se reutilizan. Es idempotente."""
+    with open(os.path.join(INDICE_RAG, "fragmentos.json"), encoding="utf-8") as f:
+        frags = json.load(f)
+    idx = faiss.read_index(os.path.join(INDICE_RAG, "vectores.faiss"))
+    nuevos, conservados = depurar(frags)
+    quitados = len(frags) - len(nuevos)
+    if quitados:
+        v = np.vstack([idx.reconstruct(i) for i in conservados]).astype(np.float32)
+        nuevo = faiss.IndexFlatIP(v.shape[1])
+        nuevo.add(v)
+        faiss.write_index(nuevo, os.path.join(INDICE_RAG, "vectores.faiss"))
+        with open(os.path.join(INDICE_RAG, "fragmentos.json"), "w", encoding="utf-8") as f:
+            json.dump(nuevos, f, ensure_ascii=False)
+        info = json.load(open(os.path.join(INDICE_RAG, "info.json"), encoding="utf-8"))
+        info["fragmentos"] = len(nuevos)
+        info["depurado"] = {"quitados": quitados, "antes": len(frags), "motivo": "textos repetidos exactos y pie de pagina de sitio web"}
+        json.dump(info, open(os.path.join(INDICE_RAG, "info.json"), "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+    if verbose:
+        print(f"{quitados} fragmentos quitados (repetidos o pie de pagina); quedan {len(nuevos)}")
+    return {"quitados": quitados, "quedan": len(nuevos)}
+
+
 def construir_fragmentos() -> list[dict]:
     meta = _metadatos_fuentes()
     corte = RecursiveCharacterTextSplitter(chunk_size=TAM_FRAGMENTO, chunk_overlap=SOLAPE, separators=["\n\n", ". ", " "])
@@ -64,7 +104,7 @@ def construir_fragmentos() -> list[dict]:
                         continue
                     frags.append({"id": len(frags), "modulo": modulo, "documento": clave, "titulo": titulo, "institucion": m.get("institucion", "ENFEN"), "pagina": pag,
                                   "contexto": m.get("contexto", "Peru"), "licencia_nivel": m.get("licencia_nivel", "A"), "enlace": m.get("enlace", ""), "texto": t})
-    return frags
+    return depurar(frags)[0]
 
 
 def embeber(textos: list[str], tipo: str = "document", lote: int = 24) -> np.ndarray:
@@ -108,7 +148,8 @@ def actualizar_incremental(verbose: bool = True) -> dict:
         frags = json.load(f)
     idx = faiss.read_index(os.path.join(INDICE_RAG, "vectores.faiss"))
     conocidos = {x["documento"] for x in frags}
-    nuevos = [x for x in construir_fragmentos() if x["documento"] not in conocidos]
+    textos = {x["texto"] for x in frags}   # un fragmento ya presente (aviso legal repetido en otro documento) no se agrega dos veces
+    nuevos = [x for x in construir_fragmentos() if x["documento"] not in conocidos and x["texto"] not in textos]
     if nuevos:
         v = embeber([x["texto"] for x in nuevos])
         for i, x in enumerate(nuevos):
@@ -220,4 +261,4 @@ class Buscador:
 
 
 if __name__ == "__main__":
-    print(construir_indice())
+    print(depurar_indice() if "--depurar" in __import__("sys").argv else construir_indice())

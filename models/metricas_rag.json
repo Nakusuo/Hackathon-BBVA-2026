@@ -21,7 +21,7 @@
   "bm25": {
    "recall@4": 0.8235294117647058,
    "mrr": 0.7892156862745098,
-   "documentos_distintos_en_top": 2.3529411764705883,
+   "documentos_distintos_en_top": 2.3823529411764706,
    "n": 34,
    "recall@4_simples": 0.8214285714285714,
    "recall@4_compuestas": 0.8333333333333334,
@@ -132,7 +132,7 @@
   }
  },
  "indice": {
-  "fragmentos": 3833,
+  "fragmentos": 3761,
   "dimension": 768,
   "modulos": [
    "contexto",
@@ -144,8 +144,13 @@
   "segundos": 934.6,
   "modelo_embeddings": "nomic-embed-text",
   "tam_fragmento": 900,
-  "solape": 120
+  "solape": 120,
+  "depurado": {
+   "quitados": 72,
+   "antes": 3833,
+   "motivo": "textos repetidos exactos y pie de pagina de sitio web"
+  }
  },
- "segundos": 114.8,
- "huella_codigo": "a90c0cafe7c1af9d"
+ "segundos": 114.3,
+ "huella_codigo": "ada234587d22d853"
 }

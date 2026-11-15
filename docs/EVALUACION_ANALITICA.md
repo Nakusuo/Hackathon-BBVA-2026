@@ -174,6 +174,43 @@ Alerta si la cobertura difiere mas de 5 puntos o el error de un grupo supera 1,3
 
 MAE relativo sin texto 0.4263, con texto 0.4273; mejora media -0.00103 (IC95 -0.00171 a -0.00035). PR-AUC del rojo: 0.594 sin texto, 0.593 con texto.
 
+### Serie diaria: los 30 dias con banda al 80 % (lo que pide el contrato de la API)
+
+Se entrenan los mismos cuantiles (10, 50 y 90) en los horizontes [5, 10, 15, 20, 25, 30] dias, se interpola entre ellos y la banda se **recalibra dia por dia** con datos de calibracion que el modelo no uso para entrenar (conformal por dia). El dia 0 es el saldo de hoy (sin incertidumbre) y el dia 30 es exactamente el pronostico validado: el esperado es identico, y la banda solo se ensancha donde los cuantiles se cruzaban (0.16% de los casos), nunca se estrecha. Validacion con el mismo corte temporal con embargo (prueba 2024 a 2025, 50,000 origenes que el modelo no vio).
+
+| Metodo | Cobertura media | Minima | Maxima | Error medio / ingreso | Ancho relativo |
+|---|---|---|---|---|---|
+| serie diaria (elegida) | 0.815 | 0.791 | 0.860 | 0.286 | 0.86 |
+| recta al dia 30 (baseline) | 0.685 | 0.616 | 0.806 | 0.334 | 0.89 |
+| promedio movil de 3 meses (baseline) | 0.759 | 0.722 | 0.857 | 0.440 | 1.06 |
+
+Los dias entre horizontes no se entrenan, se interpolan, y aun asi se miden: cobertura 0.817 en los dias intermedios y 0.808 en los entrenados.
+
+Cobertura por tipo de trabajo (equidad):
+
+| Tipo de trabajo | n | Dia 7 | Dia 15 | Dia 30 |
+|---|---|---|---|---|
+| independiente | 20,000 | 0.802 | 0.802 | 0.800 |
+| dependiente | 15,000 | 0.794 | 0.842 | 0.820 |
+| mixto | 7,500 | 0.803 | 0.780 | 0.779 |
+| dependiente_con_comision | 7,500 | 0.823 | 0.837 | 0.823 |
+
+Se sirve con `src/agente_analitico/contrato.py` (`pronostico_contrato(repo, customer_id, dias=30)`), con la forma del endpoint `GET /api/v1/customers/{customer_id}/forecast`: `customer_id`, `currency`, `horizon_days`, `confidence_level` (0.8), `forecast[]` (`date`, `predicted_balance`, `lower_bound`, `upper_bound`), `first_risk_date`, `model`, `data_as_of`, `risk_probability` y `synthetic_data`. `first_risk_date` solo aparece si la probabilidad de quedar en rojo es de al menos 15 %.
+
+### Prueba con otra muestra del generador (semilla 2027, sin reentrenar)
+
+Los modelos se entrenaron con la semilla 2026. Se generaron 500 clientes nuevos con otra semilla (mismos parametros, otro azar) y se evaluaron **sin reentrenar** en la ventana 2024 a 2025 (50,000 origenes). Mide si el pronostico solo aprendio el ruido de una muestra: no demuestra nada sobre datos reales, porque la muestra nueva comparte los supuestos del generador.
+
+| Medida | Muestra de entrenamiento | Muestra nueva |
+|---|---|---|
+| Cobertura de la banda al 80 % a 30 dias | 0.806 | 0.772 |
+| Error a 30 dias / ingreso mensual | 0.426 | 0.417 (promedio movil 0.707, perfil estructural 0.749) |
+| PR-AUC del rojo a 30 dias | 0.594 | 0.870 (tasa de positivos 0.086) |
+| Serie diaria: cobertura por dia | 0.791 a 0.860 | 0.750 a 0.806 |
+| Segmentacion: ARI con los arquetipos | 0.253 | 0.268 |
+
+Lectura: gana a los dos baselines tambien en una muestra nueva; la cobertura baja unos tres puntos (la calibracion conformal se hizo con la muestra de entrenamiento), sigue cerca del 80 %. El PR-AUC del rojo no es comparable punto a punto porque cambia la tasa de positivos de una muestra a otra.
+
 ## 3. Proyeccion por meses: ingresos, gastos y neto (1 a 6 meses)
 Ventanas: {'entrena': {'filas': 90000, 'origen_desde': '2020-01-31', 'origen_hasta': '2022-06-30'}, 'ajusta': {'filas': 18000, 'origen_desde': '2022-10-31', 'origen_hasta': '2023-03-31'}, 'calibra': {'filas': 9000, 'origen_desde': '2023-04-30', 'origen_hasta': '2023-06-30'}, 'prueba': {'filas': 61500, 'origen_desde': '2024-01-31', 'origen_hasta': '2025-11-30'}}
 
@@ -290,10 +327,10 @@ Ventanas: {'entrena': {'filas': 90000, 'origen_desde': '2020-01-31', 'origen_has
 | escritas_a_mano | 0.916 | 0.731 | 24.000 |
 
 
-Aviso: sobre plantillas el modelo es trivial; sobre las 24 frases escritas a mano baja. El lexico se armo viendo esas mismas frases, asi que su cifra es optimista y no vale como prueba. El set independiente de 100 frases lo escribe el equipo (TODOS-01); mientras tanto el texto libre se clasifica mejor con un modelo preentrenado en espanol.
+Aviso: sobre plantillas el modelo es trivial. Con las 24 frases escritas a mano el lexico parecia mejor (0.92), pero las escribio quien armo el lexico: no era una prueba independiente. **Set independiente**: 140 frases de trabajadores peruanos que Gemini escribio sin ver el lexico ni las plantillas, mas una segunda pasada ciega que las etiqueto sin ver la clase pedida (coincidencia 100%; guardadas en `data/evaluacion/sentimiento_independiente.json` con su procedencia). F1 macro: TF-IDF + regresion logistica 0.47 (IC95 0.38 a 0.54), lexico 0.31 (0.23 a 0.38), clase mas frecuente 0.25. Conclusion: el modelo entrenado generaliza mejor que el lexico, y el lexico estaba inflado. Ambos son debiles y el sentimiento no esta en produccion (el texto no mejora el pronostico). Limite: el set lo escribio un modelo de lenguaje, no personas.
 
 ## 5. Impacto en soles (reproduccion contrafactual)
-Periodo 24 meses (2024-2025), ponderado por la poblacion objetivo. Supuestos: {"tasa_mensual_por_cubrir_el_hueco": 0.1, "fraccion_apartada_10_fijo": 0.1, "recorte_hormiga": 0.2, "recorte_hormiga_en_alerta": 0.5, "dias_de_alerta": 14, "umbral_alerta_p_rojo": 0.25, "asignacion_sueldo_lucas": 0.95, "umbral_irregular_cv": 0.4}
+Periodo 24 meses (2024-2025), ponderado por la poblacion objetivo. Supuestos: {"tasa_mensual_por_cubrir_el_hueco": 0.1, "fraccion_apartada_10_fijo": 0.1, "recorte_hormiga": 0.2, "recorte_hormiga_en_alerta": 0.5, "dias_de_alerta": 14, "umbral_alerta_p_rojo": 0.25, "asignacion_sueldo_lucas": 0.95, "umbral_irregular_cv": 0.4, "dias_de_gasto_que_deben_quedar_en_caja_para_apartar": 7, "fraccion_del_excedente_que_se_aparta": 0.5}
 
 |  | dias_en_rojo_por_cliente_mes | colchon_final_soles | colchon_final_meses_de_ingreso | costo_de_cubrir_el_hueco_soles_por_mes |
 |---|---|---|---|---|
@@ -301,7 +338,11 @@ Periodo 24 meses (2024-2025), ponderado por la poblacion objetivo. Supuestos: {"
 | diez_fijo | 13.365 | 6,188.377 | 2.909 | 78.816 |
 | diez_fijo_ajustado | 0.837 | 10,411.295 | 4.757 | 1.486 |
 | lucas | 0.594 | 4,585.284 | 2.017 | 1.095 |
+| lucas_mas_ahorro_ajustado | 0.594 | 10,732.993 | 4.908 | 1.095 |
+| lucas_ahorro_guiado | 6.241 | 5,095.895 | 2.343 | 30.586 |
 
+
+Politicas comparadas: **nada** (no hacer nada); **10 % fijo** (aparta el 10 % de cada ingreso sin recortar el gasto); **10 % fijo ajustado** (aparta y el gasto baja en lo mismo, sin costo y con adopcion total: un techo ideal); **Lucas** (alerta del pronostico, Sueldo Lucas, suscripcion duplicada y gasto hormiga, con la probabilidad de aceptacion de cada cliente); **Lucas + ahorro automatico** (Lucas mas el apartado del 10 % con el mismo supuesto ideal que el ajustado, para comparar de igual a igual); **Lucas + ahorro guiado** (prueba de estres: aparta la mitad del excedente estructural de 90 dias, solo sin alerta y con 7 dias de gasto en caja, sin recortar el gasto y bloqueado). Las politicas de Lucas usan los mismos sorteos de aceptacion para que la diferencia sea solo el ahorro.
 
 **lucas_vs_nada**: dias_rojo_evitados_por_cliente_mes 0.243 (IC95 0.185 a 0.302); colchon_adicional_soles 321.698 (IC95 290.385 a 357.081); intereses_evitados_soles_por_mes 0.391 (IC95 0.291 a 0.515)
 
@@ -310,6 +351,14 @@ Periodo 24 meses (2024-2025), ponderado por la poblacion objetivo. Supuestos: {"
 **diez_fijo_ajustado_vs_nada**: dias_rojo_evitados_por_cliente_mes 0.000 (IC95 0.000 a 0.000); colchon_adicional_soles 6147.709 (IC95 5859.640 a 6426.616); intereses_evitados_soles_por_mes 0.000 (IC95 0.000 a 0.000)
 
 **diez_fijo_vs_nada**: dias_rojo_evitados_por_cliente_mes -12.528 (IC95 -12.884 a -12.178); colchon_adicional_soles 1924.791 (IC95 1767.995 a 2077.026); intereses_evitados_soles_por_mes -77.330 (IC95 -82.469 a -72.192)
+
+**lucas_mas_ahorro_ajustado_vs_diez_fijo_ajustado**: dias_rojo_evitados_por_cliente_mes 0.243 (IC95 0.184 a 0.295); colchon_adicional_soles 321.698 (IC95 291.003 a 356.111); intereses_evitados_soles_por_mes 0.391 (IC95 0.295 a 0.504)
+
+**lucas_mas_ahorro_ajustado_vs_nada**: dias_rojo_evitados_por_cliente_mes 0.243 (IC95 0.191 a 0.303); colchon_adicional_soles 6469.407 (IC95 6167.888 a 6791.521); intereses_evitados_soles_por_mes 0.391 (IC95 0.290 a 0.490)
+
+**lucas_ahorro_guiado_vs_nada**: dias_rojo_evitados_por_cliente_mes -5.404 (IC95 -5.803 a -4.955); colchon_adicional_soles 832.309 (IC95 734.474 a 951.439); intereses_evitados_soles_por_mes -29.100 (IC95 -32.984 a -25.716)
+
+**Lectura.** Lucas evita dias en rojo (0.59 frente a 0.84 al mes) pero no obliga a apartar, por eso forma 2.0 meses de colchon frente a 4.8 del 10 % ajustado. Esa ventaja del ajustado depende de un supuesto ideal (recortar el gasto sin costo, con adopcion total): sin el, apartar dinero bloqueado deja 13.4 dias en rojo al mes (10 % fijo) y 6.2 (ahorro guiado por el excedente). **Decision de diseno:** Lucas no bloquea ahorro; usa una reserva que se puede usar (Sueldo Lucas) y metas voluntarias. Y la politica recomendada, Lucas + ahorro automatico, forma 4.9 meses de colchon con 0.59 dias en rojo: gana en las dos cosas al 10 % ajustado con el mismo supuesto.
 
 Por segmento:
 
@@ -330,7 +379,7 @@ Por segmento:
 |---|---|---|---|---|---|---|---|
 | denso | 0.794 | 0.725 | 2.118 | 34.000 | 0.750 | 1.000 | 6.000 |
 | denso + filtro de modulo | 0.941 | 0.831 | 1.971 | 34.000 | 0.929 | 1.000 | 6.000 |
-| bm25 | 0.824 | 0.789 | 2.353 | 34.000 | 0.821 | 0.833 | 6.000 |
+| bm25 | 0.824 | 0.789 | 2.382 | 34.000 | 0.821 | 0.833 | 6.000 |
 | bm25 + filtro de modulo | 0.882 | 0.860 | 1.971 | 34.000 | 0.857 | 1.000 | 6.000 |
 | hibrido | 0.882 | 0.804 | 2.265 | 34.000 | 0.857 | 1.000 | 6.000 |
 | hibrido + filtro de modulo | 0.941 | 0.892 | 2.059 | 34.000 | 0.929 | 1.000 | 6.000 |
@@ -346,17 +395,17 @@ Por segmento:
 
 |  | n | ruteo_correcto | respuestas_sin_cifras_inventadas | sin_frases_prohibidas | cierra_con_tu_decides | pedidos_prohibidos_rechazados | latencia_media_s | latencia_p95_s | llamadas_llm_por_respuesta | por_plantilla |
 |---|---|---|---|---|---|---|---|---|---|---|
-| agente_unico | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.938 | 2.888 | 0.000 | 1.000 |
-| multiagente | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.406 | 1.070 | 0.000 | 1.000 |
+| agente_unico | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.933 | 3.086 | 0.000 | 1.000 |
+| multiagente | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.397 | 1.118 | 0.000 | 1.000 |
 
 
 Fallos de ruteo (agente unico): ninguno
 
-**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo 2026-11-14)**: preguntas de perfil 11/11, pedidos adversarios 16/16, datos vivos y vigilancia OK, traduccion ingles OK, quechua OK; 17 llamadas y 44,571 tokens de entrada con `gemini-3.5-flash-lite`; latencia media por respuesta 4.2 s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.
+**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo 2026-11-14)**: preguntas de perfil 11/11, pedidos adversarios 16/16, datos vivos y vigilancia OK, traduccion ingles OK, quechua OK; 17 llamadas y 45,463 tokens de entrada con `gemini-3.5-flash-lite`; latencia media por respuesta 4.0 s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.
 
 
 ## 7. Escalabilidad y valor
-**Escalabilidad medida** (esta laptop, 500 clientes): {"clientes": 500, "carga_modelos_y_datos_s": 4.1, "contexto_por_cliente_ms": 3.32, "recomendaciones_por_cliente_ms": 0.43, "recomendaciones_por_segundo": 2319.0, "pico_memoria_gb": 0.81, "pronostico_30d_filas": 500, "pronostico_30d_ms_por_cliente": 0.084}
+**Escalabilidad medida** (esta laptop, 500 clientes): {"clientes": 500, "serie_diaria_30_dias_ms_por_cliente": 0.257, "carga_modelos_y_datos_s": 3.1, "contexto_por_cliente_ms": 1.35, "recomendaciones_por_cliente_ms": 0.12, "recomendaciones_por_segundo": 8004.0, "pico_memoria_gb": 0.82, "pronostico_30d_filas": 500, "pronostico_30d_ms_por_cliente": 0.056}
 
 **Programa de puntos sostenible** (supuestos del equipo, visibles en `data/parametros/niveles.yaml`): cada usuario gana en promedio 181 puntos al mes y el programa cuesta S/ 15.17 por usuario al anio, es decir 6.2% del ingreso bruto que genera (tope de reinversion: 30%). Los puntos por consumo solo se activan para quien tiene la caja ordenada; ahorrar suma siempre y mas para los niveles bajos.
 
@@ -388,6 +437,17 @@ Por nivel (anual por usuario, lectura bruta):
 
 retencion, mora evitada y venta cruzada idonea no se valoran sin un piloto con grupo de control.
 
+**Ingresos a futuro del programa de puntos (proyeccion a 5 anios, por usuario que entra).** Pregunta: si el programa no se paga el primer anio, ¿genera ingresos despues? Cada anio suma el fondeo medido del colchon de Lucas, el margen del consumo adicional con tarjeta o QR, el margen del ahorro adicional (el saldo apartado **se acumula**: saldo final = saldo inicial x (1 - retiro) + aporte del anio) y el valor de los usuarios que el programa retiene de mas, y resta el costo de los puntos. Supuestos generales del equipo: abandono anual base 20%, retiro anual de lo apartado 30%. **Los porcentajes de conducta son supuestos del equipo, sin evidencia publica ni piloto**: sirven para ver cuando se paga y que debe cumplirse, no para prometer un resultado.
+
+| Escenario | Mas consumo | Mas ahorro | Menos abandono | Neto acumulado anio 1 (S/) | Neto acumulado anio 2 (S/) | Neto acumulado anio 3 (S/) | Neto acumulado anio 4 (S/) | Neto acumulado anio 5 (S/) | Se paga en el anio |
+|---|---|---|---|---|---|---|---|---|---|
+| Solo lo medido (sin efecto de conducta) | 0% | 0% | 0% | -5.5 | -9.9 | -13.5 | -16.3 | -18.5 | no se paga |
+| Prudente | 2% | 5% | 5% | 4.4 | 24.6 | 54.9 | 90.4 | 127.6 | 1 |
+| Base | 5% | 10% | 10% | 15.0 | 61.1 | 126.9 | 203.2 | 283.1 | 1 |
+| Optimista | 10% | 20% | 20% | 35.6 | 134.0 | 274.3 | 438.3 | 611.8 | 1 |
+
+El primer anio de «solo lo medido» es exactamente la lectura conservadora de arriba (S/ -5.52): la proyeccion arranca donde termina el calculo de un anio. Sin ningun efecto de conducta nunca se paga; para pagarse en el primer anio basta **3.3% mas de ahorro apartado** o 6.9% mas de consumo elegible. Lo que decide el piloto con grupo de control es si el programa de puntos causa ese comportamiento adicional.
+
 ## 8. Calendario laboral, datos vivos y vigilancia
 Las reglas viven en `data/parametros/normas_laborales.yaml` y **cada una lleva su frase literal** de un documento oficial guardado en `docs/rag/`; `tests/test_calendario.py` comprueba que la frase siga en el documento. Se contrastaron el 2026-11-14 y el agente avisa si pasaron mas de 120 dias.
 
@@ -395,7 +455,7 @@ Las reglas viven en `data/parametros/normas_laborales.yaml` y **cada una lleva s
 |---|---|---|
 | Gratificacion | Se paga en la primera quincena de julio y diciembre (limite el 15); equivale a una remuneracion integra por semestre completo, proporcional por meses calendarios completos; bonificacion extraordinaria de 9% (EsSalud) o 6.75% (EPS), no remunerativa ni pensionable | `laboral/ley_30334_bonificacion_extraordinaria.pdf`, `laboral/mtpe_guia_gratificaciones.pdf` |
 | Deposito de CTS | Hasta el 15 de mayo y el 15 de noviembre; si el 15 es inhabil, el siguiente dia habil. Dozavos de la remuneracion computable (que suma un sexto de la gratificacion del semestre) por meses completos; la fraccion, por treintavos | `laboral/tuo_cts_ds_001_97_tr.pdf` |
-| Retiro de la CTS | Hasta el 2026-12-31 se puede disponer libremente del 100% de lo depositado en entidades financieras; despues rige el tope permanente de 50% (100 % por enfermedad terminal o cancer). Hay proyectos de ley para ampliar el plazo, pero todavia no son ley: por ahora solo rige lo que dice la Ley 32322. | `laboral/ley_32322_cts_libre_disposicion.txt` |
+| Retiro de la CTS | Hasta el 2026-12-31 se puede disponer libremente del 100% de lo depositado en entidades financieras; despues rige el tope permanente de 50% (100 % por enfermedad terminal o cancer). Hay un proyecto de ley en el Congreso para ampliar ese plazo; se esta evaluando y todavia no es ley: por ahora solo rige lo que dice la Ley 32322. | `laboral/ley_32322_cts_libre_disposicion.txt` |
 | A quien aplica | personas dependientes en planilla del regimen laboral general con jornada de cuatro horas o mas. No aplica a independientes. Supuesto del equipo: el agente asume regimen general y semestre completo trabajado; en regimenes especiales o con menos meses el monto cambia y el aviso lo dice | `laboral/tuo_cts_ds_001_97_tr.pdf` |
 
 La base de los montos es la ultima gratificacion real del cliente (equivale a una remuneracion); si no la hay, su ingreso medio, marcado como supuesto y con confianza media. Todo monto es una estimacion y se dice asi.
@@ -405,21 +465,36 @@ La base de los montos es la ultima gratificacion real del cliente (equivale a un
 ## 9. QA y comparativa de modelos
 La puerta de calidad (`python eval/puerta_de_calidad.py --gemini`) reune pruebas, metricas de los modelos, conexiones en tiempo real, agente, seguridad y frescura, y reporta PASS, WARN (conocido y documentado), FAIL o NOT RUN con el motivo. El detalle completo, incluida la lista de **lo que no se pudo verificar**, esta en [QA_ANALITICA.md](QA_ANALITICA.md).
 
-Ultima corrida (2026-11-14T15:52:19): **34 PASS, 6 WARN, 0 FAIL, 3 NOT RUN**.
+Ultima corrida (2026-11-14T18:19:41): **49 PASS, 3 WARN, 0 FAIL, 3 NOT RUN**.
 
 | # | Estado | Que | Detalle |
 |---|---|---|---|
 | P1b | NOT RUN | Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte | no hay pruebas del agente del producto en esta rama |
 | M6 | WARN | Equidad por segmento: brecha de cobertura <= 0.05 y razon de error entre segmentos | la cobertura es pareja (brecha 0.018) pero el error del peor segmento (0) es 1.58 veces el del mejor: el ingreso irregular es mas dificil de pronosticar. Documentado. |
-| M8 | WARN | Sentimiento: el modelo entrenado generaliza a frases escritas a mano | no: F1 0.73 con 24 frases contra 1.00 en plantillas. Documentado; no esta en produccion. |
-| M10 | WARN | Politica de ahorro: Lucas forma al menos tanto colchon como ahorrar 10 % fijo ajustado | el 10 % fijo ajustado forma 2.7 meses mas de colchon que Lucas. Hallazgo abierto, documentado. |
-| M12 | WARN | Programa de puntos: rentable sin depender de consumo nuevo | sin consumo nuevo pierde S/ 5.52 por usuario al anio; se paga con 6.9% mas de consumo elegible. Necesita piloto. |
-| M13 | WARN | Parametros de los eventos simulados (retiros de AFP, bonos, covid, Nino): verificados en fuente | parametros de eventos: 1 verificado, 4 parciales y 13 supuestos. Declarados en el YAML; hay que verificarlos antes de afirmarlos. |
-| C9 | NOT RUN | Google Cloud Translation | no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini. |
-| C10 | NOT RUN | Calidad del quechua revisada por un hablante nativo | no hay revision de un hablante nativo; el aviso al usuario lo dice |
+| M12 | WARN | Programa de puntos: rentable sin depender de consumo nuevo | solo con lo medido pierde S/ 5.52 por usuario al anio y no se paga nunca; se paga con 6.9% mas de consumo o con 3.3% mas de ahorro apartado. Proyeccion a 5 anios (supuestos del equipo): se paga en el anio 1 (prudente), 1 (base) y 1 (optimista). Aceptado por el equipo: lo decide un piloto con grupo de control. |
+| C9b | NOT RUN | Google Cloud Translation: llamada real con clave | no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini. |
+| C10b | NOT RUN | Calidad del quechua revisada por un hablante nativo | no hay revision de un hablante nativo; el aviso al usuario lo dice |
 | S5 | OK | Sin archivos pesados ni datos generados en el repositorio (solo data/sample) | data/generado/ esta en .gitignore y se regenera con python data/generator.py --semilla 2026 |
 
-La comparativa de modelos (candidatos medidos, el elegido y por que, con su limite) esta en [comparativa_modelos.md](comparativa_modelos.md) y sus graficas en `docs/figuras/`.
+La comparativa de modelos (candidatos medidos, el elegido y por que, con su limite) esta en [comparativa_modelos.md](comparativa_modelos.md) y sus graficas en `docs/presentacion/`.
+
+## 10. Idiomas: quechua y Google Cloud Translation
+Que idioma entiende el agente y que tan bien lo hace, con la evidencia objetiva que se pudo reunir sin un hablante nativo y sin clave de Google Cloud.
+
+### Quechua frente a un benchmark publico (FLORES-200, quechua de Ayacucho)
+
+Fuente: FLORES-200 devtest, par spa_Latn / quy_Latn (quechua de Ayacucho); Meta AI, NLLB Team; CC BY-SA 4.0. Se tomaron 60 oraciones al azar (semilla 20261114) y se tradujeron con el mismo flujo del agente (cifras y nombres protegidos, Gemini). Metrica: chrF (a nivel de caracteres, apropiada para lenguas con mucha morfologia) con IC95 por remuestreo de oraciones, frente a un piso: copiar el texto de origen sin traducir.
+
+| Direccion | chrF | IC95 | chrF++ | Piso (copiar el origen) | Oraciones que cayeron al texto original | Devueltas sin traducir |
+|---|---|---|---|---|---|---|
+| espanol a quechua | 34.2 | 31.6 a 36.3 | 28.6 | 18.5 | 0 de 60 | 0 |
+| quechua a espanol | 33.4 | 30.9 a 35.9 | 31.3 | 17.7 | 1 de 60 | 1 |
+
+Un chrF por encima del piso de copiar el origen muestra que la salida se parece a una traduccion humana mas que el propio texto sin traducir; no demuestra que un hablante la entienda. Las referencias de FLORES estan en la ortografia del quechua de Ayacucho: diferencias de escritura (por ejemplo entre variedades) bajan el chrF aunque la traduccion sea correcta. **Limite:** No hay hablante nativo que la revise. FLORES es texto de noticias y enciclopedia: no es el lenguaje de las finanzas personales. Quechua sureno (Cusco-Collao y Ayacucho-Chanka); el agente lo declara como no validado.
+
+### Google Cloud Translation (proveedor opcional)
+
+No hay clave propia y la de Gemini no se usa contra otras APIs de Google. Lo que si se verifico: (1) el pedido y la respuesta del proveedor contra la documentacion oficial de la API v2 (`POST https://translation.googleapis.com/language/translate/v2`, cuerpo `q`, `source`, `target`, `format`, respuesta `data.translations[].translatedText`; el quechua `qu` esta en la lista de idiomas; la clave puede ir en la cabecera `X-goog-api-key` y la documentacion desaconseja ponerla en la URL); (2) siete pruebas con respuestas simuladas en `tests/test_traduccion.py` (forma del pedido, clave solo en cabecera, sin clave no hay pedido, marcadores espaciados por Google, marcador perdido se descarta, errores 429 y 5xx se reintentan y 403 y 400 no, respuesta mal formada, caida a Gemini). **No se probo** una llamada real: cuando haya una clave, basta definir `GOOGLE_TRANSLATE_API_KEY` y correr la puerta de calidad.
 
 
-<!-- huella_metricas: 547dc044afbc5de0 (la puerta de calidad compara esta huella con la de las metricas actuales) -->
+<!-- huella_metricas: 781fc3be87a20fa7 (la puerta de calidad compara esta huella con la de las metricas actuales) -->

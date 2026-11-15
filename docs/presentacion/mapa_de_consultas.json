@@ -1,0 +1,106 @@
+{
+ "consultas": [
+  {
+   "n": 1,
+   "consulta": "¿Llego a fin de mes con mi plata?",
+   "intencion": "pronostico",
+   "camino": "herramientas_y_plantilla",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 2,
+   "consulta": "¿Cuándo me cae la CTS y puedo retirarla?",
+   "intencion": "calendario",
+   "camino": "herramientas_y_plantilla",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 3,
+   "consulta": "¿Cuánto está el dólar hoy?",
+   "intencion": "tipo_de_cambio",
+   "camino": "herramientas_y_plantilla",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 4,
+   "consulta": "Pásale 200 soles a mi hermano",
+   "intencion": "fuera_de_alcance",
+   "camino": "plantilla_fija",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 5,
+   "consulta": "¿Qué es la TCEA?",
+   "intencion": "educacion",
+   "camino": "rag_y_ia",
+   "usa_llm": true,
+   "tokens_de_entrada": 2674,
+   "tokens_de_salida": 212
+  },
+  {
+   "n": 6,
+   "consulta": "que es la tcea",
+   "intencion": "educacion",
+   "camino": "preguntas_frecuentes",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 7,
+   "consulta": "Cuéntame un chiste",
+   "intencion": "fuera_de_tema",
+   "camino": "plantilla_fija",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  }
+ ],
+ "rag": {
+  "pregunta": "¿Qué es la TCEA?",
+  "umbral_de_relevancia": 0.7,
+  "pasa_el_filtro": true,
+  "fragmentos": [
+   {
+    "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+    "pagina": 43,
+    "similitud": 0.8373,
+    "caracteres": 137,
+    "tokens_estimados": 34
+   },
+   {
+    "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+    "pagina": 39,
+    "similitud": 0.7687,
+    "caracteres": 794,
+    "tokens_estimados": 198
+   },
+   {
+    "titulo": "Reglamento de Gestion de Conducta de Mercado (Res. SBS 3274-2017)",
+    "pagina": 33,
+    "similitud": 0.7482,
+    "caracteres": 746,
+    "tokens_estimados": 186
+   }
+  ]
+ },
+ "tokens_por_llamada_medidos_en_la_qa": {
+  "entrada": 2674,
+  "salida": 212,
+  "llamadas_medidas": 17
+ },
+ "todo_al_llm": 20206,
+ "con_ruteo": 2887,
+ "ahorro": 0.8571428571428571,
+ "tokens_del_corpus_completo": 663351,
+ "tokens_de_los_3_fragmentos": 418,
+ "nota": "Tokens estimados con 4 caracteres por token; los tokens por llamada son el promedio medido en la QA con Gemini real (incluye llamadas cortas de traduccion). Politica LLM_USO=ahorro."
+}

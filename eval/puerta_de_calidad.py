@@ -155,7 +155,13 @@ def area_modelos():
                   f"glosa F1 {g['tfidf_char_sgd_lineal']['f1_macro']:.3f}, recurrentes F1 {r['periodicidad_y_monto']['f1']:.3f}, atipicos {a['isolation_forest']['precision_en_k']:.3f}", "algun modelo no supera a su baseline")
     verificar("Modelos", "M7", "Glosas, recurrentes y atipicos: cada modelo elegido supera a su alternativa simple", clasif)
 
-    verificar("Modelos", "M8", "Sentimiento: el modelo entrenado generaliza a frases escritas a mano", lambda: ("WARN", f"no: F1 {C['sentimiento']['escritas_a_mano']['tfidf_lr_f1']:.2f} con {C['sentimiento']['escritas_a_mano']['n']} frases contra {C['sentimiento']['plantillas_futuras']['tfidf_lr_f1']:.2f} en plantillas. Documentado; no esta en produccion."))
+    def sentimiento():
+        SI = J("metricas_sentimiento_independiente.json")
+        mej = SI["tfidf_lr"]["f1_macro"] > max(SI["lexico"]["f1_macro"], SI["exactitud_de_la_clase_mayoritaria"])
+        return pf(mej, f"set independiente de {SI['frases_con_consenso']} frases: TF-IDF+LR F1 {SI['tfidf_lr']['f1_macro']:.2f}, lexico {SI['lexico']['f1_macro']:.2f}, azar {SI['exactitud_de_la_clase_mayoritaria']:.2f}. "
+                  f"No esta en produccion (el texto no mejora el pronostico) y el set lo escribio un LLM, no personas",
+                  f"el modelo entrenado no supera al lexico ni al azar en el set independiente: {SI['tfidf_lr']['f1_macro']:.2f}")
+    verificar("Modelos", "M8", "Sentimiento: el modelo elegido supera al lexico y al azar en un set independiente del codigo y de las plantillas", sentimiento)
 
     def impacto():
         d = IM["diferencias"]["lucas_vs_nada"]["dias_rojo_evitados_por_cliente_mes"]
@@ -163,10 +169,12 @@ def area_modelos():
     verificar("Modelos", "M9", "Politica de ahorro: reduce los dias en rojo frente a no hacer nada con IC95 que excluye 0", impacto)
 
     def colchon():
-        t = IM["tabla"]
-        mas = t["diez_fijo_ajustado"]["colchon_final_meses_de_ingreso"] - t["lucas"]["colchon_final_meses_de_ingreso"]
-        return ("WARN", f"el 10 % fijo ajustado forma {mas:.1f} meses mas de colchon que Lucas. Hallazgo abierto, documentado.") if mas > 0 else ("PASS", "")
-    verificar("Modelos", "M10", "Politica de ahorro: Lucas forma al menos tanto colchon como ahorrar 10 % fijo ajustado", colchon)
+        t, d = IM["tabla"], IM["diferencias"]["lucas_mas_ahorro_ajustado_vs_diez_fijo_ajustado"]
+        la, aj = t["lucas_mas_ahorro_ajustado"], t["diez_fijo_ajustado"]
+        ok = la["colchon_final_meses_de_ingreso"] >= aj["colchon_final_meses_de_ingreso"] and d["dias_rojo_evitados_por_cliente_mes"]["ic95"][0] > 0 and d["colchon_adicional_soles"]["ic95"][0] > 0
+        return pf(ok, f"Lucas + ahorro automatico forma {la['colchon_final_meses_de_ingreso']:.2f} meses de colchon frente a {aj['colchon_final_meses_de_ingreso']:.2f} del 10 % ajustado y evita {d['dias_rojo_evitados_por_cliente_mes']['media']:.2f} dias en rojo mas al mes (IC95 sobre 0). "
+                  f"Lucas solo forma {t['lucas']['colchon_final_meses_de_ingreso']:.2f} porque no obliga a apartar", "Lucas + ahorro automatico no supera al 10 % ajustado en colchon y en dias en rojo")
+    verificar("Modelos", "M10", "Politica recomendada (Lucas + ahorro automatico): forma al menos tanto colchon como el 10 % fijo ajustado y evita mas dias en rojo, con IC95 sobre cero", colchon)
 
     def puntos():
         from src.models import programa_puntos as PP
@@ -179,19 +187,62 @@ def area_modelos():
     def puntos_valor():
         c = V["lectura_conservadora"]
         n = c["neto_por_usuario_sin_mas_consumo"]
-        return ("WARN", f"sin consumo nuevo pierde S/ {-n:.2f} por usuario al anio; se paga con {c['mas_consumo_necesario_para_pagarse']:.1%} mas de consumo elegible. Necesita piloto.") if n < 0 else ("PASS", f"neto S/ {n:.2f}")
+        pf_ = V["proyeccion_a_futuro"]
+        pagan = {k: e["se_paga_en_el_anio"] for k, e in pf_["escenarios"].items()}
+        txt = (f"solo con lo medido pierde S/ {-n:.2f} por usuario al anio y no se paga nunca; se paga con {c['mas_consumo_necesario_para_pagarse']:.1%} mas de consumo o con {pf_['ahorro_adicional_necesario_para_pagarse_en_el_anio_1']:.1%} mas de ahorro apartado. "
+               f"Proyeccion a {pf_['supuestos_generales']['anos']} anios (supuestos del equipo): se paga en el anio {pagan['prudente']} (prudente), {pagan['base']} (base) y {pagan['optimista']} (optimista). Aceptado por el equipo: lo decide un piloto con grupo de control.")
+        return ("WARN", txt) if n < 0 else ("PASS", f"neto S/ {n:.2f}")
     verificar("Modelos", "M12", "Programa de puntos: rentable sin depender de consumo nuevo", puntos_valor)
 
     def eventos():
-        t = leer("data/parametros/eventos.yaml")
-        n = {k: len(re.findall(k, t)) for k in ("verificado", "parcial", "supuesto")}
-        return ("WARN", f"parametros de eventos: {n['verificado']} verificado, {n['parcial']} parciales y {n['supuesto']} supuestos. Declarados en el YAML; hay que verificarlos antes de afirmarlos.") if n["parcial"] + n["supuesto"] else ("PASS", "")
-    verificar("Modelos", "M13", "Parametros de los eventos simulados (retiros de AFP, bonos, covid, Nino): verificados en fuente", eventos)
+        import yaml
+        ev = yaml.safe_load(leer("data/parametros/eventos.yaml") or "eventos: []")["eventos"]
+        n = {k: sum(1 for e in ev if e.get("estado") == k) for k in ("verificado", "parcial", "supuesto")}
+        sin_estado = [e["id"] for e in ev if e.get("estado") not in n or not str(e.get("fuente", "")).strip()]
+        return pf(not sin_estado and len(ev) > 0, f"{len(ev)} eventos con estado y fuente declarados ({n['verificado']} verificado, {n['parcial']} parcial, {n['supuesto']} supuesto). Son parametros de una simulacion sobre datos sinteticos: los supuestos estresan los modelos, no se presentan como hechos (criterio aceptado por el equipo)",
+                  f"eventos sin estado o sin fuente: {sin_estado}")
+    verificar("Modelos", "M13", "Eventos simulados (retiros de AFP, bonos, covid, Nino): cada parametro declara su estado (verificado, parcial o supuesto) y su fuente", eventos)
 
     def calidad_datos():
         t = leer("data/QUALITY.md")
         return pf(bool(t) and "Trazabilidad" in t and not re.search(r"(?i)\bfalla\b|no cumple", t), "informe de calidad presente con trazabilidad (semilla, huella de parametros)", "falta data/QUALITY.md o reporta una falla")
     verificar("Modelos", "M14", "Datos sinteticos: informe de calidad y trazabilidad presentes y sin fallas reportadas", calidad_datos)
+
+    def serie_diaria():
+        SD = J("metricas_serie_diaria.json")
+        dias = SD["por_dia"]["serie_diaria"]
+        cob = [d["cobertura_80"] for d in dias]
+        c30 = SD["ultimo_punto_coincide_con_el_modelo_de_30_dias"]
+        ok = (len(dias) == 30 and all(0.75 <= c <= 0.86 for c in cob) and c30["esperado_identico"] and c30["banda_nunca_se_estrecha"]
+              and SD["serie_diaria"]["mae_rel_medio"] < min(SD["linea_base_recta_al_dia_30"]["mae_rel_medio"], SD["linea_base_promedio_movil_3_meses"]["mae_rel_medio"]))
+        return pf(ok, f"30 dias con banda al 80 %: cobertura entre {min(cob):.3f} y {max(cob):.3f}, error {SD['serie_diaria']['mae_rel_medio']:.2f} frente a {SD['linea_base_recta_al_dia_30']['mae_rel_medio']:.2f} (recta) y {SD['linea_base_promedio_movil_3_meses']['mae_rel_medio']:.2f} (promedio movil); el dia 30 es el modelo validado",
+                  f"cobertura entre {min(cob):.3f} y {max(cob):.3f} o no mejora a las lineas base")
+    verificar("Modelos", "M15", "Serie diaria del pronostico (contrato de la API): 30 dias, cobertura 0.75 a 0.86 en cada dia, mejor que las dos lineas base y coincide con el modelo de 30 dias", serie_diaria)
+
+    def puntos_a_futuro():
+        pf_ = V["proyeccion_a_futuro"]
+        medido = pf_["escenarios"]["solo_lo_medido"]["por_anio"][0]["neto_por_usuario_que_entra"]
+        orden = [pf_["escenarios"][k]["por_anio"][-1]["neto_acumulado"] for k in ("solo_lo_medido", "prudente", "base", "optimista")]
+        ok = abs(medido - V["lectura_conservadora"]["neto_por_usuario_sin_mas_consumo"]) < 1e-9 and orden == sorted(orden)
+        return pf(ok, f"la proyeccion a varios anios arranca en S/ {medido:.2f}, igual que la lectura de un anio, y los escenarios se ordenan (acumulado a {pf_['supuestos_generales']['anos']} anios: " + ", ".join(f"S/ {x:,.0f}" for x in orden) + "); son supuestos del equipo",
+                  "la proyeccion no cuadra con la lectura de un anio o los escenarios no se ordenan")
+    verificar("Modelos", "M16", "Programa de puntos a futuro: la proyeccion multianual cuadra con la lectura de un anio y sus escenarios estan ordenados", puntos_a_futuro)
+
+    def sin_bloqueo():
+        t = IM["tabla"]
+        return pf(t["lucas_ahorro_guiado"]["dias_en_rojo_por_cliente_mes"] > t["lucas"]["dias_en_rojo_por_cliente_mes"] * 3,
+                  f"apartar dinero bloqueado sin recortar el gasto deja {t['lucas_ahorro_guiado']['dias_en_rojo_por_cliente_mes']:.1f} dias en rojo al mes (Lucas: {t['lucas']['dias_en_rojo_por_cliente_mes']:.2f}): por eso Lucas usa una reserva que se puede usar y metas voluntarias",
+                  "la prueba de estres no confirma que bloquear el ahorro empeore la caja: revisar el diseno")
+    verificar("Modelos", "M17", "Prueba de estres del diseno: apartar dinero bloqueado sin recortar el gasto empeora la caja (por eso Lucas no lo hace)", sin_bloqueo)
+
+    def otra_semilla():
+        O = J("metricas_otra_semilla.json")
+        n, sd = O["saldo_30d_en_la_muestra_nueva"], O["serie_diaria_en_la_muestra_nueva"]
+        ok = (O["sin_reentrenar"] and 0.72 <= n["lightgbm"]["cobertura_80"] <= 0.88 and n["lightgbm"]["mae_rel_ingreso"] < min(n["ma3"]["mae_rel_ingreso"], n["perfil_estructural"]["mae_rel_ingreso"])
+              and sd["cobertura_minima"] >= 0.70 and O["semilla_de_la_muestra_nueva"] != O["semilla_de_entrenamiento"])
+        return pf(ok, f"{O['clientes']} clientes nuevos (semilla {O['semilla_de_la_muestra_nueva']}), sin reentrenar: cobertura {n['lightgbm']['cobertura_80']:.3f}, error {n['lightgbm']['mae_rel_ingreso']:.3f} frente a {n['ma3']['mae_rel_ingreso']:.3f} (promedio movil) y {n['perfil_estructural']['mae_rel_ingreso']:.3f} (estructural); serie diaria {sd['cobertura_minima']:.3f} a {sd['cobertura_maxima']:.3f}",
+                  f"en la muestra nueva la cobertura es {n['lightgbm']['cobertura_80']:.3f} o no gana a los baselines")
+    verificar("Modelos", "M18", "Otra muestra del generador (otra semilla, sin reentrenar): cobertura entre 0.72 y 0.88, gana a los baselines y la serie diaria no baja de 0.70", otra_semilla)
 
 
 # ------------------------------------------------------------------------------------------------------------------------------------ conexiones
@@ -257,8 +308,23 @@ def area_conexiones(con_gemini: bool):
         r = TR.traducir("Tu saldo esperado es S/ 4,137.97 y tu nivel es Campeon.", "es", "en")
         return pf(r["ok"] and "4,137.97" in r["texto"], f"es->en por {r['proveedor']} en {r['segundos']} s, cifras intactas", f"fallo: {r['motivo']}")
     verificar("Conexiones", "C8", "Traduccion es->en con cifras y nombres protegidos", traduccion)
-    verificar("Conexiones", "C9", "Google Cloud Translation", lambda: ("NOT RUN", "no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini.") if not os.environ.get("GOOGLE_TRANSLATE_API_KEY") else ("PASS", "clave presente"))
-    verificar("Conexiones", "C10", "Calidad del quechua revisada por un hablante nativo", lambda: ("NOT RUN", "no hay revision de un hablante nativo; el aviso al usuario lo dice"))
+    def contrato_google():
+        t = leer("tests/test_traduccion.py")
+        n = len(re.findall(r"^def test_google_", t, re.M))
+        return pf(n >= 6 and "docs.cloud.google.com/translate" in t, f"{n} pruebas del proveedor contra el contrato publico de la API v2 (cabecera de clave, cuerpo q/source/target/format, respuesta, marcadores, errores, caida a Gemini), contrastado con su documentacion oficial. No se llamo a la API real",
+                  "faltan las pruebas de contrato del proveedor Google")
+    verificar("Conexiones", "C9", "Google Cloud Translation: el proveedor cumple el contrato publico de la API v2 (respuestas simuladas)", contrato_google)
+    verificar("Conexiones", "C9b", "Google Cloud Translation: llamada real con clave", lambda: ("NOT RUN", "no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini.") if not os.environ.get("GOOGLE_TRANSLATE_API_KEY") else ("PASS", "clave presente"))
+
+    def quechua_objetivo():
+        Q = J("metricas_quechua.json")
+        e, q = Q["es_a_qu"], Q["qu_a_es"]
+        ok = e["ic95_chrf"][0] > e["piso_copiar_el_origen_chrf"] and q["ic95_chrf"][0] > q["piso_copiar_el_origen_chrf"]
+        return pf(ok, f"FLORES-200 quechua de Ayacucho, {Q['n']} oraciones por sentido: es->qu chrF {e['chrf']:.1f} (IC95 desde {e['ic95_chrf'][0]:.1f}; piso de copiar el espanol {e['piso_copiar_el_origen_chrf']:.1f}), "
+                  f"qu->es chrF {q['chrf']:.1f} (IC95 desde {q['ic95_chrf'][0]:.1f}; piso {q['piso_copiar_el_origen_chrf']:.1f}). Evidencia objetiva, no reemplaza a un hablante",
+                  f"el chrF no supera de forma clara al piso: es->qu {e['chrf']:.1f} vs {e['piso_copiar_el_origen_chrf']:.1f}, qu->es {q['chrf']:.1f} vs {q['piso_copiar_el_origen_chrf']:.1f}")
+    verificar("Conexiones", "C10", "Quechua: la traduccion se parece a las referencias humanas de FLORES-200 mas que el texto sin traducir", quechua_objetivo)
+    verificar("Conexiones", "C10b", "Calidad del quechua revisada por un hablante nativo", lambda: ("NOT RUN", "no hay revision de un hablante nativo; el aviso al usuario lo dice"))
 
     def rag_integridad():
         import faiss
@@ -277,6 +343,18 @@ def area_conexiones(con_gemini: bool):
             return "FAIL", f"documentos alterados o ausentes: {mal[:3]}; niveles de licencia en el indice: {niveles}"
         return "PASS", f"{len(frags)} fragmentos = {idx.ntotal} vectores; {len(filas)} documentos con hash verificado; solo licencia nivel A"
     verificar("Conexiones", "C11", "RAG: indice consistente, documentos sin alterar (hash) y solo fuentes de nivel A", rag_integridad)
+
+    def rag_validacion():
+        from src.comun.huella import RAG as PATRONES_RAG, huella as hu
+        v = J("metricas_rag_validacion.json")
+        if v.get("huella_codigo") != hu(PATRONES_RAG):
+            return "FAIL", "la validacion del RAG esta desfasada: el codigo o el indice cambiaron (python eval/validar_rag.py)"
+        malas = [k for k, ok in v["comprobaciones"].items() if not ok]
+        e, c, a = v["embeddings"], v["chunks"], v["autorrecuperacion"]
+        return pf(v["todo_ok"] and not malas, f"{e['fragmentos']:,} fragmentos = {e['vectores']:,} vectores de {e['dimension_del_indice']} dimensiones ({e['modelo']}, prefijos search_document/search_query, normalizados, indice exacto de producto interno); "
+                  f"al re-embeber una muestra el coseno minimo con lo guardado es {e['reembebido_con_prefijo_de_documento']['coseno_minimo']:.4f}; fragmentos de {c['largo']['minimo']} a {c['largo']['maximo']} caracteres, {c['duplicados_exactos']} duplicados, metadatos completos; "
+                  f"cada fragmento se recupera a si mismo ({a['el_fragmento_esta_en_los_3_primeros']:.0%} en los 3 primeros)", f"fallan: {malas}")
+    verificar("Conexiones", "C12", "RAG: chunks, embeddings e indice bien hechos y bien usados (prefijos del modelo, normalizacion, alineacion con los textos, sin duplicados, autorrecuperacion)", rag_validacion)
 
     def rag_busqueda():
         from src.rag.indice import Buscador
@@ -348,6 +426,25 @@ def area_agente():
         d = J("metricas_agente_plantillas.json")["diagramas"]
         return pf(all(not os.path.isabs(v) and os.path.isfile(os.path.join(RAIZ, v)) for v in d.values()), "los dos diagramas de nodos existen y se citan con ruta relativa", f"{d}")
     verificar("Agente", "G3", "Diagramas de nodos del agente generados, con rutas relativas", diagramas)
+
+    def preguntas_frecuentes():
+        from src.agente_analitico import faq as FQ
+        sem = json.load(open(os.path.join(RAIZ, "data", "faq", "faq_semilla.json"), encoding="utf-8"))
+        al_dia = sem["huella_indice"] == FQ.huella_indice()
+        todas_citan = all(e["fragmentos"][0].get("enlace") and e["respuesta"].endswith("Tu decides.") for e in sem["entradas"])
+        doc = os.path.isfile(os.path.join(RAIZ, "docs", "PREGUNTAS_FRECUENTES.md"))
+        return pf(al_dia and todas_citan and len(sem["entradas"]) >= 10 and doc, f"{len(sem['entradas'])} preguntas de concepto con respuesta por plantilla (0 tokens), todas con fuente y enlace, vigentes para el indice actual del RAG; docs/PREGUNTAS_FRECUENTES.md generado",
+                  "la semilla de preguntas frecuentes esta desfasada del indice del RAG o incompleta: python eval/generar_faq.py")
+    verificar("Agente", "G4", "Preguntas frecuentes: semilla vigente (huella del indice del RAG), con fuentes y enlaces", preguntas_frecuentes)
+
+    def faq_sin_llm():
+        q = J("metricas_qa_agente.json")
+        f = q.get("faq")
+        if not f:
+            return ("NOT RUN", "la corrida de QA no incluye la prueba de preguntas frecuentes: python eval/qa_agente.py")
+        return pf(f["ok"], f"con Gemini real: la segunda pregunta igual («{f['pregunta']}») se respondio desde las preguntas frecuentes, con {f['segunda']['llamadas_gemini_nuevas']} llamadas nuevas a Gemini y {f['segunda']['citas']} citas",
+                  f"la segunda pregunta no se respondio desde las preguntas frecuentes: {f['segunda']}")
+    verificar("Agente", "G5", "Preguntas frecuentes en la QA con Gemini real: la repeticion de una pregunta de concepto no gasta tokens", faq_sin_llm)
 
     def cache_gemini_obsoleto():
         return pf(not os.path.isfile(os.path.join(MODELOS, "metricas_agente_gemini.json")), "no queda el JSON de Gemini anterior al endurecimiento de seguridad", "metricas_agente_gemini.json es anterior a las salvaguardas y miente: eliminarlo")
@@ -455,17 +552,54 @@ def area_reproducibilidad():
         return pf(dias <= 30, f"{len(filas)} fuentes del RAG, ultima consulta hace {dias} dias", f"las fuentes se consultaron hace {dias} dias")
     verificar("Reproducibilidad", "R3", "Las fuentes oficiales del RAG se consultaron en los ultimos 30 dias", fuentes)
 
+    def presentacion():
+        idx = leer("docs/presentacion/README.md")
+        rutas = re.findall(r"^\| `([^`]+)` \|", idx, re.M)
+        faltan = [r for r in rutas if not os.path.isfile(os.path.join(RAIZ, "docs", "presentacion", r))]
+        with open(os.path.join(RAIZ, "docs", "comparativa_modelos.csv"), encoding="utf-8") as fh:
+            problemas = len({r["problema"] for r in csv.DictReader(fh)})
+        modelos = [r for r in rutas if r.startswith("modelos/") and r.endswith(".png") and "comparativa_modelos" not in r]
+        sueltos = [f for f in glob.glob(os.path.join(RAIZ, "docs", "presentacion", "**", "*.png"), recursive=True) if os.path.relpath(f, os.path.join(RAIZ, "docs", "presentacion")).replace(os.sep, "/") not in rutas]
+        ok = bool(rutas) and not faltan and len(modelos) == problemas and not sueltos and not os.path.isdir(os.path.join(RAIZ, "docs", "figuras"))
+        return pf(ok, f"{len(rutas)} artefactos indexados en docs/presentacion/README.md, todos existen: una grafica por cada uno de los {problemas} problemas de la comparativa, diagramas de nodos y graficas de valor",
+                  f"faltan {faltan}; graficas sin indexar {[os.path.basename(x) for x in sueltos]}; problemas {problemas} frente a {len(modelos)} graficas de modelos")
+    verificar("Reproducibilidad", "R4", "Carpeta de presentacion y documentacion completa: cada artefacto indexado existe, hay una grafica por problema y no quedan figuras sueltas ni duplicadas", presentacion)
+
+    def mlflow_seguimiento():
+        from src.comun.huella import METRICAS as PM, huella as hu
+        txt = leer("docs/presentacion/mlflow_resumen.md")
+        m = re.search(r"huella_metricas: ([0-9a-f]+)", txt)
+        if not m:
+            return "FAIL", "falta docs/presentacion/mlflow_resumen.md: python eval/registrar_en_mlflow.py"
+        if m.group(1) != hu(PM):
+            return "FAIL", "el resumen de MLflow esta desfasado (las metricas cambiaron): python eval/registrar_en_mlflow.py"
+        filas = re.findall(r"^\| (.+?) \| .+ \| \*\*(.+?)\*\* \|", txt, re.M)
+        modelos = re.findall(r"^\| `(lucas-[a-z0-9-]+)` \|", txt, re.M)
+        return pf(len(filas) >= 14 and len(modelos) >= 6, f"{len(filas)} comparaciones (baseline frente a elegido) y {len(modelos)} modelos de produccion registrados con alias «produccion»; resumen vigente (huella {m.group(1)})",
+                  f"el resumen de MLflow esta incompleto: {len(filas)} comparaciones y {len(modelos)} modelos")
+    verificar("Reproducibilidad", "R5", "Seguimiento con MLflow: comparaciones y modelos de produccion registrados, resumen al dia con las metricas", mlflow_seguimiento)
+
+    def modelo_de_datos():
+        base = os.path.join(RAIZ, "docs", "modelo_de_datos")
+        sql = leer("docs/modelo_de_datos/schema_postgres.sql")
+        n = len(re.findall(r"^CREATE TABLE ", sql, re.M))
+        val = json.load(open(os.path.join(base, "validacion_postgres.json"), encoding="utf-8"))
+        doc = leer("docs/modelo_de_datos/README.md")
+        ok = n == val["tablas"] and val["todo_ok"] and doc.count("\n### `") == n and os.path.isfile(os.path.join(RAIZ, "eval", "cargar_a_postgres.py"))
+        return pf(ok, f"esquema de {n} tablas (lucas y simulacion) probado contra {val['version_de_postgres'].split(' on ')[0]} con pgvector {val['version_de_pgvector']}: carga completa con conteos iguales a los Parquet, cascadas, restricciones y busqueda vectorial; documento al dia",
+                  f"el modelo de datos esta desfasado: {n} tablas en el SQL, {val['tablas']} validadas, {doc.count(chr(10) + '### ')} documentadas")
+    verificar("Reproducibilidad", "R6", "Modelo de datos para PostgreSQL: esquema, documento y cargador validados contra una base real", modelo_de_datos)
+
 
 NO_VERIFICADO = [
-    "Calidad del quechua: no la revisó un hablante nativo; la respuesta lleva un aviso.",
-    "Google Cloud Translation: no hay clave propia (la de Gemini no se usa con otras APIs); se traduce con Gemini.",
+    "Quechua: lo midió un benchmark público (FLORES-200, chrF), pero no lo revisó un hablante nativo; la respuesta lleva un aviso.",
+    "Google Cloud Translation: el contrato se probó con respuestas simuladas y contra su documentación; no hay clave propia para una llamada real (la de Gemini no se usa con otras APIs). Se traduce con Gemini.",
     "Datos reales de un banco: todo se evaluó con datos sintéticos; con datos reales las métricas serán otras.",
-    "Sentimiento: no hay un set independiente de frases etiquetadas por personas (solo 24 escritas a mano por el equipo).",
-    "Parámetros de los eventos simulados (retiros de AFP, bonos, covid, Niño): solo 1 de 18 está marcado como verificado; el resto son parciales o supuestos del equipo.",
-    "Serie diaria del pronóstico: el modelo está calibrado en el día 30 y en el día de riesgo; una serie de 30 días con banda al 80 % por día no está entrenada ni validada.",
+    "Sentimiento: el set independiente lo escribió un modelo de lenguaje (no personas) y el sentimiento no está en producción.",
+    "Programa de puntos: la rentabilidad a varios años depende de supuestos de conducta del equipo (consumo, ahorro, abandono); solo un piloto con grupo de control los mide.",
     "Redacción con juez LLM: JUEZ_LLM está apagado por ahorro de tokens; la verificación de cifras es determinista, y la calidad de redacción de Gemini se revisó en una sola corrida de QA.",
     "Carga en producción: se midió el costo por consulta en esta laptop, no el rendimiento con miles de usuarios simultáneos.",
-    "Fuente de la libre disposición de la CTS después de 2026: se verificó la Ley 32322 (texto oficial); cualquier cambio posterior a 2026-11-14 no se conoce hasta volver a contrastarla.",
+    "Libre disposición de la CTS después de 2026: se verificó la Ley 32322 (texto oficial) y el proyecto de ley que propone ampliarla (en evaluación, no es ley); cualquier cambio posterior a 2026-11-14 no se conoce hasta volver a contrastarla.",
 ]
 
 

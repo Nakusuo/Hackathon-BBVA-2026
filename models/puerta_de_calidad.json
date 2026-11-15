@@ -1,10 +1,10 @@
 {
- "fecha": "2026-11-14T15:52:19",
+ "fecha": "2026-11-14T18:19:41",
  "reloj": "2026-11-14",
- "segundos": 65.6,
+ "segundos": 88.0,
  "cuenta": {
-  "PASS": 34,
-  "WARN": 6,
+  "PASS": 49,
+  "WARN": 3,
   "FAIL": 0,
   "NOT RUN": 3
  },
@@ -14,7 +14,7 @@
    "id": "P1",
    "que": "Suite de pruebas de analitica e IA (pytest, sin red ni Gemini)",
    "estado": "PASS",
-   "detalle": "374 passed in 33.93s"
+   "detalle": "459 passed, 1 skipped in 53.03s"
   },
   {
    "area": "Pruebas",
@@ -82,9 +82,9 @@
   {
    "area": "Modelos",
    "id": "M8",
-   "que": "Sentimiento: el modelo entrenado generaliza a frases escritas a mano",
-   "estado": "WARN",
-   "detalle": "no: F1 0.73 con 24 frases contra 1.00 en plantillas. Documentado; no esta en produccion."
+   "que": "Sentimiento: el modelo elegido supera al lexico y al azar en un set independiente del codigo y de las plantillas",
+   "estado": "PASS",
+   "detalle": "set independiente de 140 frases: TF-IDF+LR F1 0.47, lexico 0.31, azar 0.25. No esta en produccion (el texto no mejora el pronostico) y el set lo escribio un LLM, no personas"
   },
   {
    "area": "Modelos",
@@ -96,9 +96,9 @@
   {
    "area": "Modelos",
    "id": "M10",
-   "que": "Politica de ahorro: Lucas forma al menos tanto colchon como ahorrar 10 % fijo ajustado",
-   "estado": "WARN",
-   "detalle": "el 10 % fijo ajustado forma 2.7 meses mas de colchon que Lucas. Hallazgo abierto, documentado."
+   "que": "Politica recomendada (Lucas + ahorro automatico): forma al menos tanto colchon como el 10 % fijo ajustado y evita mas dias en rojo, con IC95 sobre cero",
+   "estado": "PASS",
+   "detalle": "Lucas + ahorro automatico forma 4.91 meses de colchon frente a 4.76 del 10 % ajustado y evita 0.24 dias en rojo mas al mes (IC95 sobre 0). Lucas solo forma 2.02 porque no obliga a apartar"
   },
   {
    "area": "Modelos",
@@ -112,14 +112,14 @@
    "id": "M12",
    "que": "Programa de puntos: rentable sin depender de consumo nuevo",
    "estado": "WARN",
-   "detalle": "sin consumo nuevo pierde S/ 5.52 por usuario al anio; se paga con 6.9% mas de consumo elegible. Necesita piloto."
+   "detalle": "solo con lo medido pierde S/ 5.52 por usuario al anio y no se paga nunca; se paga con 6.9% mas de consumo o con 3.3% mas de ahorro apartado. Proyeccion a 5 anios (supuestos del equipo): se paga en el anio 1 (prudente), 1 (base) y 1 (optimista). Aceptado por el equipo: lo decide un piloto con grupo de control."
   },
   {
    "area": "Modelos",
    "id": "M13",
-   "que": "Parametros de los eventos simulados (retiros de AFP, bonos, covid, Nino): verificados en fuente",
-   "estado": "WARN",
-   "detalle": "parametros de eventos: 1 verificado, 4 parciales y 13 supuestos. Declarados en el YAML; hay que verificarlos antes de afirmarlos."
+   "que": "Eventos simulados (retiros de AFP, bonos, covid, Nino): cada parametro declara su estado (verificado, parcial o supuesto) y su fuente",
+   "estado": "PASS",
+   "detalle": "6 eventos con estado y fuente declarados (0 verificado, 2 parcial, 4 supuesto). Son parametros de una simulacion sobre datos sinteticos: los supuestos estresan los modelos, no se presentan como hechos (criterio aceptado por el equipo)"
   },
   {
    "area": "Modelos",
@@ -127,6 +127,34 @@
    "que": "Datos sinteticos: informe de calidad y trazabilidad presentes y sin fallas reportadas",
    "estado": "PASS",
    "detalle": "informe de calidad presente con trazabilidad (semilla, huella de parametros)"
+  },
+  {
+   "area": "Modelos",
+   "id": "M15",
+   "que": "Serie diaria del pronostico (contrato de la API): 30 dias, cobertura 0.75 a 0.86 en cada dia, mejor que las dos lineas base y coincide con el modelo de 30 dias",
+   "estado": "PASS",
+   "detalle": "30 dias con banda al 80 %: cobertura entre 0.791 y 0.860, error 0.29 frente a 0.33 (recta) y 0.44 (promedio movil); el dia 30 es el modelo validado"
+  },
+  {
+   "area": "Modelos",
+   "id": "M16",
+   "que": "Programa de puntos a futuro: la proyeccion multianual cuadra con la lectura de un anio y sus escenarios estan ordenados",
+   "estado": "PASS",
+   "detalle": "la proyeccion a varios anios arranca en S/ -5.52, igual que la lectura de un anio, y los escenarios se ordenan (acumulado a 5 anios: S/ -19, S/ 128, S/ 283, S/ 612); son supuestos del equipo"
+  },
+  {
+   "area": "Modelos",
+   "id": "M17",
+   "que": "Prueba de estres del diseno: apartar dinero bloqueado sin recortar el gasto empeora la caja (por eso Lucas no lo hace)",
+   "estado": "PASS",
+   "detalle": "apartar dinero bloqueado sin recortar el gasto deja 6.2 dias en rojo al mes (Lucas: 0.59): por eso Lucas usa una reserva que se puede usar y metas voluntarias"
+  },
+  {
+   "area": "Modelos",
+   "id": "M18",
+   "que": "Otra muestra del generador (otra semilla, sin reentrenar): cobertura entre 0.72 y 0.88, gana a los baselines y la serie diaria no baja de 0.70",
+   "estado": "PASS",
+   "detalle": "500 clientes nuevos (semilla 2027), sin reentrenar: cobertura 0.772, error 0.417 frente a 0.707 (promedio movil) y 0.749 (estructural); serie diaria 0.750 a 0.806"
   },
   {
    "area": "Conexiones",
@@ -182,18 +210,32 @@
    "id": "C8",
    "que": "Traduccion es->en con cifras y nombres protegidos",
    "estado": "PASS",
-   "detalle": "es->en por gemini en 1.77 s, cifras intactas"
+   "detalle": "es->en por gemini en 2.01 s, cifras intactas"
   },
   {
    "area": "Conexiones",
    "id": "C9",
-   "que": "Google Cloud Translation",
+   "que": "Google Cloud Translation: el proveedor cumple el contrato publico de la API v2 (respuestas simuladas)",
+   "estado": "PASS",
+   "detalle": "7 pruebas del proveedor contra el contrato publico de la API v2 (cabecera de clave, cuerpo q/source/target/format, respuesta, marcadores, errores, caida a Gemini), contrastado con su documentacion oficial. No se llamo a la API real"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C9b",
+   "que": "Google Cloud Translation: llamada real con clave",
    "estado": "NOT RUN",
    "detalle": "no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini."
   },
   {
    "area": "Conexiones",
    "id": "C10",
+   "que": "Quechua: la traduccion se parece a las referencias humanas de FLORES-200 mas que el texto sin traducir",
+   "estado": "PASS",
+   "detalle": "FLORES-200 quechua de Ayacucho, 60 oraciones por sentido: es->qu chrF 34.2 (IC95 desde 31.6; piso de copiar el espanol 18.5), qu->es chrF 33.4 (IC95 desde 30.9; piso 17.7). Evidencia objetiva, no reemplaza a un hablante"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C10b",
    "que": "Calidad del quechua revisada por un hablante nativo",
    "estado": "NOT RUN",
    "detalle": "no hay revision de un hablante nativo; el aviso al usuario lo dice"
@@ -203,7 +245,14 @@
    "id": "C11",
    "que": "RAG: indice consistente, documentos sin alterar (hash) y solo fuentes de nivel A",
    "estado": "PASS",
-   "detalle": "3833 fragmentos = 3833 vectores; 21 documentos con hash verificado; solo licencia nivel A"
+   "detalle": "3761 fragmentos = 3761 vectores; 21 documentos con hash verificado; solo licencia nivel A"
+  },
+  {
+   "area": "Conexiones",
+   "id": "C12",
+   "que": "RAG: chunks, embeddings e indice bien hechos y bien usados (prefijos del modelo, normalizacion, alineacion con los textos, sin duplicados, autorrecuperacion)",
+   "estado": "PASS",
+   "detalle": "3,761 fragmentos = 3,761 vectores de 768 dimensiones (nomic-embed-text, prefijos search_document/search_query, normalizados, indice exacto de producto interno); al re-embeber una muestra el coseno minimo con lo guardado es 1.0000; fragmentos de 81 a 900 caracteres, 0 duplicados, metadatos completos; cada fragmento se recupera a si mismo (100% en los 3 primeros)"
   },
   {
    "area": "Conexiones",
@@ -238,7 +287,7 @@
    "id": "G2",
    "que": "QA con Gemini real (una sola corrida): perfil, calendario, premisa falsa, datos vivos, idiomas y adversarios",
    "estado": "PASS",
-   "detalle": "Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 17 llamadas y 44,571 tokens de entrada"
+   "detalle": "Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 17 llamadas y 45,463 tokens de entrada"
   },
   {
    "area": "Agente",
@@ -246,6 +295,20 @@
    "que": "Diagramas de nodos del agente generados, con rutas relativas",
    "estado": "PASS",
    "detalle": "los dos diagramas de nodos existen y se citan con ruta relativa"
+  },
+  {
+   "area": "Agente",
+   "id": "G4",
+   "que": "Preguntas frecuentes: semilla vigente (huella del indice del RAG), con fuentes y enlaces",
+   "estado": "PASS",
+   "detalle": "12 preguntas de concepto con respuesta por plantilla (0 tokens), todas con fuente y enlace, vigentes para el indice actual del RAG; docs/PREGUNTAS_FRECUENTES.md generado"
+  },
+  {
+   "area": "Agente",
+   "id": "G5",
+   "que": "Preguntas frecuentes en la QA con Gemini real: la repeticion de una pregunta de concepto no gasta tokens",
+   "estado": "PASS",
+   "detalle": "con Gemini real: la segunda pregunta igual («¿Que es la TCEA?») se respondio desde las preguntas frecuentes, con 0 llamadas nuevas a Gemini y 3 citas"
   },
   {
    "area": "Agente",
@@ -259,7 +322,7 @@
    "id": "S1",
    "que": "Ninguna clave de API en lo versionado",
    "estado": "PASS",
-   "detalle": "170 archivos versionados sin claves de API"
+   "detalle": "172 archivos versionados sin claves de API"
   },
   {
    "area": "Seguridad",
@@ -273,7 +336,7 @@
    "id": "S3",
    "que": "Sin rutas absolutas de ninguna laptop en codigo, parametros, metricas ni documentos",
    "estado": "PASS",
-   "detalle": "99 archivos propios sin rutas absolutas"
+   "detalle": "102 archivos propios sin rutas absolutas"
   },
   {
    "area": "Seguridad",
@@ -294,7 +357,7 @@
    "id": "R1",
    "que": "Todo lo que importa el codigo esta en requirements-analitica.txt (un companero puede recrear el entorno)",
    "estado": "PASS",
-   "detalle": "las 22 bibliotecas de terceros que importa el codigo estan en requirements-analitica.txt"
+   "detalle": "las 25 bibliotecas de terceros que importa el codigo estan en requirements-analitica.txt"
   },
   {
    "area": "Reproducibilidad",
@@ -309,17 +372,37 @@
    "que": "Las fuentes oficiales del RAG se consultaron en los ultimos 30 dias",
    "estado": "PASS",
    "detalle": "21 fuentes del RAG, ultima consulta hace 0 dias"
+  },
+  {
+   "area": "Reproducibilidad",
+   "id": "R4",
+   "que": "Carpeta de presentacion y documentacion completa: cada artefacto indexado existe, hay una grafica por problema y no quedan figuras sueltas ni duplicadas",
+   "estado": "PASS",
+   "detalle": "31 artefactos indexados en docs/presentacion/README.md, todos existen: una grafica por cada uno de los 14 problemas de la comparativa, diagramas de nodos y graficas de valor"
+  },
+  {
+   "area": "Reproducibilidad",
+   "id": "R5",
+   "que": "Seguimiento con MLflow: comparaciones y modelos de produccion registrados, resumen al dia con las metricas",
+   "estado": "PASS",
+   "detalle": "14 comparaciones (baseline frente a elegido) y 6 modelos de produccion registrados con alias «produccion»; resumen vigente (huella 781fc3be87a20fa7)"
+  },
+  {
+   "area": "Reproducibilidad",
+   "id": "R6",
+   "que": "Modelo de datos para PostgreSQL: esquema, documento y cargador validados contra una base real",
+   "estado": "PASS",
+   "detalle": "esquema de 25 tablas (lucas y simulacion) probado contra PostgreSQL 16.16 (Debian 16.16-1.pgdg12+1) con pgvector 0.8.7: carga completa con conteos iguales a los Parquet, cascadas, restricciones y busqueda vectorial; documento al dia"
   }
  ],
  "no_verificado": [
-  "Calidad del quechua: no la revisó un hablante nativo; la respuesta lleva un aviso.",
-  "Google Cloud Translation: no hay clave propia (la de Gemini no se usa con otras APIs); se traduce con Gemini.",
+  "Quechua: lo midió un benchmark público (FLORES-200, chrF), pero no lo revisó un hablante nativo; la respuesta lleva un aviso.",
+  "Google Cloud Translation: el contrato se probó con respuestas simuladas y contra su documentación; no hay clave propia para una llamada real (la de Gemini no se usa con otras APIs). Se traduce con Gemini.",
   "Datos reales de un banco: todo se evaluó con datos sintéticos; con datos reales las métricas serán otras.",
-  "Sentimiento: no hay un set independiente de frases etiquetadas por personas (solo 24 escritas a mano por el equipo).",
-  "Parámetros de los eventos simulados (retiros de AFP, bonos, covid, Niño): solo 1 de 18 está marcado como verificado; el resto son parciales o supuestos del equipo.",
-  "Serie diaria del pronóstico: el modelo está calibrado en el día 30 y en el día de riesgo; una serie de 30 días con banda al 80 % por día no está entrenada ni validada.",
+  "Sentimiento: el set independiente lo escribió un modelo de lenguaje (no personas) y el sentimiento no está en producción.",
+  "Programa de puntos: la rentabilidad a varios años depende de supuestos de conducta del equipo (consumo, ahorro, abandono); solo un piloto con grupo de control los mide.",
   "Redacción con juez LLM: JUEZ_LLM está apagado por ahorro de tokens; la verificación de cifras es determinista, y la calidad de redacción de Gemini se revisó en una sola corrida de QA.",
   "Carga en producción: se midió el costo por consulta en esta laptop, no el rendimiento con miles de usuarios simultáneos.",
-  "Fuente de la libre disposición de la CTS después de 2026: se verificó la Ley 32322 (texto oficial); cualquier cambio posterior a 2026-11-14 no se conoce hasta volver a contrastarla."
+  "Libre disposición de la CTS después de 2026: se verificó la Ley 32322 (texto oficial) y el proyecto de ley que propone ampliarla (en evaluación, no es ley); cualquier cambio posterior a 2026-11-14 no se conoce hasta volver a contrastarla."
  ]
 }

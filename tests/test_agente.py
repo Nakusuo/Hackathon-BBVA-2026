@@ -120,7 +120,7 @@ def test_pregunta_por_la_cts_responde_con_el_calendario_y_la_regla_vigente(agent
     assert r["intencion"] == "calendario" and r["llamadas_llm"] == 0 and not r["cifras_sin_respaldo"]
     assert "lunes 16 de noviembre de 2026" in t and "martes 15 de diciembre de 2026" in t       # el 15 de nov. de 2026 es domingo: pasa al lunes
     assert "100 %" in t and "Ley 32322" in t and "jueves 31 de diciembre de 2026" in t and "50 %" in t
-    assert "proteccion" in t and "todavia no son ley" in t and "cuenta de CTS" in t              # advierte la finalidad y no trata un proyecto como ley
+    assert "proteccion" in t and "todavia no es ley" in t and "cuenta de CTS" in t              # advierte la finalidad y no trata un proyecto como ley
     assert t.rstrip().endswith("Tu decides.")
 
 

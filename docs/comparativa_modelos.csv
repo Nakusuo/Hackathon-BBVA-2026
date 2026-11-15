@@ -25,9 +25,11 @@ Gastos fijos y suscripciones,F1,mayor,Periodicidad + estabilidad del monto,0.932
 Gastos fijos y suscripciones,F1,mayor,«Mismo comercio 3 veces»,0.16862,no
 Movimientos atípicos,Precisión en los k más sospechosos,mayor,Isolation Forest,0.750242,si
 Movimientos atípicos,Precisión en los k más sospechosos,mayor,Z-score robusto,0.687803,no
-Sentimiento de los mensajes,F1 en frases escritas a mano,mayor,Léxico (provisional),0.916375,si
-Sentimiento de los mensajes,F1 en frases escritas a mano,mayor,TF-IDF + regresión logística,0.730692,no
-Política de ahorro (reproducción contrafactual),Días en rojo por cliente al mes,menor,Lucas (alerta + Sueldo Lucas),0.594102,si
+Sentimiento de los mensajes,F1 macro en frases de un set independiente,mayor,TF-IDF + regresión logística,0.468736,si
+Sentimiento de los mensajes,F1 macro en frases de un set independiente,mayor,Léxico de palabras,0.309265,no
+Sentimiento de los mensajes,F1 macro en frases de un set independiente,mayor,Clase más frecuente (azar),0.25,no
+Política de ahorro (reproducción contrafactual),Días en rojo por cliente al mes,menor,Lucas + ahorro automático,0.594102,si
+Política de ahorro (reproducción contrafactual),Días en rojo por cliente al mes,menor,Lucas solo (alerta + Sueldo Lucas),0.594102,no
 Política de ahorro (reproducción contrafactual),Días en rojo por cliente al mes,menor,No hacer nada,0.837462,no
 Política de ahorro (reproducción contrafactual),Días en rojo por cliente al mes,menor,"Apartar 10 % fijo, ajustado",0.837462,no
 Arquitectura del agente,Ruteo correcto,mayor,Agente único,1.0,si
@@ -37,3 +39,6 @@ Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Híbrido + f
 Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Solo palabras (BM25) + filtro,0.882353,no
 Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Híbrido + preguntas partidas,0.941176,no
 Recuperación de fuentes (RAG),Recall@4 con filtro de módulo,mayor,Híbrido + partidas + MMR,0.941176,no
+Pronóstico día por día (30 días con banda al 80 %),Error medio / ingreso mensual (promedio de los 30 días),menor,LightGBM por horizontes + banda por día,0.285564,si
+Pronóstico día por día (30 días con banda al 80 %),Error medio / ingreso mensual (promedio de los 30 días),menor,Recta al día 30,0.333716,no
+Pronóstico día por día (30 días con banda al 80 %),Error medio / ingreso mensual (promedio de los 30 días),menor,Promedio móvil de 3 meses,0.440306,no

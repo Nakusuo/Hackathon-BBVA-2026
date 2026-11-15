@@ -54,9 +54,23 @@ class Ollama:
             r = requests.post(f"{self.host}/api/chat", json={"model": self.modelo, "stream": False, "keep_alive": "30m", "options": {"temperature": 0.2, "num_ctx": 4096},
                                                             "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}]}, timeout=timeout)
             r.raise_for_status()
-            return r.json()["message"]["content"].strip()
+            cuerpo = r.json()
+            if cuerpo.get("done_reason") not in (None, "stop"):   # "length": se corto por el tope de contexto
+                raise ErrorProveedor(f"ollama: respuesta incompleta ({cuerpo.get('done_reason')})")
+            return cuerpo["message"]["content"].strip()
         except (requests.RequestException, KeyError, ValueError) as e:
             raise ErrorProveedor(f"ollama: {e}") from e
+
+
+TRANSITORIOS = (429, 500, 502, 503, 504)   # limite de uso o servidor saturado: vale la pena reintentar antes de cambiar de proveedor
+ESPERAS = (1.5, 3.0)                       # segundos de espera antes del segundo y del tercer intento
+
+
+def texto_de_gemini(datos: dict) -> str:
+    """Une todas las partes de texto de la respuesta de Gemini y deja fuera las de razonamiento (thought). La API puede repartir una respuesta larga en varias partes:
+    leer solo la primera corta el texto a la mitad aunque finishReason sea STOP (fallo real encontrado en la QA: «...que eleg», «...hoy tu colchon alcanza»)."""
+    partes = datos["candidates"][0]["content"]["parts"]
+    return "".join(p.get("text", "") for p in partes if not p.get("thought")).strip()
 
 
 class Gemini:
@@ -76,12 +90,12 @@ class Gemini:
             raise ErrorProveedor("gemini: sin clave en .env")
         sistema, usuario = _prompt(pregunta, datos, tono, feedback)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.modelo}:generateContent"
-        cuerpo = {"systemInstruction": {"parts": [{"text": sistema}]}, "contents": [{"role": "user", "parts": [{"text": usuario}]}], "generationConfig": {"temperature": 0.2, "maxOutputTokens": 450}}
-        for intento in range(2):
+        cuerpo = {"systemInstruction": {"parts": [{"text": sistema}]}, "contents": [{"role": "user", "parts": [{"text": usuario}]}], "generationConfig": {"temperature": 0.2, "maxOutputTokens": 1024}}
+        for intento in range(len(ESPERAS) + 1):
             try:
                 r = requests.post(url, json=cuerpo, headers={"x-goog-api-key": self.clave}, timeout=timeout)
-                if r.status_code == 429 and intento == 0:
-                    time.sleep(2)
+                if r.status_code in TRANSITORIOS and intento < len(ESPERAS):
+                    time.sleep(ESPERAS[intento])
                     continue
                 r.raise_for_status()
                 datos = r.json()
@@ -89,9 +103,18 @@ class Gemini:
                 USO["llamadas"] += 1
                 USO["entrada"] += int(u.get("promptTokenCount", 0))
                 USO["salida"] += int(u.get("candidatesTokenCount", 0))
-                return datos["candidates"][0]["content"]["parts"][0]["text"].strip()
-            except (requests.RequestException, KeyError, IndexError, ValueError) as e:
+                fin = datos["candidates"][0].get("finishReason")
+                if fin not in (None, "STOP"):   # MAX_TOKENS, SAFETY...: una respuesta cortada a la mitad nunca se muestra ni se guarda en la cache
+                    raise ErrorProveedor(f"gemini: respuesta incompleta ({fin})")
+                return texto_de_gemini(datos)
+            except (requests.Timeout, requests.ConnectionError) as e:
+                if intento < len(ESPERAS):
+                    time.sleep(ESPERAS[intento])
+                    continue
                 raise ErrorProveedor(f"gemini: {type(e).__name__}") from e
+            except (requests.RequestException, KeyError, IndexError, ValueError) as e:
+                codigo = f" (HTTP {e.response.status_code})" if getattr(e, "response", None) is not None else ""
+                raise ErrorProveedor(f"gemini: {type(e).__name__}{codigo}") from e
         raise ErrorProveedor("gemini: limite de uso")
 
 
@@ -114,12 +137,12 @@ class Compatible:
         if not self.disponible():
             raise ErrorProveedor("compatible: faltan LLM_BASE_URL, LLM_API_KEY o LLM_MODEL")
         sistema, usuario = _prompt(pregunta, datos, tono, feedback)
-        cuerpo = {"model": self.modelo, "temperature": 0.2, "max_tokens": 450, "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}]}
-        for intento in range(2):
+        cuerpo = {"model": self.modelo, "temperature": 0.2, "max_tokens": 1024, "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}]}
+        for intento in range(len(ESPERAS) + 1):
             try:
                 r = requests.post(f"{self.base}/chat/completions", json=cuerpo, headers={"Authorization": f"Bearer {self.clave}"}, timeout=timeout)
-                if r.status_code == 429 and intento == 0:
-                    time.sleep(2)
+                if r.status_code in TRANSITORIOS and intento < len(ESPERAS):
+                    time.sleep(ESPERAS[intento])
                     continue
                 r.raise_for_status()
                 datos_r = r.json()
@@ -127,7 +150,14 @@ class Compatible:
                 USO["llamadas"] += 1
                 USO["entrada"] += int(u.get("prompt_tokens", 0))
                 USO["salida"] += int(u.get("completion_tokens", 0))
+                if datos_r["choices"][0].get("finish_reason") not in (None, "stop"):   # "length" (tope de tokens) y "content_filter": respuesta incompleta
+                    raise ErrorProveedor(f"compatible: respuesta incompleta ({datos_r['choices'][0].get('finish_reason')})")
                 return datos_r["choices"][0]["message"]["content"].strip()
+            except (requests.Timeout, requests.ConnectionError) as e:
+                if intento < len(ESPERAS):
+                    time.sleep(ESPERAS[intento])
+                    continue
+                raise ErrorProveedor(f"compatible: {type(e).__name__}") from e
             except (requests.RequestException, KeyError, IndexError, ValueError, AttributeError) as e:
                 codigo = f" (HTTP {e.response.status_code})" if getattr(e, "response", None) is not None else ""
                 raise ErrorProveedor(f"compatible: {type(e).__name__}{codigo}") from e

@@ -57,7 +57,7 @@ def test_compatible_arma_la_peticion_chat_completions_y_cuenta_los_tokens(red, c
     c = red.llamadas[0]
     assert c["url"] == "https://llm.ejemplo.test/v1/chat/completions" and c["headers"] == {"Authorization": "Bearer clave-de-prueba"}
     assert c["json"]["model"] == "modelo-x" and [m["role"] for m in c["json"]["messages"]] == ["system", "user"] and "DATOS:\nsaldo: 100" in c["json"]["messages"][1]["content"]
-    assert c["json"]["max_tokens"] == 450 and c["json"]["temperature"] == 0.2
+    assert c["json"]["max_tokens"] == 1024 and c["json"]["temperature"] == 0.2
     assert PV.USO == {"llamadas": 1, "entrada": 120, "salida": 8}
 
 
@@ -72,19 +72,34 @@ def test_compatible_sin_configuracion_no_hace_ninguna_llamada(red, monkeypatch):
     assert red.llamadas == []
 
 
-def test_un_limite_de_uso_se_reintenta_una_vez_y_se_recupera(red, compatible):
-    red.respuestas += [Resp(429), Resp(200, OK)]
+@pytest.mark.parametrize("codigo", [429, 500, 503])
+def test_un_error_transitorio_se_reintenta_y_se_recupera(red, compatible, codigo):
+    red.respuestas += [Resp(codigo), Resp(200, OK)]
     assert compatible.redactar("hola", "ninguno", "neutro") == "Hola. Tu decides." and len(red.llamadas) == 2
 
 
-def test_un_limite_de_uso_persistente_se_rinde_con_su_codigo(red, compatible):
-    red.respuestas += [Resp(429), Resp(429)]
-    with pytest.raises(PV.ErrorProveedor, match="HTTP 429"):
+def test_se_reintenta_hasta_tres_veces_con_espera_y_luego_se_rinde_con_su_codigo(red, compatible, monkeypatch):
+    esperas = []
+    monkeypatch.setattr(PV.time, "sleep", esperas.append)
+    red.respuestas += [Resp(503), Resp(503), Resp(503)]
+    with pytest.raises(PV.ErrorProveedor, match="HTTP 503"):
         compatible.redactar("hola", "ninguno", "neutro")
-    assert len(red.llamadas) == 2
+    assert len(red.llamadas) == 3 and esperas == [1.5, 3.0]
 
 
-@pytest.mark.parametrize("codigo", [400, 401, 403, 500])
+def test_gemini_tambien_reintenta_un_error_transitorio_y_deja_el_codigo_si_se_rinde(red):
+    g = PV.Gemini()
+    g.clave = "clave-de-prueba"
+    red.respuestas += [Resp(503), Resp(200, {"candidates": [{"content": {"parts": [{"text": "Hola. Tu decides."}]}, "finishReason": "STOP"}]})]
+    assert g.redactar("hola", "ninguno", "neutro") == "Hola. Tu decides." and len(red.llamadas) == 2
+    red.llamadas.clear()
+    red.respuestas += [Resp(429), Resp(429), Resp(429)]
+    with pytest.raises(PV.ErrorProveedor, match="HTTP 429"):
+        g.redactar("hola", "ninguno", "neutro")
+    assert len(red.llamadas) == 3
+
+
+@pytest.mark.parametrize("codigo", [400, 401, 403])
 def test_un_error_definitivo_no_se_reintenta(red, compatible, codigo):
     red.respuestas.append(Resp(codigo))
     with pytest.raises(PV.ErrorProveedor, match=f"HTTP {codigo}"):
@@ -106,7 +121,7 @@ def test_gemini_manda_la_clave_en_el_encabezado_y_nunca_en_la_url(red):
     assert g.redactar("hola", "ninguno", "neutro") == "Hola. Tu decides."
     c = red.llamadas[0]
     assert "clave-secreta" not in c["url"] and c["headers"] == {"x-goog-api-key": "clave-secreta-de-prueba"} and c["url"].endswith("/models/gemini-prueba:generateContent")
-    assert c["json"]["generationConfig"]["maxOutputTokens"] == 450 and PV.USO["entrada"] == 50 and PV.USO["salida"] == 5
+    assert c["json"]["generationConfig"]["maxOutputTokens"] == 1024 and PV.USO["entrada"] == 50 and PV.USO["salida"] == 5
 
 
 def test_gemini_sin_clave_no_llama(red):
@@ -131,3 +146,60 @@ def test_el_prompt_prohibe_lo_que_el_agente_no_hace():
     s = PV.SISTEMA.lower()
     for regla in ("exclusivamente los datos", "no inventes cifras", "no calcules numeros nuevos", "nunca nombres la seccion datos", "tu decides", "codigo, problemas de matematica"):
         assert regla in s, regla
+
+
+# ---------------------------------------------------------------------------- respuestas cortadas a la mitad
+# Salio de un fallo real de la QA con Gemini: el tope de tokens corto dos respuestas («...en la entidad financiera que eleg») y el agente las mostro y las guardo en la cache.
+def test_gemini_rechaza_una_respuesta_cortada_por_el_tope_de_tokens(red):
+    g = PV.Gemini()
+    g.clave = "clave-de-prueba"
+    red.respuestas.append(Resp(200, {"candidates": [{"content": {"parts": [{"text": "Tu deposito llega a tu cuenta de CTS en la entidad financiera que eleg"}]}, "finishReason": "MAX_TOKENS"}],
+                                     "usageMetadata": {"promptTokenCount": 50, "candidatesTokenCount": 450}}))
+    with pytest.raises(PV.ErrorProveedor, match="incompleta"):
+        g.redactar("hola", "ninguno", "neutro")
+    assert PV.USO["salida"] == 450   # el costo se cuenta aunque la respuesta se descarte
+
+
+def test_gemini_acepta_una_respuesta_que_termino_bien(red):
+    g = PV.Gemini()
+    g.clave = "clave-de-prueba"
+    red.respuestas.append(Resp(200, {"candidates": [{"content": {"parts": [{"text": "Hola. Tu decides."}]}, "finishReason": "STOP"}]}))
+    assert g.redactar("hola", "ninguno", "neutro") == "Hola. Tu decides."
+
+
+def test_compatible_rechaza_una_respuesta_cortada_por_longitud(red, compatible):
+    red.respuestas.append(Resp(200, {"choices": [{"message": {"content": "Tu saldo sera de S/ 4"}, "finish_reason": "length"}], "usage": {"prompt_tokens": 10, "completion_tokens": 1024}}))
+    with pytest.raises(PV.ErrorProveedor, match="incompleta"):
+        compatible.redactar("hola", "ninguno", "neutro")
+
+
+def test_ollama_rechaza_una_respuesta_cortada_por_longitud(red):
+    o = PV.Ollama()
+    red.respuestas.append(Resp(200, {"message": {"content": "Tu saldo sera de S/ 4"}, "done_reason": "length"}))
+    with pytest.raises(PV.ErrorProveedor, match="incompleta"):
+        o.redactar("hola", "ninguno", "neutro")
+
+
+@pytest.mark.parametrize("texto,esperado", [("Tu decides.", True), ("Tu saldo es bajo (S/ 4).", True), ("¿Quieres ver mas?", True), ("**Tu decides.**", True),
+                                            ("llega a tu cuenta de CTS en la entidad financiera que eleg", False), ("¡Hola! ¡Que gran nivel el", False), ("", False)])
+def test_el_juez_solo_acepta_borradores_que_terminan_en_una_oracion_completa(texto, esperado):
+    from src.agente_analitico.grafo import _termina_en_oracion_completa
+    assert _termina_en_oracion_completa(texto) is esperado
+
+
+def test_gemini_une_todas_las_partes_de_texto_y_deja_fuera_el_razonamiento(red):
+    # fallo real: la API devolvio la respuesta en dos partes y el agente solo leia la primera (texto cortado a la mitad con finishReason STOP)
+    g = PV.Gemini()
+    g.clave = "clave-de-prueba"
+    red.respuestas.append(Resp(200, {"candidates": [{"content": {"parts": [{"text": "razonamiento interno", "thought": True}, {"text": "Prepara tu hogar y arma un fondo "}, {"text": "de S/ 7,144 para protegerte. Tu decides."}]}, "finishReason": "STOP"}]}))
+    assert g.redactar("hola", "ninguno", "neutro") == "Prepara tu hogar y arma un fondo de S/ 7,144 para protegerte. Tu decides."
+
+
+def test_texto_de_gemini_con_una_sola_parte_no_cambia_nada():
+    assert PV.texto_de_gemini({"candidates": [{"content": {"parts": [{"text": "  Hola.  "}]}}]}) == "Hola."
+
+
+@pytest.mark.parametrize("texto,filtra", [("por ahora solo rige lo que dicen los DATOS.", True), ("DATOS:\nsaldo: 100", True), ("Tus datos estan protegidos.", False), ("Los datos del cliente llegan hasta noviembre.", False)])
+def test_el_juez_rechaza_un_borrador_que_nombra_la_seccion_interna_del_prompt(texto, filtra):
+    from src.agente_analitico.grafo import _filtra_el_prompt
+    assert _filtra_el_prompt(texto) is filtra

@@ -1,0 +1,95 @@
+{
+ "semilla": 20261114,
+ "embeddings": {
+  "modelo": "nomic-embed-text",
+  "dimension_del_indice": 768,
+  "dimension_declarada": 768,
+  "vectores": 3761,
+  "fragmentos": 3761,
+  "tipo_de_indice": "IndexFlatIP",
+  "norma_minima": 0.9999998807907104,
+  "norma_maxima": 1.0000001192092896,
+  "reembebido_con_prefijo_de_documento": {
+   "n": 30,
+   "coseno_minimo": 0.9999998807907104,
+   "coseno_medio": 1.0000000456968943
+  },
+  "mismo_texto_con_prefijo_de_consulta": {
+   "n": 10,
+   "coseno_medio": 0.9684873342514038
+  },
+  "prefijos_en_el_codigo": {
+   "documento_al_indexar": true,
+   "consulta_al_buscar": true,
+   "formato": "search_{tipo}: texto (requisito de nomic-embed-text)"
+  }
+ },
+ "chunks": {
+  "tam_fragmento": 900,
+  "solape": 120,
+  "documentos": 21,
+  "modulos": [
+   "contexto",
+   "derechos",
+   "deudas",
+   "fenomeno_el_nino",
+   "laboral",
+   "salud_financiera"
+  ],
+  "largo": {
+   "minimo": 81,
+   "p5": 264,
+   "mediana": 775,
+   "p95": 894,
+   "maximo": 900
+  },
+  "menores_de_80_caracteres": 0,
+  "mayores_que_el_tamano_mas_solape": 0,
+  "duplicados_exactos": 0,
+  "pares_vecinos": {
+   "n": 2828,
+   "con_solape": 876,
+   "fraccion_con_solape": 0.30975954738330974,
+   "solape_medio_en_caracteres": 90.07191780821918,
+   "nota": "el troceador solo solapa cuando junta piezas pequenas; un parrafo largo cortado por oracion no repite texto"
+  },
+  "terminan_en_puntuacion": 0.1539484179739431,
+  "nota_final_de_fragmento": "el separador (». «) queda al INICIO del fragmento siguiente, por eso pocos terminan en punto: no significa que corten a mitad de frase",
+  "campos_vacios": {
+   "modulo": 0,
+   "documento": 0,
+   "titulo": 0,
+   "institucion": 0,
+   "pagina": 0,
+   "licencia_nivel": 0,
+   "enlace": 0,
+   "texto": 0
+  },
+  "niveles_de_licencia": [
+   "A"
+  ]
+ },
+ "autorrecuperacion": {
+  "n": 60,
+  "el_fragmento_es_el_primero": 0.9833333333333333,
+  "el_fragmento_esta_en_los_3_primeros": 1.0,
+  "el_primero_es_del_mismo_documento": 1.0
+ },
+ "comprobaciones": {
+  "dimension_coincide": true,
+  "vectores_igual_a_fragmentos": true,
+  "vectores_normalizados": true,
+  "indice_exacto_de_producto_interno": true,
+  "indice_alineado_con_los_textos": true,
+  "consulta_y_documento_se_distinguen": true,
+  "prefijos_correctos": true,
+  "sin_fragmentos_diminutos_ni_duplicados": true,
+  "ningun_fragmento_excede_el_tamano_mas_solape": true,
+  "metadatos_completos": true,
+  "solo_licencia_nivel_A": true,
+  "cada_fragmento_se_recupera_a_si_mismo": true
+ },
+ "todo_ok": true,
+ "huella_codigo": "ada234587d22d853",
+ "lectura": "Los vectores se hicieron con nomic-embed-text (Ollama, local) y prefijo de documento al indexar y de consulta al buscar; estan normalizados y el indice es exacto de producto interno (coseno), asi que no hay aproximacion. Volver a embeber una muestra da el mismo vector guardado: el indice esta alineado con los textos. El troceado es de 900 caracteres con 120 de solape cortando por parrafo, oracion o palabra (en ese orden)."
+}

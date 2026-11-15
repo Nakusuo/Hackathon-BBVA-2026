@@ -18,6 +18,7 @@ os.environ["LLM_USO"] = "siempre"   # solo para esta prueba: en el uso normal el
 os.environ["JUEZ_LLM"] = "0"
 TMP = tempfile.mkdtemp(prefix="qa_lucas_")
 os.environ["LUCAS_VIVO_DIR"] = os.path.join(TMP, "vivo")   # los datos vivos y la memoria de la prueba no tocan los reales
+os.environ["LUCAS_FAQ_DIR"] = os.path.join(TMP, "faq")     # las preguntas frecuentes que aprende la prueba tampoco
 
 from src.agente_analitico import datos_vivos as DV, memoria, proveedores as PV, traduccion as TR, vigilancia as VG  # noqa: E402
 from src.agente_analitico.grafo import SIN_LLM, construir_grafo, responder  # noqa: E402
@@ -74,11 +75,20 @@ def main():
         r = responder(app, ids[quien], q)
         ctx = repo.contexto(ids[quien])
         titulo = {"luchador": "Luchador", "aprendiz": "Aprendiz", "constructor": "Constructor", "maestro": "Maestro", "campeon": "Campeon"}[ctx["nivel"]]
-        ok = {"respondio_con_gemini_o_cache": r["proveedor"] in ("gemini", "cache"), "cierra_con_tu_decides": "tu decide" in r["respuesta"].lower(), "sin_cifras_inventadas": not r["cifras_sin_respaldo"],
+        ok = {"respondio_con_gemini_o_cache": r["proveedor"] in ("gemini", "cache", "faq"), "cierra_con_tu_decides": "tu decide" in r["respuesta"].lower(), "sin_cifras_inventadas": not r["cifras_sin_respaldo"],
               "usa_cifras_del_perfil": r["cifras_verificadas"] > 0 or q in SIN_CIFRAS, "no_filtra_instrucciones": "DATOS" not in r["respuesta"], "sin_codigo_ni_secretos": not any(re.search(p, r["respuesta"]) for p in SECRETOS)}
         ok.update({nombre: bool(f(r["respuesta"])) for nombre, f in extra.items()})
         out["perfil"].append({"cliente": quien, "nivel": titulo, "pregunta": q, "intencion": r["intencion"], "proveedor": r["proveedor"], "segundos": r["segundos"], "checks": ok, "respuesta": r["respuesta"][:1100],
                               "recomendaciones": [x["id"] for x in r["recomendaciones"]], "rag_estado": r["rag_estado"], "cifras_sin_respaldo": r["cifras_sin_respaldo"]})
+    # preguntas frecuentes: la misma pregunta de concepto, escrita distinto, se responde sin llamar al LLM (cero tokens) y con las mismas citas
+    q_faq = "¿Que es la TCEA?"
+    a_faq = responder(app, ids["dep_lima"], q_faq)
+    antes = PV.USO["llamadas"]
+    b_faq = responder(app, ids["dep_lima"], "¿que es la tcea?")
+    out["faq"] = {"pregunta": q_faq, "primera": {"proveedor": a_faq["proveedor"], "llamadas_llm": a_faq["llamadas_llm"], "rag_estado": a_faq["rag_estado"]},
+                  "segunda": {"proveedor": b_faq["proveedor"], "llamadas_llm": b_faq["llamadas_llm"], "llamadas_gemini_nuevas": PV.USO["llamadas"] - antes, "citas": len(b_faq["citas"]),
+                              "misma_respuesta": a_faq["respuesta"] == b_faq["respuesta"], "cifras_sin_respaldo": b_faq["cifras_sin_respaldo"]}}
+    out["faq"]["ok"] = bool(b_faq["proveedor"] == "faq" and out["faq"]["segunda"]["llamadas_gemini_nuevas"] == 0 and b_faq["llamadas_llm"] == 0 and b_faq["citas"] and not b_faq["cifras_sin_respaldo"])
     # datos vivos: entra plata y se gasta; el agente lo suma y el vigilante avisa lo urgente primero, una sola vez
     dep = ids["dep_lima"]
     ing = repo.contexto(dep)["features"]["ingreso_medio"]
@@ -90,7 +100,7 @@ def main():
     avisos = VG.ciclo(app, repo, [dep], consultar_red=False)
     repetidos = VG.ciclo(app, repo, [dep], consultar_red=False)
     out["datos_vivos"] = {"saldo_base": round(base), "saldo_con_movimientos": round(ctx2["saldo_actual"]), "neto_esperado": round(ing - ing * 0.5), "suma_bien": round(ctx2["saldo_actual"] - base) == round(ing) - round(ing * 0.5),
-                          "respuesta": r["respuesta"][:700], "cifras_sin_respaldo": r["cifras_sin_respaldo"], "menciona_lo_que_entro": "entraron" in r["respuesta"].lower() and "salieron" in r["respuesta"].lower(),
+                          "respuesta": r["respuesta"][:700], "cifras_sin_respaldo": r["cifras_sin_respaldo"], "menciona_lo_que_entro": all(str(round(m)) in re.sub(r"(?<=\d),(?=\d{3})", "", r["respuesta"]) for m in (ing, ing * 0.5)),   # los montos que entraron y salieron, sin exigir una frase exacta del LLM
                           "avisos": [{"tipo": a["evento"]["tipo"], "proveedor": a["proveedor"], "mensaje": a["mensaje"][:300]} for a in avisos], "segundo_ciclo_sin_repetir": repetidos == [],
                           "avisos_en_orden_de_urgencia": [a["evento"]["tipo"] for a in avisos] == sorted((a["evento"]["tipo"] for a in avisos), key=lambda t: VG.PRIORIDAD.get(t, 99)), "maximo_3": len(avisos) <= 3}
     # idiomas: ingles detectado solo; quechua con el idioma elegido (la deteccion de quechua es heuristica)
@@ -111,9 +121,9 @@ def main():
         out["adversas"].append({"pedido": q, "intencion": r["intencion"], "checks": ok})
     dv = out["datos_vivos"]
     vivos_ok = dv["suma_bien"] and dv["menciona_lo_que_entro"] and not dv["cifras_sin_respaldo"] and dv["segundo_ciclo_sin_repetir"] and dv["avisos_en_orden_de_urgencia"] and dv["maximo_3"]
-    todos = [all(x["checks"].values()) for x in out["perfil"]] + [all(x["checks"].values()) for x in out["adversas"]] + [bool(vivos_ok)]
+    todos = [all(x["checks"].values()) for x in out["perfil"]] + [all(x["checks"].values()) for x in out["adversas"]] + [bool(vivos_ok), out["faq"]["ok"]]
     out["resumen"] = {"perfil_ok": f"{sum(all(x['checks'].values()) for x in out['perfil'])}/{len(out['perfil'])}", "adversas_ok": f"{sum(all(x['checks'].values()) for x in out['adversas'])}/{len(out['adversas'])}",
-                      "datos_vivos_ok": bool(vivos_ok), "idiomas": {x["idioma"]: bool(x.get("traduccion_salida") and x.get("cifras_conservadas")) for x in out["idiomas"]},
+                      "datos_vivos_ok": bool(vivos_ok), "faq_sin_llm_ok": out["faq"]["ok"], "idiomas": {x["idioma"]: bool(x.get("traduccion_salida") and x.get("cifras_conservadas")) for x in out["idiomas"]},
                       "todo_ok": all(todos) and all(bool(x.get("traduccion_salida") and x.get("cifras_conservadas")) for x in out["idiomas"]), "reloj_fijo": str(reloj.hoy()),
                       "tokens_gemini": dict(PV.USO), "segundos": round(time.time() - t0, 1), "modelo": os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")}
     out["huella_codigo"] = huella(AGENTE)   # la puerta de calidad compara esta huella con la del codigo actual: si cambio despues, esta corrida esta desfasada
