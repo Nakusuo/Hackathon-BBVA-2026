@@ -1,6 +1,6 @@
 -- =============================================================================
 -- db/init.sql  ·  Lucas (AI Financial Life)  ·  PostgreSQL 16 + pgvector
--- Implementa ARCHITECTURE.md §5: esquemas seguro / app / rag, roles, RLS, pgcrypto.
+-- Esquemas seguro / app / rag, roles, RLS y pgcrypto. En el MVP nada se conecta a la base (ARCHITECTURE.md, sección 4).
 -- Se ejecuta UNA vez como superusuario (docker-entrypoint-initdb.d). Idempotente
 -- en roles/extensiones; las tablas se crean nuevas (usa un volumen limpio para rehacer).
 --
