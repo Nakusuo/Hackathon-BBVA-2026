@@ -1,0 +1,61 @@
+' Regenerar: java -jar plantuml.jar -charset UTF-8 -tsvg docs/diagramas/procesos.puml
+@startuml procesos
+!pragma layout smetana
+
+title Lucas (MVP): diagrama de actividad del uso
+
+|Cliente|
+start
+:Ingresa a Banco Vértice\ny elige su persona;
+
+|Pantallas de Lucas|
+if (¿Dio su permiso?) then (no)
+  :Muestra /consentimiento;
+  |Cliente|
+  if (¿Acepta?) then (no)
+    stop
+  else (sí)
+  endif
+else (sí)
+endif
+
+|Navegador|
+:Lee de localStorage la persona,\ntips elegidos, planificados y metas;
+
+fork
+  |Motor|
+  repeat :vistaCon(elegidos, persona,\npagosExtra, planificados);
+    note right
+      Única fuente de cifras:
+      saldo con banda, peor día,
+      días en rojo, gasto diario seguro
+    end note
+    |Pantallas de Lucas|
+    :Resumen, Qué viene, Avisos,\nMetas y Chat pintan la misma vista;
+    |Cliente|
+    :Decide qué hacer;
+    if (¿Qué hace?) then («Lo hago», planificar\no crear una meta)
+      |Navegador|
+      :Guarda la decisión en localStorage;
+    else (retira su permiso)
+      |Navegador|
+      :Borra lo guardado de esa persona;
+      stop
+    endif
+  repeat while (Todas las pantallas cambian juntas)
+fork again
+  |Pantallas de Lucas|
+  :cargarCliente lee la API\n(espera ESPERA_MS = 4 s por ruta);
+  if (¿Respondió con la forma esperada?) then (sí)
+    :Marca los datos como recibidos;
+  else (red, 404, 500, espera o formato)
+    :Usa data/sample/mocks/ y avisa\n«Sin conexión: te muestro tus últimos datos.»;
+  endif
+  note right
+    Las cifras de pantalla
+    no cambian: salen del motor
+  end note
+end fork
+stop
+
+@enduml
