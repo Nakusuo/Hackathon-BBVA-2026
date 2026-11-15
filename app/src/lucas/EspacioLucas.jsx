@@ -122,6 +122,7 @@ export default function EspacioLucas() {
             alCrear={contexto.crearMeta}
             alAportar={contexto.aportarMeta}
             alQuitar={contexto.quitarMeta}
+            alRestaurar={contexto.restaurarMeta}
           />
         )}
         {/* Al final: las cifras de arriba no dependen del servidor, así que el aviso no les quita el primer plano. */}

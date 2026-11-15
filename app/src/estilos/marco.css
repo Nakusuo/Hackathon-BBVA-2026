@@ -120,3 +120,46 @@
   }
 
 }
+
+/* Confirmación breve de una acción (crear, registrar, quitar) con «Deshacer» cuando aplica. */
+.aviso-breve {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  animation: aviso-entra 200ms ease-out;
+}
+
+.aviso-deshacer {
+  flex: none;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@keyframes aviso-entra {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso-breve {
+    animation: none;
+  }
+}
+
+/* Sobre fondos oscuros el contorno azul no se distingue: usa el color del propio texto. */
+.aviso-breve :focus-visible,
+.panel-metas :focus-visible {
+  outline-color: currentColor;
+}
