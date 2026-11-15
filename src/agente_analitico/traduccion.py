@@ -9,6 +9,7 @@ import time
 import requests
 
 from src.comun.rutas import cargar_env
+from src.agente_analitico.proveedores import texto_de_gemini
 from src.agente_analitico.verificador import numeros_de
 
 IDIOMAS = {"es": "espanol", "en": "ingles", "qu": "quechua sureño (Cusco-Collao o Ayacucho-Chanka), en alfabeto latino"}
@@ -66,7 +67,10 @@ def _gemini(sistema: str, usuario: str, timeout: int = 40) -> str:
     r = requests.post(f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent", headers={"x-goog-api-key": clave}, timeout=timeout,
                       json={"systemInstruction": {"parts": [{"text": sistema}]}, "contents": [{"role": "user", "parts": [{"text": usuario}]}], "generationConfig": {"temperature": 0, "maxOutputTokens": 900}})
     r.raise_for_status()
-    return r.json()["candidates"][0]["content"]["parts"][0]["text"].strip()
+    d = r.json()
+    if d["candidates"][0].get("finishReason") not in (None, "STOP"):   # una traduccion cortada por el tope de tokens se descarta
+        raise RuntimeError(f"gemini: respuesta incompleta ({d['candidates'][0].get('finishReason')})")
+    return texto_de_gemini(d)
 
 
 def _google_cloud(texto: str, origen: str, destino: str, timeout: int = 25) -> str:

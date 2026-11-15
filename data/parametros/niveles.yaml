@@ -67,6 +67,18 @@ programa:
   # Puntos por cada S/ 100 que se aparta en el mes. Mas para quien mas lo necesita: el ahorro deja margen y baja el riesgo de mora.
   puntos_por_cada_100_soles_apartados: {luchador: 8, aprendiz: 6, constructor: 5, maestro: 4, campeon: 3}
   idoneidad_de_consumo: {dias_rojo_3m_max: 0, nivel_minimo: aprendiz}
+  # Ingresos a futuro: escenarios a varios anios. TODO esto es supuesto del equipo (no hay cifra publica ni piloto): sirve para ver CUANDO se paga el programa y que debe
+  # cumplirse para que se pague, no para prometer un resultado. Un piloto con grupo de control reemplaza estos valores. Cada escenario suma lo medido (el colchon adicional de Lucas)
+  # mas el efecto de conducta que se le atribuye al programa: mas consumo con tarjeta o QR, mas ahorro apartado (el saldo se acumula de un anio a otro) y menos abandono.
+  proyeccion_a_futuro:
+    anos: 5
+    abandono_anual_base: 0.20              # supuesto: de cada 100 usuarios activos, 20 dejan de usar la app cada anio
+    retiro_anual_de_lo_apartado: 0.30      # supuesto: del saldo apartado se retira cada anio este porcentaje
+    escenarios:
+      solo_lo_medido:  {consumo_mas: 0.00, ahorro_mas: 0.00, abandono_menos: 0.00}   # ningun efecto de conducta: solo el colchon adicional que Lucas ya mostro en la simulacion
+      prudente:        {consumo_mas: 0.02, ahorro_mas: 0.05, abandono_menos: 0.05}
+      base:            {consumo_mas: 0.05, ahorro_mas: 0.10, abandono_menos: 0.10}
+      optimista:       {consumo_mas: 0.10, ahorro_mas: 0.20, abandono_menos: 0.20}
   beneficios_por_nivel:
     luchador: ["Puntos extra por ahorrar y por cerrar quincenas sin rojo", "Plan Sueldo Lucas", "Aviso anticipado antes de un dia en rojo"]
     aprendiz: ["Puntos por consumo en bodegas, transporte y salud afiliados", "Puntos por ahorrar", "Metas de ahorro con aporte automatico"]

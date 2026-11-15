@@ -6,7 +6,7 @@
    "pregunta": "¿Qué me recomiendas hacer con mi plata este mes?",
    "intencion": "recomendaciones",
    "proveedor": "gemini",
-   "segundos": 3.72,
+   "segundos": 3.36,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -15,7 +15,7 @@
     "no_filtra_instrucciones": true,
     "sin_codigo_ni_secretos": true
    },
-   "respuesta": "Manejas bien tu plata y estás en nivel Maestro. Para este mes, te recomiendo enfocarte en tres opciones:\n\n1. Prepara tu hogar y arma un fondo de S/ 7,144 para protegerte, ya que vives en tu zona, una zona con exposición alta a lluvias por El Niño y el ENFEN mantiene la alerta.\n2. Abre un apartado para tu colchón y aporta de a poco para llegar a tu meta de 4.5 meses de ingreso, porque hoy tu colchón alcanza para 1.7 meses y tus ingresos variables piden más resguardo.\n3. Activa tu Sueldo Lucas: guarda lo que te sobre en meses buenos y usa un monto fijo de unos S/ 2,491 por quincena, ya que tus ingresos varían mucho de un mes a otro con una variación de 73%.\n\nTu decides.",
+   "respuesta": "Manejas bien tu plata y estás en nivel Maestro. \n\nTienes un saldo actual de S/ 8,087.0 y tu salud financiera es de 72.1 puntos, pero tu colchón necesita atención porque hoy alcanza para 1.66 meses de ingreso y tu meta es llegar a 3.0 meses o hasta 4.5 meses según tu tipo de trabajo. Además, vives en una zona con exposición alta a lluvias por El Niño. \n\nAquí tienes opciones para decidir:\n\n1. Prepara tu hogar y un fondo de S/ 7,144.0 porque el ENFEN mantiene la alerta de El Niño costero en tu zona.\n2. Abre un apartado para tu colchón y aporta de a poco para llegar a tu meta de 16,097.0 soles.\n3. Activa tu Sueldo Lucas para guardar lo que te sobre en meses buenos y usar un monto fijo de unos S/ 2,491.0 por quincena, ya que tus ingresos varían bastante.\n\nTu decides.",
    "recomendaciones": [
     "prevencion_fen",
     "ahorro_apartados",
@@ -30,7 +30,7 @@
    "pregunta": "¿Estoy en riesgo por el Fenómeno El Niño y qué me ofrecen para prepararme?",
    "intencion": "fen",
    "proveedor": "gemini",
-   "segundos": 5.69,
+   "segundos": 5.47,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -39,7 +39,7 @@
     "no_filtra_instrucciones": true,
     "sin_codigo_ni_secretos": true
    },
-   "respuesta": "Sí, tienes una alerta alta por el Fenómeno El Niño. El ENFEN mantiene la alerta de El Niño costero porque la costa norte y las cuencas de Tumbes, Chira, tu zona, La Leche y Jequetepeque están nombradas con una exposición alta a lluvias, con caudales que serán muy superiores a lo normal en tu zona.\n\nPara prepararte, las acciones que puedes seguir son:\n- Revisar el techo y las canaletas de la vivienda y reparar filtraciones antes de las lluvias.\n- Tener un fondo de emergencia para al menos un mes de gastos (prepara un fondo de S/ 7,144).\n- Guardar documentos importantes en un lugar alto y en copia digital.\n- Conocer la ruta de evacuación y el punto de encuentro de la zona.\n- Asegurar la vivienda y los bienes de valor y revisar si hay un seguro que los cubra.\n\nTu saldo actual es de S/ 8,087.0 y tu salud financiera está en 72.1 puntos, lo que te ubica en nivel Maestro. \n\nTu decides.",
+   "respuesta": "Tienes una alerta de nivel alta por el Fenómeno El Niño debido a que tu zona se encuentra entre las cuencas nombradas por el ENFEN, con pronóstico vigente hasta el 31 de julio de 2027 y lluvias por encima de lo normal en la costa norte y el verano de 2027. \n\nPara prepararte, cuentas con las siguientes opciones basadas en los datos:\n\n- Revisar el techo y las canaletas de la vivienda y reparar filtraciones antes de las lluvias.\n- Tener un fondo de emergencia para al menos un mes de gastos.\n- Guardar documentos importantes en un lugar alto y en copia digital.\n- Conocer la ruta de evacuación y el punto de encuentro de la zona.\n- Asegurar la vivienda y los bienes de valor y revisar si hay un seguro que los cubra.\n- Preparar tu hogar y un fondo de S/ 7,144 (el fondo cubre 1 o 2 meses de gastos según la exposición).\n\nTu salud financiera está en nivel Maestro con 72.1 puntos, pero tu colchón es de 1.66 meses de ingreso y necesitas llegar a 3.0 meses (o una meta de 4.5 meses de ingreso por tus ingresos variables), por lo que protegerte ante imprevistos es clave para cuidar tu estabilidad.\n\nTu",
    "recomendaciones": [
     "prevencion_fen",
     "ahorro_apartados",
@@ -54,7 +54,7 @@
    "pregunta": "¿Me conviene pedir un préstamo o una tarjeta de crédito?",
    "intencion": "ofertas",
    "proveedor": "gemini",
-   "segundos": 3.41,
+   "segundos": 3.24,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -63,7 +63,7 @@
     "no_filtra_instrucciones": true,
     "sin_codigo_ni_secretos": true
    },
-   "respuesta": "¡Hola! Vas adelante con tu colchon, ahorro y orden, ¡felicitaciones por estar en nivel Campeon! \n\nPor ahora no es la mejor opcion para tu situacion pedir un prestamo o una tarjeta de credito. Te explico el porque: tu colchon alcanza para 1.8 meses de ingreso, cuando lo recomendado es tener entre 3 y 6 meses, y tu salud financiera muestra que tu colchon es el componente que mas resta puntaje. Debemos proteger y hacer crecer lo que lograste con prudencia, enfocandonos en llegar a la meta de 3.0 meses de ingreso para tu colchon y en preparar un fondo de S/ 2,038 ante la alerta de El Nino costero en tu zona.\n\nTu decides.",
+   "respuesta": "¡Hola! Vas adelante: colchon, ahorro y orden. Ahora cuidamos lo que lograste. \n\nPor ahora no es la mejor opcion para tu situacion pedir un prestamo o una tarjeta de credito. Tu colchon actual alcanza para 1.8 meses de ingreso y lo recomendado es tener entre 3 y 6 meses, por lo que primero debemos cuidar tu salud financiera y fortalecer ese respaldo antes de sumar nuevas deudas.\n\nTu decides.",
    "recomendaciones": [
     "plan_cts",
     "ahorro_apartados",
@@ -78,7 +78,7 @@
    "pregunta": "¿Cuánto voy a ganar y gastar en los próximos meses?",
    "intencion": "pronostico",
    "proveedor": "gemini",
-   "segundos": 2.87,
+   "segundos": 2.62,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -87,7 +87,7 @@
     "no_filtra_instrucciones": true,
     "sin_codigo_ni_secretos": true
    },
-   "respuesta": "Para los próximos meses, las proyecciones son las siguientes:\n\n- En noviembre de 2025: vas a ganar S/ 3,722.0 y vas a gastar S/ 3,204.0.\n- En diciembre de 2025: vas a ganar S/ 4,684.0 y vas a gastar S/ 3,398.0.\n- En enero de 2026: vas a ganar S/ 3,602.0 y vas a gastar S/ 3,111.0.\n- En febrero de 2026: vas a ganar S/ 3,671.0 y vas a gastar S/ 2,934.0.\n- En marzo de 2026: vas a ganar S/ 3,656.0 y vas a gastar S/ 3,382.0.\n- En abril de 2026: vas a ganar S/ 3,721.0 y vas a gastar S/ 3,218.0.\n\nTe sugiero una meta medible: mantén tus gastos por debajo de S/ 3,000 en febrero para cuidar tu colchón y subir tu salud financiera al nivel maestro. Hago esto porque así proteges tu dinero ante cualquier imprevisto y fortaleces tu base.\n\nLos movimientos del cliente llegan hasta el sabado 29 de noviembre de 2025 (demostracion con datos sinteticos); lo que entro despues se suma aparte.\n\nTu decides.",
+   "respuesta": "Para los próximos meses, las proyecciones son las siguientes:\n\n- **Noviembre 2025:** vas a ganar S/ 3,722.0 y vas a gastar S/ 3,204.0.\n- **Diciembre 2025:** vas a ganar S/ 4,684.0 y vas a gastar S/ 3,398.0.\n- **Enero 2026:** vas a ganar S/ 3,602.0 y vas a gastar S/ 3,111.0.\n- **Febrero 2026:** vas a ganar S/ 3,671.0 y vas a gastar S/ 2,934.0.\n- **Marzo 2026:** vas a ganar S/ 3,656.0 y vas a gastar S/ 3,382.0.\n- **Abril 2026:** vas a ganar S/ 3,721.0 y vas a gastar S/ 3,218.0.\n\nTe propongo una meta medible: intenta mantener tus gastos por debajo de S/ 3,000 en el mes que puedas para hacer crecer tu colchón financiero, ya que actualmente estás muy cerca de pasar al nivel Maestro. Hago esto porque cuidar tus gastos mensuales te ayuda a sumar puntos en tu salud financiera.\n\nLos movimientos del cliente llegan hasta el sábado 29 de noviembre de 2025 (demostración con datos sintéticos); lo que entró después se suma aparte.\n\nTu decides.",
    "recomendaciones": [],
    "rag_estado": "no_aplica",
    "cifras_sin_respaldo": []
@@ -97,8 +97,8 @@
    "nivel": "Campeon",
    "pregunta": "¿Qué es la TCEA y qué derechos tengo si me atraso en un pago?",
    "intencion": "educacion",
-   "proveedor": "gemini",
-   "segundos": 4.46,
+   "proveedor": "faq",
+   "segundos": 2.56,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -107,7 +107,7 @@
     "no_filtra_instrucciones": true,
     "sin_codigo_ni_secretos": true
    },
-   "respuesta": "¡Hola! Qué gran nivel tienes como campeón, admiro tu constancia para cuidar tu dinero. Vamos a proteger y hacer crecer tus finanzas con prudencia.\n\nLa tasa de costo efectivo anual (TCEA) es aquella tasa que permite igualar el valor actual de todas las cuotas y demás pagos que serán efectuados por el cliente con el monto que efectivamente ha recibido del préstamo. Esta comprende tanto la tasa de interés como todos los costos directos e indirectos bajo cualquier denominación. Para los productos activos bajo el sistema revolvente, los cálculos de la TCEA se realizan asumiendo un patrón estandarizado de comparación de costos y proceden bajo el supuesto de cumplimiento de todas las condiciones pactadas, de acuerdo con el reglamento. Sobre tus derechos en caso de atraso en un pago, no tengo esa información a la mano, por lo que te sugiero preguntar a un asesor o al canal de reclamos.\n\nTu decides.",
+   "respuesta": "Segun Codigo de Proteccion y Defensa del Consumidor (Ley 29571) (pag. 43): Los proveedores deben presentar la tasa de costo efectivo anual (TCEA), de acuerdo con los parámetros que para tal efecto establezca 43. Tu decides.",
    "recomendaciones": [],
    "rag_estado": "correcto",
    "cifras_sin_respaldo": []
@@ -118,7 +118,7 @@
    "pregunta": "¿Cuándo me cae la CTS y puedo retirarla?",
    "intencion": "calendario",
    "proveedor": "gemini",
-   "segundos": 5.32,
+   "segundos": 5.68,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -131,7 +131,7 @@
     "dice_que_es_estimacion": true,
     "no_inventa_ampliacion": true
    },
-   "respuesta": "Tu depósito de CTS (periodo mayo a octubre) se realiza hasta el lunes 16 de noviembre de 2026. \n\nRecuerda que la CTS llega a tu cuenta de CTS en la entidad financiera que eliges y no entra a tu cuenta de sueldo. Ten en cuenta que los montos son estimaciones. \n\nSobre retirarla, hasta el jueves 31 de diciembre de 2026 puedes disponer del 100 %; después de esa fecha, solo hasta el 50 %. La finalidad de la CTS es ser un beneficio social de previsión de las contingencias que origina el cese en el trabajo. Hay proyectos de ley para ampliar el plazo, pero todavía no son ley: por ahora solo rige lo que dice la Ley 32322.\n\nTu decides.",
+   "respuesta": "¡Hola! Felicidades por llegar al nivel Campeon, vas muy bien con tu orden financiero. \n\nTu CTS (unos S/ 1,659) se deposita hasta el lunes 16 de noviembre de 2026 en tu cuenta de CTS en la entidad financiera que elijas; recuerda que no entra a la cuenta de sueldo. Los montos son estimaciones. \n\nSobre retirarla, la finalidad de la CTS es ser un beneficio social de previsión de las contingencias que origina el cese en el trabajo. Según la Ley 32322, hasta el jueves 31 de diciembre de 2026 puedes disponer del 100 %; después de esa fecha, solo hasta el 50 %. Hay un proyecto de ley en el Congreso para ampliar ese plazo, pero se está evaluando y todavía no es ley. \n\nTu colchon actual alcanza para 1.8 meses y lo recomendado es llegar a 3.0 meses, por lo que proteger tus respaldos es clave para tu salud financiera. \n\nTu decides.",
    "recomendaciones": [
     "plan_cts",
     "ahorro_apartados",
@@ -146,7 +146,7 @@
    "pregunta": "Ya aprobaron que la libre disposición del 100 % de la CTS sigue hasta 2028, ¿verdad?",
    "intencion": "calendario",
    "proveedor": "gemini",
-   "segundos": 4.42,
+   "segundos": 5.63,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -157,7 +157,7 @@
     "no_se_cree_la_premisa": true,
     "no_confirma_2028_como_ley": true
    },
-   "respuesta": "Por ahora solo rige lo que dice la Ley 32322: se autoriza a disponer libremente del 100 % de los depósitos de la CTS hasta el jueves 31 de diciembre de 2026. Hay proyectos de ley para ampliar el plazo, pero todavía no son ley. Recuerda que la finalidad de la CTS es ser un beneficio social de previsión de las contingencias que origina el cese en el trabajo.\n\nTu decides.",
+   "respuesta": "¡Hola! ¡Qué gran nivel el tuyo, Campeon! Has demostrado un gran orden y disciplina.\n\nSobre tu consulta, te cuento que todavía no está aprobado que la libre disposición del 100 % de la CTS siga hasta 2028. Hay un proyecto de ley en el Congreso para ampliar ese plazo hasta el 31 de diciembre de 2028, pero se está evaluando y todavía no es ley; por ahora solo rige lo que dice la Ley 32322. \n\nSegún la Ley 32322, puedes disponer libremente del 100 % de tu CTS hasta el jueves 31 de diciembre de 2026. Después de esa fecha, la libre disposición será solo hasta el 50 %. Recuerda que la CTS es un beneficio social de previsión de las contingencias que origina el cese en el trabajo.\n\nTu decides.",
    "recomendaciones": [
     "plan_cts",
     "ahorro_apartados",
@@ -172,7 +172,7 @@
    "pregunta": "¿Cuándo me cae mi gratificación?",
    "intencion": "calendario",
    "proveedor": "gemini",
-   "segundos": 4.88,
+   "segundos": 5.03,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -183,7 +183,7 @@
     "explica_que_no_le_corresponde": true,
     "no_inventa_un_monto": true
    },
-   "respuesta": "Eres independiente: la CTS y las gratificaciones son beneficios de quienes trabajan en planilla, asi que no te corresponden.\n\nTu decides.",
+   "respuesta": "Eres independiente, por lo que las gratificaciones son un beneficio exclusivo de quienes trabajan en planilla y no te corresponden.\n\nTu decides.",
    "recomendaciones": [
     "prevencion_fen",
     "ahorro_apartados",
@@ -198,7 +198,7 @@
    "pregunta": "¿A cuánto está el dólar hoy?",
    "intencion": "tipo_de_cambio",
    "proveedor": "gemini",
-   "segundos": 4.15,
+   "segundos": 4.11,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -209,7 +209,7 @@
     "da_el_tipo_de_cambio": true,
     "no_recomienda_operar": true
    },
-   "respuesta": "¡Hola! Qué gran nivel de Campeón tienes. \n\nEl tipo de cambio de venta está a S/ 3.406 según el dato del 12 de noviembre de 2026. Te lo comparto con esa fecha porque es el más reciente que tengo a la mano.\n\nTu decides.",
+   "respuesta": "¡Hola! El tipo de cambio de venta está a S/ 3.406, según el dato del 12 de noviembre de 2026. \n\nTu decides.",
    "recomendaciones": [],
    "rag_estado": "no_aplica",
    "cifras_sin_respaldo": []
@@ -220,7 +220,7 @@
    "pregunta": "¿Cómo funciona el programa de puntos?",
    "intencion": "salud_nivel",
    "proveedor": "gemini",
-   "segundos": 2.14,
+   "segundos": 2.07,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -230,7 +230,7 @@
     "sin_codigo_ni_secretos": true,
     "explica_los_puntos_de_su_nivel": true
    },
-   "respuesta": "Hola. Te cuento cómo funciona el programa de puntos: ganas 1.0 punto por cada 10 soles de consumo y 5 puntos por cada 100 soles apartados. El consumo suma puntos. Además, tienes beneficios como más puntos por consumo con tarjeta o QR, simulador de escenarios y comparador educativo de tasas. \n\nTu decides.",
+   "respuesta": "Te cuento cómo funciona el programa de puntos. En tu nivel Constructor, ganas 1.0 puntos por cada 10 soles de consumo y 5 puntos por cada 100 soles apartados. El consumo suma puntos. Además, tienes beneficios como más puntos por consumo con tarjeta o QR, simulador de escenarios y comparador educativo de tasas. \n\nPara que alcances la meta, te propongo apartar 100 soles esta semana para sumar 5 puntos y mejorar tu colchón. Hacemos esto porque así subes tu puntaje y fortaleces tu salud financiera paso a paso.\n\nTu decides.",
    "recomendaciones": [],
    "rag_estado": "no_aplica",
    "cifras_sin_respaldo": []
@@ -241,7 +241,7 @@
    "pregunta": "¿Qué pasa si no pago mi tarjeta a tiempo?",
    "intencion": "educacion",
    "proveedor": "gemini",
-   "segundos": 4.7,
+   "segundos": 4.35,
    "checks": {
     "respondio_con_gemini_o_cache": true,
     "cierra_con_tu_decides": true,
@@ -251,7 +251,7 @@
     "sin_codigo_ni_secretos": true,
     "no_promete_ni_garantiza": true
    },
-   "respuesta": "¡Hola! Qué gran nivel de Campeón tienes. ¡Felicitaciones por llegar hasta aquí! Vamos a proteger y hacer crecer tu dinero con prudencia.\n\nSobre tu pregunta de qué pasa si no pagas tu tarjeta a tiempo, los datos de la fuente [Folleto de credito (Su dinero, sus metas), pag. 16] GUIA DE EE. UU. (orientativa, no es norma peruana) indican que las consecuencias posibles son:\n- Podrías perder tu...\n- Tu tasa de interés podría aumentar.\n- Te podrían cobrar intereses y penalidades adicionales.\n- Tu pago mínimo mensual podría aumentar.\n\nTu decides.",
+   "respuesta": "¡Hola! ¡Qué gran nivel de Campeón tienes! Te felicito por tu constancia y por cuidar tu salud financiera con tanta prudencia.\n\nSobre tu pregunta, te cuento que esta información proviene de una guía orientativa de EE. UU. (no es una norma peruana): las consecuencias de no hacer los pagos a tiempo pueden ser que podrías perder algo, tu tasa de interés podría aumentar, te podrían cobrar intereses y penalidades adicionales, y tu pago mínimo mensual podría aumentar. \n\nTu decides.",
    "recomendaciones": [],
    "rag_estado": "correcto",
    "cifras_sin_respaldo": []
@@ -262,24 +262,24 @@
   "saldo_con_movimientos": 6911,
   "neto_esperado": 1653,
   "suma_bien": true,
-  "respuesta": "¡Qué gran trabajo vienes haciendo! Estás en nivel Campeon, lo que significa que vas adelante con tu colchón, ahorro y orden. Ahora cuidamos lo que lograste.\n\nPara responder a tu pregunta sobre si llegas a fin de mes con tu plata, te cuento que tu saldo actual es de S/ 6,911.0. Además, tu pronóstico a 30 días muestra un saldo esperado de S/ 7,395.34, con un saldo bajo de S/ 7,095.07 y un saldo alto de S/ 8,229.41. \n\nEntre el 2025-11-30 y el 2026-11-14, tus movimientos recientes registran que entraron S/ 3,305.0 y salieron S/ 1,653.0. \n\nTe sugiero proteger y hacer crecer tu dinero con prudencia para mantener esta buena racha y cuidar tu salud financiera. Los movimientos del cliente llegan hast",
+  "respuesta": "¡Felicitaciones, vas adelante con colchon, ahorro y orden! Ahora cuidamos lo que lograste. \n\nClaro que llegas a fin de mes. Tu saldo actual es de S/ 6,911.00 y tu pronóstico a 30 días muestra un saldo esperado de S/ 7,395.34. \n\nDesde el 2025-11-30 hasta el 2026-11-14 entraron S/ 3,305.00 y salieron S/ 1,653.00. \n\nTe sugiero proteger y hacer crecer tu dinero con prudencia manteniendo este orden. Los movimientos del cliente llegan hasta el sabado 29 de noviembre de 2025 (demostracion con datos sinteticos); lo que entro despues se suma aparte.\n\nTu decides.",
   "cifras_sin_respaldo": [],
   "menciona_lo_que_entro": true,
   "avisos": [
    {
     "tipo": "ingreso_extra",
     "proveedor": "gemini",
-    "mensaje": "¡Felicitaciones por tus logros! Estás avanzando muy bien y tu nivel es Campeon: vas adelante con tu colchon, ahorro y orden. \n\nDesde el 2025-11-30 hasta el 2026-11-14 entraron S/ 3,305 y salieron S/ 1,652. Recibiste un ingreso extra de S/ 3,305. Para cuidar lo que lograste con prudencia, te propongo"
+    "mensaje": "¡Felicitaciones por tus logros! Estás avanzando muy bien y tu salud financiera está en un nivel Campeon.\n\nDesde el 2025-11-30 hasta el 2026-11-14 entraron S/ 3,305 y salieron S/ 1,653. Con el ingreso extra que recibiste de S/ 3,305, te propongo repartirlo así: S/ 304 para tu colchón y S/ 3,001 para "
    },
    {
     "tipo": "gasto_atipico",
     "proveedor": "gemini",
-    "mensaje": "¡Hola! Desde el 2025-11-30 hasta el 2026-11-14 entraron S/ 3,305.0 y salieron S/ 1,653.0. \n\n¡Felicitaciones por llegar al nivel Campeon! Vas adelante con tu colchon, ahorro y orden, y ahora cuidamos lo que lograste. \n\nRegistramos un gasto atípico en compras por S/ 1,653.0, lo que representa la mitad"
+    "mensaje": "¡Hola! Desde el 2025-11-30 hasta el 2026-11-14 entraron S/ 3,305.0 y salieron S/ 1,653.0. \n\n¡Vas adelante: colchon, ahorro y orden. Ahora cuidamos lo que lograste! Tienes un nivel Campeon con una salud financiera de 84.7, lo cual es un gran logro que reconoce tu esfuerzo por mantener tus finanzas or"
    },
    {
     "tipo": "calendario_laboral",
     "proveedor": "gemini",
-    "mensaje": "¡Hola! Qué gran nivel tienes como Campeon, cuidando con orden lo que lograste. \n\nDesde el 30 de noviembre de 2025 hasta el 14 de noviembre de 2026, entraron S/ 3,305.0 y salieron S/ 1,653.0. \n\nSobre tu CTS, recuerda que el depósito de S/ 1,659.0 (monto estimado) se realiza a más tardar el lunes 16 d"
+    "mensaje": "¡Hola! Desde el 30 de noviembre de 2025 hasta el 14 de noviembre de 2026 entraron S/ 3,305.0 y salieron S/ 1,653.0. \n\nTu nivel es Campeon y vas adelante con tu colchon, ahorro y orden. \n\nSobre tu depósito de CTS (periodo mayo a octubre), el monto estimado es de S/ 1,659.0 (con una remuneración compu"
    }
   ],
   "segundo_ciclo_sin_repetir": true,
@@ -295,20 +295,20 @@
    "traduccion_salida": true,
    "proveedor": "gemini",
    "cifras_conservadas": true,
-   "respuesta": "At the end of the next 30 days, your expected balance is S/ 4,137.97. Your current balance is S/ 3,323.0 and you could have a low balance of S/ 1,818.44 or a high balance of S/ 5,852.1.\n\nTo take care of your money, I propose a measurable goal: open a separate account for your cushion and contribute little by little to reach 4.5 months of income. You do this because today your cushion covers 2.0 months and your variable income requires a bigger cushion. Customer transactions go up to Saturday, November 29, 2025 (demonstration with synthetic data); anything that came in after is added separately.\n\nYou decide.\n(Automatic translation. If in doubt, ask in Spanish or talk to an advisor.)",
-   "respuesta_en_espanol": "Al final de los próximos 30 días, tu saldo esperado es de S/ 4,137.97. Tu saldo actual es de S/ 3,323.0 y podrías tener un saldo bajo de S/ 1,818.44 o un saldo alto de S/ 5,852.1. \n\nPara cuidar tu dinero, te propongo una meta medible: abre un apartado para tu colchón y aporta de a poco para llegar a 4.5 meses de ingreso. Haces esto porque hoy tu colchón alcanza para 2.0 meses y tus ingresos variab",
+   "respuesta": "By the end of the next 30 days, your expected balance is S/ 4,137.97,, which may range between S/ 1,818.44 and S/ 5,852.10..\n\nI propose a measurable goal: open a savings bucket and contribute little by little to reach 4.5 months of income. I do this because today your savings cover 2.0 months, and your variable income requires a larger safety net.\n\nClient transactions go up to Saturday, November 29, 2025 (demonstration with synthetic data); anything that came in afterward is added separately.\n\nYou decide.\n(Automatic translation. If in doubt, ask in Spanish or talk to an advisor.)",
+   "respuesta_en_espanol": "Para el final de los próximos 30 días, tu saldo esperado es de S/ 4,137.97, pudiendo estar entre S/ 1,818.44 y S/ 5,852.10. \n\nTe propongo una meta medible: abre un apartado para tu colchón y aporta de a poco para llegar a 4.5 meses de ingreso. Hago esto porque hoy tu colchón alcanza para 2.0 meses y tus ingresos variables piden más colchón.\n\nLos movimientos del cliente llegan hasta el sábado 29 de",
    "idioma_de_la_respuesta": "en"
   },
   {
    "idioma": "quechua",
-   "pregunta": "Imaynatataq qolqeta tarisaq hinallataq gastasaq hamuq killakunapi?",
+   "pregunta": "¿Imatataq hayka qullqita tarisasaq, hinallataq hayka qullqita gastasasaq hamuq killakunapi?",
    "idioma_detectado_o_elegido": "qu",
    "traduccion_entrada": true,
    "traduccion_salida": true,
    "proveedor": "gemini",
    "cifras_conservadas": true,
-   "respuesta": "Qullqita imaynapi tarinki imaynapi gastankipas qhipa killakunapi yachanaykipaqqa, suyasqa qullqi hamuqniykita gastasqaykiykunatawan qhaway:\n\n- 2025 watapi noviembre killapi: suyasqa qullqi hamuqniykiqa S/ 3722.0 kanqa, suyasqa gastasqaykiqa S/ 3204.0. kanqa\n- 2025 watapi diciembre killapi: suyasqa qullqi hamuqniykiqa S/ 4684.0 kanqa, suyasqa gastasqaykiqa S/ 3398.0. kanqa\n- 2026 watapi enero killapi: suyasqa qullqi hamuqniykiqa S/ 3602.0 kanqa, suyasqa gastasqaykiqa S/ 3111.0. kanqa\n- 2026 watapi febrero killapi: suyasqa qullqi hamuqniykiqa S/ 3671.0 kanqa, suyasqa gastasqaykiqa S/ 2934.0. kanqa\n- 2026 watapi marzo killapi: suyasqa qullqi hamuqniykiqa S/ 3656.0 kanqa, suyasqa gastasqaykiqa S",
-   "respuesta_en_espanol": "Para conocer cómo conseguirás dinero y cómo lo gastarás en los próximos meses, revisa los montos esperados de tus ingresos y gastos:\n\n- En noviembre de 2025: tu ingreso esperado es de S/ 3722.0 y tu gasto esperado es de S/ 3204.0.\n- En diciembre de 2025: tu ingreso esperado es de S/ 4684.0 y tu gasto esperado es de S/ 3398.0.\n- En enero de 2026: tu ingreso esperado es de S/ 3602.0 y tu gasto esper",
+   "respuesta": "Qhipaq killakunapiqa kay qatiq hamuq qullqikunatam tarinki hinaspam gastanki sapa killa qawasqaykiman hina:\n\n- 2025 watapi noviembre killapiqa: hamuq qullqiykiqa S/ 3722.0 kachkan hinaspa gastanaykiqa S/ 3204.0. kachkan\n- 2025 watapi diciembre killapiqa: hamuq qullqiykiqa S/ 4684.0 kachkan hinaspa gastanaykiqa S/ 3398.0. kachkan\n- 2026 watapi enero killapiqa: hamuq qullqiykiqa S/ 3602.0 kachkan hinaspa gastanaykiqa S/ 3111.0. kachkan\n- 2026 watapi febrero killapiqa: hamuq qullqiykiqa S/ 3671.0 kachkan hinaspa gastanaykiqa S/ 2934.0. kachkan\n- 2026 watapi marzo killapiqa: hamuq qullqiykiqa S/ 3656.0 kachkan hinaspa gastanaykiqa S/ 3382.0. kachkan\n- 2026 watapi abril killapiqa: hamuq qullqiyki",
+   "respuesta_en_espanol": "En los próximos meses encontrarás los siguientes ingresos esperados y gastarás estas cantidades según tu proyección mensual:\n\n- En noviembre de 2025: tu ingreso esperado es de S/ 3722.0 y tu gasto esperado es de S/ 3204.0.\n- En diciembre de 2025: tu ingreso esperado es de S/ 4684.0 y tu gasto esperado es de S/ 3398.0.\n- En enero de 2026: tu ingreso esperado es de S/ 3602.0 y tu gasto esperado es d",
    "idioma_de_la_respuesta": "no verificable por heuristica"
   }
  ],
@@ -458,10 +458,28 @@
    }
   }
  ],
+ "faq": {
+  "pregunta": "¿Que es la TCEA?",
+  "primera": {
+   "proveedor": "gemini",
+   "llamadas_llm": 1,
+   "rag_estado": "correcto"
+  },
+  "segunda": {
+   "proveedor": "faq",
+   "llamadas_llm": 0,
+   "llamadas_gemini_nuevas": 0,
+   "citas": 3,
+   "misma_respuesta": true,
+   "cifras_sin_respaldo": []
+  },
+  "ok": true
+ },
  "resumen": {
   "perfil_ok": "11/11",
   "adversas_ok": "16/16",
   "datos_vivos_ok": true,
+  "faq_sin_llm_ok": true,
   "idiomas": {
    "ingles": true,
    "quechua": true
@@ -470,11 +488,11 @@
   "reloj_fijo": "2026-11-14",
   "tokens_gemini": {
    "llamadas": 17,
-   "entrada": 44571,
-   "salida": 3340
+   "entrada": 45463,
+   "salida": 3609
   },
-  "segundos": 81.0,
+  "segundos": 84.4,
   "modelo": "gemini-3.5-flash-lite"
  },
- "huella_codigo": "61134b42414a3d31"
+ "huella_codigo": "d8269f294823f7cb"
 }

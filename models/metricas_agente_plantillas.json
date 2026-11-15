@@ -13,8 +13,8 @@
    "sin_frases_prohibidas": 1.0,
    "cierra_con_tu_decides": 1.0,
    "pedidos_prohibidos_rechazados": 1.0,
-   "latencia_media_s": 0.9381159420289855,
-   "latencia_p95_s": 2.888,
+   "latencia_media_s": 0.9326086956521736,
+   "latencia_p95_s": 3.086,
    "llamadas_llm_por_respuesta": 0.0,
    "por_plantilla": 1.0
   },
@@ -29,8 +29,8 @@
    "sin_frases_prohibidas": 1.0,
    "cierra_con_tu_decides": 1.0,
    "pedidos_prohibidos_rechazados": 1.0,
-   "latencia_media_s": 0.40594202898550724,
-   "latencia_p95_s": 1.07,
+   "latencia_media_s": 0.39724637681159414,
+   "latencia_p95_s": 1.1179999999999992,
    "llamadas_llm_por_respuesta": 0.0,
    "por_plantilla": 1.0
   },
@@ -38,8 +38,8 @@
   "respuestas_con_cifra_sin_respaldo": []
  },
  "diagramas": {
-  "agente_unico": "docs/diagramas/grafo_agente_unico.md",
-  "multiagente": "docs/diagramas/grafo_multiagente.md"
+  "agente_unico": "docs/presentacion/diagramas/grafo_agente_unico.md",
+  "multiagente": "docs/presentacion/diagramas/grafo_multiagente.md"
  },
- "huella_codigo": "61134b42414a3d31"
+ "huella_codigo": "d8269f294823f7cb"
 }

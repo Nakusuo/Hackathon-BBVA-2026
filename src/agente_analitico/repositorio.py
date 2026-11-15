@@ -50,6 +50,23 @@ class Repositorio:
         ruta_m = os.path.join(MODELOS, "pronostico_mensual.pkl")
         self.mensual = joblib.load(ruta_m) if os.path.isfile(ruta_m) else None
         self._filas_mensual = None
+        ruta_s = os.path.join(MODELOS, "serie_diaria.pkl")
+        self.serie = joblib.load(ruta_s) if os.path.isfile(ruta_s) else None
+
+    def serie_diaria(self, cid: str, neto_vivo: float = 0.0, dias: int = 30) -> dict | None:
+        """Saldo esperado y banda al 80 % de cada uno de los proximos dias (1 a 30), en soles, desde la fecha de los datos.
+        El ultimo dia coincide con el pronostico a 30 dias ya validado. Con movimientos vivos se corrige el saldo de partida, igual que en _pronostico."""
+        if self.serie is None or not 1 <= int(dias) <= P.H:
+            return None
+        fila = self.origen[self.origen["cliente_idx"] == self.pos[cid]].index[0]
+        x = self.origen.loc[[fila]].copy()
+        if neto_vivo:
+            x["saldo_t"] = x["saldo_t"] + neto_vivo
+            x["saldo_rel"] = x["saldo_t"] / x["escala"]
+        sal = self.serie["modelo"].predecir(x)
+        d = int(dias)
+        return {"fecha_base": self.fecha.date(), "saldo_inicial": float(x["saldo_t"].iloc[0]), "dias": d,
+                "esperado": [float(v) for v in sal["esperado"][0, :d]], "bajo": [float(v) for v in sal["bajo"][0, :d]], "alto": [float(v) for v in sal["alto"][0, :d]]}
 
     def proyeccion_mensual(self, cid: str) -> list | None:
         """Ingresos, gastos y neto esperados de los proximos 6 meses, con rango al 80 %, desde el ultimo mes completo anterior a la fecha."""

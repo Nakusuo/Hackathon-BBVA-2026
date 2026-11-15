@@ -44,3 +44,9 @@ def repo_y_buscador():
         if not _ollama_responde():
             mp.setattr(indice, "embeber", embebedor_lexico(buscador))
         yield Repositorio(), buscador
+
+
+@pytest.fixture(autouse=True)
+def _faq_aislado(tmp_path, monkeypatch):
+    """Cada prueba con su propia base de preguntas frecuentes aprendidas: lo que una prueba aprende nunca cambia el resultado de otra ni queda en data/generado."""
+    monkeypatch.setenv("LUCAS_FAQ_DIR", str(tmp_path / "faq"))

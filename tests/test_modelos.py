@@ -220,3 +220,47 @@ def test_la_economia_del_programa_deja_costo_menor_al_ingreso():
                        "dias_rojo_3m": [6, 0, 0, 0], "quincenas_sin_rojo": [10, 20, 24, 24], "meses_con_aporte": [0.3, 0.6, 0.9, 1.0]})
     r = PP.economia(df)
     assert 0 < r["total"]["costo_sobre_ingreso"] < PP.cfg()["programa"]["supuestos_economicos"]["reinversion_maxima_de_la_comision"]
+
+
+# ---------------------------------------------------------------------------- programa de puntos: ingresos a futuro
+def _total_de_juguete():
+    return {"costo_anual": 15.0, "comision_anual": 80.0, "aporte_ahorro_anual": 10_000.0}
+
+
+def test_proyeccion_de_puntos_sin_efecto_de_conducta_solo_acumula_el_costo_neto_de_lo_medido():
+    from src.models import programa_puntos as PP
+    esc = {"anos": 3, "abandono_anual_base": 0.0, "retiro_anual_de_lo_apartado": 0.0, "escenarios": {"nada": {"consumo_mas": 0.0, "ahorro_mas": 0.0, "abandono_menos": 0.0}}}
+    r = PP.proyeccion_multianual(_total_de_juguete(), fondeo_lucas=10.0, esc=esc)["escenarios"]["nada"]
+    assert [f["neto_por_usuario_que_entra"] for f in r["por_anio"]] == pytest.approx([-5.0, -5.0, -5.0])   # 10 medidos - 15 de puntos, cada anio
+    assert r["se_paga_en_el_anio"] is None
+
+
+def test_proyeccion_de_puntos_acumula_el_saldo_apartado_y_el_primer_anio_equivale_a_seis_meses_de_aporte():
+    from src.models import programa_puntos as PP
+    esc = {"anos": 3, "abandono_anual_base": 0.0, "retiro_anual_de_lo_apartado": 0.5, "escenarios": {"x": {"consumo_mas": 0.0, "ahorro_mas": 0.0, "abandono_menos": 0.0}}}
+    r = PP.proyeccion_multianual(_total_de_juguete(), 0.0, esc)
+    assert r["saldo_apartado_promedio_por_anio"][0] == pytest.approx(5_000.0)   # 10 000 de aporte, saldo medio del primer anio = la mitad
+    assert r["saldo_apartado_promedio_por_anio"][1] == pytest.approx((10_000 + (10_000 * 0.5 + 10_000)) / 2)   # el segundo parte del saldo del primero menos lo retirado
+    assert r["saldo_apartado_promedio_por_anio"][2] > r["saldo_apartado_promedio_por_anio"][1]
+
+
+def test_proyeccion_de_puntos_mas_efecto_nunca_empeora_y_se_paga_antes():
+    from src.models import programa_puntos as PP
+    base = {"anos": 5, "abandono_anual_base": 0.2, "retiro_anual_de_lo_apartado": 0.3}
+    flojo = {"consumo_mas": 0.01, "ahorro_mas": 0.01, "abandono_menos": 0.0}
+    fuerte = {"consumo_mas": 0.10, "ahorro_mas": 0.20, "abandono_menos": 0.2}
+    r = PP.proyeccion_multianual(_total_de_juguete(), 5.0, {**base, "escenarios": {"flojo": flojo, "fuerte": fuerte}})["escenarios"]
+    assert all(a["neto_acumulado"] <= b["neto_acumulado"] for a, b in zip(r["flojo"]["por_anio"], r["fuerte"]["por_anio"]))
+    assert r["fuerte"]["se_paga_en_el_anio"] is not None and (r["flojo"]["se_paga_en_el_anio"] is None or r["fuerte"]["se_paga_en_el_anio"] <= r["flojo"]["se_paga_en_el_anio"])
+
+
+def test_proyeccion_de_puntos_con_los_supuestos_reales_cuadra_con_la_lectura_conservadora_del_primer_anio():
+    import json
+    import os
+    from src.comun.rutas import MODELOS
+    ruta = os.path.join(MODELOS, "metricas_valor.json")
+    if not os.path.isfile(ruta):
+        pytest.skip("falta models/metricas_valor.json (python eval/benchmark_y_valor.py)")
+    v = json.load(open(ruta, encoding="utf-8"))
+    medido = v["proyeccion_a_futuro"]["escenarios"]["solo_lo_medido"]["por_anio"][0]["neto_por_usuario_que_entra"]
+    assert medido == pytest.approx(v["lectura_conservadora"]["neto_por_usuario_sin_mas_consumo"])   # el modelo a varios anios arranca exactamente donde termina el de un anio

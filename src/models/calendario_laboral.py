@@ -78,7 +78,7 @@ def libre_disposicion(hoy: date) -> dict:
     return {"porcentaje_libre_hoy": c["porcentaje_transitorio"] if vigente else c["porcentaje_permanente"], "porcentaje_permanente": c["porcentaje_permanente"],
             "regimen_transitorio_vigente": vigente, "vigente_hasta": fin.isoformat(), "vigente_hasta_texto": texto_fecha(fin), "dias_restantes": dias,
             "por_vencer": vigente and dias <= c["dias_para_avisar_vencimiento"], "enfermedad_terminal_o_cancer": c["enfermedad_terminal_o_cancer"],
-            "nota_proyectos": c["nota_proyectos"], "finalidad_de_la_cts": cfg()["cts"]["finalidad"], "fuente": "Ley 32322 (El Peruano, 9 de mayo de 2025)"}
+            "nota_proyectos": c["nota_proyectos"], "proyecto_en_evaluacion": c.get("proyecto_en_evaluacion"), "finalidad_de_la_cts": cfg()["cts"]["finalidad"], "fuente": "Ley 32322 (El Peruano, 9 de mayo de 2025)"}
 
 
 def reglas_por_revisar(hoy: date) -> bool:

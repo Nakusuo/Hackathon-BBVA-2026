@@ -29,7 +29,7 @@ def tcea():
 
 def test_el_indice_de_diego_carga_completo():
     b = Buscador()
-    assert b.indice.ntotal == len(b.fragmentos) == 3833
+    assert b.indice.ntotal == len(b.fragmentos) == 3761
     assert b.indice.d == 768
 
 

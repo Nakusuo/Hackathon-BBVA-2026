@@ -14,7 +14,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from src.comun.rutas import DATA_GENERADO, DATA_PARAMETROS  # noqa: E402
 
-EXCLUIDOS = {"cache_llm.json", "cache_bcrp", "memoria", "vivo", "_manifiesto.json"}   # caches y memoria de pruebas: no son datos del generador
+EXCLUIDOS = {"cache_llm.json", "cache_bcrp", "memoria", "vivo", "faq", "mlflow", "_manifiesto.json"}   # caches y memoria de pruebas: no son datos del generador
 
 
 def sha(ruta: str) -> str:

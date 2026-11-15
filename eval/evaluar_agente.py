@@ -84,7 +84,7 @@ if __name__ == "__main__":
         res[modo] = {"resumen": resumen(todas), "fallos_de_ruteo": [(x["pregunta"], x["esperada"], x["obtenida"]) for x in todas if not x["ruteo_ok"]],
                      "respuestas_con_cifra_sin_respaldo": [x["pregunta"] for x in todas if not x["sin_cifras_inventadas"]]}
         print(modo, json.dumps(res[modo]["resumen"], ensure_ascii=False, indent=1), flush=True)
-    res["diagramas"] = {k: os.path.relpath(v, RAIZ).replace(os.sep, "/") for k, v in exportar_diagramas(ruta("docs", "diagramas"), repo, b).items()}   # rutas relativas: nada de la laptop de nadie
+    res["diagramas"] = {k: os.path.relpath(v, RAIZ).replace(os.sep, "/") for k, v in exportar_diagramas(ruta("docs", "presentacion", "diagramas"), repo, b).items()}   # rutas relativas: nada de la laptop de nadie
     os.makedirs(MODELOS, exist_ok=True)
     res["huella_codigo"] = huella(AGENTE)   # la puerta de calidad compara esta huella con la del codigo actual
     json.dump(res, open(os.path.join(MODELOS, f"metricas_agente_{a.llm}.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
