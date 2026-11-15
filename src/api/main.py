@@ -1,5 +1,10 @@
+import asyncio
+import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+
+from src.api.agente import obtener_agente
 from src.api.routers import recommendations
 from src.api.routers.events import router as events_router
 from src.api.routers.simulations import router as simulations_router
@@ -18,10 +23,25 @@ from src.api.routers import (
 )
 
 
+log = logging.getLogger("lucas.api")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # El agente se carga al arrancar para que la primera pregunta del chat no pague esa espera.
+    # Si falla (sin base o sin modelos) la API igual levanta: las demás rutas no dependen de él.
+    try:
+        await asyncio.to_thread(obtener_agente)
+    except Exception:
+        log.exception("El agente no cargó; /chat lo reintentará en el primer pedido")
+    yield
+
+
 app = FastAPI(
     title="Lucas API",
     description="API REST del asistente financiero Lucas",
-    version="0.1.0"
+    version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.include_router(health.router)
