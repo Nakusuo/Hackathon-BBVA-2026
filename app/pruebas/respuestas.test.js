@@ -32,7 +32,7 @@ test('no da asesoría de inversión ni ofrece mover plata', () => {
 })
 
 test('lo que no entiende lo dice sin inventar cifras', () => {
-  const r = preguntar('hola')
+  const r = preguntar('qué opinas del clima')
   assert.match(r.texto, /Todavía no sé/)
   assert.deepEqual(r.cifras, [])
 })
@@ -201,4 +201,39 @@ test('«¿y si gano 6000 al mes?» es un ingreso supuesto: no cambia el precio d
 
 test('un ingreso menor al de hoy no promete más margen', () => {
   assert.match(preguntar('¿y si gano 1000 al mes?').texto, /no tendrías más margen/)
+})
+
+// Cada número tiene un papel: precio, plazo, fecha, edad, lo ya ahorrado, la inicial, un ritmo o un ingreso.
+const CASOS_DE_NUMEROS = [
+  [['quiero un carro de 45000', 'tengo 25 años, me alcanza?'], /^Tu carro cuesta S\/.45,000\./],
+  [['quiero un carro de 45000', 'ya tengo 5000 ahorrados'], /Ya tienes S\/.5,000: te faltan S\/.40,000/],
+  [['quiero un carro de 45000', 'la inicial es de 9000'], /cuesta S\/.45,000 y la inicial es de S\/.9,000/],
+  [['quiero un carro de 45000', 'la inicial es el 20%'], /la inicial es de S\/.9,000/],
+  [['quiero un carro de 45000', 'y si aparto 500 al mes?'], /^Apartando S\/.500 al mes, juntas tu carro de S\/.45,000/],
+  [['quiero una laptop de 3000', 'y si aparto 100 por quincena?'], /^Apartando S\/.200 al mes/],
+  [['quiero un carro de 45000', 'y si consigo un trabajo extra de 800 al mes?'], /^Si sumas S\/.800 al mes/],
+  [['quiero un carro de 45000', 'y si me dan la gratificacion de 2600 en diciembre?'], /Si apartas tu gratificación de S\/.2,600, te faltarían S\/.42,400/],
+  [['quiero un carro de 45000', 'para marzo'], /Para el 31 mar de 2027/],
+  [['quiero un carro de 45000', 'para el 15 de marzo de 2027'], /^Tu carro cuesta S\/.45,000\. Para el 15 mar de 2027/],
+  [['quiero un carro de 45000', 'en año y medio?'], /Para el 14 may de 2028/],
+  [['quiero una laptop de S/3500 en 2 quincenas'], /^Tu laptop cuesta S\/.3,500\. Para el 14 dic de 2026/],
+  [['quiero un celular de 1.5k'], /^Tu celular cuesta S\/.1,500\./],
+  [['quiero un celular de mil quinientos'], /^Tu celular cuesta S\/.1,500\./],
+  [['quiero unas zapatillas de 400'], /^Tus zapatillas cuestan S\/.400\./],
+  [['quiero un depa de 300 mil para 2035'], /en más de 20 años/],
+  [['tengo 2 hijos, cuanto puedo ahorrar?'], /podrías apartar S\/.40\./],
+  [['cuánto gasto en taxis?'], /^En los últimos 30 días gastaste S\/.180 en transporte/],
+  [['hola'], /^¡Hola!/],
+  [['puedo gastar S/150 en un regalo?', 'gracias lucas'], /^¡De nada!/],
+]
+
+test('cada número se lee con su papel y no como el precio de la meta', () => {
+  for (const [mensajes, esperado] of CASOS_DE_NUMEROS) {
+    assert.match(charla(mensajes).at(-1).texto, esperado, mensajes.join(' → '))
+  }
+})
+
+test('un aporte que hoy deja en rojo se avisa; uno que cabe, no', () => {
+  assert.match(charla(['quiero una laptop de 3000', 'y si aparto 500 al mes?'])[1].texto, /te dejaría en rojo/)
+  assert.match(charla(['quiero una laptop de 3000', 'y si aparto 20 al mes?'])[1].texto, /no te deja en rojo/)
 })
