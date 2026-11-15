@@ -222,6 +222,19 @@ def test_simular_un_gasto_resta_exactamente_el_monto_y_no_lo_calcula_el_redactor
     assert "2 semanas" not in r["respuesta"] and r["respuesta"].rstrip().endswith("Tu decides.")
 
 
+def test_el_riesgo_del_simulador_no_contradice_la_banda_ya_restada(agente):
+    from src.agente_analitico.grafo import _a_simulador, responder
+    repo, apps, cid = agente
+    p = repo.contexto(cid)["pronostico"]
+    esperado, alto = round(p["saldo_esperado"]), round(p["saldo_alto"])
+    medio = _a_simulador({"ctx": repo.contexto(cid), "pregunta": f"¿si gasto {esperado + (alto - esperado) // 2} soles hoy?"}, repo)["simulacion"]
+    assert medio["saldo_esperado_con_gasto"] < 0 <= medio["saldo_alto_con_gasto"] and medio["prob_rojo_con_gasto"] >= 0.5
+    todo = _a_simulador({"ctx": repo.contexto(cid), "pregunta": f"¿si gasto {alto + 100} soles hoy?"}, repo)["simulacion"]
+    assert todo["saldo_alto_con_gasto"] < 0 and todo["prob_rojo_con_gasto"] >= 0.9
+    r =responder(apps["agente_unico"], cid, f"¿si gasto {alto + 100} soles hoy?")
+    assert "Aún en un mes bueno quedarías en rojo" in r["respuesta"] and not r["cifras_sin_respaldo"]
+
+
 def test_un_gasto_mas_grande_nunca_deja_un_saldo_esperado_mayor(agente):
     repo, _, cid = agente
     fila = repo.fila_de(cid)

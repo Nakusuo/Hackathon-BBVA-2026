@@ -368,6 +368,10 @@ def _a_recomendador(est, repo, **_):
     return {"recos": recs}
 
 
+PISO_RIESGO_ESPERADO_NEGATIVO = 0.5
+PISO_RIESGO_BANDA_NEGATIVA = 0.9
+
+
 def _a_simulador(est, repo, **_):
     """Vuelve a puntuar el pronóstico a 30 días con el saldo de hoy menos el gasto que la persona consulta. La cuenta la hace el modelo, nunca el redactor."""
     c = est["ctx"]
@@ -376,9 +380,15 @@ def _a_simulador(est, repo, **_):
     vivo = c["movimientos_vivos"]["neto"] if c["pronostico_reestimado"] else 0.0
     # El saldo baja exactamente lo que se gasta (es una resta, no una prediccion); el modelo vuelto a puntuar solo aporta el riesgo, y gastar nunca lo baja.
     riesgo_con = max(repo._pronostico(repo.fila_de(c["customer_id"]), vivo - monto)["p_rojo"], sin["p_rojo"])
-    esperado, bajo = round(sin["saldo_esperado"], 0), round(sin["saldo_bajo"], 0)
-    return {"simulacion": {"gasto": round(monto, 2), "saldo_esperado_sin_gasto": esperado, "saldo_esperado_con_gasto": esperado - round(monto, 0),
-                           "saldo_bajo_con_gasto": bajo - round(monto, 0), "prob_rojo_sin_gasto": round(sin["p_rojo"], 2), "prob_rojo_con_gasto": round(riesgo_con, 2),
+    esperado, bajo, alto = (round(sin[k], 0) - round(monto, 0) for k in ("saldo_esperado", "saldo_bajo", "saldo_alto"))
+    # El riesgo no puede contradecir la banda ya restada: es de 80 % (percentiles 10 y 90), asi que con el saldo esperado bajo cero quedar en rojo es
+    # al menos tan probable como no, y con toda la banda bajo cero es casi seguro.
+    if alto < 0:
+        riesgo_con = max(riesgo_con, PISO_RIESGO_BANDA_NEGATIVA)
+    elif esperado < 0:
+        riesgo_con = max(riesgo_con, PISO_RIESGO_ESPERADO_NEGATIVO)
+    return {"simulacion": {"gasto": round(monto, 2), "saldo_esperado_sin_gasto": round(sin["saldo_esperado"], 0), "saldo_esperado_con_gasto": esperado,
+                           "saldo_bajo_con_gasto": bajo, "saldo_alto_con_gasto": alto, "prob_rojo_sin_gasto": round(sin["p_rojo"], 2), "prob_rojo_con_gasto": round(riesgo_con, 2),
                            "porcentaje_del_ingreso_mensual": round(100 * monto / max(c["features"]["ingreso_medio"], 1.0), 0), "horizonte_dias": 30}}
 
 
@@ -576,10 +586,12 @@ def _lineas_simulacion(s: dict) -> list[str]:
     L = [f"Con ese gasto de {_soles(s['gasto'])}, en {s['horizonte_dias']} días tu saldo rondaría {_soles(s['saldo_esperado_con_gasto'])} en vez de {_soles(s['saldo_esperado_sin_gasto'])}.",
          f"En un mes malo podría bajar hasta {_soles(s['saldo_bajo_con_gasto'])}."]
     antes, despues = s["prob_rojo_sin_gasto"], s["prob_rojo_con_gasto"]
-    if despues >= 0.15 and despues > antes:
+    if s["saldo_alto_con_gasto"] < 0:
+        L.append(f"Aún en un mes bueno quedarías en rojo: tu riesgo sube de {antes:.0%} a {despues:.0%}. Conviene esperar a tu próximo ingreso o bajar el monto.")
+    elif despues >= 0.15 and despues > antes:
         L.append(f"Con ese gasto tu riesgo de quedar en rojo sube de {antes:.0%} a {despues:.0%}. Conviene esperar a tu próximo ingreso o bajar el monto.")
     elif despues >= 0.15:
-        L.append(f"Tu riesgo de quedar en rojo ya es de {despues:.0%}, con o sin este gasto.")
+        L.append(f"Tu riesgo de quedar en rojo sigue en {despues:.0%}.")
     elif s["saldo_bajo_con_gasto"] < 0:
         L.append("El riesgo de quedar en rojo es bajo, pero en un mes malo sí quedarías en negativo.")
     else:
