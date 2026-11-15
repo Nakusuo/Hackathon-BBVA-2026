@@ -8,8 +8,8 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: { '/api': API },
-    // Fuera de app/ solo se abren dos carpetas: los JSON del contrato (respaldo) y los de `make eval` (panel Evidencia).
-    fs: { allow: ['.', '../data/sample/mocks', '../models'] },
+    // Fuera de app/ solo se abre lo necesario: los JSON del contrato (respaldo), los de `make eval` (panel Evidencia) y el catálogo de campañas.
+    fs: { allow: ['.', '../data/sample/mocks', '../models', '../data/catalogo_campanas.json'] },
   },
   preview: { proxy: { '/api': API } },
 })

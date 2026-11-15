@@ -6,48 +6,66 @@ import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import { SUAVE } from '../movimiento.js'
 import { LARGO_MAXIMO, preguntarALucas } from './clienteChat.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
-import { bloquesDe } from './textoChat.js'
+import { burbujasDe } from './textoChat.js'
 
 // Apagado hasta que exista POST /api/v1/chat en FastAPI; las demás lecturas no dependen de esto.
 const AGENTE = import.meta.env.VITE_CHAT_AGENTE === 'si'
-
-// Cada mensaje nuevo sube un poco al entrar; con «reducir movimiento» aparece quieto.
-function entradaDe(reducido) {
-  if (reducido) return { initial: false }
-  return { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.25, ease: SUAVE } }
-}
 
 // Lucas «escribe» al menos este tiempo: una plantilla responde al instante y el salto de golpe no deja ver quién habla.
 const ESCRIBIENDO_MINIMO_MS = 700
 // Cada bloque de la respuesta entra un poco después del anterior, como si se fuera escribiendo.
 const PASO_ENTRE_BLOQUES_S = 0.22
 
+// Cada mensaje nuevo sube un poco al entrar; con «reducir movimiento» aparece quieto.
+function entradaDe(reducido, bloquesAntes = 0) {
+  if (reducido) return { initial: false }
+  return {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.25, ease: SUAVE, delay: bloquesAntes * PASO_ENTRE_BLOQUES_S },
+  }
+}
+
 function Partes({ partes }) {
   return partes.map((p, i) => (p.fuerte ? <strong key={i}>{p.texto}</strong> : p.texto))
 }
 
-// El texto llega con saltos de línea y guiones: se pinta en párrafos y listas, con las cifras resaltadas.
-function Texto({ texto }) {
+// Una burbuja: título, párrafos y listas, con las cifras resaltadas. `desde` es cuántos bloques ya se mostraron antes.
+function Bloques({ bloques, desde }) {
   const reducido = useReducedMotion()
   const entrada = (i) =>
     reducido
       ? { initial: false }
-      : { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, ease: SUAVE, delay: i * PASO_ENTRE_BLOQUES_S } }
-  return bloquesDe(texto).map((bloque, i) =>
-    bloque.tipo === 'lista' ? (
-      <motion.ul key={i} className="mensaje-lista" {...entrada(i)}>
-        {bloque.items.map((item, j) => (
-          <li key={j}>
-            <Partes partes={item} />
-          </li>
-        ))}
-      </motion.ul>
-    ) : (
+      : {
+          initial: { opacity: 0, y: 6 },
+          animate: { opacity: 1, y: 0 },
+          transition: { duration: 0.3, ease: SUAVE, delay: (desde + i) * PASO_ENTRE_BLOQUES_S },
+        }
+  return bloques.map((bloque, i) => {
+    if (bloque.tipo === 'titulo') {
+      return (
+        <motion.p key={i} className="mensaje-titulo" {...entrada(i)}>
+          {bloque.texto}
+        </motion.p>
+      )
+    }
+    if (bloque.tipo === 'lista') {
+      return (
+        <motion.ul key={i} className="mensaje-lista" {...entrada(i)}>
+          {bloque.items.map((item, j) => (
+            <li key={j}>
+              <Partes partes={item} />
+            </li>
+          ))}
+        </motion.ul>
+      )
+    }
+    return (
       <motion.p key={i} {...entrada(i)}>
         <Partes partes={bloque.partes} />
       </motion.p>
-    ),
-  )
+    )
+  })
 }
 
 // Las cifras van en un bloque aparte y con su rótulo visible: así se distinguen del texto del modelo.
@@ -101,7 +119,8 @@ function Fuentes({ fuentes }) {
 }
 
 function Mensaje({ mensaje }) {
-  const entra = entradaDe(useReducedMotion())
+  const reducido = useReducedMotion()
+  const entra = entradaDe(reducido)
   if (mensaje.autor === 'tu') {
     return (
       <motion.li {...entra} className="mensaje mensaje-tu">
@@ -110,21 +129,28 @@ function Mensaje({ mensaje }) {
       </motion.li>
     )
   }
+  // Una respuesta con varios bloques se reparte en burbujas; cada una entra cuando termina de «escribirse» la anterior.
+  const burbujas = burbujasDe(mensaje.texto)
+  const inicioDe = burbujas.reduce((inicios, b) => [...inicios, inicios.at(-1) + b.length], [0])
   return (
     <motion.li {...entra} className="mensaje mensaje-lucas">
       {/* Con un aviso de falla Lucas no puede salir celebrando ni ahorrando. */}
       <MarcaLucas tamano={40} pose={mensaje.aviso ? 'alerta' : mensaje.pose} />
-      <div className="mensaje-cuerpo">
+      <div className="mensaje-burbujas">
         <span className="solo-lector">Lucas: </span>
-        {mensaje.aviso && (
-          <p className="aviso-chat">
-            <WarningCircle size={18} aria-hidden="true" />
-            <span>{mensaje.aviso}</span>
-          </p>
-        )}
-        <Texto texto={mensaje.texto} />
-        {mensaje.cifras?.length > 0 && <Cifras mensaje={mensaje} />}
-        {mensaje.fuentes?.length > 0 && <Fuentes fuentes={mensaje.fuentes} />}
+        {burbujas.map((bloques, i) => (
+          <motion.div key={i} className="mensaje-cuerpo" {...(i ? entradaDe(reducido, inicioDe[i]) : { initial: false })}>
+            {i === 0 && mensaje.aviso && (
+              <p className="aviso-chat">
+                <WarningCircle size={18} aria-hidden="true" />
+                <span>{mensaje.aviso}</span>
+              </p>
+            )}
+            <Bloques bloques={bloques} desde={inicioDe[i]} />
+            {i === burbujas.length - 1 && mensaje.cifras?.length > 0 && <Cifras mensaje={mensaje} />}
+            {i === burbujas.length - 1 && mensaje.fuentes?.length > 0 && <Fuentes fuentes={mensaje.fuentes} />}
+          </motion.div>
+        ))}
       </div>
     </motion.li>
   )

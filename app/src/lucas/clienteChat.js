@@ -2,7 +2,7 @@
 import { ErrorApi } from '../api/http.js'
 import { preguntarAgente } from '../api/lucas.js'
 import { enSoles } from '../formato.js'
-import { esPedidoDeOperacion, esPreguntaDeCampana, responder as responderConPlantilla } from './respuestas.js'
+import { esPedidoDeOperacion, responder as responderConPlantilla } from './respuestas.js'
 
 export const LARGO_MAXIMO = 500
 
@@ -66,7 +66,7 @@ export async function preguntarALucas(texto, { cliente, persona, conversacion, a
     ...responderConPlantilla(texto, cliente, persona, previas),
   })
   // Los pedidos de operación o inversión se cortan aquí: no hace falta mandarlos a ningún servidor.
-  if (!activo || esPedidoDeOperacion(texto) || esPreguntaDeCampana(texto, previas, cliente)) return plantilla()
+  if (!activo || esPedidoDeOperacion(texto)) return plantilla()
 
   let cuerpo
   try {

@@ -67,6 +67,30 @@
   white-space: nowrap;
 }
 
+/* Una respuesta puede traer varias burbujas: van en columna y el avatar queda una sola vez, junto a la última. */
+.mensaje-burbujas {
+  max-width: 88%;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.mensaje-burbujas .mensaje-cuerpo {
+  max-width: 100%;
+}
+
+.mensaje-burbujas .mensaje-cuerpo:not(:last-child) {
+  border-radius: 20px;
+}
+
+.mensaje-titulo {
+  color: var(--azul-texto);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
 .mensaje-lista {
   display: grid;
   gap: 6px;
