@@ -12,7 +12,8 @@ start
 if (¿Dio su permiso?) then (no)
   :Muestra /consentimiento;
   |Cliente|
-  if (¿Acepta?) then (no)
+  if (¿Acepta?) then («Ahora no»)
+    :Sigue en la banca sin Lucas;
     stop
   else (sí)
   endif
@@ -24,25 +25,25 @@ endif
 
 fork
   |Motor|
-  repeat :vistaCon(elegidos, persona,\npagosExtra, planificados);
+  repeat :vistaCon(elegidos, personaId,\npagosExtra, planificados);
     note right
       Única fuente de cifras:
       saldo con banda, peor día,
-      días en rojo, gasto diario seguro
+      días en rojo, gasto diario seguro.
+      Al volver aquí, todas las
+      pantallas cambian juntas.
     end note
     |Pantallas de Lucas|
     :Resumen, Qué viene, Avisos,\nMetas y Chat pintan la misma vista;
-    |Cliente|
-    :Decide qué hacer;
-    if (¿Qué hace?) then («Lo hago», planificar\no crear una meta)
-      |Navegador|
-      :Guarda la decisión en localStorage;
+    if (¿El cliente pulsa «Lo hago»,\nplanifica o crea una meta?) then (sí)
+      :Guarda la decisión\nen localStorage;
+    elseif (¿Pregunta en el chat?) then (sí)
+      :Responde con cifras de la vista\n(ver secuencia del chat);
     else (retira su permiso)
-      |Navegador|
-      :Borra lo guardado de esa persona;
+      :Borra de localStorage\nlo de esa persona;
       stop
     endif
-  repeat while (Todas las pantallas cambian juntas)
+  repeat while (¿Sigue usando Lucas?) is (sí)
 fork again
   |Pantallas de Lucas|
   :cargarCliente lee la API\n(espera ESPERA_MS = 4 s por ruta);

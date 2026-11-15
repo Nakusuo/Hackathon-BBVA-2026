@@ -42,7 +42,7 @@ package "Dominio del front (app/src)" {
     salud
     apartado
     --
-    vistaCon(elegidos, persona,\n  pagosExtra, planificados)
+    vistaCon(elegidos, personaId,\n  pagosExtra, planificados)
   }
   class Meta <<metas.js>> {
     id
@@ -71,9 +71,10 @@ package "Dominio del front (app/src)" {
     aviso
   }
 
+  note top of Persona : id y cambios están en la definición;\nel resto, en definicion.persona
   Persona "1" *-- "*" Tip : propone
   Vista ..> Persona : se arma con
-  Vista o-- "*" Tip : elegidos («Lo hago»)
+  Vista o-- Tip : elegidos («Lo hago»)
   Vista o-- "*" Planificado
   Meta ..> Vista : reparte el apartado
   Aviso ..> Vista : sale del riesgo de
@@ -96,7 +97,7 @@ package "Agente del chat (src/agent, src/api)" {
     sources
     tools_used
   }
-  note bottom of ChatResponse : figures lo agrega la conexión\ncon agent.chat.responder
+  note bottom of ChatResponse : La conexión con agent.chat.responder agrega figures\n(y verified_figures, intent) y cambia sources\nde texto a objetos {id, title, url}
 
   class Estado <<TypedDict>> {
     pregunta
@@ -145,13 +146,18 @@ package "Agente del chat (src/agent, src/api)" {
   HerramientasAPI ..> HerramientaNoDisponible : lanza
   LLMProvider <|.. ProveedorChat
   LLMProvider <|.. TemplateProvider
-  ChatRequest ..> Estado : crea
-  Estado ..> Herramientas : datos de
-  Estado ..> LLMProvider : borrador de
-  Estado ..> Buscador : fuentes de
-  Veredicto ..> Permitidos : juzgar() compara contra
-  Estado ..> Veredicto : aprobado según
-  Estado ..> ChatResponse : se devuelve como
+  class Grafo <<grafo.construir · chat.responder>> {
+    construir(herramientas, cadena, buscador)
+    responder(agente, pedido)
+  }
+  Grafo --> "1" Herramientas
+  Grafo --> "1..*" LLMProvider : cadena
+  Grafo --> "0..1" Buscador
+  Grafo ..> Estado : recorre
+  Grafo ..> ChatRequest : lee
+  Grafo ..> ChatResponse : arma
+  Grafo ..> Veredicto : juzgar()
+  Grafo ..> Permitidos : juzgar() compara contra
 }
 
 RespuestaChat ..> ChatResponse : desdeAgente(cuerpo)\nsolo si verified

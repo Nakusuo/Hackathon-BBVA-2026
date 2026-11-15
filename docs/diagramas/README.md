@@ -11,7 +11,7 @@
 
 ## Regenerar los SVG
 
-Sin internet, con Java 17 y un `plantuml.jar` (1.2024.7) fuera del repo:
+Sin internet, con Java 17 y un `plantuml.jar` (probado con 1.2025.3) fuera del repo:
 
 ```bash
 java -jar plantuml.jar -charset UTF-8 -tsvg docs/diagramas/*.puml
