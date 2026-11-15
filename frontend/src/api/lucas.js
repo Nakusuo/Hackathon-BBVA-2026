@@ -49,6 +49,11 @@ export async function cargarCliente(id = CLIENTE_DEMO, opciones = {}) {
   return Object.fromEntries(nombres.map((n, i) => [n, resultados[i]]))
 }
 
+/** Solo el dólar: la pantalla que lo muestra no necesita las otras lecturas. */
+export function cargarTipoCambio(opciones = {}) {
+  return leerFuente('tipoCambio', CLIENTE_DEMO, opciones)
+}
+
 // Un 4xx aquí es un pedido mal armado por el front: se lanza en vez de tapar el error con el mock.
 export function simularCambios(cambios, { id = CLIENTE_DEMO, horizonteDias = 30, ...opciones } = {}) {
   const cuerpo = pedidoSimulacion(id, cambios, horizonteDias)

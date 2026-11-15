@@ -52,6 +52,11 @@ async function sinGuia(page) {
   await page.addInitScript(() => window.localStorage.setItem('lucas-guia-vista', 'si'))
 }
 
+// El panel Evidencia pide el dólar a la API; sin servidor el proxy de Vite responde con error y el navegador lo cuenta como error de consola.
+const DOLAR = { base: 'USD', quote: 'PEN', rate: '3.410', date: '2026-11-13', source: 'BCRP PD04638PD', is_fallback: false, is_stale: false }
+const conDolar = (page, cuerpo = DOLAR) =>
+  page.route('**/api/v1/fx*', (ruta) => ruta.fulfill({ json: cuerpo }))
+
 // Contraste AA calculado en el navegador: color del texto contra el fondo real, mezclando capas semitransparentes.
 // No ve imágenes ni desenfoques de fondo; para eso quedan las capturas en claro y oscuro.
 function textosSinContraste() {
@@ -105,6 +110,7 @@ function textosSinContraste() {
 for (const tema of ['claro', 'oscuro']) for (const { ruta, titulo } of PANTALLAS) {
   test(`${ruta} en ${tema}: sin errores ni scroll horizontal, texto de 16 px o más y contraste AA`, async ({ page }, info) => {
     await sinGuia(page)
+    await conDolar(page)
     await page.addInitScript((t) => window.localStorage.setItem('lucas-tema', t), tema)
     const errores = []
     page.on('pageerror', (e) => errores.push(e.message))
@@ -679,7 +685,20 @@ test('Avisos: «útil / no me sirve» se marca y se recuerda al volver', async (
   )
 })
 
+test('Evidencia: el dólar dice su fecha y fuente, y avisa cuando el dato es anterior', async ({ page }) => {
+  await conDolar(page)
+  await page.goto('/evidencia')
+  await expect(page.getByText('Dólar: S/ 3.410 · 13 de noviembre de 2026 · BCRP', { exact: true })).toBeVisible()
+  await expect(page.getByText('dato anterior')).toHaveCount(0)
+
+  await page.unroute('**/api/v1/fx*')
+  await conDolar(page, { ...DOLAR, is_fallback: true, is_stale: true })
+  await page.reload()
+  await expect(page.getByText('Dólar: S/ 3.410 · 13 de noviembre de 2026 · BCRP · dato anterior', { exact: true })).toBeVisible()
+})
+
 test('Evidencia: empieza por el impacto en S/, cada cifra con su fuente y muestra lo que empeora', async ({ page }) => {
+  await conDolar(page)
   await page.goto('/ingresar')
   await page.getByRole('link', { name: 'Ver la evidencia de los modelos' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Evidencia de Lucas' })).toBeVisible()

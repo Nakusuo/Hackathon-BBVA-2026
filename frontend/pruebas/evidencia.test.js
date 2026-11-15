@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { cifra, cuenta, media, proporcion } from '../src/evidencia/cifras.js'
-import { agente, estrategias, impactoPorCliente, perturbaciones, tecnicas, valorBanco, veredicto } from '../src/evidencia/secciones.js'
+import { agente, estrategias, impactoPorCliente, lecturaDolar, perturbaciones, tecnicas, valorBanco, veredicto } from '../src/evidencia/secciones.js'
 
 const impacto = JSON.parse(readFileSync(new URL('../../models/metricas_impacto.json', import.meta.url)))
 
@@ -91,4 +91,14 @@ test('el veredicto se calcula según qué dirección es mejor', () => {
 test('las perturbaciones muestran también lo que empeora', () => {
   const { pruebas } = perturbaciones()
   assert.ok(pruebas.some((p) => p.veredicto === 'peor'))
+})
+
+test('el dólar dice su fecha y fuente, y «dato anterior» si el valor es viejo o viene del respaldo', () => {
+  const base = { tasa: 3.41, fecha: '2026-11-13', fuente: 'BCRP PD04638PD', esRespaldo: false, desactualizado: false }
+  assert.deepEqual(lecturaDolar({ datos: base, origen: 'api' }), { tasa: 3.41, fecha: '2026-11-13', fuente: 'BCRP', anterior: false })
+  assert.equal(lecturaDolar({ datos: { ...base, desactualizado: true }, origen: 'api' }).anterior, true)
+  assert.equal(lecturaDolar({ datos: { ...base, esRespaldo: true }, origen: 'api' }).anterior, true)
+  const grabado = lecturaDolar({ datos: { ...base, fuente: 'recorded_demo' }, origen: 'respaldo' })
+  assert.equal(grabado.anterior, true)
+  assert.equal(grabado.fuente, 'dato grabado')
 })

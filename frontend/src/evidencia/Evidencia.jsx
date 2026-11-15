@@ -1,5 +1,7 @@
 import { CaretLeft } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { cargarTipoCambio } from '../api/lucas.js'
 import { enSoles } from '../formato.js'
 import { DIAS_PARA_AVISAR } from '../lucas/avisos.js'
 import { cifra } from './cifras.js'
@@ -7,6 +9,7 @@ import {
   agente,
   estrategias,
   impactoPorCliente,
+  lecturaDolar,
   MARGEN_PARECIDO,
   perturbaciones,
   supuestosImpacto,
@@ -361,6 +364,26 @@ function Resumen() {
   )
 }
 
+function Dolar() {
+  const [dolar, setDolar] = useState(null)
+  useEffect(() => {
+    let vigente = true
+    cargarTipoCambio()
+      .then((lectura) => vigente && setDolar(lecturaDolar(lectura)))
+      .catch(() => {}) // el dólar es contexto: si no se puede leer, la línea no se muestra y el panel sigue
+    return () => {
+      vigente = false
+    }
+  }, [])
+  if (!dolar) return null
+  return (
+    <p className="suave">
+      Dólar: S/ {decimales(3).format(dolar.tasa)} · {fechaLarga(dolar.fecha)} · {dolar.fuente}
+      {dolar.anterior && ' · dato anterior'}
+    </p>
+  )
+}
+
 export default function Evidencia() {
   const porSegundo = cifra('escala', 'recomendaciones_por_segundo')
   const memoria = cifra('escala', 'pico_memoria_gb')
@@ -377,6 +400,7 @@ export default function Evidencia() {
           Resultados de <code>make eval</code> con datos sintéticos de semilla fija. Cada cifra se lee de{' '}
           <code>models/metricas*.json</code> y muestra su fuente; ninguna está escrita a mano.
         </p>
+        <Dolar />
       </header>
 
       <main className="evidencia-contenido">
