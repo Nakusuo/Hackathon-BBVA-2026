@@ -20,7 +20,6 @@
   --sobre-azul-suave: #d9e5fd;
   --crema: #f5eedd;
   --crema-borde: #e4d8bb;
-  --exterior: #e6ecf7;
   --banda: #c3d7fc;
   /* La gráfica de Qué viene va sobre --azul-profundo en los dos temas: línea, banda y foco
      llevan color propio para no heredar --crema, que en oscuro es casi negra. Banda ya opaca:
@@ -68,7 +67,6 @@
   --sobre-azul-suave: #c3d7fc;
   --crema: #1d212b;
   --crema-borde: #2b303a;
-  --exterior: #08090b;
   --banda: #2a3d6b;
   --grafico-linea: #f2f4f7;
   --grafico-banda: #647db3;
