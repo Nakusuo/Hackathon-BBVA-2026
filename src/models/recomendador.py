@@ -1,5 +1,5 @@
 """Recomendador hibrido: reglas candidatas -> impacto x facilidad -> ajuste por nivel -> filtros de seguridad -> top 3.
-Cada recomendacion trae accion, impacto en S/, por que, supuestos, confianza y deja la decision al usuario."""
+Cada recomendación trae acción, impacto en S/, por que, supuestos, confianza y deja la decisión al usuario."""
 import json
 
 
@@ -31,28 +31,28 @@ def _gasto_mensual(f: dict) -> float:
 
 
 def idoneo_para_credito(f: dict, p_rojo: float, cuota_nueva: float = 0.0) -> tuple[bool, list[str]]:
-    """Reglas de seguridad: nada de credito con colchon bajo, cuotas altas, dias en rojo recientes o riesgo de rojo alto."""
+    """Reglas de seguridad: nada de crédito con colchón bajo, cuotas altas, días en rojo recientes o riesgo de rojo alto."""
     razones = []
     if f["colchon_observado"] < 1.0:
-        razones.append("tu colchon es menor a un mes de ingreso")
+        razones.append("tu colchón es menor a un mes de ingreso")
     if f["cuota_sobre_ingreso"] + cuota_nueva / max(f["ingreso_medio"], 1) > 0.30:
         razones.append("tus cuotas pasarian del 30 % de tu ingreso")
     if f["dias_rojo_3m"] > 0:
-        razones.append("tuviste dias en rojo en los ultimos 3 meses")
+        razones.append("tuviste días en rojo en los últimos 3 meses")
     if p_rojo > 0.30:
-        razones.append("hay una probabilidad alta de quedar en rojo en 30 dias")
+        razones.append("hay una probabilidad alta de quedar en rojo en 30 días")
     return (not razones), razones
 
 
 def _reparto(monto: float, f: dict, ingreso: float, gasto: float, tcea: float, deuda: float) -> tuple[float, float, float]:
-    """Como repartir un ingreso grande: primero el colchon (hasta 3 meses de gasto), luego la deuda cara (hasta el 50 % de la deuda); el resto es meta o gusto."""
+    """Como repartir un ingreso grande: primero el colchón (hasta 3 meses de gasto), luego la deuda cara (hasta el 50 % de la deuda); el resto es meta o gusto."""
     a_colchon = min(monto, max(gasto * 3 - f["colchon_observado"] * ingreso, 0)) if f["colchon_observado"] < 3 else 0.0
     a_deuda = min(monto - a_colchon, deuda * 0.5) if tcea > TCEA_DEUDA_CARA and deuda > 0 else 0.0
     return a_colchon, a_deuda, max(monto - a_colchon - a_deuda, 0.0)
 
 
 def _plan_calendario(c: dict, f: dict, ingreso: float, gasto: float) -> dict | None:
-    """Recomendacion que se anticipa al pago laboral mas cercano (dentro de 30 dias): decidir antes de que la plata se gaste."""
+    """Recomendacion que se anticipa al pago laboral más cercano (dentro de 30 días): decidir antes de que la plata se gaste."""
     cal = c.get("calendario") or {}
     if not cal.get("aplica"):
         return None
@@ -61,29 +61,29 @@ def _plan_calendario(c: dict, f: dict, ingreso: float, gasto: float) -> dict | N
         return None
     m, tcea, deuda = prox["monto_estimado"], float(c.get("tcea", 0)), float(c.get("deuda", 0))
     urg = 0.95 if prox["dias_para"] <= 7 else 0.75
-    base_sup = "el monto es una estimacion con tu ultima gratificacion o tu ingreso medio (regimen general y semestre completo): confirmalo con tu empleador"
+    base_sup = "el monto es una estimación con tu última gratificación o tu ingreso medio (régimen general y semestre completo): confirmalo con tu empleador"
     if prox["tipo"] == "gratificacion":
         a_col, a_deu, resto = _reparto(m["total"], f, ingreso, gasto, tcea, deuda)
-        return {"id": "plan_gratificacion", "accion": f"Te llegan unos S/ {m['total']:,.0f} ({prox['nombre']}, hasta el {prox['fecha_limite_texto']}): decide antes de gastarlos: colchon S/ {a_col:,.0f} en tu apartado, "
+        return {"id": "plan_gratificacion", "accion": f"Te llegan unos S/ {m['total']:,.0f} ({prox['nombre']}, hasta el {prox['fecha_limite_texto']}): decide antes de gastarlos: colchón S/ {a_col:,.0f} en tu apartado, "
                                                       f"deuda cara S/ {a_deu:,.0f}, meta o gusto S/ {resto:,.0f}.", "impacto_soles": round(a_col + a_deu, 0), "urgencia": urg, "facilidad": 0.85,
-                "por_que": [f"tu {prox['nombre'].lower()} llega en {prox['dias_para']} dias", "primero se cubre el colchon (hasta 3 meses de gasto) y la deuda mas cara"],
-                "supuestos": [base_sup, "la bonificacion extraordinaria se calcula con el porcentaje de EsSalud (supuesto: no sabemos si estas en una EPS)"], "confianza": cal["confianza"],
+                "por_que": [f"tu {prox['nombre'].lower()} llega en {prox['dias_para']} días", "primero se cubre el colchón (hasta 3 meses de gasto) y la deuda más cara"],
+                "supuestos": [base_sup, "la bonificación extraordinaria se calcula con el porcentaje de EsSalud (supuesto: no sabemos si estas en una EPS)"], "confianza": cal["confianza"],
                 "puntos": "aporte_a_meta_de_ahorro" if a_col > 0 else None}
     dep, libre = m["deposito_semestral"], cal["libre_disposicion_cts"]
     a_deu = min(dep, deuda * 0.5) if tcea > TCEA_DEUDA_CARA and deuda > 0 else 0.0
-    venc = f" Hasta el {libre['vigente_hasta_texto']} puedes disponer del 100 %; despues, solo hasta el 50 %." if libre["regimen_transitorio_vigente"] and libre["por_vencer"] else ""
+    venc = f" Hasta el {libre['vigente_hasta_texto']} puedes disponer del 100 %; después, solo hasta el 50 %." if libre["regimen_transitorio_vigente"] and libre["por_vencer"] else ""
     if a_deu > 0:
-        accion = (f"Tu CTS (unos S/ {dep:,.0f}) se deposita hasta el {prox['fecha_limite_texto']}. Tu deuda cuesta {tcea:.0%} al ano: usar S/ {a_deu:,.0f} para cancelarla te ahorraria unos S/ {a_deu * tcea:,.0f} al ano en intereses. "
+        accion = (f"Tu CTS (unos S/ {dep:,.0f}) se deposita hasta el {prox['fecha_limite_texto']}. Tu deuda cuesta {tcea:.0%} al año: usar S/ {a_deu:,.0f} para cancelarla te ahorraria unos S/ {a_deu * tcea:,.0f} al año en intereses. "
                   f"El resto conviene dejarlo: es tu respaldo si termina tu trabajo.{venc}")
     else:
-        accion = f"Tu CTS (unos S/ {dep:,.0f}) se deposita hasta el {prox['fecha_limite_texto']}. No hace falta retirarla para tu colchon: ya es tu respaldo si termina tu trabajo. Retira solo si tienes una necesidad concreta.{venc}"
+        accion = f"Tu CTS (unos S/ {dep:,.0f}) se deposita hasta el {prox['fecha_limite_texto']}. No hace falta retirarla para tu colchón: ya es tu respaldo si termina tu trabajo. Retira solo si tienes una necesidad concreta.{venc}"
     return {"id": "plan_cts", "accion": accion, "impacto_soles": round(a_deu * tcea, 0), "urgencia": 0.85 if prox["dias_para"] <= 7 else 0.65, "facilidad": 0.7,
-            "por_que": [f"tu deposito de CTS vence en {prox['dias_para']} dias", cal["libre_disposicion_cts"]["finalidad_de_la_cts"]],
+            "por_que": [f"tu depósito de CTS vence en {prox['dias_para']} días", cal["libre_disposicion_cts"]["finalidad_de_la_cts"]],
             "supuestos": [base_sup, "el ahorro de intereses supone cancelar esa parte de la deuda hoy y mantener tu TCEA promedio durante un ano"], "confianza": cal["confianza"]}
 
 
 def candidatos(c: dict) -> list[dict]:
-    """c: features observables, pronostico, salud, nivel, departamento, tipo_trabajo, tcea y, si existen, duplicadas, evento_ingreso y tasa_ref."""
+    """c: features observables, pronóstico, salud, nivel, departamento, tipo_trabajo, tcea y, si existen, duplicadas, evento_ingreso y tasa_ref."""
     f, pr = c["features"], c.get("pronostico", {})
     ingreso, gasto = f["ingreso_medio"], _gasto_mensual(f)
     p_rojo = float(pr.get("p_rojo", 0.0))
@@ -92,33 +92,33 @@ def candidatos(c: dict) -> list[dict]:
 
     if p_rojo >= 0.25:
         dia = pr.get("dia_riesgo")
-        out.append({"id": "aviso_dia_de_riesgo", "accion": f"Tu saldo podria quedar en rojo{f' hacia el dia {int(dia)}' if dia else ''}: mueve un gasto grande para despues de tu cobro o aparta lo que puedas hoy.",
+        out.append({"id": "aviso_dia_de_riesgo", "accion": f"Tu saldo podría quedar en rojo{f' hacia el día {int(dia)}' if dia else ''}: mueve un gasto grande para después de tu cobro o aparta lo que puedas hoy.",
                     "impacto_soles": round(min(gasto * 0.25, max(0.0, -float(pr.get("saldo_bajo", 0.0)))) or gasto * 0.15, 0), "urgencia": 1.0, "facilidad": 0.8,
-                    "por_que": [f"probabilidad de quedar en rojo en 30 dias: {p_rojo:.0%}", f"saldo esperado: S/ {pr.get('saldo_esperado', 0):,.0f}"], "supuestos": ["el pronostico usa tu historial y el calendario de pagos"],
+                    "por_que": [f"probabilidad de quedar en rojo en 30 días: {p_rojo:.0%}", f"saldo esperado: S/ {pr.get('saldo_esperado', 0):,.0f}"], "supuestos": ["el pronóstico usa tu historial y el calendario de pagos"],
                     "confianza": conf})
     if c.get("duplicadas"):
         monto = float(c.get("monto_duplicada", 30.0))
         out.append({"id": "cancelar_suscripcion_duplicada", "accion": "Cancela la suscripcion que pagas dos veces.", "impacto_soles": round(monto * 12, 0), "urgencia": 0.6, "facilidad": 0.95,
-                    "por_que": ["tienes dos cobros del mismo servicio cada mes"], "supuestos": ["el monto mensual del duplicado es el ultimo cobro"], "confianza": "alta", "puntos": "cancelar_suscripcion_duplicada"})
+                    "por_que": ["tienes dos cobros del mismo servicio cada mes"], "supuestos": ["el monto mensual del duplicado es el último cobro"], "confianza": "alta", "puntos": "cancelar_suscripcion_duplicada"})
     if f["pct_hormiga"] > 0.07:
         out.append({"id": "reducir_gasto_hormiga", "accion": "Baja un 20 % tus gastos pequenos de delivery y antojos.", "impacto_soles": round(0.2 * f["pct_hormiga"] * gasto * 12, 0), "urgencia": 0.4,
                     "facilidad": 0.6, "por_que": [f"los gastos hormiga son {f['pct_hormiga']:.0%} de tu gasto"], "supuestos": ["recortas el 20 % sin cambiar el resto"], "confianza": "media"})
     if f["cv_ingreso"] > 0.40:
         reserva = ingreso * f["cv_ingreso"]
         out.append({"id": "sueldo_lucas", "accion": f"Activa tu Sueldo Lucas: guarda lo que te sobre en meses buenos y usa un monto fijo de unos S/ {max(ingreso - reserva / 6, 0) / 2:,.0f} por quincena.", "impacto_soles": round(reserva, 0),
-                    "urgencia": 0.7, "facilidad": 0.55, "por_que": [f"tu ingreso varia mucho de un mes a otro (variacion {f['cv_ingreso']:.0%})"],
-                    "supuestos": ["la reserva objetivo es un mes malo tipico: ingreso medio x variacion", "el monto fijo reparte esa reserva en 6 meses"], "confianza": "media"})
+                    "urgencia": 0.7, "facilidad": 0.55, "por_que": [f"tu ingreso varia mucho de un mes a otro (variación {f['cv_ingreso']:.0%})"],
+                    "supuestos": ["la reserva objetivo es un mes malo tipico: ingreso medio x variación", "el monto fijo reparte esa reserva en 6 meses"], "confianza": "media"})
     if f["colchon_observado"] < 1.0:
         meta = gasto
-        out.append({"id": "meta_colchon", "accion": f"Arma un colchon de un mes de gastos (S/ {meta:,.0f}) con S/ {meta / 12:,.0f} por quincena.", "impacto_soles": round(meta, 0), "urgencia": 0.65, "facilidad": 0.5,
-                    "por_que": [f"hoy tu colchon alcanza para {f['colchon_observado']:.1f} meses de ingreso"], "supuestos": ["aporte fijo durante 12 quincenas"], "confianza": "media", "puntos": "aporte_a_meta_de_ahorro"})
+        out.append({"id": "meta_colchon", "accion": f"Arma un colchón de un mes de gastos (S/ {meta:,.0f}) con S/ {meta / 12:,.0f} por quincena.", "impacto_soles": round(meta, 0), "urgencia": 0.65, "facilidad": 0.5,
+                    "por_que": [f"hoy tu colchón alcanza para {f['colchon_observado']:.1f} meses de ingreso"], "supuestos": ["aporte fijo durante 12 quincenas"], "confianza": "media", "puntos": "aporte_a_meta_de_ahorro"})
     ev = c.get("evento_ingreso")
     if ev:
         monto = float(ev["monto"])
         a_colchon, a_deuda, resto = _reparto(monto, f, ingreso, gasto, c.get("tcea", 0), c.get("deuda", 0))
-        out.append({"id": "plan_ingreso_extra", "accion": f"Entraron S/ {monto:,.0f} ({ev['origen']}): propon repartirlos asi: colchon S/ {a_colchon:,.0f}, deuda cara S/ {a_deuda:,.0f}, meta o gusto S/ {resto:,.0f}.",
-                    "impacto_soles": round(a_colchon + a_deuda, 0), "urgencia": 0.9, "facilidad": 0.85, "por_que": [f"recibiste un ingreso extra por {ev['origen']}", "primero se cubre el colchon y la deuda mas cara"],
-                    "supuestos": ["colchon objetivo: 3 meses de gastos", "se destina hasta el 50 % de la deuda cara"], "confianza": "alta"})
+        out.append({"id": "plan_ingreso_extra", "accion": f"Entraron S/ {monto:,.0f} ({ev['origen']}): propon repartirlos así: colchón S/ {a_colchon:,.0f}, deuda cara S/ {a_deuda:,.0f}, meta o gusto S/ {resto:,.0f}.",
+                    "impacto_soles": round(a_colchon + a_deuda, 0), "urgencia": 0.9, "facilidad": 0.85, "por_que": [f"recibiste un ingreso extra por {ev['origen']}", "primero se cubre el colchón y la deuda más cara"],
+                    "supuestos": ["colchón objetivo: 3 meses de gastos", "se destina hasta el 50 % de la deuda cara"], "confianza": "alta"})
     plan_cal = _plan_calendario(c, f, ingreso, gasto)
     if plan_cal:
         out.append(plan_cal)
@@ -126,9 +126,9 @@ def candidatos(c: dict) -> list[dict]:
     alerta = RC.alerta_fen(dep, c.get("hoy")) if dep else None
     if alerta:
         fondo = gasto * (2 if alerta["nivel"] == "alta" else 1)
-        out.append({"id": "prevencion_fen", "accion": f"Vives en {dep}, zona con exposicion {alerta['nivel']} a lluvias por El Nino: prepara tu hogar y un fondo de S/ {fondo:,.0f}.",
+        out.append({"id": "prevencion_fen", "accion": f"Vives en {dep}, zona con exposición {alerta['nivel']} a lluvias por El Niño: prepara tu hogar y un fondo de S/ {fondo:,.0f}.",
                     "impacto_soles": round(fondo, 0), "urgencia": 1.0 if alerta["nivel"] == "alta" else 0.8, "facilidad": 0.5, "alerta": alerta,
-                    "por_que": ["el ENFEN mantiene la alerta de El Nino costero", alerta["motivo"]], "supuestos": ["el fondo cubre 1 o 2 meses de gastos segun la exposicion"], "confianza": "media",
+                    "por_que": ["el ENFEN mantiene la alerta de El Niño costero", alerta["motivo"]], "supuestos": ["el fondo cubre 1 o 2 meses de gastos según la exposición"], "confianza": "media",
                     "puntos": "accion_de_prevencion_ante_el_nino"})
         cat = catalogo()["mejora_vivienda_prevencion"]
         tea = (c.get("tasa_ref", 4.5) + cat["supuestos"]["tea_sobre_tasa_referencia_pp"] - cat["supuestos"]["descuento_preferencial_pp"]) / 100
@@ -136,12 +136,12 @@ def candidatos(c: dict) -> list[dict]:
         cuota = cuota_mensual(monto, tea, 18)
         ok, razones = idoneo_para_credito(f, p_rojo, cuota)
         if ok:
-            out.append({"id": "oferta_mejora_vivienda", "accion": f"Podrias mejorar tu vivienda con un credito de unos S/ {monto:,.0f} a 18 meses (cuota estimada S/ {cuota:,.0f}).", "impacto_soles": None, "urgencia": 0.75,
-                        "facilidad": 0.4, "tipo_producto": cat["tipo_producto"], "por_que": ["estas en zona expuesta", "pasas las reglas de idoneidad: colchon, cuotas y dias en rojo"],
-                        "supuestos": [f"tasa efectiva anual de {tea:.1%} (tasa de referencia del BCRP + margen supuesto - descuento preferencial supuesto)", "simulacion; no es una oferta real"], "confianza": "media"})
+            out.append({"id": "oferta_mejora_vivienda", "accion": f"Podrias mejorar tu vivienda con un crédito de unos S/ {monto:,.0f} a 18 meses (cuota estimada S/ {cuota:,.0f}).", "impacto_soles": None, "urgencia": 0.75,
+                        "facilidad": 0.4, "tipo_producto": cat["tipo_producto"], "por_que": ["estas en zona expuesta", "pasas las reglas de idoneidad: colchón, cuotas y días en rojo"],
+                        "supuestos": [f"tasa efectiva anual de {tea:.1%} (tasa de referencia del BCRP + margen supuesto - descuento preferencial supuesto)", "simulación; no es una oferta real"], "confianza": "media"})
     if c.get("baja_de_tasa") and c.get("tcea", 0) > TCEA_DEUDA_CARA and c.get("deuda", 0) > 0:
         out.append({"id": "comparar_tasas", "accion": "Bajaron las tasas: compara el costo de tu deuda actual con otras opciones antes de decidir.", "impacto_soles": None, "urgencia": 0.6, "facilidad": 0.7,
-                    "por_que": [f"tu deuda cuesta {c['tcea']:.0%} al ano y la tasa de referencia bajo"], "supuestos": ["es una comparacion educativa, no una oferta"], "confianza": "media"})
+                    "por_que": [f"tu deuda cuesta {c['tcea']:.0%} al año y la tasa de referencia bajo"], "supuestos": ["es una comparación educativa, no una oferta"], "confianza": "media"})
     from src.models import ofertas as O  # import tardio: ofertas usa funciones de este modulo
     out += O.ofertas_por_perfil(c, c.get("top_categorias"))
     return out
@@ -154,7 +154,7 @@ def filtrar_seguridad(recs: list[dict], c: dict) -> list[dict]:
         if r["id"] in ("oferta_mejora_vivienda",) and not idoneo_para_credito(f, p_rojo)[0]:
             continue
         if r["id"] == "comparar_tasas" and f["colchon_observado"] < 1.0 and f["dias_rojo_3m"] > 0:
-            r = {**r, "accion": "Antes de mirar tasas, prioriza cubrir tus dias en rojo; luego compara con calma."}
+            r = {**r, "accion": "Antes de mirar tasas, prioriza cubrir tus días en rojo; luego compara con calma."}
         r.setdefault("tu_decides", True)
         seguras.append(r)
     return seguras

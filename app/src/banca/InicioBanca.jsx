@@ -26,11 +26,11 @@ function nombreDelDia(fecha, hoy) {
 const MOVIMIENTOS_VISIBLES = 3
 
 export default function InicioBanca() {
-  const { avisarSinDemo, vista: cliente, permiso } = useOutletContext()
+  const { avisarSinDemo, vista: cliente, permiso, metas = [] } = useOutletContext()
   const [montosVisibles, setMontosVisibles] = useState(true)
   const monto = (valor) => (montosVisibles ? enSoles(valor) : OCULTO)
   const { riesgo, cuenta, tarjeta, hoy } = cliente
-  const { avisos: candidatosHoy, riesgoLejano } = candidatos(cliente)
+  const { avisos: candidatosHoy, riesgoLejano } = candidatos(cliente, hoy, metas)
   const totalAvisos = armarBandeja(candidatosHoy, leerRegistro(), hoy).avisos.length
   const [todos, setTodos] = useState(false)
   const movimientos = todos ? cliente.movimientosRecientes : cliente.movimientosRecientes.slice(0, MOVIMIENTOS_VISIBLES)

@@ -2,6 +2,7 @@
 // riesgo a 3–7 días normal, a 1–2 urgente, a más de 7 sin aviso; máximo 3 por semana de lunes a domingo,
 // con un lugar reservado para el de riesgo; un solo aviso por hueco (`riesgo-` + fecha del próximo ingreso).
 import { diasEntre } from '../formato.js'
+import { planDeMeta, repartoDelApartado } from './metas.js'
 
 export const MAXIMO_POR_SEMANA = 3
 export const DIAS_PARA_AVISAR = 7
@@ -90,10 +91,44 @@ function avisoDeIngreso(cliente, hoy) {
   ]
 }
 
-export function candidatos(cliente, hoy = cliente.hoy) {
+// Cada meta abierta con algo que apartar recibe su recordatorio en los días antes de su cobro y el mismo día.
+// El monto es el del plan de Metas: lo que se puede apartar sin rojo, repartido entre las metas en orden de creación.
+function avisosDeMetas(cliente, hoy, metas) {
+  const cobro = cliente.proximoIngreso
+  const dias = diasEntre(hoy, cobro.fecha)
+  if (!metas.length || dias < 0 || dias > DIAS_PARA_AVISAR) return []
+  const reparto = repartoDelApartado(cliente.apartado?.monto ?? 0, metas)
+  const contexto = { primerApartado: cobro.fecha, finPronostico: cliente.finPronostico, hoy: cliente.hoy }
+  return metas.flatMap((meta) => {
+    const plan = planDeMeta(meta, { ...contexto, apartado: reparto.porMeta[meta.id] ?? 0 })
+    if (!plan.aporte) return []
+    return [
+      {
+        id: `meta-${meta.id}-${cobro.fecha}`,
+        tipo: 'meta',
+        urgencia: 'normal',
+        fecha: cobro.fecha,
+        dias,
+        impacto: plan.aporte,
+        meta: meta.nombre,
+        metaFecha: meta.fecha,
+        alcanza: plan.alcanza,
+        llegaEl: plan.llegaEl,
+        accion: { texto: 'Ver la meta', ruta: '/lucas/metas' },
+      },
+    ]
+  })
+}
+
+export function candidatos(cliente, hoy = cliente.hoy, metas = []) {
   const { aviso, lejano } = avisoDeRiesgo(cliente, hoy)
   return {
-    avisos: [...(aviso ? [aviso] : []), ...avisosDePagos(cliente, hoy), ...avisoDeIngreso(cliente, hoy)],
+    avisos: [
+      ...(aviso ? [aviso] : []),
+      ...avisosDePagos(cliente, hoy),
+      ...avisoDeIngreso(cliente, hoy),
+      ...avisosDeMetas(cliente, hoy, metas),
+    ],
     riesgoLejano: lejano,
   }
 }

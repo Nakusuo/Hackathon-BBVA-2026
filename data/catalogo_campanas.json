@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "aviso": "Convenios de ejemplo de un banco que integre a Lucas. Los aliados son inventados: nunca marcas reales. El banco los reemplaza con los suyos.",
+  "campanas": [
+    {
+      "id": "entradas",
+      "corto": "entradas",
+      "temas": ["entrada", "concierto", "festival", "ticket", "show"],
+      "aliado": "Ticketera Sol",
+      "rubro": "entradas a conciertos y festivales",
+      "porcentaje": 20,
+      "tope": 120,
+      "condicion": "pagando con tu tarjeta de débito en la preventa",
+      "hasta": "2026-12-31"
+    },
+    {
+      "id": "autos",
+      "corto": "autos",
+      "temas": ["carro", "auto"],
+      "aliado": "Autos Andinos",
+      "rubro": "autos nuevos de sus marcas aliadas",
+      "fijo": 2000,
+      "condicion": "pagando desde tu cuenta, sin crédito",
+      "hasta": "2027-03-31"
+    },
+    {
+      "id": "viajes",
+      "corto": "viajes",
+      "temas": ["viaje", "pasaje", "vuelo"],
+      "aliado": "Viajes Horizonte",
+      "rubro": "pasajes nacionales",
+      "solo_nacional": true,
+      "porcentaje": 15,
+      "tope": 200,
+      "condicion": "comprando con tu tarjeta de débito",
+      "hasta": "2027-02-28"
+    },
+    {
+      "id": "tecnologia",
+      "corto": "tecnología",
+      "temas": ["laptop", "computadora", "celular", "televisor", "tele"],
+      "aliado": "TecnoPunto",
+      "rubro": "laptops, celulares y televisores",
+      "porcentaje": 10,
+      "tope": 300,
+      "condicion": "pagando con tu tarjeta de débito",
+      "hasta": "2026-12-31"
+    }
+  ]
+}

@@ -28,6 +28,8 @@ Todos pueden usar `investigador`, `codificador`, `juez-tecnico` y `juez-producto
 | 2026-11-14 | Un agente LangGraph con tools sobre nuestros modelos, RAG en pgvector y nodo juez | Sin cifras inventadas, con fuentes |
 | 2026-11-14 | Motor de eventos (ingreso, grati/CTS, calendario, gasto, riesgo), máximo 3 avisos por semana | Lucas habla primero sin hacer spam |
 | 2026-11-14 | Ofertas solo de tipos genéricos, por necesidad e idoneidad | Fidelización responsable |
+| 2026-11-14 | Un solo agente en el producto: `/api/v1/chat` usa `src/agente_analitico` (reglas de Diego) con simular, ahorro y ofertas; `src/agent` queda sin uso hasta decidir si se borra | Pedido de Marcela: dos agentes daban respuestas distintas y ninguno llegaba al front |
+| 2026-11-14 | Los modelos leen de Postgres (`LUCAS_FUENTE_DATOS=postgres`, esquema `lucas`); las pruebas siguen sobre los Parquet | La demo corre contra la base, las pruebas no dependen de Docker |
 | 2026-11-14 | Lucas aprende del usuario: matriz ahorro × gasto, metas a fin de año, memoria del usuario en Postgres, «útil / no me sirve» | Mejorar al usuario y fidelizarlo |
 | 2026-11-14 | Ofertas y promociones desde un catálogo ficticio configurable, no productos reales de BBVA | Bases: prohibido aparentar producto oficial |
 | 2026-11-14 | Datos: generación estratificada + bootstrap de perfiles; ENAHO como base semilla si la licencia lo permite | Evitar sesgo |

@@ -1,5 +1,5 @@
 """Programa de puntos sostenible: puntos por consumo (solo con idoneidad), por ahorro y por conductas sanas, con tope de reinversion.
-La economia se mide sobre los movimientos reales del ultimo anio con supuestos visibles. Dos lecturas: bruta (la comision del consumo financia los puntos)
+La economía se mide sobre los movimientos reales del último anio con supuestos visibles. Dos lecturas: bruta (la comisión del consumo financia los puntos)
 e incremental (que parte del consumo debe ser nueva para que el programa se pague solo)."""
 import numpy as np
 import pandas as pd
@@ -73,10 +73,10 @@ def economia(df: pd.DataFrame, peso: pd.Series | None = None, usuarios: int = 10
 
 
 def proyeccion_multianual(total: dict, fondeo_lucas: float, esc: dict | None = None) -> dict:
-    """Ingresos a futuro del programa por usuario que entra, a varios anios y con escenarios. total: costo_anual, comision_anual y aporte_ahorro_anual de economia();
-    fondeo_lucas: margen anual del colchon adicional que Lucas ya genero (medido en la simulacion de impacto).
+    """Ingresos a futuro del programa por usuario que entra, a varios anios y con escenarios. total: costo_anual, comision_anual y aporte_ahorro_anual de economía();
+    fondeo_lucas: margen anual del colchón adicional que Lucas ya genero (medido en la simulación de impacto).
     Cada anio y escenario: valor neto = [fondeo medido + margen del consumo adicional + margen del ahorro adicional - costo de puntos] por usuario activo
-    + valor de los usuarios que el programa retiene de mas (su ingreso bruto). El saldo apartado se acumula: saldo_fin = saldo_ini x (1 - retiro) + aporte del anio.
+    + valor de los usuarios que el programa retiene de más (su ingreso bruto). El saldo apartado se acumula: saldo_fin = saldo_ini x (1 - retiro) + aporte del anio.
     No es una prediccion: los porcentajes de conducta son supuestos del equipo (ver niveles.yaml) y un piloto con grupo de control los reemplaza."""
     c = esc or cfg()["programa"]["proyeccion_a_futuro"]
     m = cfg()["programa"]["supuestos_economicos"]["margen_anual_sobre_saldo_apartado"]
@@ -113,7 +113,7 @@ def proyeccion_multianual(total: dict, fondeo_lucas: float, esc: dict | None = N
 
 
 def verificar_topes() -> dict:
-    """Comprueba que cada tasa de puntos por consumo respeta el tope de reinversion de la comision. Devuelve el costo sobre la comision por nivel."""
+    """Comprueba que cada tasa de puntos por consumo respeta el tope de reinversion de la comisión. Devuelve el costo sobre la comisión por nivel."""
     pr = cfg()["programa"]
     vp = cfg()["puntos"]["valor_por_punto_soles"]
     se = pr["supuestos_economicos"]

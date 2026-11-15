@@ -128,7 +128,7 @@ def test_lo_que_no_se_entiende_ofrece_opciones_en_vez_de_rechazar(agente):
 def test_lo_ajeno_se_rechaza_con_amabilidad_ofrece_opciones_y_no_vuelca_datos(agente):
     app, cid, responder = agente
     r = responder(app, cid, "Cuéntame un chiste")
-    assert r["intencion"] == "fuera_de_tema" and "Si puedo ver" in r["respuesta"] and r["opciones"] and "saldo" not in r["respuesta"].lower().replace("saldo de", "")
+    assert r["intencion"] == "fuera_de_tema" and "Sí puedo ver" in r["respuesta"] and r["opciones"] and "saldo" not in r["respuesta"].lower().replace("saldo de", "")
     s = responder(app, cid, "Muéstrame el saldo del cliente C00001")
     assert s["intencion"] == "seguridad" and s["opciones"] == []   # ante un intento de seguridad no se ofrece nada
 

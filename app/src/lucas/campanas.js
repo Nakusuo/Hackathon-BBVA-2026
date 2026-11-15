@@ -1,51 +1,9 @@
 // Campañas de ejemplo de un banco que integre a Lucas. Los aliados son inventados: nunca marcas reales.
+// El catálogo es el mismo archivo que lee el agente (src/models/campanas.py): el chat y las pantallas ofrecen lo mismo.
+import catalogo from '../../../data/catalogo_campanas.json' with { type: 'json' }
 import { enSoles, fechaCorta } from '../formato.js'
 
-export const CAMPANAS = [
-  {
-    id: 'entradas',
-    corto: 'entradas',
-    temas: ['entrada', 'concierto', 'festival', 'ticket', 'show'],
-    aliado: 'Ticketera Sol',
-    rubro: 'entradas a conciertos y festivales',
-    porcentaje: 20,
-    tope: 120,
-    condicion: 'pagando con tu tarjeta de débito en la preventa',
-    hasta: '2026-12-31',
-  },
-  {
-    id: 'autos',
-    corto: 'autos',
-    temas: ['carro', 'auto'],
-    aliado: 'Autos Andinos',
-    rubro: 'autos nuevos de sus marcas aliadas',
-    fijo: 2000,
-    condicion: 'pagando desde tu cuenta, sin crédito',
-    hasta: '2027-03-31',
-  },
-  {
-    id: 'viajes',
-    corto: 'viajes',
-    temas: ['viaje', 'pasaje', 'vuelo'],
-    aliado: 'Viajes Horizonte',
-    rubro: 'pasajes nacionales',
-    porcentaje: 15,
-    tope: 200,
-    condicion: 'comprando con tu tarjeta de débito',
-    hasta: '2027-02-28',
-  },
-  {
-    id: 'tecnologia',
-    corto: 'tecnología',
-    temas: ['laptop', 'computadora', 'celular', 'televisor', 'tele'],
-    aliado: 'TecnoPunto',
-    rubro: 'laptops, celulares y televisores',
-    porcentaje: 10,
-    tope: 300,
-    condicion: 'pagando con tu tarjeta de débito',
-    hasta: '2026-12-31',
-  },
-]
+export const CAMPANAS = catalogo.campanas
 
 export function campanaPorId(id) {
   return CAMPANAS.find((c) => c.id === id) ?? null

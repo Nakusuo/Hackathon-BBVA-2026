@@ -4,6 +4,9 @@ import numpy as np
 import pytest
 import requests
 
+# Las pruebas leen siempre los Parquet del repo: no dependen de que haya una base levantada ni de lo que diga el .env de cada quien.
+os.environ["LUCAS_FUENTE_DATOS"] = "parquet"
+
 
 def _ollama_responde() -> bool:
     from src.comun.rutas import cargar_env

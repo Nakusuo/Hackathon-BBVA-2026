@@ -1,12 +1,12 @@
-"""Calendario laboral del dependiente: cuando le toca la gratificacion y la CTS, cuanto se estima y que regla de retiro de la CTS rige hoy.
+"""Calendario laboral del dependiente: cuando le toca la gratificación y la CTS, cuanto se estima y que regla de retiro de la CTS rige hoy.
 Es determinista y no usa red ni LLM: las reglas viven en data/parametros/normas_laborales.yaml con su evidencia en los documentos oficiales del RAG,
-y aqui solo se aplican. Todo monto es una estimacion con su supuesto a la vista."""
+y aquí solo se aplican. Todo monto es una estimación con su supuesto a la vista."""
 from datetime import date, timedelta
 
 from src.generador.contexto import cargar_yaml
 
 _CFG = None
-DIAS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
+DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "setiembre", "octubre", "noviembre", "diciembre"]
 
 
@@ -29,7 +29,7 @@ def dia_habil_siguiente(d: date) -> date:
 
 
 def fecha_limite(tipo: str, anio: int, mes: int) -> date:
-    """La CTS pasa al primer dia habil siguiente si el 15 es inhabil (TUO art. 22). La gratificacion se paga 'en la primera quincena': su limite es el 15."""
+    """La CTS pasa al primer día habil siguiente si el 15 es inhabil (TUO art. 22). La gratificación se paga 'en la primera quincena': su limite es el 15."""
     d = date(anio, mes, cfg()[tipo]["dia_limite"])
     return dia_habil_siguiente(d) if tipo == "cts" else d
 
@@ -42,7 +42,7 @@ def monto_gratificacion(base_mensual: float) -> dict:
 
 
 def monto_cts(base_mensual: float) -> dict:
-    """Dozavos de la remuneracion computable por los meses completos del semestre (aqui, 6). La computable suma un sexto de la gratificacion del semestre."""
+    """Dozavos de la remuneracion computable por los meses completos del semestre (aquí, 6). La computable suma un sexto de la gratificación del semestre."""
     c, g = cfg()["cts"], cfg()["gratificacion"]
     computable = base_mensual + base_mensual * g["veces_la_remuneracion"] * c["fraccion_de_gratificacion_en_la_remuneracion_computable"]
     return {"remuneracion_computable": round(computable, 0), "deposito_semestral": round(computable / 12 * c["meses_del_semestre"], 0)}
@@ -87,13 +87,13 @@ def reglas_por_revisar(hoy: date) -> bool:
 
 
 def calendario(hoy: date, tipo_trabajo: str, base_mensual: float | None, origen_base: str = "ingreso_medio", n: int = 3) -> dict:
-    """Lo que el agente ve del calendario laboral de un cliente. origen_base: 'historial' (su ultima gratificacion) o 'ingreso_medio' (supuesto)."""
+    """Lo que el agente ve del calendario laboral de un cliente. origen_base: 'historial' (su última gratificación) o 'ingreso_medio' (supuesto)."""
     a = cfg()["alcance"]
     base = {"hoy": hoy.isoformat(), "reglas_verificadas_el": cfg()["fecha_verificacion"], "reglas_por_revisar": reglas_por_revisar(hoy), "libre_disposicion_cts": libre_disposicion(hoy)}
     if tipo_trabajo in a["no_aplica_a"] or not base_mensual or base_mensual <= 0:
-        return {**base, "aplica": False, "motivo": "Eres independiente: la CTS y las gratificaciones son beneficios de quienes trabajan en planilla, asi que no te corresponden."
-                if tipo_trabajo in a["no_aplica_a"] else "No hay un ingreso fijo en planilla con el cual estimar la CTS ni la gratificacion."}
+        return {**base, "aplica": False, "motivo": "Eres independiente: la CTS y las gratificaciones son beneficios de quienes trabajan en planilla, así que no te corresponden."
+                if tipo_trabajo in a["no_aplica_a"] else "No hay un ingreso fijo en planilla con el cual estimar la CTS ni la gratificación."}
     prox = [e for e in eventos(hoy, base_mensual) if e["estado"] != "pasado"][:n]
     return {**base, "aplica": True, "base_mensual": round(base_mensual, 0), "base_origen": origen_base, "confianza": "alta" if origen_base == "historial" else "media",
-            "supuestos": [a["supuesto_del_equipo"], "la base es tu ultima gratificacion (equivale a una remuneracion)" if origen_base == "historial" else "la base es tu ingreso medio mensual (supuesto: no hay una gratificacion anterior)"],
+            "supuestos": [a["supuesto_del_equipo"], "la base es tu última gratificación (equivale a una remuneracion)" if origen_base == "historial" else "la base es tu ingreso medio mensual (supuesto: no hay una gratificación anterior)"],
             "eventos": prox}

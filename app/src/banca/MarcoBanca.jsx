@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useDatosApi } from '../api/useDatosApi.js'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
-import { aportar, crearMeta, esMetaValida } from '../lucas/metas.js'
+import { aportar, crearMeta, editarMeta, esMetaValida } from '../lucas/metas.js'
 import { esPlanificadoValido } from '../lucas/planificar.js'
 import { vistaCon } from '../motor/cliente.js'
 import { personaPorId } from '../motor/personas.js'
@@ -96,6 +96,7 @@ export default function MarcoBanca() {
     crearMeta: (datos) => setMetas((previas) => [...previas, crearMeta(datos, nuevoId('meta'))]),
     aportarMeta: (id, monto) => setMetas((previas) => previas.map((m) => (m.id === id ? aportar(m, monto) : m))),
     quitarMeta: (id) => setMetas((previas) => previas.filter((m) => m.id !== id)),
+    editarMeta: (id, datos) => setMetas((previas) => previas.map((m) => (m.id === id ? editarMeta(m, datos) : m))),
     // Deshacer «Quitar»: vuelve a su lugar, porque el apartado se reparte en el orden de creación.
     restaurarMeta: (meta, lugar) =>
       setMetas((previas) =>

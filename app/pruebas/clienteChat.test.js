@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { CLIENTE_DEMO } from '../src/api/lucas.js'
 import { AVISOS, desdeAgente, preguntarALucas } from '../src/lucas/clienteChat.js'
 import { cliente, persona } from '../src/motor/cliente.js'
 
@@ -40,7 +39,7 @@ test('manda el contrato mínimo y conserva la conversación', async () => {
   const registro = []
   await preguntarALucas('¿Puedo gastar S/ 150?', opciones({ conversacion: 'conv-9', pedir: falsoFetch(RESPUESTA, registro) }))
   assert.equal(registro[0].url, '/api/v1/chat')
-  assert.deepEqual(registro[0].cuerpo, { customer_id: CLIENTE_DEMO, message: '¿Puedo gastar S/ 150?', conversation_id: 'conv-9' })
+  assert.deepEqual(registro[0].cuerpo, { customer_id: cliente.personaId, message: '¿Puedo gastar S/ 150?', conversation_id: 'conv-9' })
 })
 
 test('las cifras verificadas del agente se muestran con el formato de la app', async () => {
@@ -108,12 +107,17 @@ test('pedir comprar dólares o mover plata no sale al servidor', async () => {
   assert.equal(registro.length, 0)
 })
 
-test('las campañas viven en el front: se responden con plantilla aunque el agente esté activo', async () => {
+test('con el agente activo las campañas las responde el agente, que lee el mismo catálogo', async () => {
   const registro = []
   const r = await preguntarALucas('¿hay ofertas para viajes?', opciones({ pedir: falsoFetch(RESPUESTA, registro) }))
+  assert.equal(r.origen, 'agente')
+  assert.equal(registro.length, 1)
+})
+
+test('con el agente apagado las campañas siguen saliendo de la plantilla', async () => {
+  const r = await preguntarALucas('¿hay ofertas para viajes?', { cliente, persona, activo: false })
   assert.equal(r.origen, 'plantilla')
   assert.match(r.texto, /Viajes Horizonte/)
-  assert.equal(registro.length, 0)
 })
 
 test('un seguimiento de la meta sí va al agente aunque antes se ofreciera una campaña', async () => {
@@ -127,4 +131,19 @@ test('un «sí» tras una campaña que no se ofreció va al agente', async () =>
   const registro = []
   await preguntarALucas('sí', opciones({ previas: ['quiero ir al concierto, la entrada está 450'], pedir: falsoFetch(RESPUESTA, registro) }))
   assert.equal(registro.length, 1)
+})
+
+test('las opciones del agente llegan como botones con la pregunta que envían; las incompletas se descartan', async () => {
+  const lista = [
+    { id: 'pronostico', label: '¿Llego a fin de mes?', question: '¿Llego a fin de mes con mi plata?' },
+    { id: 'roto', label: '', question: 'x' },
+    { id: 'salud', label: 'Mi salud financiera', question: '¿Cómo está mi salud financiera?' },
+  ]
+  const r = await preguntarALucas('hola', opciones({ pedir: falsoFetch({ ...RESPUESTA, options: lista }) }))
+  assert.deepEqual(r.opciones, [
+    { id: 'pronostico', texto: '¿Llego a fin de mes?', pregunta: '¿Llego a fin de mes con mi plata?' },
+    { id: 'salud', texto: 'Mi salud financiera', pregunta: '¿Cómo está mi salud financiera?' },
+  ])
+  const sin = await preguntarALucas('hola', opciones({ pedir: falsoFetch(RESPUESTA) }))
+  assert.deepEqual(sin.opciones, [])
 })

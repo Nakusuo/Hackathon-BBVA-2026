@@ -2,7 +2,7 @@
 import { ErrorApi } from '../api/http.js'
 import { preguntarAgente } from '../api/lucas.js'
 import { enSoles } from '../formato.js'
-import { esPedidoDeOperacion, esPreguntaDeCampana, responder as responderConPlantilla } from './respuestas.js'
+import { esPedidoDeOperacion, responder as responderConPlantilla } from './respuestas.js'
 
 export const LARGO_MAXIMO = 500
 
@@ -29,6 +29,23 @@ function enlaceSeguro(url) {
   return typeof url === 'string' && /^https?:\/\//i.test(url) ? url : null
 }
 
+// Solo se ofrece guardar una meta con forma completa; si viene rota se ignora y el chat sigue igual.
+function leerPropuesta(p) {
+  const ok = p && typeof p.name === 'string' && p.name.trim() && Number.isFinite(p.target) && p.target > 0 && /^\d{4}-\d{2}-\d{2}$/.test(p.date ?? '')
+  return ok ? { nombre: p.name.trim().slice(0, 40), objetivo: p.target, fecha: p.date } : null
+}
+
+const MAX_OPCIONES = 4
+
+// Botones de respuesta rápida del agente: solo los que traen texto y pregunta; el resto se descarta.
+function leerOpciones(opciones) {
+  if (!Array.isArray(opciones)) return []
+  return opciones
+    .filter((o) => o && typeof o.label === 'string' && o.label.trim() && typeof o.question === 'string' && o.question.trim())
+    .slice(0, MAX_OPCIONES)
+    .map((o, i) => ({ id: String(o.id ?? i), texto: o.label.trim(), pregunta: o.question.trim().slice(0, LARGO_MAXIMO) }))
+}
+
 export function esRespuestaValida(cuerpo) {
   return Boolean(cuerpo) && typeof cuerpo.answer === 'string' && cuerpo.answer.trim() !== ''
 }
@@ -53,6 +70,8 @@ export function desdeAgente(cuerpo) {
         enlace: enlaceSeguro(f.url ?? f.enlace),
       })),
     aviso: null,
+    propuesta: leerPropuesta(cuerpo.goal_proposal),
+    opciones: leerOpciones(cuerpo.options),
   }
 }
 
@@ -66,11 +85,12 @@ export async function preguntarALucas(texto, { cliente, persona, conversacion, a
     ...responderConPlantilla(texto, cliente, persona, previas),
   })
   // Los pedidos de operación o inversión se cortan aquí: no hace falta mandarlos a ningún servidor.
-  if (!activo || esPedidoDeOperacion(texto) || esPreguntaDeCampana(texto, previas, cliente)) return plantilla()
+  if (!activo || esPedidoDeOperacion(texto)) return plantilla()
 
   let cuerpo
   try {
-    cuerpo = await preguntarAgente(texto.slice(0, LARGO_MAXIMO), { conversacion, ...opcionesApi })
+    // El agente responde por la persona elegida: la API traduce su id al cliente sintético de la base.
+    cuerpo = await preguntarAgente(texto.slice(0, LARGO_MAXIMO), { id: cliente.personaId, conversacion, ...opcionesApi })
   } catch (error) {
     if (!(error instanceof ErrorApi)) throw error
     const aviso = { tiempo: AVISOS.demora, formato: AVISOS.ilegible }[error.tipo] ?? AVISOS.sinConexion

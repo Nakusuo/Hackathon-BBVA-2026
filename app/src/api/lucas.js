@@ -62,8 +62,9 @@ export function simularCambios(cambios, { id = CLIENTE_DEMO, horizonteDias = 30,
   })
 }
 
-// El agente redacta con un LLM: su meta es p95 < 8 s, más lenta que una lectura.
-const ESPERA_CHAT_MS = 12000
+// El agente redacta con un LLM: su meta es p95 < 8 s, pero el modelo local en una laptop llegó a 14 s
+// en una pregunta de concepto. Se espera el doble de eso antes de pasar a la plantilla.
+const ESPERA_CHAT_MS = 30000
 
 /** Devuelve el cuerpo crudo de /chat; quien llama decide qué se muestra según `verified`. */
 export function preguntarAgente(mensaje, { id = CLIENTE_DEMO, conversacion, ...opciones } = {}) {

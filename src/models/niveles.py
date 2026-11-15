@@ -47,9 +47,9 @@ def progreso(nivel: str, f: pd.Series, salud: float) -> dict:
     if "salud_minima" in req and salud < req["salud_minima"]:
         falta.append({"que": "salud financiera", "tienes": round(float(salud), 1), "necesitas": req["salud_minima"]})
     if "dias_rojo_3m_max" in req and f["dias_rojo_3m"] > req["dias_rojo_3m_max"]:
-        falta.append({"que": "dias en rojo en 3 meses", "tienes": int(f["dias_rojo_3m"]), "necesitas": f"{req['dias_rojo_3m_max']} o menos"})
+        falta.append({"que": "días en rojo en 3 meses", "tienes": int(f["dias_rojo_3m"]), "necesitas": f"{req['dias_rojo_3m_max']} o menos"})
     if "colchon_meses_min" in req and f["colchon_observado"] < req["colchon_meses_min"]:
-        falta.append({"que": "colchon en meses de ingreso", "tienes": round(float(f["colchon_observado"]), 2), "necesitas": req["colchon_meses_min"]})
+        falta.append({"que": "colchón en meses de ingreso", "tienes": round(float(f["colchon_observado"]), 2), "necesitas": req["colchon_meses_min"]})
     if "ahorro_pct_min" in req and f["ahorro_pct"] < req["ahorro_pct_min"]:
         falta.append({"que": "ahorro como parte del ingreso", "tienes": round(float(f["ahorro_pct"]), 3), "necesitas": req["ahorro_pct_min"]})
     return {"siguiente": sig, "faltantes": falta, "cumple": not falta}

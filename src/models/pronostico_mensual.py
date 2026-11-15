@@ -42,7 +42,7 @@ def construir_filas(carpeta: str, clientes: pd.DataFrame, seg_map: dict, con_obj
     ev_cols = [c for c in ctx.columns if c.startswith("fuerza_")]
     ev_dia = ctx[ev_cols].max(axis=1).to_numpy() if ev_cols else np.zeros(len(ctx))
     ev_mes = pd.Series(ev_dia, index=pd.DatetimeIndex(ctx["fecha"])).groupby(pd.DatetimeIndex(ctx["fecha"]).to_period("M")).mean().reindex(meses).fillna(0).to_numpy()
-    macro = pd.read_parquet(f"{carpeta}/macro_mensual.parquet").set_index("mes")["ipc_relativo"].reindex(meses.astype(str)).to_numpy()
+    macro = datos.cargar_macro(carpeta).set_index("mes")["ipc_relativo"].reindex(meses.astype(str)).to_numpy()
     cl = clientes.reindex(ids)
     cat = {c: cl[c].astype("category").cat.codes.to_numpy() for c in CAT_DECL}
     seg = np.array([seg_map.get(i, -1) for i in ids])

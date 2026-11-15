@@ -29,3 +29,14 @@ def test_las_frases_prohibidas_se_detectan_aunque_las_cifras_esten_bien():
         v = verificar(frase, set())
         assert v["prohibidos"], frase
     assert not verificar("Es solo un dato de referencia, no una recomendacion de operar con dolares.", set())["prohibidos"]
+
+
+def test_un_saldo_negativo_solo_se_respalda_si_se_escribe_con_su_signo():
+    from src.agente_analitico.verificador import aplanar, verificar
+    datos = aplanar({"saldo_bajo": -290.0, "gasto": 450.0})
+    assert verificar("En un mes malo podría bajar hasta -S/ 290.", datos)["ok"]
+    assert verificar("En un mes malo podría bajar hasta −S/ 290.", datos)["ok"]
+    assert verificar("En un mes malo podría bajar hasta S/ -290.", datos)["ok"]
+    assert not verificar("En un mes malo tu saldo rondaría S/ 290.", datos)["ok"]   # el signo invertido no pasa
+    assert not verificar("Gastaste -S/ 450.", datos)["ok"]
+    assert verificar("Los datos son de 2025-11 y gastaste S/ 450.", aplanar({"mes": "2025-11", "gasto": 450.0}))["ok"]   # un guion de fecha no es signo

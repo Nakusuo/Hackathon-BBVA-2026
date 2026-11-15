@@ -15,6 +15,13 @@ from src.models import clasificacion as KL
 from src.models import datos, niveles as N, ofertas as O, pronostico as P, pronostico_mensual as PM, salud as SA, segmentacion as S
 
 VENTANA_RECALCULO_DIAS = 45   # el riesgo a 30 dias solo se reestima con los movimientos vivos si el cierre de datos no es muy viejo
+# Mover plata a un ahorro sale de la cuenta pero no es un gasto: se cuenta aparte
+NO_ES_GASTO = {"ahorro_programado", "traspaso_ahorro"}
+# Categoria del movimiento -> rubro que entiende la persona. Lo que no esta aqui (o vino sin categoria) es «Otros».
+RUBROS = {"alquiler": "Vivienda", "luz": "Servicios", "agua": "Servicios", "internet": "Servicios", "celular": "Servicios", "alimentos": "Alimentos",
+          "delivery": "Delivery y antojos", "snacks": "Delivery y antojos", "restaurantes": "Salidas y ocio", "ocio": "Salidas y ocio", "transporte": "Transporte",
+          "colegio": "Educación", "educacion": "Educación", "salud": "Salud", "seguro": "Seguros", "cuota_prestamo": "Deudas", "pago_credito_informal": "Deudas",
+          "transferencias_familiares": "Ayuda a la familia", "suscripcion": "Suscripciones", "compras": "Compras", "retiro_efectivo": "Retiros en efectivo"}
 
 
 class Repositorio:
@@ -31,6 +38,10 @@ class Repositorio:
         self.salud = SA.puntaje_salud(self.features)
         tx = datos.cargar_transacciones(carpeta, ["customer_id", "fecha_hora", "comercio", "monto_pen", "categoria", "tipo"], desde=self.fecha - pd.Timedelta(days=180), hasta=hasta)
         tx["comercio"] = tx["comercio"].astype(str)
+        self._inicio_mes = self.fecha.replace(day=1)
+        self._fin_mes_anterior = hasta - pd.DateOffset(months=1)   # mismo tramo del mes anterior: del 1 al mismo dia
+        g_rec = tx[(tx["tipo"].astype(str) == "gasto") & (tx["fecha_hora"] >= self._inicio_mes - pd.DateOffset(months=1))]
+        self._gastos_recientes = g_rec[["customer_id", "fecha_hora", "monto_pen", "categoria"]].assign(categoria=g_rec["categoria"].astype(str))
         self.duplicadas = KL.detectar_suscripciones_duplicadas(tx.assign(tipo="gasto"))
         g = tx[tx["tipo"].astype(str) == "gasto"].copy()
         g["categoria"] = g["categoria"].astype(str).replace({"delivery": "hormiga", "snacks": "hormiga"})
@@ -52,6 +63,44 @@ class Repositorio:
         self._filas_mensual = None
         ruta_s = os.path.join(MODELOS, "serie_diaria.pkl")
         self.serie = joblib.load(ruta_s) if os.path.isfile(ruta_s) else None
+        self._panel = None
+
+    def gastos_del_mes(self, cid: str) -> dict:
+        """Lo gastado desde el 1 del mes de los datos hasta su ultimo dia, por rubro, y lo que llevaba gastado en el mismo tramo del mes anterior."""
+        x = self._gastos_recientes[self._gastos_recientes["customer_id"] == cid]
+        es_gasto = ~x["categoria"].isin(NO_ES_GASTO)
+        este = x[x["fecha_hora"] >= self._inicio_mes]
+        antes = x[(x["fecha_hora"] < self._fin_mes_anterior) & es_gasto]
+        gasto = este[~este["categoria"].isin(NO_ES_GASTO)]
+        rubros = gasto.groupby(gasto["categoria"].map(lambda c: RUBROS.get(c, "Otros")))["monto_pen"].sum().sort_values(ascending=False)
+        return {"desde": self._inicio_mes.date(), "hasta": self.fecha.date(), "total": round(float(gasto["monto_pen"].sum()), 0), "movimientos": int(len(gasto)),
+                "por_rubro": [{"rubro": r, "soles": round(float(v), 0)} for r, v in rubros.items()], "mismo_tramo_mes_anterior": round(float(antes["monto_pen"].sum()), 0),
+                "apartado": round(float(este[~este.index.isin(gasto.index)]["monto_pen"].sum()), 0)}
+
+    def fila_de(self, cid: str) -> int:
+        return self.origen[self.origen["cliente_idx"] == self.pos[cid]].index[0]
+
+    def _meses_completos(self, cid: str, meses: int):
+        """Los ultimos meses completos del panel anteriores a la fecha de los datos."""
+        if self._panel is None:
+            p = datos.cargar_panel(self.carpeta)
+            self._panel = p[p["mes"] < str(self.fecha.to_period("M"))]
+        return self._panel[self._panel["customer_id"] == cid].sort_values("mes").tail(meses)
+
+    def flujo_reciente(self, cid: str, meses: int = 6) -> dict:
+        """Ingreso, gasto y ahorro promedio del MISMO periodo, para que «ganas, gastas, apartas» cuadre. El ingreso incluye extras y financieros; apartar no es gasto."""
+        x = self._meses_completos(cid, meses)
+        ingreso = (x["ingreso_operativo"] + x["ingreso_extraordinario"] + x["ingreso_financiero"]).mean()
+        gasto = (x["gasto_fijo"] + x["gasto_variable"] + x["gasto_hormiga"] + x["gasto_deuda"]).mean()
+        return {"meses": len(x), "ingreso": round(float(ingreso), 0), "gasto": round(float(gasto), 0), "sobra": round(float(ingreso - gasto), 0), "apartado": round(float(x["ahorro_movido"].mean()), 0)}
+
+    def ahorro_reciente(self, cid: str, meses: int = 6) -> dict:
+        """Lo que el cliente aparto en los ultimos meses completos anteriores a la fecha de los datos (columna ahorro_movido del panel mensual)."""
+        x = self._meses_completos(cid, meses)
+        montos = [round(float(v), 0) for v in x["ahorro_movido"]]
+        mejor = int(x["ahorro_movido"].to_numpy().argmax()) if len(x) else None
+        return {"meses": len(montos), "apartado_total": round(sum(montos), 0), "apartado_promedio_mensual": round(sum(montos) / len(montos), 0) if montos else 0.0, "meses_con_ahorro": sum(m > 0 for m in montos),
+                "mejor_mes": {"mes": str(x["mes"].iloc[mejor]), "apartado": montos[mejor]} if montos and montos[mejor] > 0 else None}
 
     def serie_diaria(self, cid: str, neto_vivo: float = 0.0, dias: int = 30) -> dict | None:
         """Saldo esperado y banda al 80 % de cada uno de los proximos dias (1 a 30), en soles, desde la fecha de los datos.

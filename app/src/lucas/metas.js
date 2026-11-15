@@ -123,6 +123,20 @@ export function crearMeta(datos, id) {
   return { id, ...datos, aportes: 0, historial: avanzar(['creada'], datos.ahorrado, datos.objetivo) }
 }
 
+// Editar no reinicia el plan: los «Ya aparté» registrados siguen contando como cobros hechos.
+export function editarMeta(meta, datos) {
+  const objetivo = datos.objetivo ?? meta.objetivo
+  const ahorrado = datos.ahorrado ?? meta.ahorrado
+  return { ...meta, ...datos, historial: avanzar(meta.historial, ahorrado, objetivo) }
+}
+
+// La fecha que propone el chat sale del reloj del agente: si cae antes del próximo cobro de la app, se corre a ese día.
+export function metaDesdePropuesta(propuesta, { hoy, primerApartado }) {
+  const fecha = propuesta.fecha < primerApartado ? primerApartado : propuesta.fecha
+  const borrador = { nombre: propuesta.nombre, objetivo: String(Math.round(propuesta.objetivo)), ahorrado: '', fecha }
+  return validarMeta(borrador, { hoy, primerApartado })
+}
+
 export function aportar(meta, monto) {
   const ahorrado = Math.round((meta.ahorrado + monto) * 100) / 100
   return {

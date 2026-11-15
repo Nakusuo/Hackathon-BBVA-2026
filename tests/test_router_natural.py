@@ -44,6 +44,20 @@ CASOS = [
     ("Abre una cuenta de ahorros por mí", {"fuera_de_alcance"}),
     # saludos y ayuda
     ("Hola", {"conversacion"}), ("Gracias", {"conversacion"}), ("¿Qué puedes hacer?", {"conversacion"}), ("Ayuda", {"conversacion"}),
+    # simular un gasto: solo con un monto en la frase
+    ("Quiero comprar una entrada a un concierto por 450 soles, la preventa es en 2 semanas, ¿afecta mis ahorros?", {"simular"}), ("¿Qué pasa si gasto S/ 1,200 en una laptop?", {"simular"}),
+    ("¿Puedo pagar 300 de matrícula este mes?", {"simular"}), ("Si me compro un celular de 899 soles, ¿llego a fin de mes?", {"simular"}), ("Pienso gastar 80 en una cena", {"simular"}),
+    ("¿Puedo comprar dólares con 500 soles?", {"fuera_de_alcance"}), ("¿Qué pasa si no pago mi tarjeta a tiempo?", {"educacion"}), ("Quiero comprar un auto, ¿hay alguna oferta?", {"ofertas"}),
+    # meta de ahorro y compra sin precio
+    ("quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo", {"meta"}), ("¿Cuánto tengo que ahorrar al mes para juntar 5000 soles en 10 meses?", {"meta"}),
+    ("Quiero ahorrar para una laptop de S/ 3,500", {"meta"}), ("quiero comprar un carro", {"compra"}), ("Me gustaría comprarme una moto", {"compra"}),
+    ("propon un plan de ahorro para poder irme de viaje a Brasil y que aerolineas tienen descuento con el banco", {"meta"}), ("Quiero juntar plata para un viaje", {"meta"}),
+    ("¿Qué convenios con el banco hay para comprar una laptop?", {"meta"}),
+    # lo que ya se gasto
+    ("perdon me refeia a gastos, cuanto gaste este mes?", {"gastos"}), ("¿Cuánto he gastado este mes?", {"gastos"}), ("¿En qué se me va la plata?", {"gastos"}),
+    ("Dame un resumen de mis gastos", {"gastos"}), ("¿Cuánto llevo gastado?", {"gastos"}),
+    # resumen de lo ahorrado
+    ("Haz un resumen de mis estadísticas de ahorro", {"ahorro"}), ("¿Cuánto llevo ahorrado?", {"ahorro"}), ("¿Cómo va mi ahorro?", {"ahorro"}), ("¿Cuánto he ahorrado este año?", {"ahorro"}),
 ]
 
 
@@ -51,3 +65,65 @@ CASOS = [
 def test_la_pregunta_no_se_desvia_a_otro_tema(pregunta, aceptables):
     obtenida = detectar_intencion(pregunta)
     assert obtenida in aceptables, f"{pregunta!r} -> {obtenida} (se esperaba {sorted(aceptables)})"
+
+
+@pytest.mark.parametrize("pregunta,monto", [("quiero comprar una entrada por 450 soles, la preventa es en 2 semanas", 450.0), ("¿y si gasto S/ 1,200.50?", 1200.5), ("si pago 3 cuotas de 250", 250.0),
+                                            ("puedo gastar 80 en una cena", 80.0), ("gasto el 20 % en 2 semanas", None), ("quiero comprar una casa", None),
+                                            ("esta 12mil soles", 12000.0), ("cuesta 12 mil", 12000.0), ("son 3k", 3000.0), ("S/ 1.5 mil", 1500.0), ("me piden 8 lucas", 8000.0), ("en 12 meses", None)])
+def test_el_monto_de_la_frase_no_se_confunde_con_un_plazo_ni_un_porcentaje(pregunta, monto):
+    from src.agente_analitico.grafo import monto_de
+    assert monto_de(pregunta) == monto
+
+
+@pytest.mark.parametrize("pregunta,hoy,esperado", [("para fin de año", "2026-11-14", (2, "a fin de año")), ("a fin de año", "2026-11-20", (1, "a fin de año")), ("en 8 meses", "2026-11-14", (8, "en 8 meses")),
+                                                   ("en un año", "2026-11-14", (12, "en 12 meses")), ("para julio", "2026-11-14", (8, "para julio")), ("para noviembre", "2026-11-14", (12, "para noviembre")),
+                                                   ("quiero un carro", "2026-11-14", None)])
+def test_el_plazo_de_la_meta_sale_de_la_frase_y_del_reloj(pregunta, hoy, esperado):
+    from datetime import date
+
+    from src.agente_analitico.grafo import plazo_de
+    assert plazo_de(pregunta, date.fromisoformat(hoy)) == esperado
+
+
+PREVIA = "quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo"
+
+
+@pytest.mark.parametrize("pregunta,previa,esperado", [
+    ("¿y en 6 meses?", PREVIA, f"¿y en 6 meses? {PREVIA}"), ("cuesta 12 mil", "quiero comprar un carro", "cuesta 12 mil quiero comprar un carro"),
+    ("para julio", PREVIA, f"para julio {PREVIA}"), ("sí", "quiero comprar un carro", "sí quiero comprar un carro"),
+    ("¿Cuánto gasté este mes?", PREVIA, "¿Cuánto gasté este mes?"), ("Necesito organizarme con mi plata", PREVIA, "Necesito organizarme con mi plata"),
+    ("¿y en 6 meses?", None, "¿y en 6 meses?")])
+def test_un_seguimiento_se_entiende_con_la_pregunta_anterior_y_una_pregunta_nueva_no(pregunta, previa, esperado):
+    from src.agente_analitico.grafo import con_contexto
+    assert con_contexto(pregunta, previa) == esperado
+
+
+def test_en_el_seguimiento_mandan_el_monto_y_el_plazo_nuevos(monkeypatch):
+    from datetime import date
+
+    from src.agente_analitico.grafo import con_contexto, detectar_intencion, monto_de, plazo_de
+    q = con_contexto("¿y si son 8000 en 6 meses?", PREVIA)
+    assert detectar_intencion(q) == "meta" and monto_de(q) == 8000.0 and plazo_de(q, date(2026, 11, 14)) == (6, "en 6 meses")
+
+
+def test_comprar_con_precio_y_fecha_es_una_meta_y_sin_fecha_una_simulacion():
+    from src.agente_analitico.grafo import detectar_intencion
+    assert detectar_intencion("cuesta 12 mil para julio quiero comprar un carro") == "meta"
+    assert detectar_intencion("cuesta 12 mil quiero comprar un carro") == "simular"
+
+
+@pytest.mark.parametrize("pregunta,nombre", [("propon un plan de ahorro para poder irme de viaje a Brasil", "Viaje a Brasil"), ("quiero ahorrar para un viaje a cusco de 3000", "Viaje a Cusco"),
+                                             ("quiero comprar un carro a fin de año", "Carro"), ("Quiero ahorrar para una laptop de S/ 3,500", "Laptop"),
+                                             ("¿Cuánto debo ahorrar para pagar un curso de 6000 soles?", "Curso"), ("¿cuánto debo ahorrar al mes para juntar 5000?", "Mi meta")])
+def test_el_nombre_de_la_meta_sale_de_la_frase(pregunta, nombre):
+    from src.agente_analitico.grafo import nombre_de_meta
+    assert nombre_de_meta(pregunta) == nombre
+
+
+@pytest.mark.parametrize("seguimiento,esperado", [("¿y para julio?", (8, "para julio")), ("¿y en 4 meses?", (4, "en 4 meses")), ("¿y a fin de año?", (2, "a fin de año"))])
+def test_en_un_seguimiento_manda_el_plazo_nuevo_aunque_la_pregunta_anterior_traiga_otro(seguimiento, esperado):
+    from datetime import date
+
+    from src.agente_analitico.grafo import con_contexto, plazo_de
+    q = con_contexto(seguimiento, "quiero ahorrar para un viaje a Cusco de 3000 soles en 6 meses")
+    assert plazo_de(q, date(2026, 11, 14)) == esperado
