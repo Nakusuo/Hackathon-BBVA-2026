@@ -25,14 +25,14 @@ La demo muestra a Lucas dentro de **Banco Vértice**, una banca ficticia, con do
 | Chat | «¿Me alcanza?», «¿llego a mi cobro?» y metas, con cifras calculadas con sus datos; nunca asesoría |
 | Evidencia | Para el jurado: impacto en S/ por cliente y cada técnica frente a su baseline |
 
-Al pulsar «Lo hago» en un tip, se recalculan juntos el aviso, el gráfico, la banca, la salud y el chat. El guion de 60 s está en [demo/GUION.md](demo/GUION.md).
+Al pulsar «Lo hago» en un tip, se recalculan juntos el aviso, el gráfico, la banca, la salud y el chat. El guion de 60 s está en [docs/demo/GUION.md](docs/demo/GUION.md).
 
 ## Qué está conectado y qué no
 
-- **Las cifras de las pantallas** salen del motor del front (`app/src/motor/`), en el navegador. Funcionan sin internet y sin servidor.
-- **La API** (`src/api/`, FastAPI) responde las 12 rutas del contrato con datos fijos de otra persona. El front la lee y la valida, pero no toma de ella ninguna cifra visible. Si se cae, Lucas lo dice y sigue igual.
-- **El agente del chat** (`src/agent/`, LangGraph con juez de cifras) funciona por consola y con sus pruebas, pero la API todavía no lo llama. En la app, el chat responde con plantillas.
-- **La analítica** (`src/models/`, `eval/`) entrena y mide los modelos sobre 500 clientes sintéticos. Sus resultados llegan a la app solo por el panel Evidencia.
+- **Las cifras de las pantallas** salen del motor del front (`frontend/src/motor/`), en el navegador. Funcionan sin internet y sin servidor.
+- **La API** (`backend/src/api/`, FastAPI) responde las 12 rutas del contrato con datos fijos de otra persona. El front la lee y la valida, pero no toma de ella ninguna cifra visible. Si se cae, Lucas lo dice y sigue igual.
+- **El agente del chat** (`backend/src/agent/`, LangGraph con juez de cifras) funciona por consola y con sus pruebas, pero la API todavía no lo llama. En la app, el chat responde con plantillas.
+- **La analítica** (`backend/src/models/`, `analitica/eval/`) entrena y mide los modelos sobre 500 clientes sintéticos. Sus resultados llegan a la app solo por el panel Evidencia.
 - **PostgreSQL**: el esquema está en `db/init.sql`, pero nada se conecta a la base en el MVP.
 
 ## Cómo se corre
@@ -40,7 +40,7 @@ Al pulsar «Lo hago» en un tip, se recalculan juntos el aviso, el gráfico, la 
 Front (Node 20 o más):
 
 ```bash
-cd app
+cd frontend
 npm install
 npm run dev        # http://localhost:5173
 npm test           # pruebas de funciones
@@ -50,13 +50,13 @@ npm run e2e        # Playwright (la primera vez: npx playwright install chromium
 API, en otra terminal y desde la raíz (Python 3.11 o más, con `fastapi`, `uvicorn` y `pydantic`):
 
 ```bash
-python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
-python -m pytest tests/api
+python -m uvicorn --app-dir backend src.api.main:app --host 127.0.0.1 --port 8000
+python -m pytest backend/tests/api
 ```
 
 Vite pasa `/api` al puerto 8000. Sin la API, la app funciona igual y avisa «Sin conexión».
 
-Agente y analítica: ver la sección 5 de [ARCHITECTURE.md](ARCHITECTURE.md). Sus dependencias van en `requirements-ia.txt` y `requirements-analitica.txt`.
+Agente y analítica: ver la sección 5 de [ARCHITECTURE.md](ARCHITECTURE.md). Sus dependencias van en `backend/requirements-ia.txt` y `analitica/requirements-analitica.txt`.
 
 ## Documentación
 
@@ -66,10 +66,10 @@ Agente y analítica: ver la sección 5 de [ARCHITECTURE.md](ARCHITECTURE.md). Su
 | [docs/casos-uso.md](docs/casos-uso.md) | Casos de uso UML con su diagrama y la matriz de trazabilidad |
 | [.claude/planes/historias.md](.claude/planes/historias.md) | Historias de usuario con criterios y pruebas |
 | [docs/arquitectura-datos.md](docs/arquitectura-datos.md) | Datos sintéticos, qué guarda el navegador y clasificación |
-| [docs/api.md](docs/api.md) y [README_BACKEND.md](README_BACKEND.md) | Contrato y estado de la API |
+| [docs/api.md](docs/api.md) y [README_BACKEND.md](docs/README_BACKEND.md) | Contrato y estado de la API |
 | [PROMPTS.md](PROMPTS.md) | Modelos, prompts y medición del agente |
 | [docs/EVALUACION_ANALITICA.md](docs/EVALUACION_ANALITICA.md) | Cifras de cada modelo frente a su baseline |
-| [app/README.md](app/README.md) | Detalle del front y sus pruebas |
+| [frontend/README.md](frontend/README.md) | Detalle del front y sus pruebas |
 
 ## Límites
 

@@ -86,7 +86,7 @@ Los modelos pueden «descubrir» lo que sembramos. Por eso se reportan **pruebas
 | Casos altos que pasan | ≥ 90 % |
 | Defectos críticos o altos abiertos | 0 |
 | Requisitos DEBE con al menos un caso | 100 % |
-| Cobertura de código en `src/models` y `src/recommender` | ≥ 70 % |
+| Cobertura de código en `backend/src/models` y `backend/src/recommender` | ≥ 70 % |
 | Vulnerabilidades altas en dependencias (`pip-audit`) | 0 |
 
 Resultados por ciclo en `.claude/planes/pruebas.md`.

@@ -1,5 +1,0 @@
-# Todo lo que hace falta para correr la demo completa: analítica, agente y API.
--r requirements-analitica.txt
--r requirements-ia.txt
-fastapi==0.163.0
-uvicorn==0.54.0

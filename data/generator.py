@@ -8,7 +8,7 @@ import os
 import sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, RAIZ)
+sys.path.insert(0, os.path.join(RAIZ, "backend"))
 
 from src.comun.rutas import DATA_GENERADO, DATA_SAMPLE  # noqa: E402
 from src.generador.pipeline import generar  # noqa: E402

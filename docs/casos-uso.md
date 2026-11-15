@@ -33,7 +33,7 @@ Lucas es un compañero bancario, no un chatbot:
 
 La fuente de verdad son las historias de [historias.md](../.claude/planes/historias.md); si un caso y una historia chocan, manda la historia. Las 18 historias se agrupan en 10 casos. La [matriz](#5-matriz-de-trazabilidad) dice dónde quedó cada historia y qué pruebas la verifican.
 
-**Cómo está armado el MVP.** Lucas vive dentro de Banco Vértice, una banca ficticia (`app/`). Todas las cifras de cliente salen del motor del front (`app/src/motor/`), así que ninguna pantalla contradice a otra. Lo que la persona elige se guarda en el navegador. El front también lee la API FastAPI (`src/api/`), pero hoy esa API devuelve datos fijos de otra persona y no cambia ninguna cifra visible. El detalle está en [ARCHITECTURE.md](../ARCHITECTURE.md).
+**Cómo está armado el MVP.** Lucas vive dentro de Banco Vértice, una banca ficticia (`frontend/`). Todas las cifras de cliente salen del motor del front (`frontend/src/motor/`), así que ninguna pantalla contradice a otra. Lo que la persona elige se guarda en el navegador. El front también lee la API FastAPI (`backend/src/api/`), pero hoy esa API devuelve datos fijos de otra persona y no cambia ninguna cifra visible. El detalle está en [ARCHITECTURE.md](../ARCHITECTURE.md).
 
 **Cómo leer una ficha**
 
@@ -114,7 +114,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - El permiso es de cada persona: el del independiente no vale para el formal.
 - El formulario de ingreso es solo visual: sus campos vienen llenos y bloqueados para que nadie escriba datos reales.
 
-**Pruebas:** `app/pruebas/sesion.test.js`; `app/e2e/pantallas.spec.js` («ingreso, permiso, banca, Lucas y guía de primera vez», «consentimiento: "Ahora no"…», «la banca puede ocultar los montos», «el botón "?" abre la guía desde cualquier pestaña de Lucas»).
+**Pruebas:** `frontend/pruebas/sesion.test.js`; `frontend/e2e/pantallas.spec.js` («ingreso, permiso, banca, Lucas y guía de primera vez», «consentimiento: "Ahora no"…», «la banca puede ocultar los montos», «el botón "?" abre la guía desde cualquier pestaña de Lucas»).
 
 ### CU-02 · Consultar mi estado
 
@@ -149,7 +149,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - El puntaje nunca baja cuando el cliente elige un tip.
 - Los porcentajes del gráfico suman 100.
 
-**Pruebas:** `app/pruebas/motor.test.js` («la salud sube…»), `app/pruebas/categorias.test.js`; `app/e2e/pantallas.spec.js` («cada parte de la salud lleva a una acción», «Gastos compara cada categoría con el promedio», «MusiKa se pausa desde Suscripciones…»).
+**Pruebas:** `frontend/pruebas/motor.test.js` («la salud sube…»), `frontend/pruebas/categorias.test.js`; `frontend/e2e/pantallas.spec.js` («cada parte de la salud lleva a una acción», «Gastos compara cada categoría con el promedio», «MusiKa se pausa desde Suscripciones…»).
 
 ### CU-03 · Consultar qué viene
 
@@ -187,7 +187,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - Un gasto extra baja el peor caso en ese mismo monto y nunca lo sube.
 - El mismo día, la banda del independiente es más ancha que la del formal, porque su cobro cambia de un mes a otro.
 
-**Pruebas:** `app/pruebas/motor.test.js`, `app/pruebas/personas.test.js` («la banda del independiente es más ancha…»), `app/pruebas/grafico.test.js`, `app/pruebas/explicaciones.test.js`; `app/e2e/pantallas.spec.js` («el gráfico de Qué viene…», «Qué viene cambia de periodo…», «"Explícamelo fácil" en …»).
+**Pruebas:** `frontend/pruebas/motor.test.js`, `frontend/pruebas/personas.test.js` («la banda del independiente es más ancha…»), `frontend/pruebas/grafico.test.js`, `frontend/pruebas/explicaciones.test.js`; `frontend/e2e/pantallas.spec.js` («el gráfico de Qué viene…», «Qué viene cambia de periodo…», «"Explícamelo fácil" en …»).
 
 ### CU-04 · Recibir avisos antes de quedar en rojo
 
@@ -229,7 +229,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - Máximo 3 avisos por semana, con lugar reservado para el de riesgo; un solo aviso por hueco antes de cada cobro.
 - «Qué tan seguro» compara lo más probable con el peor caso del pronóstico.
 
-**Pruebas:** `app/pruebas/avisos.test.js`; `app/e2e/pantallas.spec.js` («Avisos: …»).
+**Pruebas:** `frontend/pruebas/avisos.test.js`; `frontend/e2e/pantallas.spec.js` («Avisos: …»).
 
 ### CU-05 · Elegir tips con monto
 
@@ -272,7 +272,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - El apartado es el mayor monto en múltiplos de S/ 10 que no deja en rojo ni en el peor caso; S/ 10 más ya dejaría en rojo.
 - Elegir tips nunca reduce lo que se puede apartar (en la demo: S/ 40 sin tips, S/ 150 con los 3).
 
-**Pruebas:** `app/pruebas/motor.test.js`, `app/pruebas/personas.test.js`; `app/e2e/pantallas.spec.js` («"Lo hago" recalcula el plan en todas las pantallas y se recuerda»); `app/e2e/guion-demo.spec.js`.
+**Pruebas:** `frontend/pruebas/motor.test.js`, `frontend/pruebas/personas.test.js`; `frontend/e2e/pantallas.spec.js` («"Lo hago" recalcula el plan en todas las pantallas y se recuerda»); `frontend/e2e/guion-demo.spec.js`.
 
 ### CU-06 · Planificar un gasto o un ingreso
 
@@ -309,7 +309,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - **E3.1.** El monto es 0, negativo, texto, vacío, con más de dos decimales o sobre el tope: Lucas lo rechaza con un mensaje junto al campo.
 - **E3.2.** La fecha es hoy, pasada, a más de 30 días o no existe: Lucas la rechaza con un mensaje claro. Planificar es solo hacia adelante.
 
-**Pruebas:** `app/pruebas/planificar.test.js`; `app/e2e/simulador-metas.spec.js` («simulador: …»).
+**Pruebas:** `frontend/pruebas/planificar.test.js`; `frontend/e2e/simulador-metas.spec.js` («simulador: …»).
 
 ### CU-07 · Gestionar una meta de ahorro
 
@@ -351,7 +351,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - El aporte no crea días en rojo y nunca pasa de lo que falta.
 - La confianza baja si la meta o la llegada pasan de unos 3 meses, porque el pronóstico cubre 30 días.
 
-**Pruebas:** `app/pruebas/metas.test.js`; `app/e2e/simulador-metas.spec.js` («metas: …»).
+**Pruebas:** `frontend/pruebas/metas.test.js`; `frontend/e2e/simulador-metas.spec.js` («metas: …»).
 
 ### CU-08 · Preguntar en el chat
 
@@ -396,7 +396,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - Ninguna respuesta sugiere crédito, tarjeta ni préstamo.
 - «El carro está 14 000 dólares» es un precio, no un pedido de comprar dólares.
 
-**Pruebas:** `app/pruebas/respuestas.test.js`, `app/pruebas/clienteChat.test.js`; `app/e2e/pantallas.spec.js` («el chat responde "Calculado con tus datos" y no da asesoría», «si el agente falla…», «si el agente no verificó…», «el chat recuerda la meta…»).
+**Pruebas:** `frontend/pruebas/respuestas.test.js`, `frontend/pruebas/clienteChat.test.js`; `frontend/e2e/pantallas.spec.js` («el chat responde "Calculado con tus datos" y no da asesoría», «si el agente falla…», «si el agente no verificó…», «el chat recuerda la meta…»).
 
 ### CU-09 · Controlar mis datos
 
@@ -435,7 +435,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - Todo lo que Lucas recuerda vive en el navegador; nada se envía a un servidor.
 - Las respuestas de «¿Es correcto?» quedan en la pantalla y no cambian los tips siguientes.
 
-**Pruebas:** `app/pruebas/sesion.test.js`; `app/e2e/pantallas.spec.js` («Resumen: confirmar lo aprendido…», «responder "No" marca el dato como por revisar…», «retirar el permiso desde Preferencias…»), `app/e2e/simulador-metas.spec.js` («retirar el permiso olvida lo planificado y las metas», «datos rotos guardados en el navegador no tumban la app»).
+**Pruebas:** `frontend/pruebas/sesion.test.js`; `frontend/e2e/pantallas.spec.js` («Resumen: confirmar lo aprendido…», «responder "No" marca el dato como por revisar…», «retirar el permiso desde Preferencias…»), `frontend/e2e/simulador-metas.spec.js` («retirar el permiso olvida lo planificado y las metas», «datos rotos guardados en el navegador no tumban la app»).
 
 ### CU-10 · Evaluar impacto y evidencia
 
@@ -445,7 +445,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 | Historias | HU-14, HU-20 |
 | Palanca | Todas |
 | Pantalla | Evidencia (`/evidencia`, también desde Más → Preferencias → Para el jurado) |
-| Precondiciones | Existen los `models/metricas*.json` generados con los scripts de `eval/` |
+| Precondiciones | Existen los `models/metricas*.json` generados con los scripts de `analitica/eval/` |
 | Disparador | El banco abre el panel Evidencia |
 | Postcondición de éxito | El banco sabe en S/ cuánto mejora cada cliente con Lucas y si la IA le gana a lo sencillo |
 | Garantía mínima | Ninguna cifra aparece sin su archivo de origen; si falta una, la build falla |
@@ -468,7 +468,7 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 - El veredicto de cada técnica se calcula según qué dirección es mejor para esa métrica.
 - No hay cifras de retención o mora inventadas.
 
-**Pruebas:** `app/pruebas/evidencia.test.js`; `app/e2e/pantallas.spec.js` («Evidencia: empieza por el impacto en S/…»).
+**Pruebas:** `frontend/pruebas/evidencia.test.js`; `frontend/e2e/pantallas.spec.js` («Evidencia: empieza por el impacto en S/…»).
 
 ## 5. Matriz de trazabilidad
 
@@ -492,4 +492,4 @@ Fuente: [diagramas/casos-uso.puml](diagramas/casos-uso.puml).
 | HU-14 | CU-10 | 1–4, 8 | `evidencia.test.js`, `pantallas.spec.js` |
 | HU-20 | CU-10 | 5–7 | `evidencia.test.js` |
 
-Las pruebas `*.test.js` están en `app/pruebas/` (`npm test`) y las `*.spec.js` en `app/e2e/` (`npm run e2e`).
+Las pruebas `*.test.js` están en `frontend/pruebas/` (`npm test`) y las `*.spec.js` en `frontend/e2e/` (`npm run e2e`).
