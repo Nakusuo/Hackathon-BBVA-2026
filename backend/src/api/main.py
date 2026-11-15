@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from src.api.agente import obtener_agente
-from src.api.routers import recommendations
 from src.api.routers.events import router as events_router
 from src.api.routers.simulations import router as simulations_router
 from src.api.routers.fx import router as fx_router
@@ -19,7 +18,7 @@ from src.api.routers import (
     health,
     financial_health,
     forecast,
-    recommendations
+    recommendations,
 )
 
 
