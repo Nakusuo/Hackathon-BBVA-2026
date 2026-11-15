@@ -191,3 +191,14 @@ test('un plazo en semanas o días es la fecha, no el precio de la meta', () => {
   const r = charla(['quiero ir al concierto, la entrada está 450', 'quiero juntarlo a futuro, la venta es en 4 semanas'])
   assert.match(r[1].texto, /^Tu entrada cuesta S\/.450\. Para el 12 dic de 2026/)
 })
+
+test('«¿y si gano 6000 al mes?» es un ingreso supuesto: no cambia el precio de la meta', () => {
+  const r = charla(['quiero comprarme un carro de 12000 dolares', 'y si obtengo un ingreso de 6000 mensual ?', 'y para fin de 2028?'])
+  assert.match(r[1].texto, /^Si ganas S\/.6,000 al mes y gastas lo mismo que hoy/)
+  assert.match(r[1].texto, /tu carro de S\/.45,000/)
+  assert.match(r[2].texto, /^Tu carro cuesta US\$ 12,000.*Para fin de 2028/)
+})
+
+test('un ingreso menor al de hoy no promete más margen', () => {
+  assert.match(preguntar('¿y si gano 1000 al mes?').texto, /no tendrías más margen/)
+})

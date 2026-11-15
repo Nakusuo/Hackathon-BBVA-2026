@@ -179,7 +179,7 @@ function sumarMeses(fechaIso, meses) {
 }
 
 // «para 2027» es un año; «una meta de 2000» es un monto.
-const ANIO = /\b(?:para|en|hasta|del)\s+(?:el\s+)?(?:ano\s+)?(20\d\d)\b(?!\s*(soles|dolares|mil))/
+const ANIO = /\b(?:para|en|hasta|del|fin de)\s+(?:el\s+)?(?:ano\s+)?(20\d\d)\b(?!\s*(soles|dolares|mil))/
 const NUMERO_PALABRA = { un: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, ocho: 8, diez: 10, doce: 12 }
 
 // «en 4 semanas», «dentro de 10 días», «en 6 meses», «en 2 años».
@@ -316,6 +316,8 @@ export const CONTEXTO_VACIO = {
   campana: null,
 }
 
+const PIDE_INGRESO =
+  /\b(ingresos?|sueldo|salario|gano|ganara|ganaria|ganar|ganando|me pagan|me pagaran|me pagarian|me suben)\b/
 const PIDE_CAMPANA = /\b(campanas?|ofertas?|ofertaq|promos?|promociones?|descuentos?|beneficios?|convenios?)\b/
 // «que sea toyota», «de marca kia»: la persona prefiere una marca y Lucas le cuenta la campaña que sí hay.
 const PIDE_MARCA = /\b(?:que sea|de (?:la )?marca|marca)\s+(?:un[ao]?\s+)?([a-z]{3,})\b/
@@ -344,6 +346,10 @@ export function interpretar(pregunta, contexto, hoy) {
   if (esPedidoDeOperacion(pregunta)) return { intencion: 'limites', contexto }
   const monto = montoEn(texto)
   const montoValido = monto > 0 ? monto : null
+  // «¿y si gano 6000 al mes?» es un ingreso supuesto, no el precio de la meta. La meta sigue en contexto.
+  if (PIDE_INGRESO.test(texto) && !/\b(gast|regalo)/.test(texto) && montoDeMeta(texto)) {
+    return { intencion: 'ingreso', ingreso: montoDeMeta(texto), contexto }
+  }
   const conMontoOFecha = montoDeMeta(texto) !== null || fechaDeMeta(texto, hoy) !== null
   const pideGasto = montoValido && /(gast|regalo|pag)/.test(texto)
   const pideCobro = /(cobro|fin de mes|rojo)/.test(texto)
@@ -412,12 +418,49 @@ function metaConCampana(cliente, contexto, anterior) {
   }
 }
 
+// Supuesto visible: si gana más y gasta lo mismo, la diferencia se suma a lo que hoy puede apartar sin rojo.
+function conOtroIngreso(cliente, persona, contexto, nuevo) {
+  const actual = persona.ingresoMensual
+  const puedes = cliente.apartado?.monto ?? 0
+  const extra = nuevo - actual
+  const cifras = [
+    { etiqueta: 'Ingreso que consultas', valor: enSoles(nuevo) },
+    { etiqueta: 'Tu ingreso hoy', valor: enSoles(actual) },
+  ]
+  if (extra <= 0) {
+    return {
+      texto: `Hoy ganas unos ${enSoles(actual)} al mes. Con ${enSoles(nuevo)} no tendrías más margen: lo primero sería ajustar tu gasto para no quedar en rojo.`,
+      cifras,
+    }
+  }
+  const apartado = Math.floor((puedes + extra) / 10) * 10
+  cifras.push({ etiqueta: 'Podrías apartar al mes', valor: enSoles(apartado) })
+  const inicio = `Si ganas ${enSoles(nuevo)} al mes y gastas lo mismo que hoy, podrías apartar unos ${enSoles(apartado)} al mes en vez de ${enSoles(puedes)}.`
+  const { meta } = contexto
+  if (contexto.tema !== 'meta' || !meta.monto) return { texto: inicio, cifras }
+
+  const { hoy, proximoIngreso, finPronostico } = cliente
+  const objetivo = enSolesDe(meta)
+  const plan = planDeMeta(
+    { objetivo, ahorrado: 0, fecha: meta.fecha ?? proximoIngreso.fecha },
+    { primerApartado: proximoIngreso.fecha, finPronostico, hoy, apartado },
+  )
+  const nombre = meta.que ? `tu ${meta.que}` : 'tu meta'
+  const llegada =
+    meta.fecha && plan.alcanza
+      ? ` Así sí llegas con ${nombre} de ${enSoles(objetivo)} para ${nombreFecha(meta.fecha, hoy)}.`
+      : ` Así juntas ${nombre} de ${enSoles(objetivo)} ${cuando(plan.llegaEl, hoy)}.`
+  return { texto: `${inicio}${llegada}`, cifras }
+}
+
 export function responder(pregunta, cliente, persona, previas = []) {
   const anterior = contextoDe(previas, cliente.hoy)
-  const { intencion, contexto, marca } = interpretar(pregunta, anterior, cliente.hoy)
+  const { intencion, contexto, marca, ingreso } = interpretar(pregunta, anterior, cliente.hoy)
   switch (intencion) {
     case 'limites':
       return LIMITES
+    case 'ingreso':
+      return { ...conOtroIngreso(cliente, persona, contexto, ingreso), pose: 'ahorra' }
     case 'campana':
       return {
         ...respuestaCampana(campanaPorId(contexto.campana), { precio: enSolesDe(contexto.meta), marca }),
