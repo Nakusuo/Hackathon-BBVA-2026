@@ -1,11 +1,13 @@
 // Única puerta del front hacia la API de Lucas (src/api/ en FastAPI). Ninguna pantalla llama a fetch por su cuenta.
 import {
   leerEventos,
+  leerGastoRegistrado,
   leerPronostico,
   leerRecomendaciones,
   leerSalud,
   leerSimulacion,
   leerTipoCambio,
+  pedidoGasto,
   pedidoSimulacion,
 } from './contrato.js'
 import { ErrorApi, pedirJson } from './http.js'
@@ -65,6 +67,15 @@ export function simularCambios(cambios, { id = CLIENTE_DEMO, horizonteDias = 30,
       throw error
     }
   })
+}
+
+/**
+ * Envía un gasto anotado en Lucas. Lanza ErrorApi si el servidor no responde o contesta algo roto: quien llama
+ * deja el registro local y lo avisa. Los ingresos no tienen ruta en la API y no pasan por aquí.
+ */
+export async function enviarGasto(gasto, { id = CLIENTE_DEMO, ...opciones } = {}) {
+  const cuerpo = pedidoGasto(gasto)
+  return leerGastoRegistrado(await pedirJson(`${BASE}/customers/${id}/expenses`, { ...opciones, metodo: 'POST', cuerpo }))
 }
 
 // El agente redacta con un LLM: su meta es p95 < 8 s, pero el modelo local en una laptop llegó a 14 s
