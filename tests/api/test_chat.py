@@ -81,3 +81,11 @@ def test_falta_el_mensaje(client):
 def test_el_saludo_conserva_el_hola_y_las_demas_respuestas_no_lo_repiten(client):
     client.agente.grafo = {"intencion": "saludo", "respuesta": "Hola, Constructor. Soy Lucas.\nPuedo ver si llegas a fin de mes. Tu decides."}
     assert client.post(BASE_URL, json=mensaje()).json()["answer"] == "Hola, Constructor. Soy Lucas.\nPuedo ver si llegas a fin de mes."
+
+
+def test_la_conversacion_recuerda_la_ultima_pregunta_con_tema_y_no_mezcla_conversaciones(client):
+    client.agente.grafo = {"intencion": "meta"}
+    client.post(BASE_URL, json=mensaje(message="quiero ahorrar para un carro de 12 mil", conversation_id="conv-a"))
+    client.post(BASE_URL, json=mensaje(message="¿y en 6 meses?", conversation_id="conv-a"))
+    client.post(BASE_URL, json=mensaje(message="¿y en 6 meses?", conversation_id="conv-b"))
+    assert [m for _, m in client.vistos] == ["quiero ahorrar para un carro de 12 mil", "¿y en 6 meses? quiero ahorrar para un carro de 12 mil", "¿y en 6 meses?"]

@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import threading
+from collections import OrderedDict
 
 from src.comun.rutas import cargar_env
 
@@ -31,9 +32,22 @@ def para_el_chat(texto: str, intencion: str) -> str:
     return re.sub(r"\s*Tu decides?\.\s*$", "", texto.strip(), flags=re.I).strip() or texto.strip()
 
 
+# Conversaciones recordadas en memoria del proceso: solo la ultima pregunta con tema, nunca la respuesta. Se olvidan al reiniciar la API.
+CONVERSACIONES_RECORDADAS = 500
+
+
 class Agente:
     def __init__(self, repo, grafo, alias: dict[str, str]):
         self.repo, self.grafo, self.alias = repo, grafo, alias
+        self._previas: OrderedDict[tuple[str, str], str] = OrderedDict()
+        self._candado = threading.Lock()
+
+    def _recordar(self, clave: tuple[str, str], pregunta: str) -> None:
+        with self._candado:
+            self._previas[clave] = pregunta
+            self._previas.move_to_end(clave)
+            while len(self._previas) > CONVERSACIONES_RECORDADAS:
+                self._previas.popitem(last=False)
 
     def cliente(self, customer_id: str) -> str:
         real = self.alias.get(customer_id, customer_id)
@@ -41,10 +55,15 @@ class Agente:
             raise ClienteDesconocido(customer_id)
         return real
 
-    def responder(self, customer_id: str, mensaje: str) -> dict:
-        from src.agente_analitico.grafo import responder
+    def responder(self, customer_id: str, mensaje: str, conversacion: str | None = None) -> dict:
+        from src.agente_analitico.grafo import con_contexto, responder
 
-        r = responder(self.grafo, self.cliente(customer_id), mensaje)
+        cliente = self.cliente(customer_id)
+        clave = (cliente, conversacion or "")
+        pregunta = con_contexto(mensaje, self._previas.get(clave)) if conversacion else mensaje
+        r = responder(self.grafo, cliente, pregunta)
+        if conversacion and r["intencion"] not in ("general", "fuera_de_tema", "saludo", "seguridad", "fuera_de_alcance"):
+            self._recordar(clave, pregunta)
         return {
             "answer": para_el_chat(r["respuesta"], r["intencion"]),
             "provider": r["proveedor"],

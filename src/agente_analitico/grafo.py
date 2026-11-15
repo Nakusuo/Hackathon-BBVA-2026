@@ -18,6 +18,7 @@ from src.agente_analitico.juez_llm import juzgar
 from src.agente_analitico.repositorio import VENTANA_RECALCULO_DIAS as VENTANA_DATOS_DIAS
 from src.agente_analitico.verificador import aplanar, numeros_de, verificar
 from src.bcrp.cliente import ultimo_con_variacion
+from src.comun import reloj
 from src.comun.rutas import cargar_env, ruta
 from src.generador.contexto import cargar_yaml
 from src.models import calendario_laboral as CL
@@ -215,6 +216,23 @@ def plazo_de(pregunta: str, hoy) -> tuple[int, str] | None:
     return None
 
 
+# Respuestas que solo se entienden con la pregunta anterior: «sí», «¿y en 6 meses?», «cuesta 12 mil», «para julio»
+SEGUIMIENTO = r"^\W*(?:y|s[ií]|ok|okey|dale|ya|bueno|entonces|pero|o sea|osea)\b"
+SIN_TEMA = ("general", "fuera_de_tema")
+PALABRAS_DE_UN_DATO = 4
+
+
+def con_contexto(pregunta: str, previa: str | None) -> str:
+    """Si la pregunta es un seguimiento y por si sola no tiene tema, se le pega la anterior DETRAS: asi el monto y el plazo nuevos se leen primero
+    («¿y si son 8000?» cambia el precio) y el tema sale de la anterior. Una pregunta con tema propio se responde tal cual."""
+    if not previa or detectar_intencion(pregunta) not in SIN_TEMA:
+        return pregunta
+    trae_un_dato = len(pregunta.split()) <= PALABRAS_DE_UN_DATO and (re.search(r"\d", pregunta) or re.search("|".join(MESES_DEL_ANO) + r"|a[ñn]o", pregunta, flags=re.I))
+    if re.search(SEGUIMIENTO, pregunta, flags=re.I) or trae_un_dato:
+        return f"{pregunta.strip()} {previa.strip()}"
+    return pregunta
+
+
 def detectar_intencion(pregunta: str, evento: dict | None = None) -> str:
     if evento:
         return EVENTO_A_INTENCION.get(evento.get("tipo"), "general")
@@ -225,6 +243,8 @@ def detectar_intencion(pregunta: str, evento: dict | None = None) -> str:
             continue   # «como funciona el programa de puntos»: lo responden los datos del cliente (salud_nivel)
         if nombre == "simular" and monto_de(pregunta) is None:
             continue
+        if nombre == "simular" and plazo_de(pregunta, reloj.hoy()) is not None:
+            return "meta"
         if re.search(patron, pregunta, flags=re.I):
             return nombre
     if re.search(COMPRA, pregunta, flags=re.I):

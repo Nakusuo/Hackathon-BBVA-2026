@@ -83,3 +83,30 @@ def test_el_plazo_de_la_meta_sale_de_la_frase_y_del_reloj(pregunta, hoy, esperad
 
     from src.agente_analitico.grafo import plazo_de
     assert plazo_de(pregunta, date.fromisoformat(hoy)) == esperado
+
+
+PREVIA = "quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo"
+
+
+@pytest.mark.parametrize("pregunta,previa,esperado", [
+    ("¿y en 6 meses?", PREVIA, f"¿y en 6 meses? {PREVIA}"), ("cuesta 12 mil", "quiero comprar un carro", "cuesta 12 mil quiero comprar un carro"),
+    ("para julio", PREVIA, f"para julio {PREVIA}"), ("sí", "quiero comprar un carro", "sí quiero comprar un carro"),
+    ("¿Cuánto gasté este mes?", PREVIA, "¿Cuánto gasté este mes?"), ("Necesito organizarme con mi plata", PREVIA, "Necesito organizarme con mi plata"),
+    ("¿y en 6 meses?", None, "¿y en 6 meses?")])
+def test_un_seguimiento_se_entiende_con_la_pregunta_anterior_y_una_pregunta_nueva_no(pregunta, previa, esperado):
+    from src.agente_analitico.grafo import con_contexto
+    assert con_contexto(pregunta, previa) == esperado
+
+
+def test_en_el_seguimiento_mandan_el_monto_y_el_plazo_nuevos(monkeypatch):
+    from datetime import date
+
+    from src.agente_analitico.grafo import con_contexto, detectar_intencion, monto_de, plazo_de
+    q = con_contexto("¿y si son 8000 en 6 meses?", PREVIA)
+    assert detectar_intencion(q) == "meta" and monto_de(q) == 8000.0 and plazo_de(q, date(2026, 11, 14)) == (6, "en 6 meses")
+
+
+def test_comprar_con_precio_y_fecha_es_una_meta_y_sin_fecha_una_simulacion():
+    from src.agente_analitico.grafo import detectar_intencion
+    assert detectar_intencion("cuesta 12 mil para julio quiero comprar un carro") == "meta"
+    assert detectar_intencion("cuesta 12 mil quiero comprar un carro") == "simular"
