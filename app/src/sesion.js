@@ -1,6 +1,5 @@
 // Sesión de la demo en el navegador: qué persona eligió quien presenta y si esa persona dio su permiso a Lucas.
-// Con la API, elegir persona pasa a ser `POST /sesion` y el token firmado reemplaza a la persona guardada aquí;
-// el identificador nunca va en la dirección (ARCHITECTURE §5.2).
+// No hay sesión en el servidor: todo vive en este navegador (ARCHITECTURE.md, sección 4).
 import { PERSONA_INICIAL, PERSONAS } from './motor/personas.js'
 
 const CLAVE_PERSONA = 'lucas-persona'
