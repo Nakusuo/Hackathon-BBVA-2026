@@ -7,7 +7,7 @@ import threading
 from collections import OrderedDict
 
 from src.api import chat_demo
-from src.api.persona_demo import ID_DEMO
+from src.api.persona_demo import IDS_DEL_CHAT
 from src.comun.rutas import cargar_env
 
 log = logging.getLogger("lucas.api.agente")
@@ -74,7 +74,7 @@ class Agente:
     def responder(self, customer_id: str, mensaje: str, conversacion: str | None = None) -> dict:
         from src.agente_analitico.grafo import con_contexto, responder
 
-        if customer_id == ID_DEMO and (de_la_demo := chat_demo.responder(mensaje)):
+        if customer_id in IDS_DEL_CHAT and (de_la_demo := chat_demo.responder(mensaje)):
             return de_la_demo
         cliente = self.cliente(customer_id)
         clave = (cliente, conversacion or "")
@@ -96,7 +96,7 @@ class Agente:
             "goal_proposal": _propuesta(r.get("propuesta_meta")),
             "options": [{"id": o["id"], "label": o["texto"], "question": o["pregunta"]} for o in r.get("opciones") or []],
         }
-        if customer_id == ID_DEMO and r["intencion"] in chat_demo.INTENCIONES_A_CONCILIAR and not chat_demo.respaldada_por_la_demo(respuesta["answer"]):
+        if customer_id in IDS_DEL_CHAT and r["intencion"] in chat_demo.INTENCIONES_A_CONCILIAR and not chat_demo.respaldada_por_la_demo(respuesta["answer"]):
             return chat_demo.apoyo()
         return respuesta
 
