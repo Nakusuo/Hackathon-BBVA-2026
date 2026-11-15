@@ -147,3 +147,7 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [ ] `feature/ia-agente-unico`: pasar por `juez-tecnico` y `juez-producto`, y revisión de Diego (su grafo y su verificador), Jeffrey (`src/agent` queda sin uso) y Miguel (`/chat`)
 - [ ] Las pantallas siguen con las personas del front (`app/src/motor/personas.js`) y el chat con el agente habla del cliente de la base: decidir si las pantallas pasan a leer de la API o si las personas se cargan a la base
 - [ ] El texto del agente llega sin tildes y las plantillas de pronóstico y calendario listan todo lo que saben del cliente: acortarlas antes de la demo
+- [x] Chat con el agente: respuestas cortas por bloques (una burbuja por bloque, cifras resaltadas, animación de escritura), meta de ahorro como plan (punto de partida, qué hacer, convenio del banco, números), compra sin precio y montos con «mil». Nakusuo/Marcela
+- [x] Campañas: el catálogo pasó a `data/catalogo_campanas.json` y lo leen el front y el agente; con el agente activo las preguntas de convenios van al agente. Nakusuo/Marcela
+- [ ] El agente no recuerda la conversación: un «sí» o «¿y en 6 meses?» llega sin contexto (el front sí lo manejaba con `previas`)
+- [ ] Decidir con el equipo si el agente busca en la web: hoy no lo hace (regla 5, offline; regla 3, sin marcas reales); los convenios salen del catálogo del banco
