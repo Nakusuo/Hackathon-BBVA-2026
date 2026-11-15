@@ -390,14 +390,35 @@ test('«no, nada más» cierra la oferta y un «no» a la fecha se acepta', () =
   assert.match(charla(['500', 'quiero empezar a juntar ahora'])[1].texto, /^Tu meta es de S\/.500\./)
 })
 
-test('«¿cuánto puedo gastar hoy?» da el monto por día también sin riesgo (con los tips aplicados)', async () => {
-  const { vistaCon, CAMBIOS } = await import('../src/motor/cliente.js')
-  const conTips = vistaCon(CAMBIOS.map((c) => c.id))
-  for (const c of [cliente, conTips]) {
-    const r = responder('¿cuánto puedo gastar hoy?', c, persona)
-    assert.match(r.texto, new RegExp(`puedes gastar hasta S/.${c.gastoDiarioSeguro} al día`))
-    assert.doesNotMatch(r.texto, /^Sí\b|^Lo más probable/)
+test('«¿cuánto puedo gastar hoy?» da el monto por día en las dos personas, con y sin tips', async () => {
+  const { vistaCon } = await import('../src/motor/cliente.js')
+  const { PERSONAS } = await import('../src/motor/personas.js')
+  for (const def of PERSONAS) {
+    for (const c of [vistaCon([], def.id), vistaCon(def.cambios.map((x) => x.id), def.id)]) {
+      const r = responder('¿cuánto puedo gastar hoy?', c, def.persona)
+      assert.match(r.texto, new RegExp(`puedes gastar hasta S/.${c.gastoDiarioSeguro} al día`), def.id)
+      assert.doesNotMatch(r.texto, /^Sí\b|^Lo más probable/)
+    }
   }
+})
+
+test('con gasto seguro 0 nunca promete «sin quedar en rojo»: lo dice y señala qué mover', async () => {
+  const { vistaCon } = await import('../src/motor/cliente.js')
+  const { PERSONAS } = await import('../src/motor/personas.js')
+  for (const def of PERSONAS) {
+    const sinMargen = vistaCon([], def.id, [], [{ id: 'grande', tipo: 'gasto', fecha: '2026-11-20', monto: 9000 }])
+    assert.equal(sinMargen.gastoDiarioSeguro, 0, def.id)
+    for (const conversacion of [['¿cuánto puedo gastar hoy?'], ['¿Llego a mi cobro?'], ['¿Llego a mi cobro?', 'explícame más']]) {
+      const previas = conversacion.slice(0, -1)
+      const r = responder(conversacion.at(-1), sinMargen, def.persona, previas)
+      assert.match(r.texto, /Aunque no gastes nada más/, `${def.id}: ${conversacion.join(' → ')}`)
+      assert.doesNotMatch(r.texto, /S\/.0 al día|eso no pasa|llegas a tu cobro del \w+ \d+ incluso/, `${def.id}: ${conversacion.join(' → ')}`)
+    }
+  }
+})
+
+test('«¿cuánto puedo gastar?» y luego «¿y 80?» calcula ese gasto', () => {
+  assert.match(charla(['¿cuánto puedo gastar hoy?', '¿y 80?'])[1].texto, /^(Sí, te alcanza|Si lo compras|Con ese gasto)/)
 })
 
 test('dentro de una meta, «¿cuánto puedo gastar al mes para llegar?» sigue siendo meta', () => {
@@ -410,6 +431,12 @@ test('«ok», «sí» o «no» con la meta ya fechada no piden la fecha', () => 
   }
 })
 
-test('«500» → «lo compro hoy con lo que tengo ahorrado» es un gasto', () => {
-  assert.doesNotMatch(charla(['500', 'lo compro hoy con lo que tengo ahorrado'])[1].texto, /^Tu meta/)
+test('tras un monto suelto, «ahorro desde hoy» es meta y «hoy, con mis ahorros» es gasto', () => {
+  const gasto = /^(Sí, te alcanza|Si lo compras|Con ese gasto|No te alcanza)/
+  for (const f of ['lo compro hoy con lo que tengo ahorrado', 'hoy, con mis ahorros', 'lo pago hoy con lo ahorrado']) {
+    assert.match(charla(['500', f])[1].texto, gasto, f)
+  }
+  for (const f of ['ahorro desde hoy', 'desde hoy lo ahorro', 'ahorrando desde hoy']) {
+    assert.match(charla(['500', f])[1].texto, /^Tu meta es de S\/.500\./, f)
+  }
 })
