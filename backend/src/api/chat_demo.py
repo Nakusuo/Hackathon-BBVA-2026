@@ -10,6 +10,7 @@ from src.api import persona_demo
 
 # Preguntas sin cifras de la persona: el agente las contesta igual para cualquier cliente.
 INTENCIONES_DEL_AGENTE = (
+    "apoyo",
     "educacion",
     "fuera_de_tema",
     "fuera_de_alcance",
@@ -18,7 +19,9 @@ INTENCIONES_DEL_AGENTE = (
     "conversacion",
     "tipo_de_cambio",
 )
-INTENCIONES_DE_PRONOSTICO = ("pronostico", "riesgo_rojo", "general", "apoyo")
+INTENCIONES_DE_PRONOSTICO = ("pronostico", "riesgo_rojo", "general")
+# El agente las contesta, pero con el cliente de la base puede citar su saldo o su salud: si una cifra no está en los JSON de la demo, se usa la plantilla.
+INTENCIONES_A_CONCILIAR = ("apoyo", "conversacion")
 SIN_DATO = (
     "De eso todavía no tengo datos en esta cuenta de demostración. Sí puedo decirte si llegas a tu cobro, "
     "cómo está tu salud financiera, si puedes hacer un gasto y qué tips te convienen. Tú decides."
@@ -179,3 +182,18 @@ def responder(mensaje: str) -> dict | None:
         texto, datos = _texto_recomendaciones()
         return _respuesta(texto, datos, ["get_recos"], intencion)
     return {**_respuesta(SIN_DATO, {}, [], intencion), "verified": True}
+
+
+def cifras_de_la_demo() -> set:
+    return aplanar([persona_demo.respuesta(n) for n in ("health.json", "forecast.json", "recommendations.json")])
+
+
+def respaldada_por_la_demo(texto: str) -> bool:
+    return verificar(texto, cifras_de_la_demo())["ok"]
+
+
+def apoyo() -> dict:
+    primero = get_recos()[0]
+    texto = (f"Es normal que la plata preocupe, y se resuelve por partes. Lo primero que te conviene: {primero['action']} "
+             f"(ahorras unos {_soles(primero['estimated_impact'])}). Si quieres, te digo si llegas a tu cobro o cómo está tu salud financiera. Tú decides.")
+    return _respuesta(texto, [primero], ["get_recos"], "apoyo")

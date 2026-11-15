@@ -98,3 +98,13 @@ def test_lo_que_no_esta_en_los_json_no_se_responde_con_otra_persona(client):
     r = preguntar(client, "¿cuánto gasté este mes en comida?")
     assert r["tools_used"] == [] and "no tengo datos" in r["answer"]
     assert not re.search(r"\d", r["answer"])
+
+
+def test_el_apoyo_no_cita_cifras_de_otro_cliente(client, monkeypatch):
+    citando_la_base = {"respuesta": "Tranquilo. Tu saldo es S/ 2,345 y tu salud 71.", "proveedor": "plantilla", "intencion": "apoyo", "cifras_sin_respaldo": [],
+                       "citas": [], "trazas": ["agente:pronostico"]}
+    monkeypatch.setattr("src.agente_analitico.grafo.responder", lambda *_: citando_la_base)
+    r = preguntar(client, "me siento agobiado con la plata")
+    assert r["intent"] == "apoyo" and r["verified"] and "2,345" not in r["answer"]
+    assert "Estos cambios" not in r["answer"] and "saldo esperado" not in r["answer"]
+    assert all(t["action"] in r["answer"] for t in _guardado("recommendations.json")["recommendations"][:1])
