@@ -379,6 +379,13 @@ function mayuscula(texto) {
   return texto[0].toUpperCase() + texto.slice(1)
 }
 
+// La meta que el chat viene armando, lista para el botón «Crear meta»: el objetivo en soles con el mismo cambio del plan.
+export function propuestaDeMeta(contexto) {
+  const meta = contexto?.meta
+  if (!meta?.monto || !meta.fecha) return null
+  return { nombre: mayuscula(meta.que ?? 'mi meta').slice(0, 40), objetivo: objetivoDe(meta).objetivo, fecha: meta.fecha }
+}
+
 // Cada respuesta dice de qué meta habla: en una charla larga la persona puede haber cambiado de idea.
 function presentarMeta({ monto, enDolares, que, inicial, ahorrado = 0 }, unico) {
   const cosa = tuMeta(que)
