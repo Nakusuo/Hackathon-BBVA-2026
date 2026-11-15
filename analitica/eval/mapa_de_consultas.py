@@ -50,12 +50,14 @@ def _mezcla_de_evaluacion() -> dict:
 def _costos(entrada: float, salida: float, lectura: int, corpus: int, parrafo_n: int, parrafo_ia: int, mezcla: dict) -> dict:
     """Soles y porcentajes. Una llamada al LLM = mensaje enviado (instrucciones, datos y pregunta) + lectura de las fuentes que trae el RAG + respuesta. La entrada y la salida se cobran distinto."""
     tc = _tipo_de_cambio()
-    pe, ps = PRECIO["usd_por_millon_de_entrada"] / 1e6 * tc["valor"], PRECIO["usd_por_millon_de_salida"] / 1e6 * tc["valor"]   # soles por token
+    # Soles por token.
+    pe, ps = PRECIO["usd_por_millon_de_entrada"] / 1e6 * tc["valor"], PRECIO["usd_por_millon_de_salida"] / 1e6 * tc["valor"]
     tok = {"mensaje": max(entrada - lectura, 0), "lectura_de_fuentes": lectura, "respuesta": salida}
     sol = {"mensaje": tok["mensaje"] * pe, "lectura_de_fuentes": lectura * pe, "respuesta": salida * ps}
     por_llamada, tot_tok = sum(sol.values()), sum(tok.values())
     mensaje_sin_fuentes = tok["mensaje"] * pe + salida * ps
-    corpus_soles = corpus * pe + mensaje_sin_fuentes   # hipotesis: el LLM recibe TODO el corpus en cada pregunta de concepto (cabe en su ventana, pero cuesta)
+    # Hipótesis: el LLM recibe todo el corpus en cada pregunta de concepto; cabe en su ventana, pero cuesta.
+    corpus_soles = corpus * pe + mensaje_sin_fuentes
 
     def esc(p_ia: float) -> dict:
         sin, con = ESCALA * por_llamada, ESCALA * p_ia * por_llamada

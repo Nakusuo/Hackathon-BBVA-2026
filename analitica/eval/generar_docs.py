@@ -306,8 +306,9 @@ def seccion_rag_agente():
     if QA:
         r = QA["resumen"]
         lat = [x["segundos"] for x in QA["perfil"]]
+        idiomas = ", ".join(f"{k} {'OK' if v else 'con fallas'}" for k, v in r["idiomas"].items())
         txt += (f"**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo {r['reloj_fijo']})**: preguntas de perfil {r['perfil_ok']}, pedidos adversarios {r['adversas_ok']}, datos vivos y vigilancia {'OK' if r['datos_vivos_ok'] else 'con fallas'}, "
-                f"traduccion {', '.join(f'{k} {"OK" if v else "con fallas"}' for k, v in r['idiomas'].items())}; {r['tokens_gemini']['llamadas']} llamadas y {r['tokens_gemini']['entrada']:,} tokens de entrada con `{r['modelo']}`; "
+                f"traduccion {idiomas}; {r['tokens_gemini']['llamadas']} llamadas y {r['tokens_gemini']['entrada']:,} tokens de entrada con `{r['modelo']}`; "
                 f"latencia media por respuesta {sum(lat) / len(lat):.1f} s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.\n\n")
         if "apertura" in QA:
             txt += (f"**QA conversacional con Gemini real**: conversaciones de varias preguntas seguidas {r['conversacion_ok']} (sin cortarse ni repetirse), preguntas-trampa con datos que no existen {r['trampas_ok']} (sin inventar ni prometer), "
