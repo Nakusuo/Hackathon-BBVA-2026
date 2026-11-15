@@ -104,6 +104,22 @@ def extras():
             "cobertura": {"saldo_30d": round(sd["cobertura_80"], 3), "serie_minima": round(S["cobertura_minima"], 3), "serie_maxima": round(S["cobertura_maxima"], 3)}}
 
 
+def segmentos():
+    """Perfiles que K-Prototypes encontro (k elegido por silueta y estabilidad) y el multiplicador de puntos de cada nivel."""
+    import yaml
+    s = J("metricas.json")["segmentacion"]
+    with open(os.path.join(RAIZ, "data", "parametros", "niveles.yaml"), encoding="utf-8") as f:
+        c = yaml.safe_load(f)
+    filas = []
+    for d in s["descripcion"].values():
+        filas.append({"nivel": d["nivel"], "n": d["n"], "ingreso_medio": round(d["ingreso_medio"]), "cv_ingreso": round(d["cv_ingreso"], 2), "gasto_sobre_ingreso": round(d["gasto_sobre_ingreso"], 2),
+                      "ahorro_pct": round(d["ahorro_pct"], 2), "dias_rojo_3m": round(d["dias_rojo_3m"], 1), "colchon_meses": round(d["colchon_observado"], 1), "salud": round(d["salud_mediana"]),
+                      "puntos_x": c["niveles"][d["nivel"]]["multiplicador_puntos"]})
+    filas.sort(key=lambda x: x["salud"])
+    return {"k": s["k"], "total": sum(f["n"] for f in filas), "perfiles": filas, "acierto_cliente_nuevo": round(s["arranque_en_frio_precision"], 2),
+            "referencia_acierto": round(s["referencia_clase_mayoritaria"], 2), "escalera": c["escalera"]}
+
+
 def fen():
     import yaml
     with open(os.path.join(RAIZ, "data", "parametros", "zonas_riesgo_fen.yaml"), encoding="utf-8") as f:
@@ -125,7 +141,7 @@ def datos_publicos():
 
 
 TILDES = {"informacion": "información", "Si puedo": "Sí puedo", "matematica": "matemática", "codigo": "código", "proximos": "próximos", "dolares": "dólares", "cuanto": "cuánto", "ingresaras": "ingresarás", "gastaras": "gastarás",
-          "salud financiera": "salud financiera", "dias": "días", " tu salud": " tu salud", "decides": "decides", "Que ": "Qué ", "evacuacion": "evacuación", "Codigo": "Código", "Proteccion": "Protección", "Gestion": "Gestión"}
+          "salud financiera": "salud financiera", "dias": "días", " tu salud": " tu salud", "decides": "decides", "Que ": "Qué ", "evacuacion": "evacuación", "Codigo": "Código", "El Nino": "El Niño", "en que invertir": "en qué invertir", "Proteccion": "Protección", "Gestion": "Gestión"}
 
 
 def ortografia(texto: str) -> str:
@@ -172,7 +188,7 @@ def main():
     for fr in (mapa.get("rag") or {}).get("fragmentos", []):
         fr["titulo"] = ortografia(fr["titulo"])
     qa, gate, agu = J("metricas_qa_agente.json")["resumen"], J("puerta_de_calidad.json")["cuenta"], J("metricas_agente_plantillas.json")["agente_unico"]["resumen"]
-    datos = {"persona": pers, "modelos": modelos(), "mapa": mapa, "publicos": datos_publicos(), "extras": extras(), "fen": fen(), "ataques": ataques(repo, buscador, cid),
+    datos = {"persona": pers, "modelos": modelos(), "mapa": mapa, "publicos": datos_publicos(), "extras": extras(), "segmentos": segmentos(), "fen": fen(), "ataques": ataques(repo, buscador, cid),
              "calidad": {"qa": qa, "puerta": gate, "agente_plantillas": {"n": agu["n"], "ruteo": agu["ruteo_correcto"], "sin_cifras_inventadas": agu["respuestas_sin_cifras_inventadas"]}},
              "equipo": [x.strip() for x in a.equipo.split(",") if x.strip()], "demo_url": a.demo_url}
     if a.solo_datos:
