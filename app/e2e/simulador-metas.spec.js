@@ -237,3 +237,30 @@ test('metas con la persona formal: aparta al cobrar el 30 con su propio margen',
     'Aparta S/ 400 al mes, al cobrar el 30 (2 veces hasta el 31 dic), y llegas.',
   )
 })
+
+test('metas: cada acción se confirma a la vista, «Quitar» se puede deshacer y el error no salta mientras escribes', async ({ page }) => {
+  await page.goto('/lucas/metas')
+  const nueva = page.getByRole('region', { name: 'Crea tu primera meta' })
+  // Atajo de nombre y error solo al salir del campo.
+  await nueva.getByRole('button', { name: 'Viaje' }).click()
+  await expect(nueva.getByLabel('¿Para qué ahorras?')).toHaveValue('Viaje')
+  const monto = nueva.getByLabel('Meta en S/')
+  await monto.pressSequentially('abc')
+  await expect(nueva.locator('.campo-error')).toHaveCount(0)
+  await monto.blur()
+  await expect(nueva.locator('.campo-error')).toHaveCount(1)
+  await monto.fill('300')
+  await expect(nueva.locator('.campo-error')).toHaveCount(0)
+  await nueva.getByRole('button', { name: 'Crear meta' }).click()
+
+  const confirmacion = page.locator('.aviso-breve')
+  await expect(confirmacion).toBeVisible()
+  await expect(confirmacion).toContainText('Creé tu meta Viaje.')
+
+  const meta = page.getByRole('listitem', { name: 'Meta Viaje' })
+  await meta.getByRole('button', { name: 'Quitar' }).click()
+  await expect(meta).toHaveCount(0)
+  await confirmacion.getByRole('button', { name: 'Deshacer' }).click()
+  await expect(meta).toBeVisible()
+  await expect(confirmacion).toContainText('Recuperé tu meta Viaje.')
+})

@@ -1,6 +1,7 @@
 import { CheckCircle, Lightbulb, PiggyBank, Target, Trash } from '@phosphor-icons/react'
-import { useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AvisoBreve from '../componentes/AvisoBreve.jsx'
 import Campo from '../componentes/Campo.jsx'
 import { enSoles, fechaCorta } from '../formato.js'
 import { estadoDe, finDeAnio, planDeMeta, repartoDelApartado, validarMeta } from './metas.js'
@@ -126,11 +127,14 @@ function TarjetaMeta({ meta, plan, conTips, totalCambios, espera, hoy, diaCobro,
   )
 }
 
-export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) {
+export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar, alRestaurar }) {
   const { apartado, apartadoConTodos, proximoIngreso, finPronostico, hoy } = cliente
   const [borrador, setBorrador] = useState({ ...VACIA, fecha: finDeAnio(hoy) })
   const [intentado, setIntentado] = useState(false)
-  const [aviso, setAviso] = useState('')
+  const [aviso, setAviso] = useState(null)
+  // El error aparece al salir del campo, no mientras escribes.
+  const [tocados, setTocados] = useState({})
+  const cerrarAviso = useCallback(() => setAviso(null), [])
   const formulario = useRef(null)
 
   const puedes = apartado?.monto ?? 0
@@ -145,6 +149,10 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) 
     setBorrador((previo) => ({ ...previo, [campo]: valor }))
   }
 
+  function tocar(campo) {
+    if (borrador[campo] !== '') setTocados((previos) => ({ ...previos, [campo]: true }))
+  }
+
   function crear(evento) {
     evento.preventDefault()
     if (!revision.datos) {
@@ -156,17 +164,25 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) 
     alCrear(revision.datos)
     setBorrador({ ...VACIA, fecha: finDeAnio(hoy) })
     setIntentado(false)
-    setAviso(`Creé tu meta ${revision.datos.nombre}.`)
+    setTocados({})
+    setAviso({ texto: `Creé tu meta ${revision.datos.nombre}.` })
   }
 
   function aportarA(meta, monto) {
     alAportar(meta.id, monto)
-    setAviso(`Registré ${enSoles(monto)} en ${meta.nombre}.`)
+    setAviso({ texto: `Registré ${enSoles(monto)} en ${meta.nombre}.` })
   }
 
   function quitar(meta) {
+    const lugar = metas.findIndex((m) => m.id === meta.id)
     alQuitar(meta.id)
-    setAviso(`Quité la meta ${meta.nombre}.`)
+    setAviso({
+      texto: `Quité la meta ${meta.nombre}.`,
+      deshacer: () => {
+        alRestaurar(meta, lugar)
+        setAviso({ texto: `Recuperé tu meta ${meta.nombre}.` })
+      },
+    })
   }
 
   return (
@@ -254,37 +270,40 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) 
             ))}
           </div>
           <div className="campos-fila campos-montos">
-            <Campo etiqueta="Meta en S/" error={errores.objetivo} mostrarError={intentado || borrador.objetivo !== ''}>
+            <Campo etiqueta="Meta en S/" error={errores.objetivo} mostrarError={intentado || tocados.objetivo}>
               {(props) => (
                 <input
                   {...props}
                   inputMode="decimal"
                   autoComplete="off"
                   placeholder="300"
+                  onBlur={() => tocar('objetivo')}
                   value={borrador.objetivo}
                   onChange={(e) => cambiar('objetivo', e.target.value)}
                 />
               )}
             </Campo>
-            <Campo etiqueta="Ya ahorré" error={errores.ahorrado} mostrarError={intentado || borrador.ahorrado !== ''}>
+            <Campo etiqueta="Ya ahorré" error={errores.ahorrado} mostrarError={intentado || tocados.ahorrado}>
               {(props) => (
                 <input
                   {...props}
                   inputMode="decimal"
                   autoComplete="off"
                   placeholder="0"
+                  onBlur={() => tocar('ahorrado')}
                   value={borrador.ahorrado}
                   onChange={(e) => cambiar('ahorrado', e.target.value)}
                 />
               )}
             </Campo>
           </div>
-          <Campo etiqueta="¿Para cuándo?" error={errores.fecha} mostrarError={intentado || borrador.fecha !== ''}>
+          <Campo etiqueta="¿Para cuándo?" error={errores.fecha} mostrarError={intentado || tocados.fecha}>
             {(props) => (
               <input
                 {...props}
                 type="date"
                 min={proximoIngreso.fecha}
+                onBlur={() => tocar('fecha')}
                 value={borrador.fecha}
                 onChange={(e) => cambiar('fecha', e.target.value)}
               />
@@ -296,9 +315,7 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) 
         </form>
       </section>
 
-      <p className="solo-lector" role="status">
-        {aviso}
-      </p>
+      <AvisoBreve aviso={aviso} alCerrar={cerrarAviso} />
       <p className="decision">Son simulaciones. Tú decides.</p>
     </>
   )

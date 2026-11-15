@@ -96,6 +96,11 @@ export default function MarcoBanca() {
     crearMeta: (datos) => setMetas((previas) => [...previas, crearMeta(datos, nuevoId('meta'))]),
     aportarMeta: (id, monto) => setMetas((previas) => previas.map((m) => (m.id === id ? aportar(m, monto) : m))),
     quitarMeta: (id) => setMetas((previas) => previas.filter((m) => m.id !== id)),
+    // Deshacer «Quitar»: vuelve a su lugar, porque el apartado se reparte en el orden de creación.
+    restaurarMeta: (meta, lugar) =>
+      setMetas((previas) =>
+        previas.some((m) => m.id === meta.id) ? previas : [...previas.slice(0, lugar), meta, ...previas.slice(lugar)],
+      ),
   }
 
   useEffect(() => () => window.clearTimeout(temporizador.current), [])
