@@ -6,6 +6,7 @@ import { enSoles, fechaCorta } from '../formato.js'
 import { estadoDe, finDeAnio, planDeMeta, repartoDelApartado, validarMeta } from './metas.js'
 
 const VACIA = { nombre: '', objetivo: '', ahorrado: '', fecha: '' }
+const IDEAS = ['Colchón', 'Viaje', 'Regalos']
 const NOMBRE_ESTADO = { creada: 'Creada', 'en curso': 'En curso', cumplida: 'Cumplida' }
 
 function fechaMeta(fechaIso, hoyIso) {
@@ -170,27 +171,32 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) 
 
   return (
     <>
-      <section className="tarjeta" aria-labelledby="metas-titulo">
+      <section className="panel-azul panel-metas" aria-labelledby="metas-titulo">
         <h2 id="metas-titulo">Tus metas</h2>
         {puedes > 0 ? (
-          <p>
-            El {fechaCorta(proximoIngreso.fecha)}, al cobrar, puedes apartar{' '}
-            <b>{enSoles(puedes)}</b> sin quedar en rojo después de cobrar, ni en el peor caso. Lo mismo cada mes en esa
-            fecha.
-          </p>
+          <>
+            <p>
+              El {fechaCorta(proximoIngreso.fecha)}, al cobrar, puedes apartar{' '}
+              <span className="panel-cifra">{enSoles(puedes)}</span>
+            </p>
+            <p>Sin quedar en rojo, ni en el peor caso.</p>
+          </>
         ) : (
           <p>Al cobrar todavía no te conviene apartar: ese margen lo necesitas para tus próximos pagos.</p>
         )}
         {conTips > puedes && (
-          <p className="suave">
-            Con los {cliente.totalCambios} tips serían {enSoles(conTips)}.{' '}
-            <Link className="enlace" to="/lucas/resumen#tips">
-              Ver tips
-            </Link>
+          <p className="metas-tips">
+            <Lightbulb size={20} aria-hidden="true" />
+            <span>
+              Con los {cliente.totalCambios} tips serían <b>{enSoles(conTips)}</b>.{' '}
+              <Link className="enlace" to="/lucas/resumen#tips">
+                Ver tips
+              </Link>
+            </span>
           </p>
         )}
         {reparto.abiertas > 1 && reparto.conAporte > 0 && (
-          <p className="suave">
+          <p>
             {reparto.conAporte === reparto.abiertas
               ? `Lo reparto entre tus ${reparto.abiertas} metas: ${enSoles(reparto.parte)} para cada una.`
               : `Alcanza para ${reparto.conAporte} de tus ${reparto.abiertas} metas: ${enSoles(reparto.parte)} para cada una, en el orden en que las creaste.`}
@@ -234,7 +240,20 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) 
               />
             )}
           </Campo>
-          <div className="campos-fila">
+          <div className="atajos-meta" role="group" aria-label="Ideas de meta">
+            {IDEAS.map((idea) => (
+              <button
+                key={idea}
+                type="button"
+                className="atajo-meta"
+                aria-pressed={borrador.nombre === idea}
+                onClick={() => cambiar('nombre', idea)}
+              >
+                {idea}
+              </button>
+            ))}
+          </div>
+          <div className="campos-fila campos-montos">
             <Campo etiqueta="Meta en S/" error={errores.objetivo} mostrarError={intentado || borrador.objetivo !== ''}>
               {(props) => (
                 <input
@@ -247,7 +266,7 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar }) 
                 />
               )}
             </Campo>
-            <Campo etiqueta="Ya tengo (opcional)" error={errores.ahorrado} mostrarError={intentado || borrador.ahorrado !== ''}>
+            <Campo etiqueta="Ya ahorré" error={errores.ahorrado} mostrarError={intentado || borrador.ahorrado !== ''}>
               {(props) => (
                 <input
                   {...props}

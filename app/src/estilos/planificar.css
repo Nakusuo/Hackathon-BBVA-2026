@@ -75,3 +75,72 @@
   align-items: center;
   gap: 6px;
 }
+
+/* Metas: la cifra que puedes apartar manda; el resto acompaña. */
+.panel-metas h2 {
+  margin: 0 0 4px;
+  color: var(--sobre-azul);
+}
+
+.panel-metas p {
+  margin: 0;
+}
+
+.panel-metas .panel-cifra {
+  display: block;
+  margin-top: 2px;
+}
+
+.panel-metas .metas-tips {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: rgb(255 255 255 / 0.12);
+}
+
+.metas-tips > svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.panel-metas b,
+.panel-metas .enlace {
+  color: var(--sobre-azul);
+}
+
+.campos-montos {
+  grid-template-columns: 1fr 1fr;
+}
+
+.atajos-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -4px;
+}
+
+.atajo-meta {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.atajo-meta:hover {
+  border-color: var(--azul-texto);
+}
+
+.atajo-meta[aria-pressed='true'] {
+  border-color: var(--azul-texto);
+  background: var(--superficie-suave);
+  color: var(--azul-texto);
+  font-weight: 700;
+}
