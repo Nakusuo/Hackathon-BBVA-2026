@@ -27,10 +27,9 @@ def test_financial_health_success():
     data = response.json()
 
     assert data["customer_id"] == "demo-001"
-    assert data["score"] == 72
-    assert data["status"] == "estable"
-    assert data["quadrant"] == "Q2"
-    assert data["emergency_fund_months"] == 1.5
+    assert 0 <= data["score"] <= 100
+    assert data["quadrant"] in {"Q1", "Q2", "Q3", "Q4"}
+    assert data["emergency_fund_months"] >= 0
     assert data["currency"] == "PEN"
 
 

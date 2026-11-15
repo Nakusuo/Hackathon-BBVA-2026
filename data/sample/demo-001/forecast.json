@@ -1,0 +1,194 @@
+{
+  "customer_id": "demo-001",
+  "currency": "PEN",
+  "horizon_days": 30,
+  "confidence_level": 0.8,
+  "forecast": [
+    {
+      "date": "2026-11-15",
+      "predicted_balance": 1210,
+      "lower_bound": 1176,
+      "upper_bound": 1243
+    },
+    {
+      "date": "2026-11-16",
+      "predicted_balance": 1140,
+      "lower_bound": 1097,
+      "upper_bound": 1182
+    },
+    {
+      "date": "2026-11-17",
+      "predicted_balance": 1109,
+      "lower_bound": 1059,
+      "upper_bound": 1160
+    },
+    {
+      "date": "2026-11-18",
+      "predicted_balance": 869,
+      "lower_bound": 810,
+      "upper_bound": 928
+    },
+    {
+      "date": "2026-11-19",
+      "predicted_balance": 839,
+      "lower_bound": 771,
+      "upper_bound": 907
+    },
+    {
+      "date": "2026-11-20",
+      "predicted_balance": 787,
+      "lower_bound": 710,
+      "upper_bound": 863
+    },
+    {
+      "date": "2026-11-21",
+      "predicted_balance": 756,
+      "lower_bound": 671,
+      "upper_bound": 842
+    },
+    {
+      "date": "2026-11-22",
+      "predicted_balance": 726,
+      "lower_bound": 632,
+      "upper_bound": 820
+    },
+    {
+      "date": "2026-11-23",
+      "predicted_balance": 696,
+      "lower_bound": 593,
+      "upper_bound": 798
+    },
+    {
+      "date": "2026-11-24",
+      "predicted_balance": 666,
+      "lower_bound": 555,
+      "upper_bound": 777
+    },
+    {
+      "date": "2026-11-25",
+      "predicted_balance": 215,
+      "lower_bound": 96,
+      "upper_bound": 335
+    },
+    {
+      "date": "2026-11-26",
+      "predicted_balance": 185,
+      "lower_bound": 57,
+      "upper_bound": 313
+    },
+    {
+      "date": "2026-11-27",
+      "predicted_balance": 155,
+      "lower_bound": 18,
+      "upper_bound": 292
+    },
+    {
+      "date": "2026-11-28",
+      "predicted_balance": 124,
+      "lower_bound": -21,
+      "upper_bound": 270
+    },
+    {
+      "date": "2026-11-29",
+      "predicted_balance": 94,
+      "lower_bound": -60,
+      "upper_bound": 248
+    },
+    {
+      "date": "2026-11-30",
+      "predicted_balance": 2064,
+      "lower_bound": 1601,
+      "upper_bound": 2527
+    },
+    {
+      "date": "2026-12-01",
+      "predicted_balance": 1084,
+      "lower_bound": 612,
+      "upper_bound": 1555
+    },
+    {
+      "date": "2026-12-02",
+      "predicted_balance": 1053,
+      "lower_bound": 574,
+      "upper_bound": 1533
+    },
+    {
+      "date": "2026-12-03",
+      "predicted_balance": 1023,
+      "lower_bound": 535,
+      "upper_bound": 1512
+    },
+    {
+      "date": "2026-12-04",
+      "predicted_balance": 993,
+      "lower_bound": 496,
+      "upper_bound": 1490
+    },
+    {
+      "date": "2026-12-05",
+      "predicted_balance": 783,
+      "lower_bound": 277,
+      "upper_bound": 1288
+    },
+    {
+      "date": "2026-12-06",
+      "predicted_balance": 752,
+      "lower_bound": 238,
+      "upper_bound": 1267
+    },
+    {
+      "date": "2026-12-07",
+      "predicted_balance": 722,
+      "lower_bound": 199,
+      "upper_bound": 1245
+    },
+    {
+      "date": "2026-12-08",
+      "predicted_balance": 692,
+      "lower_bound": 160,
+      "upper_bound": 1223
+    },
+    {
+      "date": "2026-12-09",
+      "predicted_balance": 662,
+      "lower_bound": 122,
+      "upper_bound": 1202
+    },
+    {
+      "date": "2026-12-10",
+      "predicted_balance": 631,
+      "lower_bound": 83,
+      "upper_bound": 1180
+    },
+    {
+      "date": "2026-12-11",
+      "predicted_balance": 601,
+      "lower_bound": 44,
+      "upper_bound": 1158
+    },
+    {
+      "date": "2026-12-12",
+      "predicted_balance": 1171,
+      "lower_bound": 205,
+      "upper_bound": 2137
+    },
+    {
+      "date": "2026-12-13",
+      "predicted_balance": 1141,
+      "lower_bound": 166,
+      "upper_bound": 2115
+    },
+    {
+      "date": "2026-12-14",
+      "predicted_balance": 1110,
+      "lower_bound": 127,
+      "upper_bound": 2093
+    }
+  ],
+  "first_risk_date": "2026-11-28",
+  "model": "motor-de-reglas-del-front",
+  "data_as_of": "2026-11-14",
+  "risk_probability": null,
+  "synthetic_data": true,
+  "sample_only": true
+}
