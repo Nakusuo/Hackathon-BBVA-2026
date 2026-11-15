@@ -6,6 +6,7 @@ import MarcaLucas from '../componentes/MarcaLucas.jsx'
 import { SUAVE } from '../movimiento.js'
 import { LARGO_MAXIMO, preguntarALucas } from './clienteChat.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
+import { bloquesDe } from './textoChat.js'
 
 // Apagado hasta que exista POST /api/v1/chat en FastAPI; las demás lecturas no dependen de esto.
 const AGENTE = import.meta.env.VITE_CHAT_AGENTE === 'si'
@@ -14,6 +15,39 @@ const AGENTE = import.meta.env.VITE_CHAT_AGENTE === 'si'
 function entradaDe(reducido) {
   if (reducido) return { initial: false }
   return { initial: { opacity: 0, y: 8 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.25, ease: SUAVE } }
+}
+
+// Lucas «escribe» al menos este tiempo: una plantilla responde al instante y el salto de golpe no deja ver quién habla.
+const ESCRIBIENDO_MINIMO_MS = 700
+// Cada bloque de la respuesta entra un poco después del anterior, como si se fuera escribiendo.
+const PASO_ENTRE_BLOQUES_S = 0.22
+
+function Partes({ partes }) {
+  return partes.map((p, i) => (p.fuerte ? <strong key={i}>{p.texto}</strong> : p.texto))
+}
+
+// El texto llega con saltos de línea y guiones: se pinta en párrafos y listas, con las cifras resaltadas.
+function Texto({ texto }) {
+  const reducido = useReducedMotion()
+  const entrada = (i) =>
+    reducido
+      ? { initial: false }
+      : { initial: { opacity: 0, y: 6 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.3, ease: SUAVE, delay: i * PASO_ENTRE_BLOQUES_S } }
+  return bloquesDe(texto).map((bloque, i) =>
+    bloque.tipo === 'lista' ? (
+      <motion.ul key={i} className="mensaje-lista" {...entrada(i)}>
+        {bloque.items.map((item, j) => (
+          <li key={j}>
+            <Partes partes={item} />
+          </li>
+        ))}
+      </motion.ul>
+    ) : (
+      <motion.p key={i} {...entrada(i)}>
+        <Partes partes={bloque.partes} />
+      </motion.p>
+    ),
+  )
 }
 
 // Las cifras van en un bloque aparte y con su rótulo visible: así se distinguen del texto del modelo.
@@ -88,7 +122,7 @@ function Mensaje({ mensaje }) {
             <span>{mensaje.aviso}</span>
           </p>
         )}
-        <p>{mensaje.texto}</p>
+        <Texto texto={mensaje.texto} />
         {mensaje.cifras?.length > 0 && <Cifras mensaje={mensaje} />}
         {mensaje.fuentes?.length > 0 && <Fuentes fuentes={mensaje.fuentes} />}
       </div>
@@ -101,7 +135,7 @@ function Pensando() {
     <li className="mensaje mensaje-lucas" aria-busy="true">
       <MarcaLucas tamano={40} pose="pensando" />
       <div className="mensaje-cuerpo pensando">
-        <span>Lucas está pensando</span>
+        <span className="solo-lector">Lucas está escribiendo</span>
         <span className="puntos" aria-hidden="true">
           <span />
           <span />
@@ -156,13 +190,10 @@ export default function Chat({ cliente, persona }) {
     setFaqAbierto(false)
     setPensando(true)
     try {
-      const respuesta = await preguntarALucas(limpio, {
-        cliente,
-        persona,
-        activo: AGENTE,
-        previas,
-        conversacion: conversacion.current,
-      })
+      const [respuesta] = await Promise.all([
+        preguntarALucas(limpio, { cliente, persona, activo: AGENTE, previas, conversacion: conversacion.current }),
+        new Promise((listo) => setTimeout(listo, ESCRIBIENDO_MINIMO_MS)),
+      ])
       if (!montado.current) return
       if (respuesta.conversacion) conversacion.current = respuesta.conversacion
       agregar({ autor: 'lucas', ...respuesta })
@@ -204,7 +235,7 @@ export default function Chat({ cliente, persona }) {
         ))}
         {pensando && <Pensando />}
       </ol>
-      <div ref={final} />
+      <div ref={final} className="chat-final" />
 
       <div className="chat-pie">
         {faqAbierto && (

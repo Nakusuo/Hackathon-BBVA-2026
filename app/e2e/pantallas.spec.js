@@ -387,7 +387,7 @@ test('con el agente, el chat muestra «pensando», las cifras verificadas con �
   })
   await page.goto('/lucas/chat')
   await page.getByRole('button', { name: '¿Puedo gastar S/ 150 en un regalo?' }).click()
-  await expect(page.getByText('Lucas está pensando')).toBeVisible()
+  await expect(page.getByText('Lucas está escribiendo')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Enviar' })).toBeDisabled()
   soltar()
 
@@ -396,7 +396,7 @@ test('con el agente, el chat muestra «pensando», las cifras verificadas con �
   await expect(cifras).toContainText('−S/ 310')
   await expect(cifras).toContainText('verificada')
   await expect(ultima.getByRole('link', { name: 'Guía de presupuesto personal' })).toHaveAttribute('href', 'https://ejemplo.pe/guia')
-  await expect(page.getByText('Lucas está pensando')).toHaveCount(0)
+  await expect(page.getByText('Lucas está escribiendo')).toHaveCount(0)
 
   const anchoExtra = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
   expect(anchoExtra).toBeLessThanOrEqual(0)
