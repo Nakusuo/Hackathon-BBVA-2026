@@ -12,7 +12,7 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def sin_modelo(request, monkeypatch):
-    """Por defecto la ruta usa el respaldo; las pruebas marcadas con `modelo_real` usan lo que haya en la máquina."""
+    """Por defecto no hay modelo; las pruebas marcadas con `modelo_real` usan lo que haya en la máquina."""
     if "modelo_real" not in request.keywords:
         monkeypatch.setattr("src.api.routers.forecast._pronostico_real", lambda cid, dias: None)
 
@@ -48,17 +48,11 @@ def test_forecast_data_structure():
 
 
 def test_forecast_dates():
-    response = client.get("/api/v1/customers/demo-001/forecast")
+    data = client.get("/api/v1/customers/demo-001/forecast").json()
+    desde = date.fromisoformat(data["data_as_of"])
 
-    assert response.status_code == 200
-
-    forecast = response.json()["forecast"]
-    today = date.today()
-
-    for index, point in enumerate(forecast, start=1):
-        expected_date = today + timedelta(days=index)
-
-        assert point["date"] == expected_date.isoformat()
+    for index, point in enumerate(data["forecast"], start=1):
+        assert point["date"] == (desde + timedelta(days=index)).isoformat()
 
 
 def test_forecast_not_found():
@@ -68,12 +62,12 @@ def test_forecast_not_found():
     assert response.json()["detail"] == ("Cliente no encontrado")
 
 
-def test_forecast_respaldo_se_declara_muestra():
+def test_forecast_de_la_demo_se_declara_muestra():
     data = client.get("/api/v1/customers/demo-001/forecast").json()
 
     assert data["sample_only"] is True
     assert data["synthetic_data"] is True
-    assert data["model"] is None
+    assert data["model"] == "motor-de-reglas-del-front"
 
 
 @pytest.mark.parametrize("days", [1, 7, 30])
@@ -125,14 +119,23 @@ def test_forecast_usa_el_pronostico_del_modelo(monkeypatch):
         return real
 
     monkeypatch.setattr("src.api.routers.forecast._pronostico_real", falso)
-    data = client.get("/api/v1/customers/demo-001/forecast?days=2").json()
+    data = client.get("/api/v1/customers/alias-de-prueba/forecast?days=2").json()
 
-    assert pedidos == [("demo-001", 2)]
-    assert data["customer_id"] == "demo-001"
+    assert pedidos == [("alias-de-prueba", 2)]
+    assert data["customer_id"] == "alias-de-prueba"
     assert data["first_risk_date"] == "2026-11-17"
     assert data["model"].startswith("lightgbm")
     assert data["sample_only"] is False
     assert data["forecast"][0]["predicted_balance"] == 900.0
+
+
+def test_forecast_de_la_demo_no_consulta_el_modelo(monkeypatch):
+    def prohibido(cid, dias):
+        raise AssertionError("demo-001 sale del motor del front")
+
+    monkeypatch.setattr("src.api.routers.forecast._pronostico_real", prohibido)
+
+    assert client.get("/api/v1/customers/demo-001/forecast").status_code == 200
 
 
 def test_forecast_cliente_desconocido_del_agente(monkeypatch):
@@ -153,7 +156,7 @@ def test_forecast_cliente_desconocido_del_agente(monkeypatch):
     reason="faltan los datos generados o el modelo de serie diaria",
 )
 def test_forecast_con_modelo_real():
-    data = client.get("/api/v1/customers/demo-001/forecast?days=10").json()
+    data = client.get("/api/v1/customers/C00016/forecast?days=10").json()
 
     assert data["model"].startswith("lightgbm")
     assert data["sample_only"] is False
