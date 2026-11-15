@@ -70,16 +70,21 @@ export function cifrasDeCampana(c, precio) {
   const ahorro = ahorroCon(c, precio)
   if (!ahorro) return [{ etiqueta: `Descuento con ${c.aliado}`, valor: c.fijo ? enSoles(c.fijo) : `${c.porcentaje} %` }]
   return [
-    { etiqueta: `Ahorro con ${c.aliado}`, valor: enSoles(ahorro) },
+    { etiqueta: `Descuento con ${c.aliado}`, valor: enSoles(ahorro) },
     { etiqueta: 'Pagarías', valor: enSoles(precio - ahorro) },
   ]
 }
 
-// Una línea para sumar a otra respuesta: «Ojo: …».
-export function avisoDeCampana(c, precio) {
+// Se dice desde la primera oferta, no solo en el detalle: es un ejemplo y decide la persona.
+const DE_EJEMPLO = 'Campaña de ejemplo, tú decides.'
+
+// Una línea para sumar a otra respuesta: «Ojo: …». Un descuento es pagar menos, no ahorrar.
+// `enElPlan`: lo que cambia la meta con el descuento, para que la pregunta quede al final.
+export function avisoDeCampana(c, precio, enElPlan = '') {
   const ahorro = ahorroCon(c, precio)
-  const cuanto = ahorro ? ` Te ahorras ${enSoles(ahorro)}.` : ''
-  return `Ojo: tu banco tiene ${beneficio(c)} en ${c.rubro} con ${c.aliado}.${cuanto} ¿Quieres más info?`
+  const cuanto = ahorro ? `: pagarías ${enSoles(ahorro)} menos` : ''
+  const plan = enElPlan ? ` ${enElPlan}` : ''
+  return `Ojo: tu banco tiene ${beneficio(c)} en ${c.rubro} con ${c.aliado}${cuanto}.${plan} ${DE_EJEMPLO} ¿Quieres más info?`
 }
 
 export function respuestaCampana(c, { precio = 0, marca = null } = {}) {
@@ -95,8 +100,8 @@ export function respuestaCampana(c, { precio = 0, marca = null } = {}) {
     ? `Para esa marca no hay campaña. Con ${c.aliado} tu banco tiene ${beneficio(c)} en ${c.rubro}, ${c.condicion}.`
     : `Sí: con ${c.aliado} tu banco tiene ${beneficio(c)} en ${c.rubro}, ${c.condicion}.`
   const cierre = ahorro
-    ? ` Pagarías ${enSoles(precio - ahorro)} y te ahorras ${enSoles(ahorro)}. ¿Quieres más info?`
-    : ' ¿Cuánto cuesta? Te digo cuánto ahorras.'
+    ? ` Pagarías ${enSoles(precio - ahorro)}, ${enSoles(ahorro)} menos. ${DE_EJEMPLO} ¿Quieres más info?`
+    : ` ¿Cuánto cuesta? Te digo cuánto pagarías. ${DE_EJEMPLO}`
   return { texto: `${inicio}${cierre}`, cifras: cifrasDeCampana(c, precio) }
 }
 
