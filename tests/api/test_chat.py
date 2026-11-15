@@ -89,3 +89,9 @@ def test_la_conversacion_recuerda_la_ultima_pregunta_con_tema_y_no_mezcla_conver
     client.post(BASE_URL, json=mensaje(message="¿y en 6 meses?", conversation_id="conv-a"))
     client.post(BASE_URL, json=mensaje(message="¿y en 6 meses?", conversation_id="conv-b"))
     assert [m for _, m in client.vistos] == ["quiero ahorrar para un carro de 12 mil", "¿y en 6 meses? quiero ahorrar para un carro de 12 mil", "¿y en 6 meses?"]
+
+
+def test_la_propuesta_de_meta_viaja_con_los_nombres_del_contrato(client):
+    assert client.post(BASE_URL, json=mensaje()).json()["goal_proposal"] is None
+    client.agente.grafo = {"intencion": "meta", "propuesta_meta": {"nombre": "Viaje a Cusco", "objetivo": 2800.0, "fecha": "2027-05-14"}}
+    assert client.post(BASE_URL, json=mensaje()).json()["goal_proposal"] == {"name": "Viaje a Cusco", "target": 2800.0, "date": "2027-05-14"}

@@ -343,3 +343,14 @@ def test_el_ahorro_programado_no_se_cuenta_como_gasto(agente):
     g = repo.gastos_del_mes(cid)
     assert all(x["rubro"] not in ("ahorro_programado", "traspaso_ahorro") for x in g["por_rubro"])
     assert g["mismo_tramo_mes_anterior"] >= 0 and g["apartado"] >= 0
+
+
+def test_un_plan_con_precio_propone_guardar_la_meta_con_lo_que_falta_juntar_y_su_fecha(agente, reloj_de_prueba):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    carro = responder(apps["agente_unico"], cid, "quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo")
+    assert carro["propuesta_meta"] == {"nombre": "Carro", "objetivo": 10000.0, "fecha": "2026-12-31"} and "¿La guardo en tus metas?" in carro["respuesta"]
+    cusco = responder(apps["agente_unico"], cid, "quiero ahorrar para un viaje a Cusco de 3000 soles en 6 meses")
+    assert cusco["propuesta_meta"] == {"nombre": "Viaje a Cusco", "objetivo": 2800.0, "fecha": "2027-05-14"} and not cusco["cifras_sin_respaldo"]
+    sin_precio = responder(apps["agente_unico"], cid, "propon un plan de ahorro para poder irme de viaje a Brasil")
+    assert sin_precio["propuesta_meta"] is None and "¿La guardo" not in sin_precio["respuesta"]

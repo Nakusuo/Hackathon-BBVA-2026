@@ -341,6 +341,29 @@ def _a_ahorro(est, repo, **_):
 
 
 RUBROS_A_LA_VISTA = 4
+LARGO_NOMBRE_META = 40   # el mismo tope que la pantalla Metas
+NO_SON_NOMBRE = {"meta", "plan", "mes", "ano", "año", "viaje", "monto", "precio"}
+
+
+def nombre_de_meta(pregunta: str) -> str:
+    """Nombre corto para guardar la meta: «Viaje a Brasil», «Carro», «Laptop». Sale de la frase; si no se reconoce, «Mi meta»."""
+    viaje = re.search(r"viaj\w*\s+(?:a|al|por)\s+([A-Za-zÁÉÍÓÚÑáéíóúñ]+)", pregunta)
+    if viaje:
+        lugar = viaje.group(1)
+        return f"Viaje a {lugar[0].upper()}{lugar[1:]}"[:LARGO_NOMBRE_META]
+    cosa = re.search(r"(?:comprar(?:me|lo)?|pagar(?:me)?|para)\s+(?:un|una|el|la|mi|mis)\s+([a-záéíóúñ]+)", pregunta, flags=re.I)
+    if cosa and cosa.group(1).lower() not in NO_SON_NOMBRE:
+        return cosa.group(1).capitalize()[:LARGO_NOMBRE_META]
+    return "Viaje" if re.search(r"viaj", pregunta, flags=re.I) else "Mi meta"
+
+
+def _sumar_meses(d, meses: int):
+    import calendar
+    from datetime import date
+
+    anio, mes = divmod(d.month - 1 + meses, 12)
+    anio += d.year
+    return date(anio, mes + 1, min(d.day, calendar.monthrange(anio, mes + 1)[1]))
 
 
 def _a_gastos(est, repo, **_):
@@ -383,6 +406,11 @@ def _a_meta(est, repo, **_):
         meses, cuando = plazo_de(pregunta, hoy) or (None, None)
         d["numeros"] = {"precio": round(monto, 0), "descuento": rebaja, "a_juntar": a_juntar, "meses_pedidos": meses, "cuando": cuando, "por_mes_pedido": float(-(-a_juntar // meses)) if meses else None,
                         "meses_con_el_plan": int(-(-a_juntar // capacidad)) if capacidad > 0 else None}
+        # Lo que la app guarda si la persona acepta: el monto a juntar y la fecha. El aporte de cada cobro lo recalcula la app con su propio pronostico.
+        plazo_meses = meses or d["numeros"]["meses_con_el_plan"]
+        if plazo_meses:
+            fecha = date(hoy.year, 12, 31) if cuando == "a fin de año" else _sumar_meses(hoy, plazo_meses)
+            d["propuesta"] = {"nombre": nombre_de_meta(pregunta), "objetivo": a_juntar, "fecha": fecha.isoformat()}
     else:
         d["numeros"] = {"precio": None, "juntarias_en_6_meses": capacidad * 6, "juntarias_en_12_meses": capacidad * 12}
     return {"meta": d}
@@ -610,7 +638,8 @@ def plantilla(est) -> str:
     if intent == "gastos":
         return "\n".join([L[0], *_lineas_gastos(d["gastos"]), "Tu decides."])
     if intent == "meta":
-        return "\n".join([L[0], *_lineas_meta(d["meta"]), "Tu decides."])
+        guardar = ["", "¿La guardo en tus metas? Así te recuerdo cuánto apartar cada vez que cobres."] if d["meta"].get("propuesta") else []
+        return "\n".join([L[0], *_lineas_meta(d["meta"]), *guardar, "Tu decides."])
     if intent == "ahorro":
         return "\n".join([L[0], *_lineas_ahorro(d["ahorro"]), "Tu decides."])
     if intent == "ofertas":
@@ -888,7 +917,8 @@ def responder(app, customer_id: str, pregunta: str = "", evento: dict | None = N
     return {"respuesta": est["respuesta"], "intencion": est["intencion"], "proveedor": est["proveedor"], "citas": est["citas"], "cifras_verificadas": est["veredicto"].get("cifras_verificadas_final", 0),
             "cifras_sin_respaldo": est["veredicto"].get("cifras_sin_respaldo_final", []), "trazas": est["trazas"], "llamadas_llm": est["llamadas_llm"], "segundos": round(time.time() - est["t0"], 2),
             "recomendaciones": [{"id": r["id"], "accion": r["accion"], "impacto_soles": r["impacto_soles"], "confianza": r["confianza"]} for r in est.get("recos", [])], "rag_estado": est["rag_estado"],
-            "idioma": est.get("idioma", "es"), "respuesta_es": est.get("respuesta_es", est["respuesta"]), "traduccion": est.get("traduccion", {})}
+            "idioma": est.get("idioma", "es"), "respuesta_es": est.get("respuesta_es", est["respuesta"]), "traduccion": est.get("traduccion", {}),
+            "propuesta_meta": est["datos"].get("meta", {}).get("propuesta")}
 
 
 def exportar_diagramas(carpeta: str, repo, buscador=None) -> dict:

@@ -110,3 +110,11 @@ def test_comprar_con_precio_y_fecha_es_una_meta_y_sin_fecha_una_simulacion():
     from src.agente_analitico.grafo import detectar_intencion
     assert detectar_intencion("cuesta 12 mil para julio quiero comprar un carro") == "meta"
     assert detectar_intencion("cuesta 12 mil quiero comprar un carro") == "simular"
+
+
+@pytest.mark.parametrize("pregunta,nombre", [("propon un plan de ahorro para poder irme de viaje a Brasil", "Viaje a Brasil"), ("quiero ahorrar para un viaje a cusco de 3000", "Viaje a Cusco"),
+                                             ("quiero comprar un carro a fin de año", "Carro"), ("Quiero ahorrar para una laptop de S/ 3,500", "Laptop"),
+                                             ("¿Cuánto debo ahorrar para pagar un curso de 6000 soles?", "Curso"), ("¿cuánto debo ahorrar al mes para juntar 5000?", "Mi meta")])
+def test_el_nombre_de_la_meta_sale_de_la_frase(pregunta, nombre):
+    from src.agente_analitico.grafo import nombre_de_meta
+    assert nombre_de_meta(pregunta) == nombre

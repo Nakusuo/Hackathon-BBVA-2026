@@ -36,6 +36,10 @@ def para_el_chat(texto: str, intencion: str) -> str:
 CONVERSACIONES_RECORDADAS = 500
 
 
+def _propuesta(p: dict | None) -> dict | None:
+    return {"name": p["nombre"], "target": p["objetivo"], "date": p["fecha"]} if p else None
+
+
 class Agente:
     def __init__(self, repo, grafo, alias: dict[str, str]):
         self.repo, self.grafo, self.alias = repo, grafo, alias
@@ -75,6 +79,7 @@ class Agente:
             ],
             "tools_used": [t.split(":", 1)[1] for t in r["trazas"] if t.startswith("agente:")],
             "intent": r["intencion"],
+            "goal_proposal": _propuesta(r.get("propuesta_meta")),
         }
 
 

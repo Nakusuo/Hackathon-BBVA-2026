@@ -14,6 +14,14 @@ class Fuente(BaseModel):
     url: str | None = None
 
 
+class PropuestaMeta(BaseModel):
+    """Meta que el chat ofrece guardar. La app la crea solo si la persona acepta."""
+
+    name: str = Field(min_length=1, max_length=40)
+    target: float = Field(gt=0)
+    date: str
+
+
 class ChatResponse(BaseModel):
     conversation_id: str = Field(min_length=1)
     answer: str = Field(min_length=1)
@@ -22,3 +30,4 @@ class ChatResponse(BaseModel):
     sources: list[Fuente] = Field(default_factory=list)
     tools_used: list[str] = Field(default_factory=list)
     intent: str | None = None
+    goal_proposal: PropuestaMeta | None = None
