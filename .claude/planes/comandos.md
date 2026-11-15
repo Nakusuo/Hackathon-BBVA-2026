@@ -1,7 +1,7 @@
 # Comandos del equipo
 
 Copiar y pegar. Funcionan en Linux, macOS y en Windows con **Git Bash** o **WSL**.
-Requisitos: Git, Python 3.11, Docker, Make, GitHub CLI (`gh`) y Ollama.
+Requisitos: Git, Python 3.12 o más, Docker, Make, GitHub CLI (`gh`) y Ollama.
 
 ## 1. Solo la primera vez
 
