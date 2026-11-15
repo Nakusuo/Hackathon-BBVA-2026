@@ -149,5 +149,9 @@ Todo lo que subo lleva la firma «Nakusuo/Marcela».
 - [ ] El texto del agente llega sin tildes y las plantillas de pronóstico y calendario listan todo lo que saben del cliente: acortarlas antes de la demo
 - [x] Chat con el agente: respuestas cortas por bloques (una burbuja por bloque, cifras resaltadas, animación de escritura), meta de ahorro como plan (punto de partida, qué hacer, convenio del banco, números), compra sin precio y montos con «mil». Nakusuo/Marcela
 - [x] Campañas: el catálogo pasó a `data/catalogo_campanas.json` y lo leen el front y el agente; con el agente activo las preguntas de convenios van al agente. Nakusuo/Marcela
-- [ ] El agente no recuerda la conversación: un «sí» o «¿y en 6 meses?» llega sin contexto (el front sí lo manejaba con `previas`)
+- [x] El agente recuerda la última pregunta con tema de cada conversación: «¿y en 6 meses?» o «¿y si son 8000?» siguen el plan anterior. Nakusuo/Marcela
 - [ ] Decidir con el equipo si el agente busca en la web: hoy no lo hace (regla 5, offline; regla 3, sin marcas reales); los convenios salen del catálogo del banco
+- [x] Plan del chat → Metas: botón «Crear meta» (o «Actualizar meta» si cambió el plan), metas editables y aviso «Aparta S/ X para «meta»» en los días antes del cobro y el mismo día. Nakusuo/Marcela
+- [x] Tildes en las plantillas del agente, recomendaciones, ofertas y calendario; Playwright: 155 pasan, 1 saltada. Nakusuo/Marcela
+- [ ] Pantallas y chat siguen con clientes distintos: el chat calcula con el cliente de la base (C00016 / C00168) y Metas con la persona del front; en la demo se ve (S/ 108 al mes en el chat, S/ 430 en Metas)
+- [ ] Las metas viven en el navegador (localStorage): pasarlas a Postgres (`lucas.meta_ahorro`) para que el agente las vea y los avisos lleguen aunque la app esté cerrada

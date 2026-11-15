@@ -1,4 +1,4 @@
-import { CheckCircle, Lightbulb, PiggyBank, Target, Trash } from '@phosphor-icons/react'
+import { CheckCircle, Lightbulb, PencilSimple, PiggyBank, Target, Trash } from '@phosphor-icons/react'
 import { useCallback, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AvisoBreve from '../componentes/AvisoBreve.jsx'
@@ -63,7 +63,62 @@ function TextoPlan({ meta, plan, conTips, totalCambios, espera, hoy, diaCobro })
   )
 }
 
-function TarjetaMeta({ meta, plan, conTips, totalCambios, espera, hoy, diaCobro, alAportar, alQuitar }) {
+function EditarMeta({ meta, contexto, alGuardar, alCancelar }) {
+  const [borrador, setBorrador] = useState({
+    nombre: meta.nombre,
+    objetivo: String(meta.objetivo),
+    ahorrado: meta.ahorrado ? String(meta.ahorrado) : '',
+    fecha: meta.fecha,
+  })
+  const [intentado, setIntentado] = useState(false)
+  const revision = validarMeta(borrador, contexto)
+  const errores = revision.errores ?? {}
+  const cambiar = (campo, valor) => setBorrador((previo) => ({ ...previo, [campo]: valor }))
+
+  function guardar(evento) {
+    evento.preventDefault()
+    if (revision.datos) alGuardar(revision.datos)
+    else setIntentado(true)
+  }
+
+  return (
+    <form className="formulario-plan editar-meta" noValidate onSubmit={guardar} aria-label={`Editar ${meta.nombre}`}>
+      <Campo etiqueta="Nombre" error={errores.nombre} mostrarError={intentado}>
+        {(props) => (
+          <input {...props} maxLength={40} autoComplete="off" value={borrador.nombre} onChange={(e) => cambiar('nombre', e.target.value)} />
+        )}
+      </Campo>
+      <div className="campos-fila campos-montos">
+        <Campo etiqueta="Meta en S/" error={errores.objetivo} mostrarError={intentado}>
+          {(props) => (
+            <input {...props} inputMode="decimal" autoComplete="off" value={borrador.objetivo} onChange={(e) => cambiar('objetivo', e.target.value)} />
+          )}
+        </Campo>
+        <Campo etiqueta="Ya ahorré" error={errores.ahorrado} mostrarError={intentado}>
+          {(props) => (
+            <input {...props} inputMode="decimal" autoComplete="off" placeholder="0" value={borrador.ahorrado} onChange={(e) => cambiar('ahorrado', e.target.value)} />
+          )}
+        </Campo>
+      </div>
+      <Campo etiqueta="¿Para cuándo?" error={errores.fecha} mostrarError={intentado}>
+        {(props) => (
+          <input {...props} type="date" min={contexto.primerApartado} value={borrador.fecha} onChange={(e) => cambiar('fecha', e.target.value)} />
+        )}
+      </Campo>
+      <div className="tip-acciones">
+        <button type="submit" className="boton boton-chico">
+          Guardar cambios
+        </button>
+        <button type="button" className="boton-texto" onClick={alCancelar}>
+          Cancelar
+        </button>
+      </div>
+    </form>
+  )
+}
+
+function TarjetaMeta({ meta, plan, conTips, totalCambios, espera, hoy, diaCobro, contexto, alAportar, alQuitar, alEditar }) {
+  const [editando, setEditando] = useState(false)
   const estado = estadoDe(meta)
   const anioTermina = meta.fecha > finDeAnio(hoy)
   return (
@@ -85,7 +140,17 @@ function TarjetaMeta({ meta, plan, conTips, totalCambios, espera, hoy, diaCobro,
         <span style={{ width: `${plan.avance}%` }} />
       </span>
 
-      {estado === 'cumplida' ? (
+      {editando ? (
+        <EditarMeta
+          meta={meta}
+          contexto={contexto}
+          alCancelar={() => setEditando(false)}
+          alGuardar={(datos) => {
+            alEditar(meta, datos)
+            setEditando(false)
+          }}
+        />
+      ) : estado === 'cumplida' ? (
         <p>Cumpliste tu meta. Lo que apartes desde ahora puede ir a otra.</p>
       ) : (
         <>
@@ -111,13 +176,17 @@ function TarjetaMeta({ meta, plan, conTips, totalCambios, espera, hoy, diaCobro,
         </>
       )}
 
-      <div className="tip-acciones">
+      <div className="tip-acciones" hidden={editando}>
         {estado !== 'cumplida' && plan.aporte > 0 && (
           <button type="button" className="boton-lo-hago" onClick={() => alAportar(meta, plan.aporte)}>
             <PiggyBank size={20} aria-hidden="true" />
             Ya aparté {enSoles(plan.aporte)}
           </button>
         )}
+        <button type="button" className="boton-texto" onClick={() => setEditando(true)}>
+          <PencilSimple size={20} aria-hidden="true" />
+          Editar
+        </button>
         <button type="button" className="boton-texto" onClick={() => alQuitar(meta)}>
           <Trash size={20} aria-hidden="true" />
           Quitar
@@ -127,7 +196,7 @@ function TarjetaMeta({ meta, plan, conTips, totalCambios, espera, hoy, diaCobro,
   )
 }
 
-export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar, alRestaurar }) {
+export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar, alRestaurar, alEditar }) {
   const { apartado, apartadoConTodos, proximoIngreso, finPronostico, hoy } = cliente
   const [borrador, setBorrador] = useState({ ...VACIA, fecha: finDeAnio(hoy) })
   const [intentado, setIntentado] = useState(false)
@@ -171,6 +240,11 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar, al
   function aportarA(meta, monto) {
     alAportar(meta.id, monto)
     setAviso({ texto: `Registré ${enSoles(monto)} en ${meta.nombre}.` })
+  }
+
+  function editarMeta(meta, datos) {
+    alEditar(meta.id, datos)
+    setAviso({ texto: `Guardé los cambios de ${datos.nombre}.` })
   }
 
   function quitar(meta) {
@@ -234,8 +308,10 @@ export default function Metas({ cliente, metas, alCrear, alAportar, alQuitar, al
               espera={puedes > 0 && !reparto.porMeta[m.id]}
               diaCobro={proximoIngreso.fecha}
               hoy={hoy}
+              contexto={contexto}
               alAportar={aportarA}
               alQuitar={quitar}
+              alEditar={editarMeta}
             />
           ))}
         </ul>

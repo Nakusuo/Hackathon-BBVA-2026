@@ -1,4 +1,4 @@
-import { Bell, CalendarBlank, Money, ThumbsDown, ThumbsUp, Warning } from '@phosphor-icons/react'
+import { Bell, CalendarBlank, Money, PiggyBank, ThumbsDown, ThumbsUp, Warning } from '@phosphor-icons/react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import LucasPose from '../componentes/LucasPose.jsx'
@@ -30,7 +30,7 @@ function Etiqueta({ aviso }) {
       </span>
     )
   }
-  const Icono = aviso.tipo === 'ingreso' ? Money : aviso.tipo === 'pago' ? CalendarBlank : Bell
+  const Icono = { ingreso: Money, pago: CalendarBlank, meta: PiggyBank }[aviso.tipo] ?? Bell
   return (
     <span className="aviso-marca">
       <Icono size={20} aria-hidden="true" />
@@ -70,6 +70,22 @@ function textos(aviso) {
       datos: 'Tus pagos programados y cuántas veces usaste el servicio.',
       supuesto: 'Que la pausas antes del cobro y la retomas cuando quieras.',
       seguridad: 'Alta: el monto y la fecha son los de tu pago programado.',
+    }
+  }
+  if (aviso.tipo === 'meta') {
+    const conAnio = (f) => (f.slice(0, 4) === aviso.fecha.slice(0, 4) ? fechaCorta(f) : `${fechaCorta(f)} de ${f.slice(0, 4)}`)
+    return {
+      titulo: `Aparta ${enSoles(aviso.impacto)} para «${aviso.meta}»`,
+      detalle: `Cobras ${cuando(aviso)}. ${
+        aviso.alcanza
+          ? `Si apartas ese día, llegas a tu meta para el ${conAnio(aviso.metaFecha)}.`
+          : `A este ritmo llegas el ${conAnio(aviso.llegaEl)}.`
+      }`,
+      impacto: `+${enSoles(aviso.impacto)} para tu meta`,
+      porque: 'Apartar el día del cobro es más fácil que al final del mes.',
+      datos: 'Tu meta, tu próximo cobro y lo que puedes apartar sin quedar en rojo.',
+      supuesto: 'Que el cobro llegue en la fecha de siempre y tus pagos se repitan.',
+      seguridad: 'Media: el monto de tus cobros cambia de un mes a otro.',
     }
   }
   return {
@@ -160,7 +176,7 @@ function Demo({ dias, diaDemo, setDiaDemo, conGasto, setConGasto }) {
   )
 }
 
-export default function Avisos({ cliente }) {
+export default function Avisos({ cliente, metas = [] }) {
   const [diaDemo, setDiaDia] = useState(cliente.hoy)
   const [conGasto, setConGastoDemo] = useState(false)
   const [registro, setRegistro] = useState(leerRegistro)
@@ -189,7 +205,7 @@ export default function Avisos({ cliente }) {
   const setDiaDemo = (dia) => entrarADemo(() => setDiaDia(dia))
   const setConGasto = (valor) => entrarADemo(() => setConGastoDemo(valor))
   const actual = enDemo ? registroDemo : registro
-  const { avisos: lista, riesgoLejano } = candidatos(vista, diaDemo)
+  const { avisos: lista, riesgoLejano } = candidatos(vista, diaDemo, metas)
   const bandeja = armarBandeja(lista, actual, diaDemo)
   const idsSemana = bandeja.registro[bandeja.semana]
 
@@ -221,6 +237,10 @@ export default function Avisos({ cliente }) {
         { fecha: sumarDias(riesgoBase.desde, -2), nombre: fechaCorta(sumarDias(riesgoBase.desde, -2)) },
       ]
     : [{ fecha: cliente.hoy, nombre: 'Hoy' }]
+  // Con metas guardadas, la demo deja ver el día del cobro: ahí llega el recordatorio de cuánto apartar.
+  if (metas.length && !diasDemo.some((d) => d.fecha === cliente.proximoIngreso.fecha)) {
+    diasDemo.push({ fecha: cliente.proximoIngreso.fecha, nombre: 'Día de cobro' })
+  }
   return (
     <>
       <section className="seccion" aria-labelledby="avisos-titulo">

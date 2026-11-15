@@ -29,6 +29,12 @@ function enlaceSeguro(url) {
   return typeof url === 'string' && /^https?:\/\//i.test(url) ? url : null
 }
 
+// Solo se ofrece guardar una meta con forma completa; si viene rota se ignora y el chat sigue igual.
+function leerPropuesta(p) {
+  const ok = p && typeof p.name === 'string' && p.name.trim() && Number.isFinite(p.target) && p.target > 0 && /^\d{4}-\d{2}-\d{2}$/.test(p.date ?? '')
+  return ok ? { nombre: p.name.trim().slice(0, 40), objetivo: p.target, fecha: p.date } : null
+}
+
 export function esRespuestaValida(cuerpo) {
   return Boolean(cuerpo) && typeof cuerpo.answer === 'string' && cuerpo.answer.trim() !== ''
 }
@@ -53,6 +59,7 @@ export function desdeAgente(cuerpo) {
         enlace: enlaceSeguro(f.url ?? f.enlace),
       })),
     aviso: null,
+    propuesta: leerPropuesta(cuerpo.goal_proposal),
   }
 }
 

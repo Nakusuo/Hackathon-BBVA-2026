@@ -321,3 +321,30 @@
   opacity: 0.55;
   cursor: wait;
 }
+
+/* Tarjeta para guardar como meta el plan que se acordó en el chat. */
+.guardar-meta {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--superficie-suave);
+}
+
+.guardar-meta-titulo,
+.guardar-meta-hecho {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.guardar-meta-titulo {
+  color: var(--azul-texto);
+}
+
+.guardar-meta-hecho svg {
+  flex: none;
+  color: var(--verde, var(--azul-texto));
+}

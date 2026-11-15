@@ -104,7 +104,15 @@ export default function EspacioLucas() {
         {seccion === 'que-viene' && (
           <QueViene cliente={vista} alAgregar={contexto.agregarPlanificado} alQuitar={contexto.quitarPlanificado} />
         )}
-        {seccion === 'chat' && <Chat cliente={vista} persona={persona} />}
+        {seccion === 'chat' && (
+          <Chat
+            cliente={vista}
+            persona={persona}
+            metas={contexto.metas}
+            alCrearMeta={contexto.crearMeta}
+            alEditarMeta={contexto.editarMeta}
+          />
+        )}
         {DETALLES[seccion] && (
           <Link to={`/lucas/${DETALLES[seccion]}`} className="volver">
             <CaretLeft size={20} aria-hidden="true" />
@@ -114,7 +122,7 @@ export default function EspacioLucas() {
         {seccion === 'aprendido' && <Aprendido cliente={vista} />}
         {seccion === 'salud' && <Salud cliente={vista} />}
         {seccion === 'gastos-detalle' && <GastosDetalle cliente={vista} alternarTip={alternarTip} />}
-        {seccion === 'avisos' && <Avisos cliente={vista} />}
+        {seccion === 'avisos' && <Avisos cliente={vista} metas={contexto.metas} />}
         {seccion === 'metas' && (
           <Metas
             cliente={vista}
@@ -122,6 +130,7 @@ export default function EspacioLucas() {
             alCrear={contexto.crearMeta}
             alAportar={contexto.aportarMeta}
             alQuitar={contexto.quitarMeta}
+            alEditar={contexto.editarMeta}
             alRestaurar={contexto.restaurarMeta}
           />
         )}

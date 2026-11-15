@@ -1,10 +1,12 @@
-import { BookOpen, Calculator, CaretRight, CheckCircle, ListBullets, PaperPlaneRight, WarningCircle } from '@phosphor-icons/react'
+import { BookOpen, Calculator, CaretRight, CheckCircle, ListBullets, PaperPlaneRight, Target, WarningCircle } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import MarcaLucas from '../componentes/MarcaLucas.jsx'
+import { enSoles, fechaCorta } from '../formato.js'
 import { SUAVE } from '../movimiento.js'
 import { LARGO_MAXIMO, preguntarALucas } from './clienteChat.js'
+import { metaDesdePropuesta } from './metas.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 import { burbujasDe } from './textoChat.js'
 
@@ -118,7 +120,53 @@ function Fuentes({ fuentes }) {
   )
 }
 
-function Mensaje({ mensaje }) {
+// El plan que se acordó en el chat pasa a Metas solo si la persona lo pide. Desde ahí se edita y Lucas avisa al cobrar.
+function GuardarMeta({ propuesta, cliente, metas, alCrearMeta, alEditarMeta }) {
+  const revision = metaDesdePropuesta(propuesta, { hoy: cliente.hoy, primerApartado: cliente.proximoIngreso.fecha })
+  if (!revision.datos) return null
+  const { nombre, objetivo, fecha } = revision.datos
+  const existente = metas.find((m) => m.nombre.toLowerCase() === nombre.toLowerCase())
+  // Un plan nuevo para la misma meta (otro plazo u otro precio) la actualiza; lo ya ahorrado se conserva.
+  const cambio = existente && (existente.objetivo !== objetivo || existente.fecha !== fecha)
+  const conAnio = (f) => `${fechaCorta(f)}${f.slice(0, 4) === cliente.hoy.slice(0, 4) ? '' : ` de ${f.slice(0, 4)}`}`
+  return (
+    <div className="guardar-meta">
+      <p className="guardar-meta-titulo">
+        <Target size={18} aria-hidden="true" />
+        {nombre}
+      </p>
+      <p>
+        <b>{enSoles(objetivo)}</b> para el {conAnio(fecha)}
+      </p>
+      {cambio ? (
+        <>
+          <p className="suave">
+            Hoy la tienes en {enSoles(existente.objetivo)} para el {conAnio(existente.fecha)}.
+          </p>
+          <button type="button" className="boton boton-chico" onClick={() => alEditarMeta(existente.id, { objetivo, fecha })}>
+            Actualizar meta
+          </button>
+        </>
+      ) : existente ? (
+        <p className="guardar-meta-hecho" role="status">
+          <CheckCircle size={18} weight="fill" aria-hidden="true" />
+          <span>
+            Está en tus metas.{' '}
+            <Link className="enlace" to="/lucas/metas">
+              Ver o editar
+            </Link>
+          </span>
+        </p>
+      ) : (
+        <button type="button" className="boton boton-chico" onClick={() => alCrearMeta(revision.datos)}>
+          Crear meta
+        </button>
+      )}
+    </div>
+  )
+}
+
+function Mensaje({ mensaje, cliente, metas, alCrearMeta, alEditarMeta }) {
   const reducido = useReducedMotion()
   const entra = entradaDe(reducido)
   if (mensaje.autor === 'tu') {
@@ -149,6 +197,15 @@ function Mensaje({ mensaje }) {
             <Bloques bloques={bloques} desde={inicioDe[i]} />
             {i === burbujas.length - 1 && mensaje.cifras?.length > 0 && <Cifras mensaje={mensaje} />}
             {i === burbujas.length - 1 && mensaje.fuentes?.length > 0 && <Fuentes fuentes={mensaje.fuentes} />}
+            {i === burbujas.length - 1 && mensaje.propuesta && alCrearMeta && (
+              <GuardarMeta
+                propuesta={mensaje.propuesta}
+                cliente={cliente}
+                metas={metas}
+                alCrearMeta={alCrearMeta}
+                alEditarMeta={alEditarMeta}
+              />
+            )}
           </motion.div>
         ))}
       </div>
@@ -172,7 +229,7 @@ function Pensando() {
   )
 }
 
-export default function Chat({ cliente, persona }) {
+export default function Chat({ cliente, persona, metas = [], alCrearMeta, alEditarMeta }) {
   const [parametros, setParametros] = useSearchParams()
   const [mensajes, setMensajes] = useState([])
   const [borrador, setBorrador] = useState('')
@@ -257,7 +314,14 @@ export default function Chat({ cliente, persona }) {
 
       <ol className="lista-limpia mensajes" aria-live="polite">
         {mensajes.map((m) => (
-          <Mensaje key={m.id} mensaje={m} />
+          <Mensaje
+            key={m.id}
+            mensaje={m}
+            cliente={cliente}
+            metas={metas}
+            alCrearMeta={alCrearMeta}
+            alEditarMeta={alEditarMeta}
+          />
         ))}
         {pensando && <Pensando />}
       </ol>
