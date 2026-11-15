@@ -1,0 +1,179 @@
+{
+ "consultas": [
+  {
+   "n": 1,
+   "consulta": "¿Llego a fin de mes con mi plata?",
+   "intencion": "pronostico",
+   "camino": "herramientas_y_plantilla",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 2,
+   "consulta": "¿Cuándo me cae la CTS y puedo retirarla?",
+   "intencion": "calendario",
+   "camino": "herramientas_y_plantilla",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 3,
+   "consulta": "¿Cuánto está el dólar hoy?",
+   "intencion": "tipo_de_cambio",
+   "camino": "herramientas_y_plantilla",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 4,
+   "consulta": "Pásale 200 soles a mi hermano",
+   "intencion": "fuera_de_alcance",
+   "camino": "plantilla_fija",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 5,
+   "consulta": "¿Qué es la TCEA?",
+   "intencion": "educacion",
+   "camino": "rag_y_ia",
+   "usa_llm": true,
+   "tokens_de_entrada": 2756,
+   "tokens_de_salida": 148
+  },
+  {
+   "n": 6,
+   "consulta": "que es la tcea",
+   "intencion": "educacion",
+   "camino": "preguntas_frecuentes",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  },
+  {
+   "n": 7,
+   "consulta": "Cuéntame un chiste",
+   "intencion": "fuera_de_tema",
+   "camino": "plantilla_fija",
+   "usa_llm": false,
+   "tokens_de_entrada": 0,
+   "tokens_de_salida": 0
+  }
+ ],
+ "rag": {
+  "pregunta": "¿Qué es la TCEA?",
+  "umbral_de_relevancia": 0.7,
+  "pasa_el_filtro": true,
+  "fragmentos": [
+   {
+    "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+    "pagina": 43,
+    "similitud": 0.8373,
+    "caracteres": 137,
+    "tokens_estimados": 34
+   },
+   {
+    "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+    "pagina": 39,
+    "similitud": 0.7687,
+    "caracteres": 794,
+    "tokens_estimados": 198
+   },
+   {
+    "titulo": "Reglamento de Gestion de Conducta de Mercado (Res. SBS 3274-2017)",
+    "pagina": 33,
+    "similitud": 0.7482,
+    "caracteres": 746,
+    "tokens_estimados": 186
+   }
+  ]
+ },
+ "tokens_por_llamada_medidos_en_la_qa": {
+  "entrada": 2756,
+  "salida": 148,
+  "llamadas_medidas": 51
+ },
+ "todo_al_llm": 20325,
+ "con_ruteo": 2904,
+ "ahorro": 0.8571428571428572,
+ "tokens_del_corpus_completo": 663351,
+ "tokens_de_los_3_fragmentos": 418,
+ "nota": "Tokens estimados con 4 caracteres por token; los tokens por llamada son el promedio medido en la QA con Gemini real (incluye llamadas cortas de traduccion). Politica LLM_USO=ahorro.",
+ "costos": {
+  "precio": {
+   "modelo": "gemini-3.5-flash-lite",
+   "usd_por_millon_de_entrada": 0.3,
+   "usd_por_millon_de_salida": 2.5,
+   "fuente": "https://aistudio.google.com/docs/pricing",
+   "consultado": "2026-11-14",
+   "nota": "El plan gratuito no cobra: esto es lo que costaria en produccion con el plan de pago. Sin descuentos por cache de contexto ni por lotes."
+  },
+  "tipo_de_cambio": {
+   "valor": 3.4059,
+   "fecha": "12.Nov.26",
+   "fuente": "BCRP, tipo de cambio interbancario venta (S/ por US$), serie en data/generado/cache_bcrp"
+  },
+  "escala_consultas": 100000,
+  "por_llamada": {
+   "tokens": {
+    "mensaje": 2337.7450980392155,
+    "lectura_de_fuentes": 418,
+    "respuesta": 147.8235294117647
+   },
+   "soles": {
+    "mensaje": 0.002388637808823529,
+    "lectura_de_fuentes": 0.00042709986,
+    "respuesta": 0.0012586803970588234,
+    "total": 0.004074418065882352
+   },
+   "pct_de_los_tokens": {
+    "mensaje": 0.8051282397590523,
+    "lectura_de_fuentes": 0.14396077848759473,
+    "respuesta": 0.05091098175335287
+   },
+   "pct_del_costo": {
+    "mensaje": 0.5862525077691672,
+    "lectura_de_fuentes": 0.10482475118996107,
+    "respuesta": 0.30892274104087175
+   }
+  },
+  "parrafo_de_ejemplo": {
+   "proporcion_que_llega_a_la_ia": 0.14285714285714285,
+   "sin_ruteo_soles": 407.44180658823524,
+   "con_ruteo_soles": 58.20597236974788,
+   "ahorro_soles": 349.23583421848735,
+   "ahorro_pct": 0.8571428571428572,
+   "consultas": 7,
+   "llamadas": 1
+  },
+  "mezcla_de_evaluacion": {
+   "proporcion_que_llega_a_la_ia": 0.17073170731707318,
+   "sin_ruteo_soles": 407.44180658823524,
+   "con_ruteo_soles": 69.56323527116213,
+   "ahorro_soles": 337.8785713170731,
+   "ahorro_pct": 0.8292682926829268,
+   "detalle": {
+    "preguntas": 41,
+    "van_a_la_ia": 7,
+    "plantilla_fija": 10,
+    "herramientas_y_plantilla": 24,
+    "proporcion_ia": 0.17073170731707318
+   }
+  },
+  "lectura_del_corpus": {
+   "tokens_corpus": 663351,
+   "tokens_con_rag": 418,
+   "reduccion_pct": 0.9993698660286937,
+   "soles_por_consulta_leyendo_todo": 0.6814394694758823,
+   "soles_por_consulta_con_rag": 0.004074418065882352,
+   "soles_por_escala_leyendo_todo": 68143.94694758824,
+   "soles_por_escala_con_rag": 407.44180658823524,
+   "ahorro_pct": 0.9940208657578697
+  },
+  "nota": "Estimacion: tokens medidos en la QA con Gemini real x precio publicado x tipo de cambio del BCRP. El mensaje es el promedio de las llamadas medidas (incluye las cortas); la lectura de fuentes se estima con 4 caracteres por token. Los soles de ahorro por ruteo dependen de la mezcla de consultas: el parrafo de ejemplo y las preguntas de evaluacion son dos casos, no trafico real."
+ }
+}

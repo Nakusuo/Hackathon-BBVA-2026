@@ -1,0 +1,258 @@
+# Arquitectura de Lucas (MVP)
+
+Responsable: Michael (arquitectura de sistema y seguridad). Describe lo que corre en `develop`. Lo que hace cada pantalla está en [docs/casos-uso.md](docs/casos-uso.md) y en las [historias](.claude/planes/historias.md).
+
+## 1. Intención
+
+Lucas responde una pregunta: «¿cuánto puedo gastar o ahorrar este mes sin quedarme en rojo antes de mi próximo ingreso, y qué cambio me conviene más?». La arquitectura del MVP existe para que:
+
+1. **Cada cifra de cliente salga de un solo camino de cálculo.** Banca, Resumen, Qué viene, avisos, metas y chat llaman al mismo motor (`frontend/src/motor/`). Si dieran números distintos, la demo se contradiría.
+2. **La demo funcione sin internet ni servidor.** El motor corre en el navegador; si la API no responde, Lucas lo dice y sigue con las mismas cifras.
+3. **Toda cifra de evidencia salga de una medición.** El panel Evidencia lee los `models/metricas*.json` que generan los scripts de `analitica/eval/`; ninguna cifra se escribe a mano.
+
+### Objetivos y no objetivos del MVP
+
+| Objetivos | No objetivos |
+|---|---|
+| Un front que se vea y se use como una banca real, con Lucas dentro | Autenticación real de usuarios (la pone el banco que integre a Lucas) |
+| Un motor de cálculo único en el front, con pruebas | Base de datos en línea: lo que la persona elige vive en su navegador |
+| Analítica e IA medidas contra su baseline, con sus cifras en el panel Evidencia | Mover dinero, ejecutar operaciones o recomendar productos concretos |
+
+## 2. Componentes
+
+```
+┌──────────────────────────── NAVEGADOR (frontend/, React + Vite) ────────────────────────────┐
+│  Banco Vértice: /ingresar → /consentimiento → /banca → /lucas/:seccion   ·  /evidencia  │
+│                                    │                                         │          │
+│                       frontend/src/motor/ (motor de cálculo)        models/metricas*.json    │
+│                       personas.js · motor.js · cliente.js      (importados en la build) │
+│                                    │                                                    │
+│                       localStorage: persona, permiso, tips, planificados, metas, avisos │
+│                                    │                                                    │
+│                       frontend/src/api/ (lee y valida; respaldo en data/sample/mocks/)       │
+└────────────────────────────────────┼───────────────────────────────────────────────────┘
+                                     │ HTTP /api/v1 (Vite lo pasa al puerto 8000)
+┌────────────────────────────────────┼─────────────── PYTHON ────────────────────────────┐
+│  backend/src/api/  FastAPI: 12 rutas con datos fijos de `demo-001`                              │
+│                                                                                         │
+│  Por separado, sin conexión a la API en el MVP:                                          │
+│  backend/src/agent/            agente del chat (LangGraph: router → tools → redacción → juez)    │
+│  backend/src/agente_analitico/ agente de la evaluación (memoria, vigilancia, traducción)         │
+│  backend/src/generador/ → data/ → backend/src/models/ → analitica/eval/ → models/*.pkl y models/metricas*.json     │
+│  backend/src/rag/ (índice FAISS en docs/rag/indice/)   ·   backend/src/bcrp/ (tipo de cambio con caché)  │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 2.1 Front (`frontend/`)
+
+React 19 con Vite, Recharts para los gráficos, Phosphor para los íconos y Manrope instalada como paquete, así no depende de internet.
+
+| Carpeta | Qué hace |
+|---|---|
+| `src/banca/` | Ingreso de Banco Vértice, consentimiento, inicio de la banca y Preferencias. Elegir la persona es el inicio de sesión de la demo |
+| `src/lucas/` | Las pantallas de Lucas: Resumen, Gastos, Qué viene (con el simulador), Chat, Avisos, Metas, Salud y Lo que aprendí de ti. También las reglas de avisos, metas, planificación y las respuestas del chat |
+| `src/motor/` | El motor de cálculo y las dos personas sintéticas |
+| `src/api/` | Única puerta a la API: pedidos con espera de 4 s, validación de cada respuesta y respaldo a `data/sample/mocks/` |
+| `src/evidencia/` | Panel para el jurado, armado con los `models/metricas*.json` |
+| `src/componentes/`, `src/estilos/` | Piezas comunes, tokens de diseño y temas claro y oscuro |
+
+### 2.2 Motor de cálculo (`frontend/src/motor/`)
+
+Es el único que produce cifras de cliente. Es un sustituto simple del pronóstico y del recomendador de `backend/src/models/`, hecho para que las pantallas nunca se contradigan mientras la API no devuelva datos de la misma persona.
+
+- `personas.js`: las dos personas sintéticas, independiente y formal, con sus cobros, pagos programados, gastos frecuentes, suscripciones, categorías, movimientos y tips. El arquetipo solo sirve para elegir a quién mostrar; nunca entra al cálculo.
+- `motor.js`: funciones puras. Saldo diario con banda (se abre con los días y se ensancha en cada cobro variable), peor día antes del cobro, días en rojo, gasto diario seguro, efecto de cada tip, apartado sin rojo y cuánto cabe en una fecha.
+- `cliente.js`: `vistaCon(elegidos, persona, pagosExtra, planificados)` arma la vista completa de la persona con sus tips, sus gastos planificados y la salud. **Todo lo que cambia con «Lo hago», con lo planificado o con la persona pasa por aquí.**
+
+Reglas que vigilan las pruebas (`frontend/pruebas/motor.test.js`, `personas.test.js`):
+
+1. Ninguna pantalla calcula una cifra por su cuenta: todas leen la vista de `vistaCon`.
+2. Las dos personas usan las mismas fórmulas; solo cambian sus datos.
+3. Cada tip se mide sobre los otros ya elegidos, así sus efectos se pueden sumar.
+
+### 2.3 API (`backend/src/api/`)
+
+FastAPI con esquemas Pydantic. Expone 12 rutas bajo `/api/v1` más `/api/v1/health`, según el contrato de [docs/api.md](docs/api.md):
+
+| Método | Ruta | Qué devuelve hoy |
+|---|---|---|
+| GET | `/customers/{customer_id}/health`, `/forecast`, `/recommendations`, `/events`, `/goals`, `/offers` | Datos fijos de `demo-001` |
+| POST | `/customers/{customer_id}/goals`, `/expenses` | Validan y responden 201, sin guardar |
+| POST | `/simulations` | Diferencia de saldo de cambios hipotéticos |
+| GET | `/fx` | Tipo de cambio de respaldo, marcado como desactualizado |
+| POST | `/chat` | Respuesta mock (`provider: "mock"`, sin verificar) |
+| POST | `/onboarding` | Valida cinco respuestas; sin clasificación |
+
+Las respuestas son de otra persona que la del motor (`demo-001`: saldo S/ 1,500, nunca en rojo, salud 72). Por eso el front las valida y muestra si llegaron, pero **ninguna cifra visible sale de la API**. `backend/src/api/loader_pkl.py` sabe cargar los `.pkl` de `models/`, pero `main.py` todavía no lo usa.
+
+### 2.4 Agente del chat (`backend/src/agent/`)
+
+Grafo LangGraph: router por reglas → tools de solo lectura → redacción → juez → respuesta.
+
+- **Router** (`router.py`): decide la intención y el monto sin LLM. Las operaciones, la compra de dólares, las inversiones y las inyecciones de prompt se cortan aquí, sin tools ni LLM.
+- **Tools** (`tools.py`): `HerramientasAPI` llama a la API (`LUCAS_API_URL`); `HerramientasMock` usa los JSON del contrato. Si la API cae, el agente dice que no puede ver los datos, sin cifras.
+- **Redacción** (`providers.py`): Ollama con `qwen2.5:3b` por defecto; Gemini solo con `LLM_PROVIDER=gemini`; plantillas siempre. El LLM recibe solo las salidas de las tools, nunca el texto crudo del usuario.
+- **Juez** (`juez.py`): cada número de la respuesta tiene que salir de una tool, con el signo correcto, y cada cita tiene que existir. Si falla, reintenta una vez y luego responde la plantilla.
+- **RAG** (`rag.py`): busca en el índice de `docs/rag/indice/`, filtrado por módulo.
+
+`agent.chat.responder` tiene la forma de `POST /api/v1/chat`, pero la API todavía no lo llama. Por eso en el MVP el chat del front responde con sus plantillas (sección 3.3). El agente se prueba por consola y con `backend/tests/agent/`. Modelos, prompts y medición: [PROMPTS.md](PROMPTS.md).
+
+`backend/src/agente_analitico/` es un segundo agente, de la parte de analítica, que usan `analitica/eval/qa_agente.py` y `analitica/eval/evaluar_agente.py`. Sus resultados son los que muestra la sección «Agente y RAG» de Evidencia.
+
+Clases del dominio del front y del agente ([fuente](docs/diagramas/clases.puml)):
+
+![Diagrama de clases de Lucas](docs/diagramas/clases.svg)
+
+### 2.5 Analítica y evaluación (`backend/src/generador/`, `backend/src/models/`, `analitica/eval/`)
+
+```
+data/generator.py --perfil muestra|completo  →  backend/src/generador/  →  Parquet (data/sample/ o data/generado/)
+        →  backend/src/models/ (pronóstico, salud, segmentación, clasificación, recomendador, ofertas, impacto…)
+        →  analitica/eval/*.py  →  models/*.pkl  +  models/metricas*.json  +  docs/EVALUACION_ANALITICA.md
+        →  frontend/src/evidencia/ (importa los JSON en la build)
+```
+
+- El generador usa semilla fija, catálogo de comercios ficticios, calendario peruano y series grabadas del BCRP (`data/raw/bcrp/`). `data/sample/` se versiona; `data/generado/` no.
+- Cada técnica de `backend/src/models/` se mide contra su baseline en `analitica/eval/` y el resultado queda en `models/metricas*.json`.
+- `analitica/eval/puerta_de_calidad.py` revisa que las métricas estén al día con el código del que dependen (huella en `backend/src/comun/huella.py`).
+- El detalle de los datos está en [docs/arquitectura-datos.md](docs/arquitectura-datos.md) y las cifras, en [docs/EVALUACION_ANALITICA.md](docs/EVALUACION_ANALITICA.md).
+
+## 3. Flujos
+
+### 3.1 Una pantalla de Lucas
+
+1. El cliente entra con su persona y su permiso (si no hay permiso, `EspacioLucas` lo manda a `/consentimiento`).
+2. `MarcoBanca` lee del navegador la persona, los tips elegidos, lo planificado y las metas.
+3. `vistaCon(...)` arma la vista con el motor.
+4. Cada pantalla pinta su parte de la vista. Avisos aplica su regla sobre esa misma vista.
+5. Al pulsar «Lo hago», agregar un gasto planificado o crear una meta, se guarda en el navegador y se vuelve al paso 3: todas las pantallas cambian juntas.
+
+![Diagrama de actividad del uso de Lucas](docs/diagramas/procesos.svg)
+
+Fuente: [docs/diagramas/procesos.puml](docs/diagramas/procesos.puml).
+
+### 3.2 Lectura de la API
+
+`useDatosApi` llama a `cargarCliente` al entrar. `frontend/src/api/http.js` pide cada ruta con una espera de 4 s y `contrato.js` valida la forma de cada respuesta. Si una lectura falla (red, 404, 500, espera o formato), esa lectura usa su JSON de `data/sample/mocks/` y Lucas muestra «Sin conexión: te muestro tus últimos datos.». Las cifras de pantalla no cambian, porque salen del motor.
+
+### 3.3 Chat
+
+1. `clienteChat.js` corta primero los pedidos de operación, de compra de dólares o de inversión: no salen a la red.
+2. Sin `VITE_CHAT_AGENTE=si`, responde `respuestas.js`: plantillas que leen la pregunta con toda la conversación y calculan con el motor. Sus cifras van en un bloque «Calculado con tus datos».
+3. Con `VITE_CHAT_AGENTE=si`, llama a `POST /api/v1/chat` con una espera de 12 s. Solo muestra el texto del agente si viene con sus cifras verificadas, y en ese caso les pone ✓. Si no, lo dice y responde la plantilla. Hoy la API devuelve un mock sin verificar, así que siempre responde la plantilla.
+
+El diagrama muestra el flujo con `POST /api/v1/chat` ya conectado a `agent.chat.responder`, que es la conexión en curso ([fuente](docs/diagramas/secuencia-chat.puml)):
+
+![Diagrama de secuencia del chat](docs/diagramas/secuencia-chat.svg)
+
+### 3.4 Evidencia
+
+`frontend/src/evidencia/cifras.js` importa los `models/metricas*.json` al construir la app. Cada cifra se pide por su clave; si la clave no existe, la build falla en vez de mostrar un número inventado. El panel muestra el archivo de origen de cada cifra.
+
+## 4. Datos y privacidad en el MVP
+
+| Dato | Dónde vive | Quién lo ve |
+|---|---|---|
+| Personas de la demo | `frontend/src/motor/personas.js` | Todo el que abre la app; son sintéticas |
+| Persona elegida, permiso, tips, planificados, metas, avisos vistos y respuestas «útil / no me sirve» | `localStorage` del navegador | Solo ese navegador. Retirar el permiso borra lo de esa persona; cambiar de persona descarta lo de la anterior |
+| Respuestas de ejemplo del contrato | `data/sample/mocks/` | Público en el repo |
+| Datos sintéticos de la analítica | `data/sample/` (versionado) y `data/generado/` (no versionado) | Equipo |
+| Métricas | `models/metricas*.json` | Público en el repo y en Evidencia |
+| Claves (`GEMINI_API_KEY`) | `.env`, fuera del repo | Solo quien corre el agente |
+
+- Todos los datos son sintéticos; Banco Vértice es ficticio y los comercios no son marcas reales.
+- El ingreso es solo visual: sus campos vienen llenos y bloqueados, para que nadie escriba datos reales.
+- Con Ollama o plantillas, lo que escribe la persona no sale de la máquina. Gemini y la API compatible están apagados por defecto; si se activan, el texto de la pregunta viaja a ese proveedor (ISO 27001 8.12, ver [seguridad-iso27001.md](.claude/reglas/seguridad-iso27001.md) y [PROMPTS.md](PROMPTS.md)).
+- `db/init.sql` tiene listo el esquema de PostgreSQL con roles, RLS y pgcrypto, pero ningún componente del MVP se conecta a la base.
+
+### Activos
+
+| Activo | Dónde está | Nota |
+|---|---|---|
+| Datos sintéticos | `data/sample/` (versionado) y `data/generado/` (local) | Sin personas ni marcas reales; semilla fija |
+| Modelos entrenados | `models/*.pkl` y `models/metricas*.json` | Los `.pkl` se abren solo desde este repositorio |
+| Índice RAG | `docs/rag/` | Fuentes públicas con su hash |
+| Claves | `.env`, fuera del repo | `.env.example` lleva valores ficticios |
+| Base local | PostgreSQL en Docker (`db/init.sql`) | El MVP no se conecta a ella |
+
+### Controles que no aplican
+
+| Control | Motivo |
+|---|---|
+| Controles físicos (tema 7) | No hay oficinas ni equipos propios que proteger en el hackathon |
+| 5.19 a 5.23, proveedores y nube | El único servicio externo es Gemini, opcional y apagado por defecto |
+| 5.29 y 5.30, continuidad del negocio | Es un prototipo sin operación continua |
+| Gestión de personal (tema 6) | Equipo de hackathon, sin contratación ni cese |
+
+Con datos reales de un banco, todos serían obligatorios.
+
+## 5. Cómo se corre
+
+```bash
+# Front (Node 20+)
+cd frontend && npm install
+npm run dev        # http://localhost:5173; pasa /api al puerto 8000 (otra dirección con LUCAS_API)
+npm test           # pruebas de funciones (frontend/pruebas/)
+npm run e2e        # Playwright en 1366×768 y 390 px (frontend/e2e/)
+
+# API (desde la raíz; sin --reload en Windows, se cuelga al recargar)
+python -m uvicorn --app-dir backend src.api.main:app --host 127.0.0.1 --port 8000
+python -m pytest backend/tests/api
+
+# Agente por consola (sin LLM: --plantilla)
+cd backend/src && python -m agent --plantilla
+
+# Analítica
+python data/generator.py --perfil muestra
+python analitica/eval/entrenar_modelos.py
+```
+
+Python 3.12 o más. Usa dos archivos de dependencias que chocan en `langgraph` y `pypdf`: `backend/requirements-ia.txt` (agente) y `analitica/requirements-analitica.txt` (analítica). Las pruebas de todo pasan instalando primero la analítica y luego `ollama`, `google-genai`, `langchain-google-genai`, `httpx` y `fastapi`. Variables de ejemplo en `.env.example`.
+
+## 6. Estructura de carpetas
+
+```
+├── README.md  ARCHITECTURE.md  PROMPTS.md  pyproject.toml  docker-compose.yml  .env.example
+├── frontend/       React + Vite: src/{banca,lucas,motor,api,evidencia,componentes,estilos}, pruebas/, e2e/
+├── backend/
+│   ├── src/
+│   │   ├── api/        FastAPI: main.py, routers/, schemas/, loader_pkl.py
+│   │   ├── agent/      agente del chat
+│   │   ├── agente_analitico/   agente de la evaluación
+│   │   ├── generador/  datos sintéticos
+│   │   ├── models/     pronóstico, salud, segmentación, clasificación, recomendador, ofertas, impacto…
+│   │   └── rag/  bcrp/  comun/  datos_publicos/
+│   ├── tests/      api/, agent/, bcrp/ y pruebas de analítica
+│   └── requirements.txt  requirements-ia.txt
+├── analitica/
+│   ├── eval/       entrenamiento, evaluación y generación de documentos
+│   ├── notebooks/
+│   └── requirements-analitica.txt
+├── data/           generator.py, parametros/, sample/ (con mocks/), raw/bcrp/, dictionary.md, QUALITY.md
+├── models/         *.pkl y metricas*.json (los leen el backend, la analítica y el panel Evidencia)
+├── db/init.sql     esquema de PostgreSQL (sin uso en el MVP)
+├── docs/           api.md, README_BACKEND.md, casos-uso.md, arquitectura-datos.md, rag/, diagramas/, demo/ (guion y capturas)
+└── .claude/        instrucciones del proyecto, planes, reglas, agentes y registro del equipo
+```
+
+Todos los comandos se corren desde la raíz: `data/` y `models/` se leen con rutas relativas a ella, y `pyproject.toml` apunta pytest a `backend/`.
+
+## 7. Dueños
+
+| Pieza | Dueño |
+|---|---|
+| `frontend/` (front, motor, Evidencia), `docs/demo/` | Marcela |
+| `backend/src/api/`, `docs/api.md` | Miguel |
+| `backend/src/agent/`, `backend/src/bcrp/`, `PROMPTS.md` | Jeffrey |
+| `backend/src/generador/`, `backend/src/models/`, `backend/src/agente_analitico/`, `backend/src/rag/`, `analitica/eval/` | Diego |
+| `db/init.sql`, `data/dictionary.md`, `docs/arquitectura-datos.md`, pruebas ISTQB | Dixon |
+| Arquitectura, seguridad, `docs/casos-uso.md` | Michael |
+
+## 8. Riesgos del MVP
+
+| Riesgo | Mitigación |
+|---|---|
+| El motor del front y los modelos de `backend/src/models/` dan cifras distintas para un cliente | En el MVP no se muestran juntos: las pantallas usan el motor y Evidencia usa las métricas de los modelos. La salud dice «Cálculo provisional» |
+| Alguien presenta la API, el agente o la ✓ como conectados | La demo de 60 s (`docs/demo/GUION.md`) no depende de la API ni del LLM, y el plan B lo dice |
+| Se cae la API o el navegador en la demo | Lucas sigue sin la API; hay capturas en `docs/demo/capturas/` y otra laptop |
+| Lo guardado en el navegador queda roto entre versiones | Cada lectura valida la forma y descarta lo roto (pruebas «datos rotos guardados en el navegador no tumban la app») |

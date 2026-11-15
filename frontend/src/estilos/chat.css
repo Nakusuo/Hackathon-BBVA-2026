@@ -1,0 +1,356 @@
+.chat {
+  display: grid;
+  gap: 16px;
+}
+
+/* La bienvenida usa el panel azul de las demás pestañas: una sola pieza protagonista por pantalla. */
+.chat-bienvenida {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--azul-profundo);
+  color: var(--sobre-azul);
+}
+
+.chat-bienvenida h2 {
+  color: var(--sobre-azul);
+}
+
+.chat-bienvenida p {
+  color: var(--sobre-azul-suave);
+}
+
+.mensajes {
+  gap: 14px;
+}
+
+.mensajes:empty {
+  display: none;
+}
+
+.mensaje-tu {
+  justify-self: end;
+  max-width: 85%;
+  padding: 10px 16px;
+  border-radius: 20px 20px 6px 20px;
+  background: var(--azul);
+  color: var(--sobre-azul);
+  font-weight: 600;
+}
+
+.mensaje-lucas {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.mensaje-cuerpo {
+  max-width: 88%;
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--borde);
+  border-radius: 20px 20px 20px 6px;
+  background: var(--superficie);
+  box-shadow: 0 2px 8px var(--sombra);
+}
+
+.mensaje-cuerpo p,
+.mensaje-lista {
+  line-height: 1.45;
+}
+
+.mensaje-cuerpo strong {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Una respuesta puede traer varias burbujas: van en columna y el avatar queda una sola vez, junto a la última. */
+.mensaje-burbujas {
+  max-width: 88%;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.mensaje-burbujas .mensaje-cuerpo {
+  max-width: 100%;
+}
+
+.mensaje-burbujas .mensaje-cuerpo:not(:last-child) {
+  border-radius: 20px;
+}
+
+.mensaje-titulo {
+  color: var(--azul-texto);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.mensaje-lista {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.mensaje-lista li::marker {
+  color: var(--azul);
+}
+
+/* Las cifras van en un bloque aparte y con su rótulo visible: así se distinguen del texto del modelo. */
+.cifras-verificadas {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--superficie-suave);
+}
+
+.cifras-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--azul-texto);
+  font-weight: 700;
+}
+
+.cifras-titulo svg {
+  flex: none;
+}
+
+.cifras-verificadas li {
+  display: flex;
+  gap: 12px;
+}
+
+.cifras-verificadas strong {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* El pie fijo y la barra de abajo tapan el final de la lista: al bajar al último mensaje se deja ese espacio libre. */
+.chat-final {
+  scroll-margin-bottom: calc(180px + env(safe-area-inset-bottom));
+}
+
+.chat-pie {
+  position: sticky;
+  bottom: calc(69px + env(safe-area-inset-bottom));
+  display: grid;
+  gap: 8px;
+  margin: 0 -16px;
+  padding: 8px 16px;
+  background: var(--fondo);
+}
+
+/* Preguntas frecuentes como menú: una por fila, fáciles de tocar y de leer completas. */
+.faq {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.faq-titulo {
+  color: var(--tinta-suave);
+  font-weight: 700;
+}
+
+.faq-lista {
+  gap: 0;
+}
+
+.faq-lista li + li {
+  border-top: 1px solid var(--borde);
+}
+
+.faq-opcion {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: var(--azul-texto);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.faq-opcion svg {
+  flex: none;
+  color: var(--tinta-suave);
+}
+
+.faq-opcion:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.chat-entrada {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 8px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie);
+  box-shadow: 0 4px 16px var(--sombra);
+}
+
+.chat-entrada:focus-within {
+  outline: 3px solid var(--azul-texto);
+  outline-offset: 2px;
+}
+
+.chat-entrada input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--tinta);
+  font: inherit;
+}
+
+.chat-entrada input::placeholder {
+  color: var(--tinta-suave);
+}
+
+.chat-entrada input:focus-visible {
+  outline: none;
+}
+
+/* Con el verificador del agente el rótulo pasa a verde con ✓; las plantillas siguen en azul. */
+.cifras-verificadas.con-verificador .cifras-titulo {
+  color: var(--bien);
+}
+
+.aviso-chat {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--riesgo);
+  font-weight: 600;
+}
+
+.aviso-chat svg {
+  flex: none;
+  margin-top: 3px;
+}
+
+.fuentes {
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--borde);
+}
+
+.fuentes-titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.fuentes a {
+  color: var(--azul-texto);
+  overflow-wrap: anywhere;
+}
+
+.pensando {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--tinta-suave);
+}
+
+.puntos {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.puntos span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: punto 1.2s ease-in-out infinite;
+}
+
+.puntos span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.puntos span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes punto {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .puntos span {
+    animation: none;
+  }
+}
+
+.chat-entrada button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* Tarjeta para guardar como meta el plan que se acordó en el chat. */
+.guardar-meta {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--superficie-suave);
+}
+
+.guardar-meta-titulo,
+.guardar-meta-hecho {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.guardar-meta-titulo {
+  color: var(--azul-texto);
+}
+
+.guardar-meta-hecho svg {
+  flex: none;
+  color: var(--verde, var(--azul-texto));
+}
+
+/* Botones de respuesta rápida que propone el agente cuando el mensaje es abierto o no lo entendió. */
+.opciones-chat {
+  display: grid;
+  gap: 6px;
+}

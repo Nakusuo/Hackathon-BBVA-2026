@@ -1,0 +1,66 @@
+# Reglas del calendario laboral que usa el agente (regimen laboral general de la actividad privada).
+# Cada regla trae su evidencia: una frase literal de un documento oficial guardado en docs/rag. tests/test_calendario.py comprueba que la frase siga ahi,
+# asi que una regla sin respaldo en la fuente no pasa las pruebas. Lo que es supuesto del equipo esta marcado como tal.
+version: 1
+fecha_verificacion: "2026-11-14"     # dia en que se contrasto cada regla con su fuente
+dias_para_revisar: 120                 # pasado este plazo el agente avisa que las reglas pueden haber cambiado
+alcance:
+  aplica_a: "personas dependientes en planilla del regimen laboral general con jornada de cuatro horas o mas"
+  no_aplica_a: [independiente]
+  supuesto_del_equipo: "el agente asume regimen general y semestre completo trabajado; en regimenes especiales o con menos meses el monto cambia y el aviso lo dice"
+  evidencia:
+    - {doc: "laboral/tuo_cts_ds_001_97_tr.pdf", frase: "jornada mínima diaria de cuatro horas"}
+
+gratificacion:
+  meses: [7, 12]                       # Fiestas Patrias y Navidad
+  dia_limite: 15
+  nombre: {7: "Gratificacion de Fiestas Patrias", 12: "Gratificacion de Navidad"}
+  semestre: {7: "enero a junio", 12: "julio a diciembre"}
+  veces_la_remuneracion: 1.0           # una remuneracion integra por semestre completo
+  bonificacion_extraordinaria: {essalud: 0.09, eps: 0.0675}   # no remunerativa ni pensionable
+  supuesto_afiliacion: essalud          # supuesto del equipo: se desconoce si el trabajador esta en EsSalud o en una EPS
+  tolerancia_dias_para_avisar_atraso: 3
+  evidencia:
+    - {doc: "laboral/mtpe_guia_gratificaciones.pdf", frase: "equivalente a una remuneración íntegra si el/la trabajador/a ha laborado durante todo el semestre"}
+    - {doc: "laboral/mtpe_guia_gratificaciones.pdf", frase: "serán abonadas en la primera quincena de los meses de julio y de diciembre"}
+    - {doc: "laboral/mtpe_guia_gratificaciones.pdf", frase: "es equivalente al 9% de la"}
+    - {doc: "laboral/mtpe_guia_gratificaciones.pdf", frase: "equivale al 6.75%"}
+    - {doc: "laboral/mtpe_guia_gratificaciones.pdf", frase: "meses calendarios completos"}
+    - {doc: "laboral/ley_30334_bonificacion_extraordinaria.pdf", frase: "no remunerativo ni pensionable"}
+
+cts:
+  meses_deposito: [5, 11]
+  dia_limite: 15
+  si_inhabil: siguiente_dia_habil      # sabado y domingo; el 15 de estos meses no es feriado nacional
+  periodo: {5: "noviembre a abril", 11: "mayo a octubre"}
+  fraccion_de_gratificacion_en_la_remuneracion_computable: 0.1666667   # un sexto de la gratificacion del semestre
+  meses_del_semestre: 6
+  se_deposita_en: "una cuenta de CTS en la entidad financiera que elige el trabajador; no entra a la cuenta de sueldo"
+  finalidad: "beneficio social de previsión de las contingencias que origina el cese en el trabajo"
+  evidencia:
+    - {doc: "laboral/tuo_cts_ds_001_97_tr.pdf", frase: "dentro de los primeros quince (15) días naturales de los meses de mayo y noviembre"}
+    - {doc: "laboral/tuo_cts_ds_001_97_tr.pdf", frase: "Si el último día es inhábil, el depósito puede efectuarse el primer día hábil siguiente"}
+    - {doc: "laboral/tuo_cts_ds_001_97_tr.pdf", frase: "tantos dozavos de la remuneración computable percibida por el trabajador en los meses de abril y octubre respectivamente"}
+    - {doc: "laboral/tuo_cts_ds_001_97_tr.pdf", frase: "a razón de un sexto de lo percibido en el semestre respectivo"}
+    - {doc: "laboral/tuo_cts_ds_001_97_tr.pdf", frase: "beneficio social de previsión de las contingencias que origina el cese en el trabajo"}
+
+libre_disposicion:
+  porcentaje_transitorio: 1.0
+  vigente_hasta: "2026-12-31"          # Ley 32322, disposicion complementaria transitoria unica
+  porcentaje_permanente: 0.5           # articulo 42 del DL 650 segun la Ley 32322
+  enfermedad_terminal_o_cancer: 1.0
+  dias_para_avisar_vencimiento: 60
+  nota_proyectos: "Hay un proyecto de ley en el Congreso para ampliar ese plazo; se esta evaluando y todavia no es ley: por ahora solo rige lo que dice la Ley 32322."
+  proyecto_en_evaluacion:   # nota periodistica (nivel B, no entra al RAG); se cita solo como estado del tramite, nunca como regla
+    expediente: "Proposicion Legislativa 799-2026-2031-CD"
+    presentado_el: "2026-11-09"
+    plazo_propuesto: "2028-12-31"
+    porcentaje_propuesto: 1.0
+    estado: "presentado; la nota no menciona dictamen, aprobacion ni promulgacion"
+    fuente: "El Peruano, nota 308663 (9 de noviembre de 2026): https://elperuano.pe/noticia/308663--congreso-proponen-ampliar-libre-disponibilidad-de-la-cts-hasta-diciembre-de-2028"
+    verificado_el: "2026-11-14"
+  evidencia:
+    - {doc: "laboral/ley_32322_cts_libre_disposicion.txt", frase: "por única vez y hasta el 31 de diciembre del 2026"}
+    - {doc: "laboral/ley_32322_cts_libre_disposicion.txt", frase: "disponer libremente del 100% de los depósitos"}
+    - {doc: "laboral/ley_32322_cts_libre_disposicion.txt", frase: "siempre que no exceda del 50%"}
+    - {doc: "laboral/ley_32322_cts_libre_disposicion.txt", frase: "enfermedad terminal o cáncer"}

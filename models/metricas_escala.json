@@ -1,0 +1,11 @@
+{
+ "clientes": 500,
+ "serie_diaria_30_dias_ms_por_cliente": 0.257,
+ "carga_modelos_y_datos_s": 3.1,
+ "contexto_por_cliente_ms": 1.35,
+ "recomendaciones_por_cliente_ms": 0.12,
+ "recomendaciones_por_segundo": 8004.0,
+ "pico_memoria_gb": 0.82,
+ "pronostico_30d_filas": 500,
+ "pronostico_30d_ms_por_cliente": 0.056
+}

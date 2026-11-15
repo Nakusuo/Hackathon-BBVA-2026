@@ -1,0 +1,426 @@
+.tarjeta {
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.tarjeta-titulo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.titulo-chico {
+  font-family: var(--letra);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--azul);
+  color: var(--sobre-azul);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  justify-self: start;
+}
+
+/* En oscuro --tinta es casi blanca: con ella de fondo el texto blanco del botón desaparecía. */
+.boton:hover {
+  background: var(--azul-profundo);
+}
+
+.boton-ancho {
+  width: 100%;
+}
+
+.boton-texto {
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: var(--azul-texto);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  justify-self: start;
+}
+
+.icono-boton {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: rgb(255 255 255 / 0.14);
+  color: var(--sobre-azul);
+  cursor: pointer;
+}
+
+.icono-boton-suave {
+  background: var(--superficie-suave);
+  color: var(--tinta);
+}
+
+.icono-boton-azul {
+  background: var(--azul);
+  color: var(--sobre-azul);
+  flex: none;
+}
+
+.pildora {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 12px;
+  background: var(--superficie-suave);
+  color: var(--tinta);
+  white-space: nowrap;
+}
+
+.circulo {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--superficie-suave);
+  color: var(--azul-texto);
+  font-weight: 700;
+}
+
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+}
+
+.fila + .fila {
+  border-top: 1px solid var(--borde);
+}
+
+.fila-texto {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+}
+
+.fila-monto {
+  text-align: right;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.entra {
+  color: var(--bien);
+}
+
+.aviso {
+  background: var(--riesgo-fondo);
+  border-radius: var(--radio);
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+.aviso-bien {
+  background: var(--bien-fondo);
+}
+
+.aviso-bien .aviso-etiqueta {
+  color: var(--bien);
+}
+
+.aviso-etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--riesgo);
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--azul);
+  background: var(--superficie);
+  color: var(--azul-texto);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: var(--superficie-suave);
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 700;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::after {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s;
+}
+
+details[open] summary::after {
+  transform: translateY(2px) rotate(-135deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  details summary::after {
+    transition: none;
+  }
+}
+
+.selector {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--superficie-suave);
+}
+
+.selector button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tinta-suave);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.selector button[aria-pressed='true'] {
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.medidor {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--superficie-suave);
+  overflow: hidden;
+}
+
+.medidor span {
+  display: block;
+  height: 100%;
+  background: var(--azul-claro);
+}
+
+.decision {
+  color: var(--tinta-suave);
+}
+
+.enlace {
+  color: var(--azul-texto);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+/* Selector de persona: radios reales con la forma del selector; el foco se dibuja en la opción. */
+.selector-persona {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.selector-persona legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+.selector-ancho {
+  display: flex;
+  width: 100%;
+}
+
+.selector-opcion {
+  position: relative;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: var(--tinta-suave);
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.selector-opcion input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.selector-opcion:has(input:checked) {
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.selector-opcion:has(input:focus-visible) {
+  outline: 3px solid var(--azul-texto);
+  outline-offset: 2px;
+}
+
+.boton-borde {
+  background: transparent;
+  color: var(--azul-texto);
+  box-shadow: inset 0 0 0 2px var(--azul);
+}
+
+.boton-borde:hover {
+  background: var(--superficie-suave);
+}
+
+.boton-riesgo {
+  background: var(--riesgo);
+  color: var(--superficie);
+}
+
+.boton-riesgo:hover {
+  background: var(--tinta);
+}
+
+/* «Explícamelo fácil»: botón con borde y panel claro en los dos temas; los términos van en negrita, no en color. */
+.facil {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* Botón de texto con borde fino: no compite con las cifras ni parece un sticker. */
+.facil-boton {
+  justify-self: start;
+  gap: 8px;
+  border-color: var(--borde);
+  border-radius: var(--radio-chico);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.facil-boton[aria-expanded='true'] {
+  background: var(--superficie-suave);
+}
+
+.facil-panel {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+.facil-panel dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.facil-panel dt {
+  font-weight: 800;
+}
+
+.facil-panel dd {
+  margin: 2px 0 0;
+}
+
+.facil-cerrar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Va sobre el contenido, no como cinta de color: es información, no una alerta de plata. */
+.estado-datos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-chico);
+  background: var(--superficie);
+  color: var(--tinta-suave);
+}
+
+.cifra-verificada {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.marca-verificada {
+  color: var(--bien);
+}
+
+/* Las poses de Lucas son imágenes con fondo transparente: nunca se estiran ni se seleccionan al tocar. */
+.lucas-pose {
+  display: block;
+  flex: none;
+  object-fit: contain;
+  user-select: none;
+}

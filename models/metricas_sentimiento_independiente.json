@@ -1,0 +1,62 @@
+{
+ "procedencia": {
+  "modelo": "gemini-3.5-flash-lite",
+  "generado_el": "2026-11-14",
+  "por_clase_pedidas": 35,
+  "clases": {
+   "positivo": "alivio, un logro o una buena noticia sobre su plata (cobro, ahorro, deuda pagada, ventas buenas)",
+   "neutro": "una consulta o un pedido informativo sobre sus movimientos, fechas o metas, sin carga emocional",
+   "preocupado": "incertidumbre o inquietud por no llegar a cubrir sus gastos, sin desesperacion (todavia hay margen)",
+   "negativo": "angustia, desesperacion, enojo o una crisis de plata que ya ocurrio (sin plata, sin trabajo, servicio cortado, deudas que ahogan)"
+  },
+  "huella_de_las_instrucciones": "1ed292fcee4b",
+  "nota": "Escrito por un modelo de lenguaje sin ver el lexico, las plantillas del generador ni las frases a mano; etiquetado en una pasada ciega aparte. No es un set anotado por personas."
+ },
+ "frases_generadas": 140,
+ "frases_con_consenso": 140,
+ "coincidencia_generacion_vs_etiquetado_ciego": 1.0,
+ "coincidencia_por_clase": {
+  "positivo": 1.0,
+  "neutro": 1.0,
+  "preocupado": 1.0,
+  "negativo": 1.0
+ },
+ "lexico": {
+  "f1_macro": 0.3092651842371887,
+  "ic95": [
+   0.22798002086166674,
+   0.384867923331515
+  ]
+ },
+ "tfidf_lr": {
+  "f1_macro": 0.46873571415014276,
+  "ic95": [
+   0.381634277764136,
+   0.5430142055496642
+  ]
+ },
+ "exactitud_de_la_clase_mayoritaria": 0.25,
+ "por_clase": {
+  "positivo": {
+   "n": 35,
+   "lexico_recall": 0.34285714285714286,
+   "tfidf_lr_recall": 0.42857142857142855
+  },
+  "neutro": {
+   "n": 35,
+   "lexico_recall": 0.8571428571428571,
+   "tfidf_lr_recall": 0.5428571428571428
+  },
+  "preocupado": {
+   "n": 35,
+   "lexico_recall": 0.11428571428571428,
+   "tfidf_lr_recall": 0.4857142857142857
+  },
+  "negativo": {
+   "n": 35,
+   "lexico_recall": 0.11428571428571428,
+   "tfidf_lr_recall": 0.34285714285714286
+  }
+ },
+ "lectura": "Set independiente del codigo, de las plantillas y de las frases a mano. Decide cual de los dos modelos generaliza a frases nuevas; no esta anotado por personas. El sentimiento no esta en produccion: el texto no mejora el pronostico (ver docs/EVALUACION_ANALITICA.md)."
+}

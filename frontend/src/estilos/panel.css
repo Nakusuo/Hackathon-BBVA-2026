@@ -1,0 +1,155 @@
+.panel-azul {
+  display: grid;
+  gap: 4px;
+  padding: 20px;
+  border-radius: var(--radio);
+  background: var(--azul-profundo);
+  color: var(--sobre-azul);
+}
+
+.panel-azul p {
+  color: var(--sobre-azul-suave);
+}
+
+.panel-azul .panel-cifra {
+  font-family: var(--titulos);
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--sobre-azul);
+}
+
+/* La hoja blanca se monta sobre el panel azul, como las listas de las apps de banca. */
+.panel-azul + .hoja {
+  margin-top: -32px;
+  border-radius: 24px 24px var(--radio) var(--radio);
+}
+
+.panel-azul:has(+ .hoja) {
+  padding-bottom: 48px;
+}
+
+.panel-grafico h2 {
+  color: var(--sobre-azul);
+}
+
+.panel-riesgo {
+  display: grid;
+  gap: 2px;
+  margin-top: 8px;
+}
+
+.panel-azul .panel-etiqueta {
+  font-weight: 600;
+}
+
+.panel-azul .panel-aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--sobre-azul);
+}
+
+.panel-aviso svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--riesgo-claro);
+}
+
+.enlace-claro {
+  color: var(--sobre-azul);
+}
+
+.selector-oscuro {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.selector-oscuro button {
+  color: var(--sobre-azul-suave);
+}
+
+.selector-oscuro button[aria-pressed='true'] {
+  background: var(--crema);
+  color: var(--tinta);
+}
+
+.panel-grafico .leyenda {
+  color: var(--sobre-azul-suave);
+}
+
+.panel-grafico .leyenda .clave-esperado::before {
+  background: none;
+  border-top-color: var(--grafico-linea);
+}
+
+.panel-grafico .leyenda .clave-banda::before {
+  background: var(--grafico-banda);
+}
+
+
+.grafico {
+  width: 100%;
+  height: 176px;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  color: var(--tinta-suave);
+}
+
+.leyenda span::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 2px;
+  vertical-align: middle;
+}
+
+.leyenda .clave-esperado::before {
+  height: 0;
+  border-top: 3px dashed var(--azul);
+}
+
+.leyenda .clave-banda::before {
+  background: var(--banda);
+}
+
+
+.globo {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--crema);
+  color: var(--tinta);
+}
+
+.grupo-dia {
+  display: grid;
+}
+
+.grupo-nombre {
+  padding-top: 4px;
+  color: var(--tinta-suave);
+  font-weight: 600;
+}
+
+/* En Qué viene la lista va más junta para que la pantalla quepa en 1.5 alturas de celular. */
+.hoja .fila {
+  padding: 5px 0;
+}
+
+/* Botón claro dentro del panel azul: abre el simulador sin ocupar una fila aparte. */
+.boton-sobre-azul {
+  margin-top: 8px;
+  background: var(--sobre-azul);
+  color: var(--azul-profundo);
+}
+
+.boton-sobre-azul:hover {
+  background: var(--sobre-azul-suave);
+}

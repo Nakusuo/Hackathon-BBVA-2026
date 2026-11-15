@@ -1,0 +1,154 @@
+.exterior {
+  min-height: 100vh;
+  background: var(--fondo);
+}
+
+.marco {
+  position: relative;
+  max-width: 1100px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-bottom: 96px;
+  background: var(--fondo);
+}
+
+.marca-lucas {
+  flex: none;
+  width: var(--tamano);
+  height: var(--tamano);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--azul-palido);
+  overflow: hidden;
+}
+
+.marca-lucas .lucas-pose {
+  margin-top: 12%;
+}
+
+.logotipo {
+  font-family: var(--titulos);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--azul-texto);
+}
+
+.logotipo-claro {
+  color: var(--sobre-azul);
+}
+
+.barra-inferior {
+  position: fixed;
+  z-index: 10;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 1100px);
+  display: flex;
+  align-items: flex-end;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  background: var(--superficie);
+  border-top: 1px solid var(--borde);
+}
+
+.barra-item {
+  flex: 1;
+  min-width: 0;
+  min-height: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tinta-suave);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.barra-item:focus-visible {
+  outline: none;
+  background: var(--azul-palido);
+  border-radius: 16px;
+}
+
+.barra-item[aria-current='page'] {
+  color: var(--azul-texto);
+  font-weight: 800;
+}
+
+/* El botón de Lucas sobresale de la barra para que se encuentre sin buscarlo. */
+.barra-lucas .marca-lucas {
+  margin-top: -26px;
+  box-shadow: 0 0 0 4px var(--superficie);
+}
+
+.aviso-flotante {
+  position: fixed;
+  z-index: 20;
+  bottom: 96px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 32px), 400px);
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--radio-chico);
+  background: var(--tinta);
+  color: var(--fondo);
+  box-shadow: 0 8px 24px var(--sombra);
+  text-align: center;
+}
+
+.aviso-flotante:empty {
+  display: none;
+}
+
+
+
+/* Confirmación breve de una acción (crear, registrar, quitar) con «Deshacer» cuando aplica. */
+.aviso-breve {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  animation: aviso-entra 200ms ease-out;
+}
+
+.aviso-deshacer {
+  flex: none;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@keyframes aviso-entra {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso-breve {
+    animation: none;
+  }
+}
+
+/* Sobre fondos oscuros el contorno azul no se distingue: usa el color del propio texto. */
+.aviso-breve :focus-visible,
+.panel-metas :focus-visible {
+  outline-color: currentColor;
+}

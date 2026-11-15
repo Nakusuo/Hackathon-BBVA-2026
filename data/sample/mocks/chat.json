@@ -1,0 +1,29 @@
+{
+  "conversation_id": "conv-001",
+  "answer": "Si gastas S/ 150, terminarías el periodo en rojo: -S/ 200.\n\nEs una simulación para orientarte, no una asesoría. Tú decides.",
+  "provider": "plantilla",
+  "verified": true,
+  "verified_figures": [
+    150.0,
+    -200.0
+  ],
+  "figures": [
+    {
+      "label": "Gasto que consultas",
+      "value": 150.0,
+      "text": "S/ 150",
+      "unit": "PEN"
+    },
+    {
+      "label": "Saldo final con el gasto",
+      "value": -200.0,
+      "text": "-S/ 200",
+      "unit": "PEN"
+    }
+  ],
+  "sources": [],
+  "tools_used": [
+    "simulate"
+  ],
+  "intent": "simular"
+}

@@ -1,0 +1,52 @@
+' Regenerar: java -jar plantuml.jar -charset UTF-8 -tsvg docs/diagramas/casos-uso.puml
+@startuml casos-uso
+!pragma layout smetana
+left to right direction
+skinparam actorStyle awesome
+
+title Lucas (MVP): diagrama de casos de uso
+
+actor "Cliente" as Cliente <<abstracto>>
+actor "Independiente" as Independiente
+actor "Formal" as Formal
+actor "Banco que\nintegra a Lucas" as Banco
+
+Independiente --|> Cliente
+Formal --|> Cliente
+
+rectangle "Lucas en Banco Vértice" {
+  usecase "CU-01\nEntrar a Lucas\ndesde mi banca" as CU01
+  note bottom of CU01 : CU-02 a CU-09 lo incluyen\n(<<include>>)
+  package "Mi mes" {
+    usecase "CU-02\nConsultar mi estado" as CU02
+    usecase "CU-03\nConsultar qué viene" as CU03
+    usecase "CU-04\nRecibir avisos antes\nde quedar en rojo" as CU04
+    usecase "Explicármelo\nfácil" as EXP
+  }
+  package "Qué hago" {
+    usecase "CU-05\nElegir tips\ncon monto" as CU05
+    usecase "CU-06\nPlanificar un gasto\no un ingreso" as CU06
+    usecase "CU-07\nGestionar una meta\nde ahorro" as CU07
+  }
+  package "Pregunto y controlo" {
+    usecase "CU-08\nPreguntar en el chat" as CU08
+    usecase "CU-09\nControlar mis datos" as CU09
+  }
+  usecase "CU-10\nEvaluar impacto\ny evidencia" as CU10
+}
+
+Cliente --> CU01
+Cliente --> CU02
+Cliente --> CU03
+Cliente --> CU04
+Cliente --> CU05
+Cliente --> CU06
+Cliente --> CU07
+Cliente --> CU08
+Cliente --> CU09
+Banco --> CU10
+
+EXP ..> CU03 : <<extend>>
+EXP ..> CU05 : <<extend>>
+
+@enduml

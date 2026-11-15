@@ -1,0 +1,491 @@
+{
+ "nota": "Respuestas de concepto armadas por plantilla desde las fuentes del RAG, sin LLM. Se vuelven a generar con eval/generar_faq.py si cambia el indice.",
+ "huella_indice": "7d4d80bbff6b28fa",
+ "entradas": [
+  {
+   "pregunta": "¿Que hago si me atrase en el pago de mis cuentas?",
+   "palabras": [
+    "atrase",
+    "cuentas",
+    "pago"
+   ],
+   "respuesta": "Segun Folleto: atrasado en los pagos (pag. 5) [guia de EE. UU., orientativa: no es norma peruana]: Herramientas por si está atrasado en los pagos. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "deudas/cfpb_folleto_atrasado_pagos.pdf",
+     "titulo": "Folleto: atrasado en los pagos",
+     "pagina": 5,
+     "enlace": "https://files.consumerfinance.gov/f/documents/bcfp_your-money-goals_behind-on-bills_booklet_es_print.pdf",
+     "licencia_nivel": "A",
+     "texto": "Herramientas por si está atrasado en los pagos. ¿De dónde proviene mi dinero? ¿Qué quiero cambiar? ¿A dónde va mi dinero? ¿Qué pagos tengo que hacer y cuándo vencen? ¿Cómo puedo conseguir dinero extra en mi situación? CONTROL DE INGRESOS MARQUE SUS OBJETIVOS CONTROL DE GASTOS CALENDARIO DE PAGOS ESTRATEGIAS A CORTO PLAZO 8 SU DINERO, SUS METAS ¿Cómo actuar si me llama un cobrador de deudas? COMO TRATAR CON COBRADORES DE DEUDAS ¿Cómo tomar decisiones difíciles en meses de pocos ingresos? PRIORIZACIÓN DE PAGOS ¿A quién más puedo acudir por ayuda? TARJETAS DE RECURSOS",
+     "similitud": 0.7201
+    },
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 276,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": "268 MÓDULO 7: COMPRENSIÓN DE LOS INFORMES Y PUNTAJES DE CRÉDITO Estado de los pagos El historial de la cuenta, incluidos los pagos realizados a tiempo, así como la morosidad y otros elementos negativos. Retraso de pago Una cuenta que no se ha pagado a tiempo y está atrasada. En general el retraso de pago se expresa como 30, 60, 90, ó 120 días o más de retraso. Incumplimiento de pago El incumplimiento de pago significa que el consumidor no está cumpliendo con los requisitos acordados cuando tomó el préstamo. Una cuenta que ha estado retrasada durante varios ciclos de facturación de 30 días generalmente se considera que está en incumplimiento de pago. Incobrable Cuando una empresa decide que una cuenta es incobrable. Sin embargo, el consumidor sigue siendo responsable de la deuda, y es probable que los cobros continúen para esa deuda",
+     "similitud": 0.7101
+    },
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 178,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": "170 MÓDULO 4: PAGO DE CUENTAS Y OTROS GASTOS HERRAMIENTA 3: ELEGIR MANERAS DE PAGAR LAS FACTURAS: CONOZCA SUS OPCIONES Método de pago de facturas Ventajas Desventajas Pago de facturas en línea Conveniente. Usted puede elegir entre hacer pagos únicos en cada ciclo de facturación o programar pagos recurrentes (automáticos) por medio de los servicios web en línea de su banco, sindicato de crédito o tarjeta prepagada o por medio del sitio web del emisor de la factura. A menudo, usted también puede usar una aplicación móvil para realizar el pago de las facturas. No olvide hacer seguimiento de su saldo. Esto le ayudará a evitar los cargos por pago tardío. Los pagos automáticos reducen las posibilidades de atrasarse en el pago de las facturas",
+     "similitud": 0.7101
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Como funciona el credito y que debo revisar antes de pedirlo?",
+   "palabras": [
+    "antes",
+    "credito",
+    "funciona",
+    "pedirlo",
+    "revisar"
+   ],
+   "respuesta": "Segun Folleto de credito (Su dinero, sus metas) (pag. 2) [guia de EE. UU., orientativa: no es norma peruana]: El saber cómo funcionan los historiales, informes y puntajes de crédito, puede ayudarle a tomar los pasos necesarios para construir un récord positivo. Ese récord positivo puede ayudarle a alcanzar sus metas, posiblemente, permitiéndole bajar los costos de pedir dinero prestado y de los depósitos por servicios públicos y teléfonos celulares. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "deudas/cfpb_folleto_credito.pdf",
+     "titulo": "Folleto de credito (Su dinero, sus metas)",
+     "pagina": 2,
+     "enlace": "https://files.consumerfinance.gov/f/documents/cfpb_your-money-your-goals_credit_booklet_cobrand_es.pdf",
+     "licencia_nivel": "A",
+     "texto": "¿Quiere que su crédito funcione? El crédito es la capacidad de pedir dinero prestado y luego pagarlo. Cuando la gente habla acerca de tener “buen” o “mal” crédito, por lo general, se refieren a sus historiales o a sus puntajes de crédito. El saber cómo funcionan los historiales, informes y puntajes de crédito, puede ayudarle a tomar los pasos necesarios para construir un récord positivo. Ese récord positivo puede ayudarle a alcanzar sus metas, posiblemente, permitiéndole bajar los costos de pedir dinero prestado y de los depósitos por servicios públicos y teléfonos celulares. También podría reducir los obstáculos que enfrente al momento de adquirir una vivienda o solicitar empleo. Estas herramientas pueden ayudarle a comenzar",
+     "similitud": 0.8025
+    },
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 291,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": "SU DINERO, SUS METAS: UN CONJUNTO DE HE RRAMIENTAS DE EMPODERAMIENTO FINANCIERO 283 PARA PROFESIONALES DE SERVICIOS SOCIALES Herramienta 2: Lista de verificación para la revisión de informes de crédito Una vez que obtenga su informe de crédito, es recomendable que lo revise cuidadosamente. Solicitar su informe no es suficiente: tiene que leerlo. Los informes de crédito pueden contener errores. Y si hay errores, usted es el único que podrá encontrarlos. Use la siguiente hoja de cálculo para revisar cada sección de su informe de crédito. Haga esto para cada informe de crédito que obtenga durante el año. Una vez que haya revisado el informe, mantenga la lista de verificación completa junto con su informe de crédito. Su informe de crédito contiene una gran cantidad de información personal y financiera",
+     "similitud": 0.7485
+    },
+    {
+     "documento": "deudas/cfpb_folleto_credito.pdf",
+     "titulo": "Folleto de credito (Su dinero, sus metas)",
+     "pagina": 7,
+     "enlace": "https://files.consumerfinance.gov/f/documents/cfpb_your-money-your-goals_credit_booklet_cobrand_es.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Para saber más sobre informes especializados, visite cfpb.gov/es/ obtener-respuestas/x-es-1813/ Para saber más sobre antecedentes laborales, visite cfpb.gov/es/ obtener-respuestas/x-es-1823/ Esta herramienta le ayudará a: § Revise la información contenida en su informe de crédito § Descubra errores que podría impugnar e identifique cualquier otra pregunta que pueda tener Qué necesitará: ¨ Una copia de su informe de crédito (puede utilizar nuestra herramienta de Informe de crédito para obtener una copia gratuita) ¨ Un bolígrafo o un resaltador para marcar su informe CONSEJO: Utilice la herramienta para Impugnar Errores si encuentra información incorrecta y la herramienta contra el Robo de Identidad y Fraude si usted sospecha que ha sido víctima de un robo de identidad. Empiece por responder esta pregunta: ¿Ha revisado con cuidado lo que dice su informe de crédito?",
+     "similitud": 0.7389
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Que es la tasa de costo efectivo anual y donde debe informarse?",
+   "palabras": [
+    "anual",
+    "costo",
+    "debe",
+    "efectivo",
+    "informarse",
+    "tasa"
+   ],
+   "respuesta": "Segun Codigo de Proteccion y Defensa del Consumidor (Ley 29571) (pag. 43): Los proveedores deben presentar la tasa de costo efectivo anual (TCEA), de acuerdo con los parámetros que para tal efecto establezca 43. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "derechos/ley_29571_codigo_proteccion_consumidor.pdf",
+     "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+     "pagina": 43,
+     "enlace": "https://consumidor.gob.pe/wp-content/uploads/2020/07/Codigo-de-Proteccion-y-Defensa-del-Consumidor-2023-1.pdf.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Los proveedores deben presentar la tasa de costo efectivo anual (TCEA), de acuerdo con los parámetros que para tal efecto establezca 43",
+     "similitud": 0.7602
+    },
+    {
+     "documento": "deudas/sbs_res_3274_2017_conducta_mercado.pdf",
+     "titulo": "Reglamento de Gestion de Conducta de Mercado (Res. SBS 3274-2017)",
+     "pagina": 7,
+     "enlace": "https://www.bn.com.pe/transparenciabn/transparencia-financiera/Res-SBS-3274-2017-Reglamento-Gestion-Conducta-Mercado.pdf",
+     "licencia_nivel": "A",
+     "texto": ". 12.2 Si la tasa de interés que depende de un factor variable en los créditos a plazo fijo y depósitos a plazo fijo considera un spread asociado al referido indicador, para la modificación de dicho spread , se aplica el mismo tratamiento contemplado para la tasa de interés fija. En virtud de lo expuesto, cualquier modificación se produce únicamente, en caso se cumpla con los requisitos establecidos en el artículo 31. Artículo 13. Tasa de costo efectivo anual 13.1 La tasa de costo efectivo anual (TCEA) es la tasa que permite comparar el costo total de un producto activo. Se calcula igualando el valor actual de todas l as cuotas con el monto que efectivamente haya sido recibido en préstamo",
+     "similitud": 0.7214
+    },
+    {
+     "documento": "derechos/ley_29571_codigo_proteccion_consumidor.pdf",
+     "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+     "pagina": 39,
+     "enlace": "https://consumidor.gob.pe/wp-content/uploads/2020/07/Codigo-de-Proteccion-y-Defensa-del-Consumidor-2023-1.pdf.pdf",
+     "licencia_nivel": "A",
+     "texto": ". En caso de que el consumidor o usuario solicite o se le otorgue información de forma oral, deben indicarse las mencionadas tasas. La TCEA es aquella tasa que permite igualar el valor actual de todas las cuotas y demás pagos que serán efectuados por el cliente con el monto que efectivamente ha recibido del préstamo y la TREA es aquella tasa que permite igualar el monto que se ha depositado con el valor actual del monto que efectivamente se recibe al vencimiento. La TCEA y la TREA deben comprender tanto la tasa de interés como todos los costos directos e indirectos que, bajo cualquier denominación, influyan en su determinación, de conformidad con lo dispuesto por la Superintendencia de Banca, Seguros y Administradoras Privadas de Fondos de Pensiones mediante norma de carácter general",
+     "similitud": 0.7161
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Que derechos tengo para reclamar a mi banco?",
+   "palabras": [
+    "banco",
+    "derechos",
+    "reclamar"
+   ],
+   "respuesta": "Segun Su dinero, sus metas: kit de herramientas (pag. 315) [guia de EE. UU., orientativa: no es norma peruana]: El banco debe proteger contra embargos un monto equivalente a dos meses de beneficios y permitirle a usted disponer de ese dinero. Si en su cuenta hay un monto superior al equivalente a dos meses de beneficios, su banco puede congelar el dinero extra. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 315,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": ". El banco debe proteger contra embargos un monto equivalente a dos meses de beneficios y permitirle a usted disponer de ese dinero. Si en su cuenta hay un monto superior al equivalente a dos meses de beneficios, su banco puede congelar el dinero extra. Este es un ejemplo:  Si usted recibe $1,000 mensual del Seguro Social, su banco verá que en los últimos meses usted ha recibido $2,000 por depósito directo del Seguro Social. El banco debe permitirle usar hasta $2,000 de la cuenta.  Pero si usted recibe todos los meses un depósito directo de $1,000 por concepto de beneficios del Seguro Social, y tiene $3,000 en su cuenta, el banco puede congelar $1,000 de los $3,000. El banco debe permitirle acceder a los $2,000 restantes para que usted pueda seguir pagando facturas y retirando dinero como acostumbra",
+     "similitud": 0.7465
+    },
+    {
+     "documento": "laboral/mtpe_guia_cts.pdf",
+     "titulo": "Guia de Compensacion por Tiempo de Servicios",
+     "pagina": 14,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/8050277/6757898-guia_compensacion_tiempo_servicios.pdf",
+     "licencia_nivel": "A",
+     "texto": ". El mandato judicial de embargo será notiﬁcado directamente por el juzgado al depositario. Retención por alimentos Fuente: artículos 37, 38 y 39 del Decreto Supremo N° 001-97-TR, Texto Único Ordenado de la Ley de Compensación por Tiempo de Servicios, y artículo 12 del Decreto Supremo N° 004-97-TR, Reglamento de la Ley de Compensación por Tiempo de Servicios. Nota: La CTS tiene la calidad de bien común sólo a partir del matrimonio civil, o de haber transcurrido dos años continuos de la unión de hecho y mantendrá dicha calidad hasta la fecha de la escritura pública en que se pacte el régimen de separación de patrimonios o de la resolución judicial consentida o ejecutoriada que ponga ﬁn a dicho régimen",
+     "similitud": 0.7454
+    },
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 316,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Usted puede pedir ayuda a un abogado. Si no puede pagar un abogado, es posible que tenga derecho a recibir asistencia legal gratuita. Protecciones automáticas que no se aplican a los cheques de papel Si usted recibe beneficios del Seguro Social o de ayuda a veteranos por medio de un cheque y deposita el cheque en su cuenta bancaria, el banco no tiene la obligación de proteger automáticamente en esa cuenta el equivalente a dos meses de beneficios. Esto significa que podría congelarse el saldo completo de su cuenta, en cuyo caso usted tendrá que acudir a un tribunal para demostrar que el dinero proviene de beneficios federales protegidos y no debería ser embargado. Usted puede proteger sus beneficios al pedir que los depositen directamente en una cuenta bancaria o que los carguen en una tarjeta prepagada",
+     "similitud": 0.7411
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Que consentimiento necesita una empresa para usar mis datos personales?",
+   "palabras": [
+    "consentimiento",
+    "datos",
+    "empresa",
+    "necesita",
+    "personales",
+    "usar"
+   ],
+   "respuesta": "Segun Reglamento de la Ley 29733 (DS 016-2024-JUS) (pag. 8): 25.2 En el marco de la oferta de servicios digitales para mayores de catorce y menores de dieciocho años, el tratamiento de datos personales es lícito cuando se haya obtenido su consentimiento. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "derechos/ds_016_2024_jus_reglamento_ley_29733.pdf",
+     "titulo": "Reglamento de la Ley 29733 (DS 016-2024-JUS)",
+     "pagina": 8,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/7756037/6554453-reglamento-de-la-ley-n-29733.pdf",
+     "licencia_nivel": "A",
+     "texto": ". 25.2 En el marco de la oferta de servicios digitales para mayores de catorce y menores de dieciocho años, el tratamiento de datos personales es lícito cuando se haya obtenido su consentimiento. 25.3 En el marco de la oferta de servicios digitales dirigida a menores de catorce años de edad, el tratamiento de datos personales es lícito siempre que se cuente con el consentimiento de aquel o aquellos que ejercen la patria potestad o tutela, según corresponda. 25.4 El titular del banco de datos personales o responsable del tratamiento de datos en plataformas o servicios en el entorno digital realiza esfuerzos razonables para veriﬁ car, en los casos descritos en los párrafos 25.2 y 25.3, la identidad de quienes otorgan el consentimiento, teniendo en cuenta la tecnología disponible. Artículo 26",
+     "similitud": 0.8225
+    },
+    {
+     "documento": "derechos/ds_016_2024_jus_reglamento_ley_29733.pdf",
+     "titulo": "Reglamento de la Ley 29733 (DS 016-2024-JUS)",
+     "pagina": 9,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/7756037/6554453-reglamento-de-la-ley-n-29733.pdf",
+     "licencia_nivel": "A",
+     "texto": "9NORMAS LEGALES Sábado 30 de noviembre de 2024 El Peruano / servicios es lícito cuando se obtiene el consentimiento de forma directa por parte del titular del dato personal. 26.2 Es posible obtener el consentimiento para el tratamiento de datos personales mediante un primer contacto, luego del cual, de no haberse logrado obtener el consentimiento, no es lícito realizar un nuevo contacto o tratamiento de datos personales. 26.3 Para el primer contacto , los datos personales pueden haber sido obtenidos de fuentes accesibles al público, en dicho supuesto, el responsable del tratamiento de datos personales debe estar en condiciones de informar, en el primer contacto y a requerimiento del titular de los datos personales, la fuente de recopilación de los datos personales",
+     "similitud": 0.7935
+    },
+    {
+     "documento": "derechos/ds_016_2024_jus_reglamento_ley_29733.pdf",
+     "titulo": "Reglamento de la Ley 29733 (DS 016-2024-JUS)",
+     "pagina": 5,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/7756037/6554453-reglamento-de-la-ley-n-29733.pdf",
+     "licencia_nivel": "A",
+     "texto": ". 1.4 Cuando se solicite el consentimiento para una forma de tratamiento que incluya o pueda incluir la transferencia nacional o internacional de los datos, del titular de los mismos debe ser informado de forma que conozca inequívocamente tal circunstancia, además de la ﬁ nalidad a la que se destinan sus datos y el tipo de actividad desarrollada por quien va a recibir los mismos. Artículo 2. Características del consentimiento válido El consentimiento para el tratamiento de datos personales es válido si se cumplen las siguientes características: 1. Libre 2. Previo 3. Expreso e inequívoco 4. Informado Artículo 3. Consentimiento libre 3.1. Se considera que el consentimiento del titular de los datos personales es libre cuando se otorgue sin que medie error, mala fe, violencia o dolo que puedan afectar la manifestación de voluntad del titular de los datos personales.",
+     "similitud": 0.788
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Puedo pedir que borren mis datos personales?",
+   "palabras": [
+    "borren",
+    "datos",
+    "pedir",
+    "personales"
+   ],
+   "respuesta": "Segun Su dinero, sus metas: kit de herramientas (pag. 51) [guia de EE. UU., orientativa: no es norma peruana]:  Pedir a la persona que complete la evaluación ya sea en la reunión con usted o en su casa.  Hacerle las preguntas durante una conversación.  Pedir a la persona que conteste sólo algunas de las preguntas. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 51,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Recuerde que usted puede:  Pedir a la persona que complete la evaluación ya sea en la reunión con usted o en su casa.  Hacerle las preguntas durante una conversación.  Pedir a la persona que conteste sólo algunas de las preguntas. Sacar el máximo provecho de lo s contactos de corta duración Es excelente poder desarrollar la confianza y discutir los temas financieros con las personas que atiende a largo plazo, pero a veces no se tiene ese tiempo. Usted también puede trabajar en empoderar financieramente a las personas durante las reuniones de contacto de breve duración. Por ejemplo, si estamos a comienzos de año y usted está teniendo una breve reunión con alguien a quien acaba de conocer, podría decirle:",
+     "similitud": 0.7359
+    },
+    {
+     "documento": "derechos/ds_016_2024_jus_reglamento_ley_29733.pdf",
+     "titulo": "Reglamento de la Ley 29733 (DS 016-2024-JUS)",
+     "pagina": 9,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/7756037/6554453-reglamento-de-la-ley-n-29733.pdf",
+     "licencia_nivel": "A",
+     "texto": ". 26.4 Se presume que la responsabilidad del tratamiento de datos personales para publicidad y prospección comercial es de aquel en cuyo interés se realiza tal tratamiento, salvo prueba en contrario. 26.5 En todos los casos, el titular de datos personales tiene derecho de negarse, revocar u oponerse al tratamiento de sus datos personales para ﬁ nes de publicidad y prospección comercial, para lo cual el responsable del tratamiento debe brindar un medio sencillo y gratuito para tramitar dicha solicitud, la cual se debe atender dentro del plazo máximo de diez (10) días. Negarse, revocar u oponerse al tratamiento de datos personales para ﬁ nes de publicidad y prospección comercial no debe tener mayor complejidad que la empleada para otorgar el consentimiento",
+     "similitud": 0.7276
+    },
+    {
+     "documento": "derechos/ds_016_2024_jus_reglamento_ley_29733.pdf",
+     "titulo": "Reglamento de la Ley 29733 (DS 016-2024-JUS)",
+     "pagina": 17,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/7756037/6554453-reglamento-de-la-ley-n-29733.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Artículo 86. Oposición 86.1 El titular de datos personales tiene derecho a oponerse en cualquier momento, a efectos de que no se lleve a cabo el tratamiento de sus datos personales o se cese en el mismo, cuando no hubiere prestado su consentimiento para su recopilación por haber sido tomados de fuente de acceso al público. 86.2 Aun cuando hubiera prestado consentimiento, el titular de datos personales tiene derecho a oponerse al tratamiento de sus datos, si acredita la existencia de motivos fundados y legítimos relativos a una concreta situación personal que justi ﬁ quen el ejercicio de este derecho. 86.3 En caso de que la oposición resulte justi ﬁ cada el titular del banco de datos personales o responsable de tratamiento debe proceder al cese del tratamiento que ha dado lugar a la oposición",
+     "similitud": 0.725
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Que es el derecho de acceso a mis datos personales?",
+   "palabras": [
+    "acceso",
+    "datos",
+    "derecho",
+    "personales"
+   ],
+   "respuesta": "Segun Reglamento de la Ley 29733 (DS 016-2024-JUS) (pag. 16): Derecho de acceso 75.1 El titular de datos personales tiene derecho a que se le comunique de forma clara, expresa e indubitablemente con lenguaje sencillo lo siguiente. Sus datos personales objeto de tratamiento. La forma en que sus datos personales fueron recopilados. Las razones que motivaron la recopilación de los datos personales. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "derechos/ds_016_2024_jus_reglamento_ley_29733.pdf",
+     "titulo": "Reglamento de la Ley 29733 (DS 016-2024-JUS)",
+     "pagina": 16,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/7756037/6554453-reglamento-de-la-ley-n-29733.pdf",
+     "licencia_nivel": "A",
+     "texto": ". La respuesta debe contener los extremos previstos en el artículo 18 antes mencionado. 74.2 Para la respuesta al ejercicio del derecho a la información, es de aplicación, en lo que fuere pertinente, los artículos 77 y 78 del presente Reglamento. Artículo 75. Derecho de acceso 75.1 El titular de datos personales tiene derecho a que se le comunique de forma clara, expresa e indubitablemente con lenguaje sencillo lo siguiente: 1. Sus datos personales objeto de tratamiento; 2. La forma en que sus datos personales fueron recopilados; 3. Las razones que motivaron la recopilación de los datos personales; 4. La indicación de a solicitud de quién se realizó la recopilación; y, 5. Las transferencias realizadas o que se prevén hacer con los datos personales",
+     "similitud": 0.8311
+    },
+    {
+     "documento": "derechos/ds_016_2024_jus_reglamento_ley_29733.pdf",
+     "titulo": "Reglamento de la Ley 29733 (DS 016-2024-JUS)",
+     "pagina": 16,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/7756037/6554453-reglamento-de-la-ley-n-29733.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Las transferencias realizadas o que se prevén hacer con los datos personales. 75.2 Al amparo del derecho de acceso no se puede obtener información o documentación que, aunque corresponda al titular del dato personal, no se encuentre estrictamente comprendida dentro de los supuestos previstos en el párrafo 75.1. Artículo 76. Portabilidad de datos personales 76.1 Como manifestación del derecho de acceso, el titular del dato puede solicitar los datos personales sobre sí mismo, que haya facilitado a un responsable o titular de banco de datos, en un formato estructurado, de uso común y lectura mecánica, y a transmitirlos a otro responsable o titular de banco de datos personales cuando: 1. El tratamiento esté basado en el consentimiento o en una relación contractual en la que el titular del dato es parte; o, 2. El tratamiento se ejerza mediante medios automatizados",
+     "similitud": 0.8184
+    },
+    {
+     "documento": "derechos/ds_016_2024_jus_reglamento_ley_29733.pdf",
+     "titulo": "Reglamento de la Ley 29733 (DS 016-2024-JUS)",
+     "pagina": 7,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/7756037/6554453-reglamento-de-la-ley-n-29733.pdf",
+     "licencia_nivel": "A",
+     "texto": ". La evaluación del acceso a datos personales en posesión de entidades de administración pública se realiza atendiendo a las circunstancias de cada caso concreto, valorando la afectación probable a otros derechos fundamentales. 11.3 El tratamiento de los datos personales obtenidos a través de fuentes de acceso público debe respetar los principios establecidos en la Ley y en el presente Reglamento. CAPÍTULO III TRANSFERENCIA DE DATOS PERSONALES Artículo 12. Aspectos generales de la transferencia de datos personales 12.1 La transferencia de datos personales es la comunicación de datos personales dentro o fuera del territorio nacional realizada a persona distinta al titular de los datos personales. 12.2 Aquel a quien se transﬁ eran los datos personales se obliga, por el solo hecho de la transferencia, a la observancia de la Ley y del presente Reglamento. Artículo 13",
+     "similitud": 0.8179
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Como armo un presupuesto mensual?",
+   "palabras": [
+    "armo",
+    "mensual",
+    "presupuesto"
+   ],
+   "respuesta": "Segun Su dinero, sus metas: kit de herramientas (pag. 79) [guia de EE. UU., orientativa: no es norma peruana]: Si decide hacer un presupuesto o un presupuesto de movimiento de fondos (consulte el Módulo 5), asegúrese de incluir el dinero que necesita reservar para lograr sus metas. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 79,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Si decide hacer un presupuesto o un presupuesto de movimiento de fondos (consulte el Módulo 5), asegúrese de incluir el dinero que necesita reservar para lograr sus metas.",
+     "similitud": 0.7057
+    },
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 189,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Eso significa que tiene un “movimiento de fondo”. Un presupuesto de movimiento de fondo proyecta la cantidad de ingresos que espera recibir, cuánto prevé que recibirá y gastará mensualmente y en qué momento. Un presupuesto de movimiento de fondo es diferente de un presupuesto normal, ya que incluye no solo la cantidad de cada partida presupuestaria o cuentas a pagar, sino también el momento de sus ingresos y gastos. El presupuesto de movimiento de fondo desglosa su presupuesto mensual semana por semana, representando para cuándo se espera recibir el dinero y otros recursos financieros (ingresos) y cuándo se deben utilizar en necesidades, deseos y obligaciones. Seguimiento de su dinero y sus gastos Algunos bancos y sindicatos de crédito ofrecen herramientas de gestión financiera en línea que le ayudan a hacer seguimiento a sus ingresos, su presupuesto y su movimiento de fondo",
+     "similitud": 0.684
+    },
+    {
+     "documento": "laboral/tuo_cts_ds_001_97_tr.pdf",
+     "titulo": "TUO de la Ley de Compensacion por Tiempo de Servicios (DS 001-97-TR)",
+     "pagina": 5,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/229267/TUO_Compensacion_por_Tiempo_de_Servicios_-_D.S_001-97-TR.pdf",
+     "licencia_nivel": "A",
+     "texto": "El valor mensual se establecerá en base al mes del respectivo semestre en que el trabajador acumuló mayor número de días de goce de este beneficio consignándose en el libro de planillas y boletas de pago. REMUNERACION EN ESPECIE Artículo 15.- Cuando se pacte el pago de la remuneración en especie, entendiéndose por tal los bienes que recibe el trabajador como contraprestación del servicio, se valorizará de común acuerdo o, a falta de éste, por el valor de mercado y su importe se consignará en el libro de planillas y boletas de pago. REGULARIDAD DE LA REMUNERACION Artículo 16.- Se considera remuneración regular aquélla percibida habitualmente por el trabajador, aun cuando sus montos puedan variar en razón de incrementos u otros motivos",
+     "similitud": 0.6802
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Que es la politica nacional de inclusion financiera del Peru?",
+   "palabras": [
+    "financiera",
+    "inclusion",
+    "nacional",
+    "peru",
+    "politica"
+   ],
+   "respuesta": "Segun Plan Estrategico Multisectorial de la Politica Nacional de Inclusion Financiera (pag. 6): 6 2 Síntesis de la Política Nacional de Inclusión Financiera La PNIF fue aprobada mediante Decreto Supremo N° 255 -2019-EF, Aprueban la Política Nacional de Inclusión Financiera y modifican el Decreto Supremo N° 029-2014-EF que crea la Comisión Multisectorial de Inclusión Financiera, publicado el 5 de agosto de 2019 en el Diario Oficial El Peruano. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "contexto/mef_plan_estrategico_inclusion_financiera.pdf",
+     "titulo": "Plan Estrategico Multisectorial de la Politica Nacional de Inclusion Financiera",
+     "pagina": 6,
+     "enlace": "https://www.mef.gob.pe/contenidos/archivos-descarga/Plan_Estrategico_Multisectorial_PEM.pdf",
+     "licencia_nivel": "A",
+     "texto": "6 2 Síntesis de la Política Nacional de Inclusión Financiera La PNIF fue aprobada mediante Decreto Supremo N° 255 -2019-EF, Aprueban la Política Nacional de Inclusión Financiera y modifican el Decreto Supremo N° 029-2014-EF que crea la Comisión Multisectorial de Inclusión Financiera, publicado el 5 de agosto de 2019 en el Diario Oficial El Peruano. Esta política atiende el problema público de la existencia de una “Población con bajo nivel de acceso y uso de servicios financieros de calidad”. En este sentido, la PNIF, contempla mejorar el bienestar económico de la población a través de los beneficios que genera su inclusión en un sistema financiero formal considerando el enfoque de género y a las personas en situación de vulnerabilidad, tales como niñas, niños, adolescentes, personas adultas mayores y personas con discapacidad",
+     "similitud": 0.8297
+    },
+    {
+     "documento": "contexto/mef_plan_estrategico_inclusion_financiera.pdf",
+     "titulo": "Plan Estrategico Multisectorial de la Politica Nacional de Inclusion Financiera",
+     "pagina": 4,
+     "enlace": "https://www.mef.gob.pe/contenidos/archivos-descarga/Plan_Estrategico_Multisectorial_PEM.pdf",
+     "licencia_nivel": "A",
+     "texto": "4 1 Presentación Desde hace una década, el Estado peruano asumió el compromiso internacional de priorizar la inclusión financiera en la agenda nacional. Es así que, en el año 2014 se creó la Comisión Multisectorial de Inclusión Financiera (CMIF) 1, como órgano de coordinación, concertación y participación de los sectores público y privado, con el principal objetivo de diseñar e implementar la Estrategia Nacional de Inclusión Financiera (ENIF). La ENIF, aprobada mediante el Decreto Supremo N°191-2015-EF, tuvo como propósito promover el uso y acceso responsable de servicios financieros confiables, eficientes, innovadores y adecuados a las necesidades de la población. Para ello, se estableció un plan bajo siete líneas de acción: pagos, ahorro, financiamiento, seguros, grupos vulnerables, educación financiera y protección al consumidor",
+     "similitud": 0.801
+    },
+    {
+     "documento": "contexto/mef_plan_estrategico_inclusion_financiera.pdf",
+     "titulo": "Plan Estrategico Multisectorial de la Politica Nacional de Inclusion Financiera",
+     "pagina": 7,
+     "enlace": "https://www.mef.gob.pe/contenidos/archivos-descarga/Plan_Estrategico_Multisectorial_PEM.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Gráfico Nº 1 - Modelo del problema público de la Política Nacional de Inclusión Financiera Fuente: Política Nacional de Inclusión Financiera. p. 14. Frente a este contexto, la PNIF plantea cinco objetivos prioritarios, los cuales se detallan a continuación. Objetivo Prioritario 1: Generar una mayor confianza de todos los segmentos de la población en el sistema financiero La PNIF busca, a través del Objetivo Prioritario 1, promover la confianza en el sistema financiero por medio de la mejora de las competencias y capacidades financieras de todos los segmentos de la población. La educación financiera es un elemento fundamental en el proceso de inclusión financiera, ya que permite a las personas entender los conceptos",
+     "similitud": 0.781
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Para que sirve la compensacion por tiempo de servicios?",
+   "palabras": [
+    "compensacion",
+    "servicios",
+    "sirve",
+    "tiempo"
+   ],
+   "respuesta": "Segun TUO de la Ley de Compensacion por Tiempo de Servicios (DS 001-97-TR) (pag. 19): La compensación por tiempo de servicios será actualizada con la remuneración vigente a la fecha de cada depósito. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "laboral/tuo_cts_ds_001_97_tr.pdf",
+     "titulo": "TUO de la Ley de Compensacion por Tiempo de Servicios (DS 001-97-TR)",
+     "pagina": 19,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/229267/TUO_Compensacion_por_Tiempo_de_Servicios_-_D.S_001-97-TR.pdf",
+     "licencia_nivel": "A",
+     "texto": "La compensación por tiempo de servicios será actualizada con la remuneración vigente a la fecha de cada depósito. La misma se depositará en monto no menor al que corresponda al pago de un año de compensación por tiempo de servicios, del más remoto al más próximo, con carácter cancelatorio y en un plazo máximo de diez años contado a partir del 13 de marzo de 1991, inclusive. Los períodos así cancelados no se volverán a computar para efectos de compensación por tiempo de servicios, manteniéndose la antigüedad sólo para otra clase de derechos que pudieran corresponder al trabajador de acuerdo a las disposiciones legales vigentes. Sétima.- La remuneración vigente a la fecha de cada depósito a que se refiere el tercer parágrafo de la Disposición Transitoria anterior, comprende el dozavo de las gratificaciones percibidas durante el último año",
+     "similitud": 0.7724
+    },
+    {
+     "documento": "laboral/mtpe_guia_cts.pdf",
+     "titulo": "Guia de Compensacion por Tiempo de Servicios",
+     "pagina": 2,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/8050277/6757898-guia_compensacion_tiempo_servicios.pdf",
+     "licencia_nivel": "A",
+     "texto": "La CTS es un beneﬁcio social de previsión de las contingencias que origina el cese en el trabajo y de promoción del trabajador y su familia. ¿En qué consiste la Compensación por Tiempo de Servicios (CTS)? El derecho al pago de la CTS se devenga desde el primer mes de iniciado el vínculo laboral; cumplido este requisito, toda fracción se computa por treintavos. 1 Fuente: artículo 1 del Decreto Supremo N° 001-97-TR, Texto Único Ordenado de la Ley de Compensación por Tiempo de Servicios. Fuente: artículo 2 del Decreto Supremo Nº 001-97-TR, T exto Único Ordenado de la Ley de Compensación por Tiempo de Servicios; y artículo 9 del Decreto Supremo N° 004-97-TR, Reglamento de la Ley de Compensación por Tiempo de Servicios",
+     "similitud": 0.7684
+    },
+    {
+     "documento": "laboral/tuo_cts_ds_001_97_tr.pdf",
+     "titulo": "TUO de la Ley de Compensacion por Tiempo de Servicios (DS 001-97-TR)",
+     "pagina": 3,
+     "enlace": "https://cdn.www.gob.pe/uploads/document/file/229267/TUO_Compensacion_por_Tiempo_de_Servicios_-_D.S_001-97-TR.pdf",
+     "licencia_nivel": "A",
+     "texto": "Artículo 3.- La compensación por tiempo de servicios que se devengue al cese del trabajador por período menor a un semestre le será pagada directamente por el empleador, dentro de las 48 horas de producido el cese y con efecto cancelatorio. La remuneración computable será la vigente a la fecha del cese. TRABAJADORES COMPRENDIDOS Artículo 4.- Sólo están comprendidos en el beneficio de la compensación por tiempo de servicios los trabajadores sujetos al régimen laboral común de la actividad privada que cumplan, cuando menos en promedio, una jornada mínima diaria de cuatro horas",
+     "similitud": 0.7547
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Que derechos tengo como consumidor frente a un proveedor que me da informacion enganosa?",
+   "palabras": [
+    "consumidor",
+    "derechos",
+    "enganosa",
+    "frente",
+    "informacion",
+    "proveedor"
+   ],
+   "respuesta": "Segun Codigo de Proteccion y Defensa del Consumidor (Ley 29571) (pag. 9): y busca que ellos tengan un rol activo en el desarrollo del mercado, informándose, comparando y premiando con su elección al proveedor leal y honesto, haciendo valer sus derechos directamente ante los proveedores o ante las entidades correspondientes. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "derechos/ley_29571_codigo_proteccion_consumidor.pdf",
+     "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+     "pagina": 9,
+     "enlace": "https://consumidor.gob.pe/wp-content/uploads/2020/07/Codigo-de-Proteccion-y-Defensa-del-Consumidor-2023-1.pdf.pdf",
+     "licencia_nivel": "A",
+     "texto": ". 2. El Estado garantiza el derecho a la información de los consumidores, promoviendo que el sector público respectivo y el sector privado faciliten mayores y mejores espacios e instrumentos de información a los consumidores a fin de hacer más transparente el mercado; y vela por que la información sea veraz y apropiada para que los consumidores tomen decisiones de consumo de acuerdo con sus expectativas. 3. El Estado orienta sus acciones a defender los intereses de los consumidores contra aquellas prácticas que afectan sus legítimos intereses y que en su perjuicio distorsionan el mercado; y busca que ellos tengan un rol activo en el desarrollo del mercado, informándose, comparando y premiando con su elección al proveedor leal y honesto, haciendo valer sus derechos directamente ante los proveedores o ante las entidades correspondientes. 4",
+     "similitud": 0.772
+    },
+    {
+     "documento": "salud_financiera/cfpb_su_dinero_sus_metas_kit.pdf",
+     "titulo": "Su dinero, sus metas: kit de herramientas",
+     "pagina": 369,
+     "enlace": "https://files.consumerfinance.gov/f/201603_cfpb_your-money-your-goals_toolkit_spanish.pdf",
+     "licencia_nivel": "A",
+     "texto": "SU DINERO, SUS METAS: UN CONJUNTO DE HE RRAMIENTAS DE EMPODERAMIENTO FINANCIERO 361 PARA PROFESIONALES DE SERVICIOS SOCIALES Herramienta 4: Aprender más acerca de la protección del consumidor Proteger sus derechos como consumidor comienza por saber que usted tiene derechos. Las siguientes leyes de protección al consumidor establecen los derechos de los consumidores en relación con los servicios y productos financieros. Esta no es una lista completa, pero proporciona un punto de partida para comprender algunos de los muchos derechos y responsabilidades con los que los instructores y asesores financieros deben estar familiarizados. Lea el resumen de cada ley a continuación. Dé un visto de verificación en la columna \"Seguimiento para más información\" si cree que saber un poco más acerca de esta ley será de ayuda para usted o las personas que conoce",
+     "similitud": 0.7618
+    },
+    {
+     "documento": "derechos/ley_29571_codigo_proteccion_consumidor.pdf",
+     "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+     "pagina": 35,
+     "enlace": "https://consumidor.gob.pe/wp-content/uploads/2020/07/Codigo-de-Proteccion-y-Defensa-del-Consumidor-2023-1.pdf.pdf",
+     "licencia_nivel": "A",
+     "texto": ". 76.2. El derecho del consumidor a la información obliga al proveedor de productos y servicios inmobiliarios a informar sobre las características del inmueble que está adquiriendo, así como a proporcionar toda aquella información que acredite la existencia de autorizaciones municipales, el área del inmueble, el proceso de titulación, habilitación urbana, saneamiento, materiales empleados en la construcción y en los acabados, inscripciones registrales del terreno y declaratoria de fábrica o de edificación, reglamento interno, independización y toda aquella documentación relevante. Artículo 77.- Información mínima en el proceso de compra 77.1. Los proveedores deben establecer e implementar medidas para brindar, como mínimo, información clara y veraz sobre: a",
+     "similitud": 0.7617
+    }
+   ]
+  },
+  {
+   "pregunta": "¿Que es la TCEA y que derechos tengo si me atraso en un pago?",
+   "palabras": [
+    "atraso",
+    "derechos",
+    "pago",
+    "tcea"
+   ],
+   "respuesta": "Segun Codigo de Proteccion y Defensa del Consumidor (Ley 29571) (pag. 43): Los proveedores deben presentar la tasa de costo efectivo anual (TCEA), de acuerdo con los parámetros que para tal efecto establezca 43. Tu decides.",
+   "huella_indice": "7d4d80bbff6b28fa",
+   "fragmentos": [
+    {
+     "documento": "derechos/ley_29571_codigo_proteccion_consumidor.pdf",
+     "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+     "pagina": 43,
+     "enlace": "https://consumidor.gob.pe/wp-content/uploads/2020/07/Codigo-de-Proteccion-y-Defensa-del-Consumidor-2023-1.pdf.pdf",
+     "licencia_nivel": "A",
+     "texto": ". Los proveedores deben presentar la tasa de costo efectivo anual (TCEA), de acuerdo con los parámetros que para tal efecto establezca 43",
+     "similitud": 0.7693
+    },
+    {
+     "documento": "derechos/ley_29571_codigo_proteccion_consumidor.pdf",
+     "titulo": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+     "pagina": 39,
+     "enlace": "https://consumidor.gob.pe/wp-content/uploads/2020/07/Codigo-de-Proteccion-y-Defensa-del-Consumidor-2023-1.pdf.pdf",
+     "licencia_nivel": "A",
+     "texto": ". En caso de que el consumidor o usuario solicite o se le otorgue información de forma oral, deben indicarse las mencionadas tasas. La TCEA es aquella tasa que permite igualar el valor actual de todas las cuotas y demás pagos que serán efectuados por el cliente con el monto que efectivamente ha recibido del préstamo y la TREA es aquella tasa que permite igualar el monto que se ha depositado con el valor actual del monto que efectivamente se recibe al vencimiento. La TCEA y la TREA deben comprender tanto la tasa de interés como todos los costos directos e indirectos que, bajo cualquier denominación, influyan en su determinación, de conformidad con lo dispuesto por la Superintendencia de Banca, Seguros y Administradoras Privadas de Fondos de Pensiones mediante norma de carácter general",
+     "similitud": 0.7513
+    },
+    {
+     "documento": "deudas/sbs_res_3274_2017_conducta_mercado.pdf",
+     "titulo": "Reglamento de Gestion de Conducta de Mercado (Res. SBS 3274-2017)",
+     "pagina": 7,
+     "enlace": "https://www.bn.com.pe/transparenciabn/transparencia-financiera/Res-SBS-3274-2017-Reglamento-Gestion-Conducta-Mercado.pdf",
+     "licencia_nivel": "A",
+     "texto": ". 13.3 Los cálculos de la TCEA p ara el caso de productos activos bajo el sistema revolvente, atendiendo a sus características, se realizan asumiendo un patrón estandarizado de comparación de costos y proceden bajo el supuesto de cumplimiento de todas las condiciones pactadas, de acuerdo con lo indicado en el Anexo N° 1-A del Reglamento. Artículo 14. Tasa de rendimiento efectivo anual 14.1 La tasa de rendimiento efectivo anual (TREA) es la tasa que permite comparar el rendimiento total de un producto pasivo . Considera todos los cargos por comisiones y gastos, incluidos los seguros, cuando corresponda, bajo el supuesto de cumplimiento de todas las condiciones pactadas. No se incluyen en este cálculo aquellos pagos por servicios provistos por terceros que sean pagados directamente por el cliente, ni los tributos que resulten aplicables",
+     "similitud": 0.7277
+    }
+   ]
+  }
+ ]
+}

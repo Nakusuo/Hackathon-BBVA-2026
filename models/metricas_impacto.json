@@ -1,0 +1,294 @@
+{
+ "tabla": {
+  "nada": {
+   "dias_en_rojo_por_cliente_mes": 0.8374615763,
+   "colchon_final_soles": 4263.5860757088,
+   "colchon_final_meses_de_ingreso": 1.8674708743,
+   "costo_de_cubrir_el_hueco_soles_por_mes": 1.4858170925
+  },
+  "diez_fijo": {
+   "dias_en_rojo_por_cliente_mes": 13.3652719769,
+   "colchon_final_soles": 6188.3774350216,
+   "colchon_final_meses_de_ingreso": 2.9094323452,
+   "costo_de_cubrir_el_hueco_soles_por_mes": 78.8158309726
+  },
+  "diez_fijo_ajustado": {
+   "dias_en_rojo_por_cliente_mes": 0.8374615763,
+   "colchon_final_soles": 10411.2951096435,
+   "colchon_final_meses_de_ingreso": 4.7574942889,
+   "costo_de_cubrir_el_hueco_soles_por_mes": 1.4858170925
+  },
+  "lucas": {
+   "dias_en_rojo_por_cliente_mes": 0.5941016005,
+   "colchon_final_soles": 4585.2841688918,
+   "colchon_final_meses_de_ingreso": 2.0174934216,
+   "costo_de_cubrir_el_hueco_soles_por_mes": 1.0953095944
+  },
+  "lucas_mas_ahorro_ajustado": {
+   "dias_en_rojo_por_cliente_mes": 0.5941016005,
+   "colchon_final_soles": 10732.9932028264,
+   "colchon_final_meses_de_ingreso": 4.9075168362,
+   "costo_de_cubrir_el_hueco_soles_por_mes": 1.0953095944
+  },
+  "lucas_ahorro_guiado": {
+   "dias_en_rojo_por_cliente_mes": 6.2411233028,
+   "colchon_final_soles": 5095.8946535329,
+   "colchon_final_meses_de_ingreso": 2.3434201662,
+   "costo_de_cubrir_el_hueco_soles_por_mes": 30.586132205
+  }
+ },
+ "diferencias": {
+  "diez_fijo_vs_nada": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": -12.52781040063902,
+    "ic95": [
+     -12.884035046000534,
+     -12.177838645488858
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": 1924.7913593127812,
+    "ic95": [
+     1767.994949606708,
+     2077.0261151970167
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": -77.33001388015421,
+    "ic95": [
+     -82.46885471004205,
+     -72.19206394534484
+    ]
+   }
+  },
+  "diez_fijo_vs_diez_fijo_ajustado": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": -12.52781040063902,
+    "ic95": [
+     -12.899584567101101,
+     -12.152690417722516
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": -4222.917674621881,
+    "ic95": [
+     -4460.553804099789,
+     -3957.1669336879636
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": -77.33001388015421,
+    "ic95": [
+     -83.21400940133991,
+     -71.44431014554763
+    ]
+   }
+  },
+  "diez_fijo_ajustado_vs_nada": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": 0.0,
+    "ic95": [
+     0.0,
+     0.0
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": 6147.709033934662,
+    "ic95": [
+     5859.6395066351715,
+     6426.616498725789
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": 1.2446747285619867e-15,
+    "ic95": [
+     8.560478465497016e-16,
+     1.739213174701328e-15
+    ]
+   }
+  },
+  "lucas_vs_nada": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": 0.24335997572045087,
+    "ic95": [
+     0.18500741317579228,
+     0.30190736552058145
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": 321.69809318295074,
+    "ic95": [
+     290.3850828084198,
+     357.08140800675625
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": 0.39050749806369955,
+    "ic95": [
+     0.2913491569169071,
+     0.515427400750232
+    ]
+   }
+  },
+  "lucas_vs_diez_fijo_ajustado": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": 0.24335997572045087,
+    "ic95": [
+     0.18374975702834634,
+     0.306734797855949
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": -5826.010940751711,
+    "ic95": [
+     -6097.4596847080575,
+     -5545.07348424213
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": 0.39050749806369833,
+    "ic95": [
+     0.29810670971344694,
+     0.5104334987516622
+    ]
+   }
+  },
+  "lucas_mas_ahorro_ajustado_vs_nada": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": 0.24335997572045087,
+    "ic95": [
+     0.19126440227718214,
+     0.30255966514526855
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": 6469.407127117612,
+    "ic95": [
+     6167.88776794919,
+     6791.521242131879
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": 0.39050749806369955,
+    "ic95": [
+     0.2904611906527941,
+     0.4899695738016348
+    ]
+   }
+  },
+  "lucas_mas_ahorro_ajustado_vs_diez_fijo_ajustado": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": 0.24335997572045087,
+    "ic95": [
+     0.18444925279776547,
+     0.2951814121347447
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": 321.6980931829499,
+    "ic95": [
+     291.00265146625657,
+     356.1110486014968
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": 0.39050749806369833,
+    "ic95": [
+     0.29493303580410707,
+     0.504361303550819
+    ]
+   }
+  },
+  "lucas_ahorro_guiado_vs_nada": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": -5.4036617265047315,
+    "ic95": [
+     -5.802834084701441,
+     -4.9550923033868015
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": 832.3085778240477,
+    "ic95": [
+     734.4742095106658,
+     951.4389552874725
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": -29.10031511252311,
+    "ic95": [
+     -32.983770137702855,
+     -25.71598924871322
+    ]
+   }
+  },
+  "lucas_ahorro_guiado_vs_diez_fijo_ajustado": {
+   "dias_rojo_evitados_por_cliente_mes": {
+    "media": -5.4036617265047315,
+    "ic95": [
+     -5.885138805294808,
+     -4.991034654228833
+    ]
+   },
+   "colchon_adicional_soles": {
+    "media": -5315.400456110613,
+    "ic95": [
+     -5641.931938328149,
+     -5035.137677417008
+    ]
+   },
+   "intereses_evitados_soles_por_mes": {
+    "media": -29.10031511252311,
+    "ic95": [
+     -32.52783804723959,
+     -25.756516330452875
+    ]
+   }
+  }
+ },
+ "por_segmento": {
+  "base_comision": {
+   "dias_rojo_nada": 0.2657827891,
+   "dias_rojo_lucas": 0.1551597268,
+   "colchon_nada": 5013.1200336828,
+   "colchon_lucas": 5347.7105736295
+  },
+  "formal_quincena": {
+   "dias_rojo_nada": 0.2972415366,
+   "dias_rojo_lucas": 0.1629697003,
+   "colchon_nada": 6656.5878842814,
+   "colchon_lucas": 7029.4491856335
+  },
+  "independiente_diario": {
+   "dias_rojo_nada": 0.7849052883,
+   "dias_rojo_lucas": 0.5431020076,
+   "colchon_nada": 2365.9773358585,
+   "colchon_lucas": 2523.7399522404
+  },
+  "independiente_proyectos": {
+   "dias_rojo_nada": 1.8793525877,
+   "dias_rojo_lucas": 1.5276865614,
+   "colchon_nada": 3229.7298560513,
+   "colchon_lucas": 3616.5991200848
+  },
+  "mixto": {
+   "dias_rojo_nada": 1.3309864154,
+   "dias_rojo_lucas": 0.8629325187,
+   "colchon_nada": 2763.3521495617,
+   "colchon_lucas": 3135.1194292321
+  }
+ },
+ "supuestos": {
+  "tasa_mensual_por_cubrir_el_hueco": 0.1,
+  "fraccion_apartada_10_fijo": 0.1,
+  "recorte_hormiga": 0.2,
+  "recorte_hormiga_en_alerta": 0.5,
+  "dias_de_alerta": 14,
+  "umbral_alerta_p_rojo": 0.25,
+  "asignacion_sueldo_lucas": 0.95,
+  "umbral_irregular_cv": 0.4,
+  "dias_de_gasto_que_deben_quedar_en_caja_para_apartar": 7,
+  "fraccion_del_excedente_que_se_aparta": 0.5
+ },
+ "meses": 24.04605263157895
+}

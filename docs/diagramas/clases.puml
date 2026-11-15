@@ -1,0 +1,165 @@
+' Regenerar: java -jar plantuml.jar -charset UTF-8 -tsvg docs/diagramas/clases.puml
+@startuml clases
+!pragma layout smetana
+hide empty members
+skinparam packageStyle rectangle
+
+title Lucas: diagrama de clases del dominio y del agente
+
+package "Dominio del front (frontend/src)" {
+  class Persona <<personas.js>> {
+    id
+    saldoHoy
+    ingresos[]
+    pagos[]
+    gastosFrecuentes[]
+    suscripciones[]
+    --
+    personaPorId(id)
+  }
+  class Tip <<personas.js · cambios>> {
+    id
+    titulo
+    facilidad
+    porque
+    ajuste
+  }
+  class Planificado <<planificar.js>> {
+    tipo: ingreso | gasto
+    monto
+    fecha
+    concepto
+    --
+    validarPlanificado(cliente, borrador)
+  }
+  class Vista <<cliente.js>> {
+    saldoHoy
+    pronostico[] (con banda)
+    peorDia
+    diasEnRojo
+    gastoDiarioSeguro
+    recomendaciones[]
+    salud
+    apartado
+    --
+    vistaCon(elegidos, personaId,\n  pagosExtra, planificados)
+  }
+  class Meta <<metas.js>> {
+    id
+    nombre
+    objetivo
+    ahorrado
+    fecha
+    historial: creada → en curso → cumplida
+    --
+    crearMeta(datos, id)
+    aportar(meta, monto)
+  }
+  class Aviso <<avisos.js>> {
+    id
+    tipo
+    urgencia
+    fecha
+    impacto
+  }
+  class RespuestaChat <<clienteChat.js>> {
+    origen: agente | plantilla
+    texto
+    verificado
+    cifras[]
+    fuentes[]
+    aviso
+  }
+
+  note top of Persona : id y cambios están en la definición;\nel resto, en definicion.persona
+  Persona "1" *-- "*" Tip : propone
+  Vista ..> Persona : se arma con
+  Vista o-- Tip : elegidos («Lo hago»)
+  Vista o-- "*" Planificado
+  Meta ..> Vista : reparte el apartado
+  Aviso ..> Vista : sale del riesgo de
+  Aviso --> "0..1" Tip : sugiere
+  RespuestaChat ..> Vista : plantilla calcula con
+}
+
+package "Agente del chat (backend/src/agent, backend/src/api)" {
+  class ChatRequest <<Pydantic>> {
+    customer_id
+    message
+    conversation_id
+  }
+  class ChatResponse <<Pydantic>> {
+    conversation_id
+    answer
+    provider
+    verified
+    figures
+    sources
+    tools_used
+  }
+  note bottom of ChatResponse : La conexión con agent.chat.responder agrega figures\n(y verified_figures, intent) y cambia sources\nde texto a objetos {id, title, url}
+
+  class Estado <<TypedDict>> {
+    pregunta
+    intencion
+    datos
+    borrador
+    redacciones
+    aprobado
+    respuesta
+  }
+
+  interface Herramientas {
+    get_health(customer_id)
+    get_forecast(customer_id)
+    get_recos(customer_id)
+    simulate(customer_id, monto_gasto)
+    get_fx()
+  }
+  class HerramientasAPI
+  class HerramientasMock
+  class HerramientaNoDisponible <<excepción>>
+
+  interface LLMProvider {
+    redactar(intencion, datos)
+  }
+  class ProveedorChat <<Ollama · Gemini>>
+  class TemplateProvider
+
+  class Veredicto {
+    ok
+    cifras_verificadas
+    citas_validas
+    detalle
+  }
+  class Permitidos {
+    cifras
+    soles
+    fechas
+  }
+  class Buscador <<RAG FAISS>> {
+    buscar(consulta, modulos)
+  }
+
+  Herramientas <|.. HerramientasAPI
+  Herramientas <|.. HerramientasMock
+  HerramientasAPI ..> HerramientaNoDisponible : lanza
+  LLMProvider <|.. ProveedorChat
+  LLMProvider <|.. TemplateProvider
+  class Grafo <<grafo.construir · chat.responder>> {
+    construir(herramientas, cadena, buscador)
+    responder(agente, pedido)
+  }
+  Grafo --> "1" Herramientas
+  Grafo --> "1..*" LLMProvider : cadena
+  Grafo --> "0..1" Buscador
+  Grafo ..> Estado : recorre
+  Grafo ..> ChatRequest : lee
+  Grafo ..> ChatResponse : arma
+  Grafo ..> Veredicto : juzgar()
+  Grafo ..> Permitidos : juzgar() compara contra
+}
+
+RespuestaChat ..> ChatResponse : desdeAgente(cuerpo)\nsolo si verified
+
+@enduml

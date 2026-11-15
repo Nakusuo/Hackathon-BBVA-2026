@@ -1,0 +1,73 @@
+' Regenerar: java -jar plantuml.jar -charset UTF-8 -tsvg docs/diagramas/secuencia-chat.puml
+@startuml secuencia-chat
+!pragma layout smetana
+autonumber
+
+title Lucas: secuencia del chat (el LLM explica, no calcula)
+
+actor Cliente
+participant "Chat\n(clienteChat.js)" as Front
+participant "API\nPOST /api/v1/chat" as API
+participant "Agente\n(agent.chat.responder)" as Agente
+participant "Router\n(router.clasificar)" as Router
+participant "Tools de solo lectura" as Tools
+participant "LLM\n(Ollama / Gemini)" as LLM
+participant "Juez\n(juzgar)" as Juez
+
+Cliente -> Front : escribe una pregunta
+Front -> Front : preguntarALucas(texto)
+
+alt esPedidoDeOperacion (transferir, comprar dólares, invertir)\no esPreguntaDeCampana (las campañas viven en el front)
+  Front --> Cliente : plantilla del front, sin salir a la red
+else pregunta permitida
+  Front -> API : preguntarAgente(texto ≤ LARGO_MAXIMO = 500)\nespera ESPERA_CHAT_MS = 12 s
+  API -> Agente : customer_id, message, conversation_id
+  Agente -> Router : clasificar(pregunta)
+  note right of Router : por reglas, sin LLM
+  Router --> Agente : intención y monto
+
+  alt bloqueada: operación, inversión, inyección o no entendida
+    Agente -> Agente : TemplateProvider.redactar
+  else con datos
+    Agente -> Tools : get_health / get_forecast / get_recos\n/ simulate / get_fx (educación: Buscador.buscar)
+    Tools --> Agente : datos del cliente
+
+    alt INTENCIONES_SOLO_PLANTILLA (fx, segmento, simular, educación)\no sin_datos / sin_fuente
+      Agente -> Agente : TemplateProvider.redactar
+      note right of Agente : sin LLM: más barato\ny sin riesgo de redacción
+    else salud, pronóstico, recomendaciones
+      loop hasta MAX_REDACCIONES = 2
+        Agente -> LLM : redactar_con_respaldo(intención, datos)
+        note right of LLM : recibe solo la salida de las tools,\nnunca el texto crudo del usuario
+        LLM --> Agente : borrador
+        Agente -> Juez : juzgar(borrador, datos)
+        Juez --> Agente : Veredicto (cifras, signo, citas)
+        break aprobado
+          Agente -> Agente : respuesta = borrador
+        end
+      end
+      opt rechazado dos veces
+        Agente -> Agente : TemplateProvider.redactar
+      end
+    end
+  end
+
+  opt la respuesta salió de una plantilla
+    Agente -> Juez : juzgar(plantilla, datos)
+    Juez --> Agente : Veredicto
+  end
+  note over Agente, Juez : toda respuesta lleva el veredicto del juez:\nVeredicto.ok → verified, Veredicto.detalle → figures
+
+  Agente --> API : answer, provider, verified,\nfigures, sources, tools_used
+  API --> Front : ChatResponse
+
+  alt respuesta válida y verified = true
+    Front -> Front : desdeAgente(cuerpo)
+    Front --> Cliente : texto del agente + bloque\n«Cifras verificadas con tus datos» ✓ y sus fuentes
+  else sin red, demora, formato ilegible o verified = false
+    Front -> Front : plantillas de respuestas.js con el motor
+    Front --> Cliente : «Calculado con tus datos» + aviso de AVISOS
+  end
+end
+
+@enduml

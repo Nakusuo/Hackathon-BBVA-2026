@@ -1,0 +1,536 @@
+{
+ "ventanas": {
+  "entrena": {
+   "filas": 90000,
+   "origen_desde": "2020-01-31",
+   "origen_hasta": "2022-06-30"
+  },
+  "ajusta": {
+   "filas": 18000,
+   "origen_desde": "2022-10-31",
+   "origen_hasta": "2023-03-31"
+  },
+  "calibra": {
+   "filas": 9000,
+   "origen_desde": "2023-04-30",
+   "origen_hasta": "2023-06-30"
+  },
+  "prueba": {
+   "filas": 61500,
+   "origen_desde": "2024-01-31",
+   "origen_hasta": "2025-11-30"
+  }
+ },
+ "por_horizonte": {
+  "lightgbm_recalibracion_continua": {
+   "1": {
+    "ing_mae_rel": 0.3870037379,
+    "ing_wape": 0.3071437375,
+    "ing_cobertura": 0.7884347826,
+    "gas_mae_rel": 0.1014544421,
+    "gas_wape": 0.1234712961,
+    "gas_cobertura": 0.8004347826,
+    "net_mae_rel": 0.4172165761,
+    "net_cobertura": 0.7969565217
+   },
+   "2": {
+    "ing_mae_rel": 0.392147725,
+    "ing_wape": 0.3086175757,
+    "ing_cobertura": 0.7955454545,
+    "gas_mae_rel": 0.1022965075,
+    "gas_wape": 0.1240356031,
+    "gas_cobertura": 0.7999090909,
+    "net_mae_rel": 0.4230382159,
+    "net_cobertura": 0.7995454545
+   },
+   "3": {
+    "ing_mae_rel": 0.3974758221,
+    "ing_wape": 0.3119320966,
+    "ing_cobertura": 0.7982857143,
+    "gas_mae_rel": 0.1029571775,
+    "gas_wape": 0.1247799277,
+    "gas_cobertura": 0.798,
+    "net_mae_rel": 0.42726312,
+    "net_cobertura": 0.8040952381
+   },
+   "4": {
+    "ing_mae_rel": 0.4048083439,
+    "ing_wape": 0.3132807249,
+    "ing_cobertura": 0.7987,
+    "gas_mae_rel": 0.1036607477,
+    "gas_wape": 0.1257310581,
+    "gas_cobertura": 0.7965,
+    "net_mae_rel": 0.4362545066,
+    "net_cobertura": 0.8022
+   },
+   "5": {
+    "ing_mae_rel": 0.4129141938,
+    "ing_wape": 0.3161251102,
+    "ing_cobertura": 0.792,
+    "gas_mae_rel": 0.1039863592,
+    "gas_wape": 0.1266771715,
+    "gas_cobertura": 0.7971578947,
+    "net_mae_rel": 0.4424803834,
+    "net_cobertura": 0.8046315789
+   },
+   "6": {
+    "ing_mae_rel": 0.4237112963,
+    "ing_wape": 0.3159808973,
+    "ing_cobertura": 0.7904444444,
+    "gas_mae_rel": 0.105565243,
+    "gas_wape": 0.1288078222,
+    "gas_cobertura": 0.7903333333,
+    "net_mae_rel": 0.455364551,
+    "net_cobertura": 0.8073333333
+   }
+  },
+  "lightgbm_conformal_fijo": {
+   "1": {
+    "ing_mae_rel": 0.3870037379,
+    "ing_wape": 0.3071437375,
+    "ing_cobertura": 0.6317391304,
+    "gas_mae_rel": 0.1014544421,
+    "gas_wape": 0.1234712961,
+    "gas_cobertura": 0.7756521739,
+    "net_mae_rel": 0.4172165761,
+    "net_cobertura": 0.8066086957
+   },
+   "2": {
+    "ing_mae_rel": 0.392147725,
+    "ing_wape": 0.3086175757,
+    "ing_cobertura": 0.6589090909,
+    "gas_mae_rel": 0.1022965075,
+    "gas_wape": 0.1240356031,
+    "gas_cobertura": 0.8005454545,
+    "net_mae_rel": 0.4230382159,
+    "net_cobertura": 0.7967272727
+   },
+   "3": {
+    "ing_mae_rel": 0.3974758221,
+    "ing_wape": 0.3119320966,
+    "ing_cobertura": 0.7586666667,
+    "gas_mae_rel": 0.1029571775,
+    "gas_wape": 0.1247799277,
+    "gas_cobertura": 0.7919047619,
+    "net_mae_rel": 0.42726312,
+    "net_cobertura": 0.8008571429
+   },
+   "4": {
+    "ing_mae_rel": 0.4048083439,
+    "ing_wape": 0.3132807249,
+    "ing_cobertura": 0.761,
+    "gas_mae_rel": 0.1036607477,
+    "gas_wape": 0.1257310581,
+    "gas_cobertura": 0.7945,
+    "net_mae_rel": 0.4362545066,
+    "net_cobertura": 0.7652
+   },
+   "5": {
+    "ing_mae_rel": 0.4129141938,
+    "ing_wape": 0.3161251102,
+    "ing_cobertura": 0.7877894737,
+    "gas_mae_rel": 0.1039863592,
+    "gas_wape": 0.1266771715,
+    "gas_cobertura": 0.7944210526,
+    "net_mae_rel": 0.4424803834,
+    "net_cobertura": 0.7692631579
+   },
+   "6": {
+    "ing_mae_rel": 0.4237112963,
+    "ing_wape": 0.3159808973,
+    "ing_cobertura": 0.7902222222,
+    "gas_mae_rel": 0.105565243,
+    "gas_wape": 0.1288078222,
+    "gas_cobertura": 0.7725555556,
+    "net_mae_rel": 0.455364551,
+    "net_cobertura": 0.8463333333
+   }
+  },
+  "mismo_mes_anio_previo": {
+   "1": {
+    "ing_mae_rel": 0.5397491758,
+    "ing_wape": 0.4283950921,
+    "ing_cobertura": 0.8597391304,
+    "gas_mae_rel": 0.136176586,
+    "gas_wape": 0.1646220812,
+    "gas_cobertura": 0.8249565217,
+    "net_mae_rel": 0.5969554992,
+    "net_cobertura": 0.8819130435
+   },
+   "2": {
+    "ing_mae_rel": 0.5480974308,
+    "ing_wape": 0.4310183196,
+    "ing_cobertura": 0.834,
+    "gas_mae_rel": 0.1363566325,
+    "gas_wape": 0.1642402525,
+    "gas_cobertura": 0.8216363636,
+    "net_mae_rel": 0.6054008811,
+    "net_cobertura": 0.8631818182
+   },
+   "3": {
+    "ing_mae_rel": 0.5573856751,
+    "ing_wape": 0.4346430546,
+    "ing_cobertura": 0.8128571429,
+    "gas_mae_rel": 0.1354861828,
+    "gas_wape": 0.1644891718,
+    "gas_cobertura": 0.8300952381,
+    "net_mae_rel": 0.6151635786,
+    "net_cobertura": 0.852
+   },
+   "4": {
+    "ing_mae_rel": 0.567173726,
+    "ing_wape": 0.4379282087,
+    "ing_cobertura": 0.8097,
+    "gas_mae_rel": 0.1359459858,
+    "gas_wape": 0.1649346083,
+    "gas_cobertura": 0.835,
+    "net_mae_rel": 0.6253707399,
+    "net_cobertura": 0.8501
+   },
+   "5": {
+    "ing_mae_rel": 0.5825500149,
+    "ing_wape": 0.4426547896,
+    "ing_cobertura": 0.7922105263,
+    "gas_mae_rel": 0.1340698139,
+    "gas_wape": 0.1644136553,
+    "gas_cobertura": 0.8247368421,
+    "net_mae_rel": 0.6398437658,
+    "net_cobertura": 0.8349473684
+   },
+   "6": {
+    "ing_mae_rel": 0.6078662253,
+    "ing_wape": 0.4463111669,
+    "ing_cobertura": 0.7895555556,
+    "gas_mae_rel": 0.1341455203,
+    "gas_wape": 0.1646794277,
+    "gas_cobertura": 0.8368888889,
+    "net_mae_rel": 0.6644077632,
+    "net_cobertura": 0.8341111111
+   }
+  },
+  "promedio_3_meses": {
+   "1": {
+    "ing_mae_rel": 0.551339528,
+    "ing_wape": 0.5130214766,
+    "ing_cobertura": 0.7677391304,
+    "gas_mae_rel": 0.1121353632,
+    "gas_wape": 0.1374634032,
+    "gas_cobertura": 0.8331304348,
+    "net_mae_rel": 0.5733519314,
+    "net_cobertura": 0.8296521739
+   },
+   "2": {
+    "ing_mae_rel": 0.5615684192,
+    "ing_wape": 0.5270879442,
+    "ing_cobertura": 0.7535454545,
+    "gas_mae_rel": 0.1106591919,
+    "gas_wape": 0.1359036892,
+    "gas_cobertura": 0.8175454545,
+    "net_mae_rel": 0.583835587,
+    "net_cobertura": 0.8060909091
+   },
+   "3": {
+    "ing_mae_rel": 0.5522643223,
+    "ing_wape": 0.5149539422,
+    "ing_cobertura": 0.7436190476,
+    "gas_mae_rel": 0.1120910531,
+    "gas_wape": 0.136347551,
+    "gas_cobertura": 0.8201904762,
+    "net_mae_rel": 0.5779857247,
+    "net_cobertura": 0.8011428571
+   },
+   "4": {
+    "ing_mae_rel": 0.5570077968,
+    "ing_wape": 0.511212147,
+    "ing_cobertura": 0.7154,
+    "gas_mae_rel": 0.1124220283,
+    "gas_wape": 0.137019241,
+    "gas_cobertura": 0.8293,
+    "net_mae_rel": 0.5835439948,
+    "net_cobertura": 0.7897
+   },
+   "5": {
+    "ing_mae_rel": 0.5415644873,
+    "ing_wape": 0.4848421403,
+    "ing_cobertura": 0.7377894737,
+    "gas_mae_rel": 0.1122207206,
+    "gas_wape": 0.1367540006,
+    "gas_cobertura": 0.8325263158,
+    "net_mae_rel": 0.5693787367,
+    "net_cobertura": 0.7970526316
+   },
+   "6": {
+    "ing_mae_rel": 0.579630386,
+    "ing_wape": 0.5061014087,
+    "ing_cobertura": 0.7521111111,
+    "gas_mae_rel": 0.1121795535,
+    "gas_wape": 0.1365704297,
+    "gas_cobertura": 0.8305555556,
+    "net_mae_rel": 0.6051084362,
+    "net_cobertura": 0.818
+   }
+  }
+ },
+ "por_tipo": {
+  "lightgbm_recalibracion_continua": {
+   "dependiente": {
+    "n": 18450.0,
+    "ing_mae_rel": 0.1742329066,
+    "ing_cobertura": 0.7770731707,
+    "gas_mae_rel": 0.0828751584,
+    "gas_cobertura": 0.7954471545,
+    "net_cobertura": 0.7972357724
+   },
+   "dependiente_con_comision": {
+    "n": 9225.0,
+    "ing_mae_rel": 0.2899479472,
+    "ing_cobertura": 0.7939295393,
+    "gas_mae_rel": 0.0877356811,
+    "gas_cobertura": 0.7965311653,
+    "net_cobertura": 0.7886178862
+   },
+   "independiente": {
+    "n": 24600.0,
+    "ing_mae_rel": 0.5108597501,
+    "ing_cobertura": 0.7992682927,
+    "gas_mae_rel": 0.1244853666,
+    "gas_cobertura": 0.8009349593,
+    "net_cobertura": 0.8081300813
+   },
+   "mixto": {
+    "n": 9225.0,
+    "ing_mae_rel": 0.6791671814,
+    "ing_cobertura": 0.8132249322,
+    "gas_mae_rel": 0.1026400823,
+    "gas_cobertura": 0.7920867209,
+    "net_cobertura": 0.8098644986
+   }
+  },
+  "mismo_mes_anio_previo": {
+   "dependiente": {
+    "ing_mae_rel": 0.2649572142,
+    "ing_cobertura": 0.9488346883,
+    "gas_mae_rel": 0.1050194959,
+    "gas_cobertura": 0.868401084
+   },
+   "dependiente_con_comision": {
+    "ing_mae_rel": 0.4195614653,
+    "ing_cobertura": 0.9475338753,
+    "gas_mae_rel": 0.1114381499,
+    "gas_cobertura": 0.8430352304
+   },
+   "independiente": {
+    "ing_mae_rel": 0.6817992633,
+    "ing_cobertura": 0.7349593496,
+    "gas_mae_rel": 0.1681305784,
+    "gas_cobertura": 0.8027642276
+   },
+   "mixto": {
+    "ing_mae_rel": 1.0010101115,
+    "ing_cobertura": 0.6501897019,
+    "gas_mae_rel": 0.1330463443,
+    "gas_cobertura": 0.8033604336
+   }
+  }
+ },
+ "por_seg": {
+  "lightgbm_recalibracion_continua": {
+   "0": {
+    "n": 8364.0,
+    "ing_mae_rel": 0.5685603847,
+    "ing_cobertura": 0.8077474892,
+    "gas_mae_rel": 0.2028995074,
+    "gas_cobertura": 0.7871831659,
+    "net_cobertura": 0.7990196078
+   },
+   "1": {
+    "n": 20295.0,
+    "ing_mae_rel": 0.486252872,
+    "ing_cobertura": 0.8131066765,
+    "gas_mae_rel": 0.082969642,
+    "gas_cobertura": 0.8060113328,
+    "net_cobertura": 0.8190194629
+   },
+   "2": {
+    "n": 32841.0,
+    "ing_mae_rel": 0.307478242,
+    "ing_cobertura": 0.7785085716,
+    "gas_mae_rel": 0.0903347262,
+    "gas_cobertura": 0.7944946865,
+    "net_cobertura": 0.7926068025
+   }
+  },
+  "mismo_mes_anio_previo": {
+   "0": {
+    "ing_mae_rel": 0.7783478946,
+    "ing_cobertura": 0.6904591105,
+    "gas_mae_rel": 0.2953066516,
+    "gas_cobertura": 0.6730033477
+   },
+   "1": {
+    "ing_mae_rel": 0.6721108401,
+    "ing_cobertura": 0.7719635378,
+    "gas_mae_rel": 0.1007017438,
+    "gas_cobertura": 0.8779009608
+   },
+   "2": {
+    "ing_mae_rel": 0.445020066,
+    "ing_cobertura": 0.8794799184,
+    "gas_mae_rel": 0.1161750453,
+    "gas_cobertura": 0.8377333212
+   }
+  }
+ },
+ "por_region": {
+  "lightgbm_recalibracion_continua": {
+   "centro": {
+    "n": 7503.0,
+    "ing_mae_rel": 0.4591785212,
+    "ing_cobertura": 0.7854191657,
+    "gas_mae_rel": 0.1071300208,
+    "gas_cobertura": 0.8144742103,
+    "net_cobertura": 0.7942156471
+   },
+   "lima": {
+    "n": 27552.0,
+    "ing_mae_rel": 0.3961663798,
+    "ing_cobertura": 0.7879645761,
+    "gas_mae_rel": 0.1049170977,
+    "gas_cobertura": 0.7963124274,
+    "net_cobertura": 0.7967116725
+   },
+   "norte": {
+    "n": 11193.0,
+    "ing_mae_rel": 0.4128688492,
+    "ing_cobertura": 0.7954078442,
+    "gas_mae_rel": 0.1033243686,
+    "gas_cobertura": 0.7873671044,
+    "net_cobertura": 0.7978200661
+   },
+   "oriente": {
+    "n": 4920.0,
+    "ing_mae_rel": 0.3480205987,
+    "ing_cobertura": 0.8221544715,
+    "gas_mae_rel": 0.0889349895,
+    "gas_cobertura": 0.799796748,
+    "net_cobertura": 0.8215447154
+   },
+   "sur": {
+    "n": 10332.0,
+    "ing_mae_rel": 0.3898508639,
+    "ing_cobertura": 0.8008130081,
+    "gas_mae_rel": 0.1025029889,
+    "gas_cobertura": 0.7970383275,
+    "net_cobertura": 0.8181378242
+   }
+  },
+  "mismo_mes_anio_previo": {
+   "centro": {
+    "ing_mae_rel": 0.6452125729,
+    "ing_cobertura": 0.7958150073,
+    "gas_mae_rel": 0.1338635417,
+    "gas_cobertura": 0.8341996535
+   },
+   "lima": {
+    "ing_mae_rel": 0.5559138369,
+    "ing_cobertura": 0.8169642857,
+    "gas_mae_rel": 0.1447819501,
+    "gas_cobertura": 0.8286149826
+   },
+   "norte": {
+    "ing_mae_rel": 0.5772530039,
+    "ing_cobertura": 0.8276601447,
+    "gas_mae_rel": 0.1313895862,
+    "gas_cobertura": 0.8104172251
+   },
+   "oriente": {
+    "ing_mae_rel": 0.4898656752,
+    "ing_cobertura": 0.8443089431,
+    "gas_mae_rel": 0.109322854,
+    "gas_cobertura": 0.8589430894
+   },
+   "sur": {
+    "ing_mae_rel": 0.5552260272,
+    "ing_cobertura": 0.8156213705,
+    "gas_mae_rel": 0.1284425924,
+    "gas_cobertura": 0.8296554394
+   }
+  }
+ },
+ "por_edad": {
+  "lightgbm_recalibracion_continua": {
+   "18-24": {
+    "n": 7749.0,
+    "ing_mae_rel": 0.3368443402,
+    "ing_cobertura": 0.7881016905,
+    "gas_mae_rel": 0.1059111083,
+    "gas_cobertura": 0.7853916634,
+    "net_cobertura": 0.794554136
+   },
+   "25-34": {
+    "n": 19680.0,
+    "ing_mae_rel": 0.4166252593,
+    "ing_cobertura": 0.7993902439,
+    "gas_mae_rel": 0.0982412798,
+    "gas_cobertura": 0.8010162602,
+    "net_cobertura": 0.8022865854
+   },
+   "35-44": {
+    "n": 16113.0,
+    "ing_mae_rel": 0.4112517854,
+    "ing_cobertura": 0.7925898343,
+    "gas_mae_rel": 0.100281034,
+    "gas_cobertura": 0.8039471234,
+    "net_cobertura": 0.8028920747
+   },
+   "45-54": {
+    "n": 10947.0,
+    "ing_mae_rel": 0.4326920106,
+    "ing_cobertura": 0.7897140769,
+    "gas_mae_rel": 0.1182328422,
+    "gas_cobertura": 0.797752809,
+    "net_cobertura": 0.7983009044
+   },
+   "55+": {
+    "n": 7011.0,
+    "ing_mae_rel": 0.3636089985,
+    "ing_cobertura": 0.7944658394,
+    "gas_mae_rel": 0.0974734445,
+    "gas_cobertura": 0.78405363,
+    "net_cobertura": 0.8148623591
+   }
+  },
+  "mismo_mes_anio_previo": {
+   "18-24": {
+    "ing_mae_rel": 0.4692550558,
+    "ing_cobertura": 0.8362369338,
+    "gas_mae_rel": 0.1332110825,
+    "gas_cobertura": 0.8353335914
+   },
+   "25-34": {
+    "ing_mae_rel": 0.5956612138,
+    "ing_cobertura": 0.8173272358,
+    "gas_mae_rel": 0.1252089904,
+    "gas_cobertura": 0.8216463415
+   },
+   "35-44": {
+    "ing_mae_rel": 0.5771772791,
+    "ing_cobertura": 0.8175386334,
+    "gas_mae_rel": 0.1361090688,
+    "gas_cobertura": 0.8375224974
+   },
+   "45-54": {
+    "ing_mae_rel": 0.5934109543,
+    "ing_cobertura": 0.8074358272,
+    "gas_mae_rel": 0.1633910067,
+    "gas_cobertura": 0.8195852745
+   },
+   "55+": {
+    "ing_mae_rel": 0.5149761726,
+    "ing_cobertura": 0.8198545143,
+    "gas_mae_rel": 0.1213605764,
+    "gas_cobertura": 0.8341178149
+   }
+  }
+ }
+}

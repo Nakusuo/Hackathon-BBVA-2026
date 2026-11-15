@@ -1,0 +1,182 @@
+/* Billetera: la tarjeta asoma por arriba y el bolsillo oscuro la tapa salvo por el corte curvo. Todo en colores sólidos. */
+.billetera {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+  padding-top: 72px;
+}
+
+.tarjeta-credito {
+  position: absolute;
+  top: 0;
+  right: 12px;
+  left: 12px;
+  height: 150px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: var(--radio) var(--radio) 0 0;
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.tarjeta-credito-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tarjeta-credito .logotipo {
+  font-size: 1.125rem;
+}
+
+.tarjeta-credito-tipo {
+  font-weight: 600;
+}
+
+.tarjeta-credito-numero {
+  font-size: 1.125rem;
+  letter-spacing: 0.12em;
+}
+
+.bolsillo {
+  display: flow-root;
+  position: relative;
+  color: var(--sobre-bolsillo);
+  filter: drop-shadow(0 14px 14px var(--sombra));
+}
+
+.bolsillo-forma {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bolsillo-cuerpo {
+  fill: var(--bolsillo);
+}
+
+.bolsillo-costura {
+  fill: none;
+  stroke: var(--bolsillo-costura);
+  stroke-width: 2;
+  stroke-dasharray: 7 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.bolsillo-contenido {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  margin: 36px 3px 3px;
+  padding: 6px 21px 16px;
+  border-radius: 0 0 24px 24px;
+  background: var(--bolsillo);
+}
+
+.bolsillo-cuenta {
+  color: var(--sobre-bolsillo-suave);
+}
+
+.bolsillo .saldo-fila {
+  gap: 10px;
+}
+
+.bolsillo-pago {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px dashed var(--bolsillo-costura);
+}
+
+.bolsillo-pago div {
+  display: grid;
+}
+
+.bolsillo-pago div:last-child {
+  text-align: right;
+}
+
+.bolsillo-pago span {
+  color: var(--sobre-bolsillo-suave);
+}
+
+/* Accesos en bento: la operación más usada ocupa el bloque grande; QR va a lo ancho abajo. */
+.accesos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accesos li:first-child {
+  grid-row: span 2;
+}
+
+.accesos li:last-child {
+  grid-column: 1 / -1;
+}
+
+.acceso {
+  width: 100%;
+  height: 100%;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.acceso:active {
+  transform: scale(0.97);
+}
+
+.acceso-icono {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--superficie-suave);
+  color: var(--azul-texto);
+}
+
+.accesos li:first-child .acceso {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-color: transparent;
+  background: var(--azul);
+  color: var(--sobre-azul);
+  font-size: 1.125rem;
+}
+
+.accesos li:first-child .acceso-icono {
+  background: rgb(255 255 255 / 0.16);
+  color: var(--sobre-azul);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acceso {
+    transition: none;
+  }
+}

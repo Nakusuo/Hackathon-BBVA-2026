@@ -1,0 +1,116 @@
+.lucas-iconos {
+  display: flex;
+  gap: 8px;
+}
+
+.campana {
+  position: relative;
+  text-decoration: none;
+}
+
+.campana-numero {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 24px;
+  text-align: center;
+}
+
+.avisos-lista {
+  gap: 12px;
+}
+
+.aviso-item {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--borde);
+  border-left-width: 4px;
+  border-left-color: var(--azul);
+  border-radius: var(--radio);
+  background: var(--superficie);
+}
+
+/* El color acompaña a la palabra «Urgente»; nunca va solo. */
+.aviso-item-urgente {
+  border-left-color: var(--riesgo);
+  background: var(--riesgo-fondo);
+}
+
+.aviso-item h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.aviso-marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--azul-texto);
+}
+
+.aviso-marca-urgente {
+  color: var(--riesgo);
+}
+
+.aviso-opinion {
+  display: grid;
+  gap: 4px;
+}
+
+.aviso-opinion-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.aviso-opinion-botones button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.aviso-opinion-botones button[aria-pressed='true'] {
+  border-color: var(--azul);
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.aviso-opinion p:empty {
+  display: none;
+}
+
+.aviso-nota {
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--superficie-suave);
+  font-weight: 600;
+}
+
+.aviso-demo .selector {
+  flex-wrap: wrap;
+  justify-self: start;
+}
+
+.aviso-porque {
+  gap: 6px;
+  color: var(--tinta-suave);
+}

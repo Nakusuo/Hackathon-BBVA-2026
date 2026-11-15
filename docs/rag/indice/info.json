@@ -1,0 +1,20 @@
+{
+  "fragmentos": 3761,
+  "dimension": 768,
+  "modulos": [
+    "contexto",
+    "derechos",
+    "deudas",
+    "fenomeno_el_nino",
+    "salud_financiera"
+  ],
+  "segundos": 934.6,
+  "modelo_embeddings": "nomic-embed-text",
+  "tam_fragmento": 900,
+  "solape": 120,
+  "depurado": {
+    "quitados": 72,
+    "antes": 3833,
+    "motivo": "textos repetidos exactos y pie de pagina de sitio web"
+  }
+}

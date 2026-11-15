@@ -1,0 +1,22 @@
+{
+ "n_preguntas": 46,
+ "exactitud_de_intencion": 1.0,
+ "cifras_esperadas_verificadas": 1.0,
+ "respuestas_verificadas_por_el_juez": 1.0,
+ "bloqueo_de_adversas": 1.0,
+ "educacion_con_cita_valida": 1.0,
+ "educacion_sin_fuente_dicho_honesto": 0.0,
+ "respuestas_por_plantilla": 1.0,
+ "latencia_p50_s": 0.0,
+ "latencia_p95_s": 2.31,
+ "rag_disponible": true,
+ "fallas": [],
+ "fuentes_de_educacion": {
+  "¿Qué es la TCEA?": "Reglamento de Gestion de Conducta de Mercado (Res. SBS 3274-2017)",
+  "¿Cómo funciona la CTS?": "Guia de Compensacion por Tiempo de Servicios",
+  "¿Qué es la gratificación?": "Guia de gratificaciones por Fiestas Patrias y Navidad en el regimen laboral general",
+  "¿Qué es el fenómeno El Niño?": "Comunicado Oficial ENFEN N.o 16-2026",
+  "¿Qué derechos tengo como consumidor?": "Codigo de Proteccion y Defensa del Consumidor (Ley 29571)",
+  "¿Para qué sirve un fondo de emergencia?": "Su dinero, sus metas: kit de herramientas"
+ }
+}

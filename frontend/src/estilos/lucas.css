@@ -1,0 +1,639 @@
+.lucas-cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 8px 16px 0;
+  background: var(--crema);
+  border-bottom: 1px solid var(--crema-borde);
+}
+
+.lucas-barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  color: var(--azul-texto);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.lucas-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lucas-titulo h1 {
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+
+.pestanas {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  overflow-x: auto;
+}
+
+.pestanas a {
+  position: relative;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--tinta-suave);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.pestanas a[aria-current='page'] {
+  color: var(--tinta);
+  font-weight: 800;
+}
+
+.pestanas a:focus-visible {
+  outline: none;
+  background: var(--azul-palido);
+  border-radius: 10px 10px 0 0;
+}
+
+.pestana-barra {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--azul);
+}
+
+.lucas-contenido {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.seccion {
+  display: grid;
+  gap: 12px;
+  scroll-margin-top: 180px;
+}
+
+.lista-aprendido .aprendido {
+  display: grid;
+  gap: 2px;
+  padding: 12px 0;
+}
+
+.aprendido + .aprendido {
+  border-top: 1px solid var(--borde);
+}
+
+.confirmar,
+.confirmado {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.marcado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--tinta-suave);
+  font-weight: 600;
+}
+
+.por-revisar > p:first-child {
+  text-decoration: line-through;
+  color: var(--tinta-suave);
+}
+
+.confirmado {
+  gap: 6px;
+  color: var(--bien);
+  font-weight: 600;
+}
+
+.sugerencia {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radio);
+  background: var(--azul-palido);
+}
+
+.tip {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 16px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  scroll-snap-align: start;
+}
+
+.tip-activo {
+  border-color: var(--azul);
+  box-shadow: 0 0 0 1px var(--azul);
+}
+
+.tip-evita {
+  margin: -6px 0 0;
+  color: var(--bien);
+  font-weight: 700;
+}
+
+/* La acción va en su propia línea, bajo el nombre: junto al monto, el botón se partía en dos líneas. */
+.fila:has(.suscripcion-accion) {
+  flex-wrap: wrap;
+}
+
+.suscripcion-accion {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  padding-left: 58px;
+}
+
+.seguimiento {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radio-chico);
+  background: var(--azul-palido);
+}
+
+.seguimiento p {
+  margin: 0;
+}
+
+/* La barra va sobre --azul-palido: su carril necesita la superficie para verse aunque esté vacía. */
+.seguimiento .medidor {
+  background: var(--superficie);
+}
+
+.tip-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+}
+
+.boton-lo-hago {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 2px solid var(--azul);
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--azul-texto);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.boton-lo-hago[aria-pressed='true'] {
+  background: var(--azul);
+  color: var(--sobre-azul);
+}
+
+.tip-acciones details {
+  flex: 1;
+}
+
+.tip h3 {
+  font-size: 1.0625rem;
+}
+
+.reco-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cifra-azul {
+  color: var(--azul-texto);
+}
+
+/* En celular el anillo va arriba y cada parte ocupa todo el ancho: lado a lado el texto quedaba en columnas angostas. */
+.salud {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0;
+}
+
+.anillo {
+  position: relative;
+  flex: none;
+  width: 132px;
+  height: 132px;
+  margin: 0 auto;
+}
+
+.anillo svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.anillo-centro {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.anillo-valor {
+  font-family: var(--titulos);
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.componentes {
+  gap: 0;
+}
+
+.componente {
+  display: grid;
+  gap: 2px;
+  padding: 12px 0;
+}
+
+.componente + .componente {
+  border-top: 1px solid var(--borde);
+}
+
+.componente .enlace {
+  justify-self: start;
+  margin-top: 2px;
+}
+
+.componente-cabecera {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.categoria {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+}
+
+.categoria + .categoria {
+  border-top: 1px solid var(--borde);
+}
+
+.categoria-texto {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.categoria-cabecera,
+.categoria-pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 8px;
+}
+
+.sube,
+.baja {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.sube {
+  color: var(--riesgo);
+}
+
+.baja {
+  color: var(--bien);
+}
+
+.hero {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 12px 16px 12px;
+  border-radius: 24px;
+  background: var(--azul-profundo);
+  color: var(--sobre-azul);
+}
+
+@media (min-width: 760px) {
+  .hero {
+    max-width: 560px;
+  }
+}
+
+.hero-datos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 14px;
+  width: 100%;
+  color: var(--sobre-azul-suave);
+  font-weight: 600;
+}
+
+.hero-dato {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-dato svg {
+  flex: none;
+}
+
+.hero-medidor {
+  position: relative;
+  width: min(100%, 210px);
+}
+
+.medidor-arco {
+  display: block;
+  width: 100%;
+}
+
+.raya {
+  stroke: var(--medidor-vacio);
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+
+.raya-llena {
+  stroke: var(--medidor-lleno);
+}
+
+/* Los segmentos del exceso van al final en color de riesgo; el texto «de más» lo dice sin depender del color. */
+.raya-pasada {
+  stroke: var(--riesgo-claro);
+}
+
+/* El nombre de la animación lo pone el componente y solo si no pidieron reducir movimiento. */
+.raya {
+  animation: 0.3s backwards;
+}
+
+@keyframes encender {
+  from {
+    stroke: var(--medidor-vacio);
+  }
+}
+
+.hero-cifra {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.375rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hero-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 10px;
+}
+
+.hero-etiqueta {
+  color: var(--sobre-azul-suave);
+  font-weight: 600;
+}
+
+.hero-exceso {
+  padding: 2px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--riesgo-claro);
+  background: rgb(255 255 255 / 0.12);
+  color: var(--riesgo-suave);
+  font-weight: 700;
+}
+
+.aviso-corto {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 10px;
+}
+
+.aviso-corto p {
+  margin: 0;
+}
+
+/* Tarjeta de aviso: el texto y su botón a la izquierda, y Lucas grande a la derecha como protagonista. */
+.aviso.aviso-corto {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px 14px 16px;
+  border-radius: var(--radio);
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+}
+
+.aviso-texto {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+}
+
+.aviso.aviso-corto > .lucas-pose {
+  margin: 0;
+}
+
+.aviso.aviso-corto + .facil {
+  margin-top: 12px;
+}
+
+.boton-chico {
+  min-height: 44px;
+  padding: 0 18px;
+}
+
+.impacto {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+}
+
+.impacto span {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+}
+
+/* En Tips las cifras van en línea con su texto, sin cajas que compitan con los tips de abajo. */
+#tips .impacto {
+  gap: 4px 18px;
+}
+
+#tips .impacto span {
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.impacto .impacto-nota {
+  padding-left: 0;
+  border: 0;
+  background: none;
+  color: var(--tinta-suave);
+}
+
+.carrusel {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 82%;
+  gap: 12px;
+  margin: 0 -16px;
+  padding: 2px 16px 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 16px;
+  scrollbar-width: none;
+}
+
+.carrusel::-webkit-scrollbar {
+  display: none;
+}
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* Tres bloques en una fila (Lo aprendido, Salud y Metas): el chat ya tiene su pestaña arriba. */
+.bento-bloque {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 14px 12px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  color: var(--tinta);
+  text-decoration: none;
+  transition: transform 0.15s;
+}
+
+.bento-bloque > svg {
+  color: var(--azul-texto);
+}
+
+.bento-bloque:active {
+  transform: scale(0.97);
+}
+
+.bento-titulo {
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-bloque {
+    transition: none;
+  }
+}
+
+.gastos-resumen {
+  justify-items: stretch;
+}
+
+.dona {
+  position: relative;
+  justify-self: center;
+  width: 168px;
+  height: 168px;
+}
+
+.dona-centro {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+
+.dona-centro strong {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.leyenda-gastos {
+  display: grid;
+  gap: 2px;
+}
+
+.leyenda-gastos li {
+  display: grid;
+  grid-template-columns: 12px 1fr auto auto 20px;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+}
+
+.leyenda-punto {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.leyenda-nombre {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.boton-secundario {
+  justify-self: start;
+  background: var(--azul-palido);
+  color: var(--azul-texto);
+}
+
+.boton-secundario:hover {
+  background: var(--azul-claro);
+}
+
+
+.avisos-vacio {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avisos-vacio p {
+  margin: 0;
+}
+
