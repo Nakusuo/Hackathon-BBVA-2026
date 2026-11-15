@@ -59,6 +59,23 @@ function llegarAlCobro(cliente) {
   }
 }
 
+// «¿Cuánto puedo gastar?» pide un monto, haya riesgo o no: el gasto seguro por día hasta el cobro.
+function cuantoPuedoGastar(cliente) {
+  const { gastoDiarioActual, gastoDiarioSeguro, proximoIngreso } = cliente
+  const frente =
+    gastoDiarioSeguro < gastoDiarioActual
+      ? ` Hoy gastas ${enSoles(gastoDiarioActual)} al día: baja un poco para no quedar en rojo.`
+      : ` Hoy gastas ${enSoles(gastoDiarioActual)} al día, así que vas bien.`
+  return {
+    texto: `Hasta tu cobro del ${fechaDia(proximoIngreso.fecha)} puedes gastar hasta ${enSoles(gastoDiarioSeguro)} al día sin quedar en rojo, aun en un mes malo.${frente}`,
+    cifras: [
+      { etiqueta: 'Gasto seguro por día', valor: enSoles(gastoDiarioSeguro) },
+      { etiqueta: 'Gasto actual por día', valor: enSoles(gastoDiarioActual) },
+    ],
+    pose: 'pensando',
+  }
+}
+
 function gastoExtra(cliente, persona, monto) {
   if (monto > cliente.saldoHoy) {
     return {
@@ -466,7 +483,7 @@ function masDetalle(cliente, persona, contexto) {
       pose: 'ahorra',
     }
   }
-  if (contexto.tema === 'cobro' || contexto.tema === 'gasto') {
+  if (contexto.tema === 'cobro' || contexto.tema === 'gasto' || contexto.tema === 'cuanto-gastar') {
     return {
       texto: riesgo
         ? `Lo calculo para un mes malo: si gastas un poco más o te pagan menos, ${textoDiasEnRojo(riesgo).toLowerCase()} quedarías en ${enSoles(riesgo.peorMonto)}. Si gastas hasta ${enSoles(gastoDiarioSeguro)} al día hasta tu cobro del ${fechaDia(proximoIngreso.fecha)}, eso no pasa. ${evitar}`.trim()
@@ -659,8 +676,9 @@ function leer(pregunta, contexto, cliente) {
 
   const conMontoOFecha = montoLeido !== null || fechaDeMeta(texto, hoy) !== null
   const pideGasto = montoValido && /(gast|regalo|pag)/.test(texto)
-  // «¿cuánto puedo gastar hoy?» es la pregunta de Lucas: se responde con el gasto seguro hasta el cobro.
-  const pideCobro = /(cobro|fin de mes|rojo|cuanto puedo gastar)/.test(texto)
+  // «¿cuánto puedo gastar hoy?» es la pregunta de Lucas; «¿cuánto puedo gastar al mes para llegar?» dentro de una meta, no.
+  const pideCuanto = /cuanto puedo gastar/.test(texto) && !(enMeta && /(al mes|para llegar|para juntar|apart|ahorr)/.test(texto))
+  const pideCobro = pideCuanto || /(cobro|fin de mes|rojo)/.test(texto)
   const pideCategorias = /(gasto mas|en que gasto|categoria|donde se va)/.test(texto)
   const otroTema = pideGasto || pideCobro || pideCategorias
   const tema = (t, m = montoValido) => ({ intencion: t, contexto: { ...contexto, tema: t, monto: m } })
@@ -668,7 +686,7 @@ function leer(pregunta, contexto, cliente) {
   // «12000» y luego «es una meta» o «para comprar ahora»: el monto de antes es el precio o el gasto.
   if (contexto.tema === 'monto-suelto' && montoLeido === null) {
     // «quiero comprarlo ahora» responde a la pregunta de Lucas: es un gasto, aunque diga «comprar».
-    const hablaDeMeta = /\b(meta|ahorr|junt)/.test(texto)
+    const hablaDeMeta = /\b(meta|ahorrar\w*|junt)/.test(texto)
     if (!hablaDeMeta && /\b(ahora|hoy|ya mismo|al toque)\b/.test(texto)) return tema('gasto', contexto.monto)
     if (pideMeta || hablaDeMeta) {
       const meta = metaCon({ ...CONTEXTO_VACIO.meta, monto: contexto.monto }, texto, hoy)
@@ -709,6 +727,7 @@ function leer(pregunta, contexto, cliente) {
   }
   if (/(ahorr|apart|guardar|colchon)/.test(texto)) return tema('ahorro')
   if (montoValido && /(gast|compr|regalo|pag)/.test(texto)) return tema('gasto')
+  if (pideCuanto) return tema('cuanto-gastar')
   if (pideCobro || /(llego|alcanza)/.test(texto)) return tema('cobro')
   if (pideCategorias) return tema('categorias')
   // «¿y 80?» después de un gasto o de un ahorro: el mismo cálculo con el monto nuevo.
@@ -856,8 +875,9 @@ export function responder(pregunta, cliente, persona, previas = []) {
       }
     case 'sigue-meta':
       return {
-        texto:
-          contexto.meta.fecha || rechaza
+        texto: contexto.meta.fecha
+          ? 'Listo. Pregúntame cuánto te falta o qué tip te ayuda más.'
+          : rechaza
             ? 'Listo. Si me dices una fecha, te digo si llegas; también puedo decirte qué tip te ayuda más.'
             : 'Dime para cuándo lo quieres, por ejemplo «para marzo» o «en 6 meses», y te digo si llegas.',
         cifras: [],
@@ -886,6 +906,8 @@ export function responder(pregunta, cliente, persona, previas = []) {
       return { ...cuantoAhorrar(cliente, persona, contexto.monto), pose: 'ahorra' }
     case 'gasto':
       return gastoExtra(cliente, persona, contexto.monto)
+    case 'cuanto-gastar':
+      return cuantoPuedoGastar(cliente)
     case 'cobro':
       return llegarAlCobro(cliente)
     case 'categorias':
