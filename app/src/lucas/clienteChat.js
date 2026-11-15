@@ -70,7 +70,8 @@ export async function preguntarALucas(texto, { cliente, persona, conversacion, a
 
   let cuerpo
   try {
-    cuerpo = await preguntarAgente(texto.slice(0, LARGO_MAXIMO), { conversacion, ...opcionesApi })
+    // El agente responde por la persona elegida: la API traduce su id al cliente sintético de la base.
+    cuerpo = await preguntarAgente(texto.slice(0, LARGO_MAXIMO), { id: cliente.personaId, conversacion, ...opcionesApi })
   } catch (error) {
     if (!(error instanceof ErrorApi)) throw error
     const aviso = { tiempo: AVISOS.demora, formato: AVISOS.ilegible }[error.tipo] ?? AVISOS.sinConexion

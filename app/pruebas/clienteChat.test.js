@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { CLIENTE_DEMO } from '../src/api/lucas.js'
 import { AVISOS, desdeAgente, preguntarALucas } from '../src/lucas/clienteChat.js'
 import { cliente, persona } from '../src/motor/cliente.js'
 
@@ -40,7 +39,7 @@ test('manda el contrato mínimo y conserva la conversación', async () => {
   const registro = []
   await preguntarALucas('¿Puedo gastar S/ 150?', opciones({ conversacion: 'conv-9', pedir: falsoFetch(RESPUESTA, registro) }))
   assert.equal(registro[0].url, '/api/v1/chat')
-  assert.deepEqual(registro[0].cuerpo, { customer_id: CLIENTE_DEMO, message: '¿Puedo gastar S/ 150?', conversation_id: 'conv-9' })
+  assert.deepEqual(registro[0].cuerpo, { customer_id: cliente.personaId, message: '¿Puedo gastar S/ 150?', conversation_id: 'conv-9' })
 })
 
 test('las cifras verificadas del agente se muestran con el formato de la app', async () => {
