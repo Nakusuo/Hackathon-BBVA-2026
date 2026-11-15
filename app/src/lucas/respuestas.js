@@ -1,9 +1,10 @@
 // Respuestas por plantilla: respaldo cuando el agente (JF-02) no está o no contesta. Toda cifra sale del motor, nunca del texto.
-import { apartadoSinRojo, evaluarGastoExtra } from '../motor/motor.js'
+import { apartadoSinRojo, evaluarGastoExtra, sumarDias } from '../motor/motor.js'
 import { conSigno, diasEntre, enSoles, enSolesRedondo, fechaCorta, fechaDia, textoDiasEnRojo } from '../formato.js'
 import { leerTipoCambio } from '../api/contrato.js'
 import { RESPALDO } from '../api/respaldo.js'
 import { finDeAnio, planDeMeta } from './metas.js'
+import { avisoDeCampana, campanaPara, campanaPorId, cifrasDeCampana, detalleCampana, respuestaCampana } from './campanas.js'
 
 export const PREGUNTAS_SUGERIDAS = [
   '¿Llego a mi cobro?',
@@ -172,8 +173,11 @@ export function esPedidoDeOperacion(pregunta) {
 
 // --- Metas: «quiero juntar para un carro a fin de año» se responde con el mismo plan de la pantalla Metas.
 
-const PIDE_META =
-  /\b(metas?|plan de ahorro|juntar|junto|reunir|quiero comprar\w*|comprarme|carro|auto|moto|viaje|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda)\b/
+// Lo que la gente suele querer juntar. Nombrarlo ya abre una meta.
+const OBJETOS =
+  'carro|auto|moto|viaje|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|bicicleta|televisor|tele|consola|refri|refrigeradora|lavadora|muebles|zapatillas|curso|maestria|concierto|festival|entradas?'
+const OBJETO_META = new RegExp(`\\b(${OBJETOS})\\b`)
+const PIDE_META = new RegExp(`\\b(metas?|plan de ahorro|juntar|junto|reunir|quiero comprar\\w*|comprarme|${OBJETOS})\\b`)
 const EN_DOLARES = /(\bdolar|\busd\b|us\$|\$\s*\d)/
 const MESES_LARGOS = new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' })
 
@@ -184,36 +188,108 @@ function sumarMeses(fechaIso, meses) {
 }
 
 // «para 2027» es un año; «una meta de 2000» es un monto.
-const ANIO = /\b(?:para|en|hasta|del)\s+(?:el\s+)?(?:ano\s+)?(20\d\d)\b(?!\s*(soles|dolares|mil))/
+const ANIO = /\b(?:para|en|hasta|del|fin de)\s+(?:el\s+)?(?:ano\s+)?(20\d\d)\b(?!\s*(soles|dolares|mil))/
 const NUMERO_PALABRA = { un: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, ocho: 8, diez: 10, doce: 12 }
 
-// «fin de año», «diciembre», «en 6 meses», «en 2 años», «para 2027». Sin fecha devuelve null.
+// «en 4 semanas», «dentro de 10 días», «en 2 quincenas», «en 6 meses», «en 2 años».
+const PLAZO =
+  /\b(?:en|dentro de)\s+(\d+|un|una|dos|tres|cuatro|cinco|seis|ocho|diez|doce)\s+(dias?|semanas?|quincenas?|mes|meses|ano|anos)\b/
+const PLAZOS = new RegExp(PLAZO.source, 'g')
+const ANIO_Y_MEDIO = /\b(?:en|dentro de)\s+(?:un\s+)?ano y medio\b/
+const MEDIO_ANIO = /\b(?:en|dentro de)\s+medio ano\b/
+
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'setiembre', 'octubre', 'noviembre', 'diciembre']
+const MES = '(enero|febrero|marzo|abril|mayo|junio|julio|agosto|setiembre|septiembre|octubre|noviembre|diciembre)'
+const FECHA_CON_DIA = new RegExp(`\\b(\\d{1,2})\\s+de\\s+${MES}(?:\\s+(?:de|del)\\s+(20\\d\\d))?`)
+const MES_CON_ANIO = new RegExp(`\\b${MES}\\s+(?:de\\s+|del\\s+)?(20\\d\\d)\\b`)
+const SOLO_MES = new RegExp(`\\b${MES}\\b`)
+
+function numeroDeMes(nombre) {
+  return nombre === 'septiembre' ? 9 : MESES.indexOf(nombre) + 1
+}
+
+function ultimoDia(anio, mes) {
+  return new Date(Date.UTC(anio, mes, 0)).toISOString().slice(0, 10)
+}
+
+// «marzo» sin año es el próximo marzo: si ya pasó este año, el del siguiente.
+function anioDelMes(mes, hoy) {
+  const [anio, mesHoy] = hoy.split('-').map(Number)
+  return mes >= mesHoy ? anio : anio + 1
+}
+
+// «fin de año», «15 de marzo», «julio de 2027», «en 4 semanas», «en año y medio», «para 2027». Sin fecha, null.
 export function fechaDeMeta(texto, hoy) {
-  if (/\b(fin de (ano|anio)|fin del (ano|anio)|diciembre|navidad)\b/.test(texto)) return finDeAnio(hoy)
-  const plazo = texto.match(/\ben\s+(\d+|un|una|dos|tres|cuatro|cinco|seis|ocho|diez|doce)\s+(mes|meses|ano|anos)\b/)
+  const conDia = texto.match(FECHA_CON_DIA)
+  if (conDia) {
+    const mes = numeroDeMes(conDia[2])
+    const anio = conDia[3] ? Number(conDia[3]) : anioDelMes(mes, hoy)
+    return `${anio}-${String(mes).padStart(2, '0')}-${conDia[1].padStart(2, '0')}`
+  }
+  const mesAnio = texto.match(MES_CON_ANIO)
+  if (mesAnio) return ultimoDia(Number(mesAnio[2]), numeroDeMes(mesAnio[1]))
+  if (/\b(fin de (ano|anio)|fin del (ano|anio)|navidad)\b/.test(texto)) return finDeAnio(hoy)
+  if (ANIO_Y_MEDIO.test(texto)) return sumarMeses(hoy, 18)
+  if (MEDIO_ANIO.test(texto)) return sumarMeses(hoy, 6)
+  const plazo = texto.match(PLAZO)
   if (plazo) {
     const n = NUMERO_PALABRA[plazo[1]] ?? Number(plazo[1])
-    return sumarMeses(hoy, plazo[2].startsWith('mes') ? n : n * 12)
+    const unidad = plazo[2]
+    if (unidad.startsWith('dia')) return sumarDias(hoy, n)
+    if (unidad.startsWith('semana')) return sumarDias(hoy, n * 7)
+    if (unidad.startsWith('quincena')) return sumarDias(hoy, n * 15)
+    return sumarMeses(hoy, unidad.startsWith('mes') ? n : n * 12)
   }
   const anio = texto.match(ANIO)
   if (anio && anio[1] >= hoy.slice(0, 4)) return `${anio[1]}-12-31`
+  const mes = texto.match(SOLO_MES)
+  if (mes) {
+    const n = numeroDeMes(mes[1])
+    return ultimoDia(anioDelMes(n, hoy), n)
+  }
   return null
 }
 
-// El monto de la meta sin confundirlo con el plazo («en 6 meses», «para 2027») y leyendo «14 mil».
-export function montoDeMeta(texto) {
-  const sinPlazo = texto
-    .replace(/\ben\s+\d+\s+(mes|meses|ano|anos)\b/g, ' ')
+const DECENAS = { un: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, veinte: 20, treinta: 30, cuarenta: 40, cincuenta: 50 }
+const CENTENAS = { cien: 100, ciento: 100, doscientos: 200, trescientos: 300, cuatrocientos: 400, quinientos: 500, seiscientos: 600, setecientos: 700, ochocientos: 800, novecientos: 900 }
+const PALABRA_CENTENA = `(${Object.keys(CENTENAS).join('|')})`
+
+// «1.5k», «mil quinientos», «dos mil», «quinientos soles» pasan a cifras para leerlos como cualquier monto.
+export function numerosEnPalabras(texto) {
+  return texto
+    .replace(/(\d+(?:[.,]\d+)?)\s*k\b/g, (_, n) => String(Math.round(Number(n.replace(',', '.')) * 1000)))
+    .replace(
+      new RegExp(`(?<![\\d.,]\\s*)\\b(?:(${Object.keys(DECENAS).join('|')})\\s+)?mil(?:\\s+${PALABRA_CENTENA})?\\b`, 'g'),
+      (_, d, c) => String((DECENAS[d] ?? 1) * 1000 + (CENTENAS[c] ?? 0)),
+    )
+    .replace(new RegExp(`(?<!por\\s)\\b${PALABRA_CENTENA}\\b`, 'g'), (c) => String(CENTENAS[c]))
+}
+
+// Números que no son plata: plazos, fechas, años de edad, hijos, cuotas, porcentajes.
+const NO_ES_MONTO = /\b\d+\s*(anos|hijos?|hijas?|personas?|veces|%|por ciento|cuotas|kilos?|km|horas?|dias|semanas|quincenas|meses)\b/g
+
+export function sinNoMontos(texto) {
+  return texto
+    .replace(PLAZOS, ' ')
     .replace(new RegExp(ANIO.source, 'g'), ' ')
-    .replace(/\$\s*(?=\d)/g, ' ')
-  const enMiles = sinPlazo.match(/(\d[\d.,]*)\s*mil\b/)
-  const monto = enMiles ? aNumero(enMiles[1]) * 1000 : montoEn(sinPlazo)
+    .replace(new RegExp(FECHA_CON_DIA.source, 'g'), ' ')
+    .replace(new RegExp(MES_CON_ANIO.source, 'g'), ' ')
+    .replace(NO_ES_MONTO, ' ')
+}
+
+// El monto de la meta sin confundirlo con el plazo, la fecha o la edad, y leyendo «14 mil» y «1.5k».
+export function montoDeMeta(texto) {
+  const limpio = sinNoMontos(numerosEnPalabras(texto)).replace(/\$\s*(?=\d)/g, ' ')
+  const enMiles = limpio.match(/(\d[\d.,]*)\s*mil\b/)
+  const monto = enMiles ? aNumero(enMiles[1]) * 1000 : montoEn(limpio)
   return monto > 0 ? monto : null
 }
 
 function cuando(fechaIso, hoy) {
   const meses = Math.round(diasEntre(hoy, fechaIso) / 30)
   if (meses <= 24) return `en ${MESES_LARGOS.format(new Date(`${fechaIso}T12:00:00`))}`
+  // «634 años» no ayuda a decidir: pasado un plazo razonable basta decir que a ese ritmo no se llega.
+  if (meses > 240) return 'en más de 20 años'
   return `en unos ${Math.round(meses / 12)} años`
 }
 
@@ -223,9 +299,49 @@ function nombreFecha(fechaIso, hoy) {
   return `el ${fechaCorta(fechaIso)} de ${fechaIso.slice(0, 4)}`
 }
 
-function planDeAhorro(cliente, { monto, enDolares, fecha, que }) {
-  if (!monto) {
-    const plan = que ? `el plan de tu ${que}` : 'tu plan'
+function enSolesDe({ monto, enDolares }) {
+  if (!monto) return 0
+  return enDolares ? Math.round(monto * leerTipoCambio(RESPALDO.tipoCambio).tasa) : monto
+}
+
+// Lo que hay que juntar: la inicial si la dio, si no el precio; menos lo que ya tiene.
+function objetivoDe(meta, unico = 0) {
+  const objetivo = meta.inicial ?? enSolesDe(meta)
+  const ahorrado = Math.min(objetivo, (meta.ahorrado ?? 0) + unico)
+  return { objetivo, ahorrado, falta: objetivo - ahorrado }
+}
+
+// «tu carro», «tus zapatillas»: la meta en plural concuerda.
+function tuMeta(que) {
+  if (!que) return 'tu meta'
+  return que.endsWith('s') ? `tus ${que}` : `tu ${que}`
+}
+
+function mayuscula(texto) {
+  return texto[0].toUpperCase() + texto.slice(1)
+}
+
+// Cada respuesta dice de qué meta habla: en una charla larga la persona puede haber cambiado de idea.
+function presentarMeta({ monto, enDolares, que, inicial, ahorrado = 0 }, unico) {
+  const cosa = tuMeta(que)
+  const enSolesMonto = enSolesDe({ monto, enDolares })
+  const cuesta = enDolares ? `US$ ${monto.toLocaleString('es-PE')}, unos ${enSoles(enSolesMonto)}` : enSoles(enSolesMonto)
+  const verbo = que?.endsWith('s') ? 'cuestan' : 'cuesta'
+  let frase = ''
+  if (monto) frase = que ? `${mayuscula(cosa)} ${verbo} ${cuesta}` : `Tu meta es de ${cuesta}`
+  if (inicial) frase = monto ? `${frase} y la inicial es de ${enSoles(inicial)}` : `La inicial de ${cosa} es de ${enSoles(inicial)}`
+  frase += '. '
+  const { falta } = objetivoDe({ monto, enDolares, inicial, ahorrado }, unico?.monto ?? 0)
+  if (unico) frase += `Si apartas tu ${unico.nombre} de ${enSoles(unico.monto)}, te faltarían ${enSoles(falta)}. `
+  else if (ahorrado) frase += `Ya tienes ${enSoles(ahorrado)}: te faltan ${enSoles(falta)}. `
+  return frase
+}
+
+// `unico`: un monto que llegaría una sola vez (gratificación, bono), como supuesto que no se guarda.
+function planDeAhorro(cliente, metaPedida, { unico = null } = {}) {
+  const { monto, enDolares, fecha, que, inicial } = metaPedida
+  if (!monto && !inicial) {
+    const plan = `el plan de ${tuMeta(que)}`
     return {
       texto: fecha
         ? `Armemos ${plan} para ${nombreFecha(fecha, cliente.hoy)}. ¿Cuánto cuesta?`
@@ -235,23 +351,24 @@ function planDeAhorro(cliente, { monto, enDolares, fecha, que }) {
   }
   const { hoy, proximoIngreso, finPronostico } = cliente
   const tipo = leerTipoCambio(RESPALDO.tipoCambio)
-  const objetivo = enDolares ? Math.round(monto * tipo.tasa) : monto
+  const { objetivo, ahorrado, falta } = objetivoDe(metaPedida, unico?.monto ?? 0)
   const puedes = cliente.apartado?.monto ?? 0
   const conTips = cliente.apartadoConTodos?.monto ?? 0
   const contexto = { primerApartado: proximoIngreso.fecha, finPronostico, hoy }
   // Sin fecha se mide solo el ritmo: con la fecha del primer cobro, `llegaEl` dice cuándo se junta todo.
-  const meta = { objetivo, ahorrado: 0, fecha: fecha ?? proximoIngreso.fecha }
+  const meta = { objetivo, ahorrado, fecha: fecha ?? proximoIngreso.fecha }
   const plan = planDeMeta(meta, { ...contexto, apartado: puedes })
   const planTips = conTips > puedes ? planDeMeta(meta, { ...contexto, apartado: conTips }) : null
 
-  const cifras = [{ etiqueta: 'Tu meta', valor: enSoles(objetivo) }]
-  if (enDolares) {
+  const cifras = [{ etiqueta: inicial ? 'Inicial' : 'Tu meta', valor: enSoles(objetivo) }]
+  if (enDolares && monto) {
     cifras.push({ etiqueta: `Cambio referencial del ${fechaCorta(tipo.fecha)}`, valor: `S/ ${tipo.tasa.toFixed(2)} por dólar` })
   }
-  // Cada respuesta dice de qué meta habla: en una charla larga la persona puede haber cambiado de idea.
-  const cuesta = enDolares ? `US$ ${monto.toLocaleString('es-PE')}, unos ${enSoles(objetivo)}` : enSoles(objetivo)
-  const precio = que ? `Tu ${que} cuesta ${cuesta}. ` : `Tu meta es de ${cuesta}. `
+  if (ahorrado) cifras.push({ etiqueta: unico ? `Con tu ${unico.nombre}` : 'Ya tienes', valor: enSoles(ahorrado) })
+  if (ahorrado) cifras.push({ etiqueta: 'Te falta', valor: enSoles(falta) })
+  const precio = presentarMeta(metaPedida, unico)
 
+  if (!falta) return { texto: `${precio}Ya tienes lo que necesitas para tu meta.`, cifras }
   if (!puedes && !conTips) {
     return {
       texto: `${precio}Hoy no te queda margen para apartar sin quedar en rojo. Primero llega a tu cobro con aire y luego empezamos a juntar.`,
@@ -345,31 +462,112 @@ function masDetalle(cliente, contexto) {
 
 // --- Contexto de la conversación: cada mensaje se lee con todo lo que se habló antes, no solo el último.
 
-const OBJETO_META =
-  /\b(carro|auto|moto|viaje|vacaciones|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|bicicleta|televisor|tele|consola|concierto|entrada|evento|fiesta|curso|estudios|maestria|ropa|zapatillas|mascota|negocio)\b/
+// «el concierto está 450»: lo que se junta es la entrada.
+const NOMBRE_META = { concierto: 'entrada', festival: 'entrada', entradas: 'entrada' }
 // «¿y en 3 años?», «mejor 10 mil», «entonces para 2028»: siguen el tema anterior.
 const SIGUE_EL_TEMA = /^(y|e|pero|mejor|entonces|ok|vale|bueno|y si|cambia|cambialo|ahora)\b/
 const PIDE_MAS =
   /(explica|mas sobre|mas detalle|por que|porque|como asi|como es|como lo|que significa|no entiendo|dime mas|cuentame mas)/
-const SALUDA = /^(hola|holi|buenas|buen dia|buenos dias|buenas tardes|buenas noches|que tal|hey)[\s!.,?]*$/
+const HABLA_DE_LA_META = /\b(eso|esa|ese|la meta|mi meta|el plan|ahorr|apart|junt|falta|cuanto|llego|llegaria|alcanz|tips?|plazo|fecha|cuota|inicial)/
 
-const HABLA_DE_LA_META = /\b(eso|esa|ese|la meta|mi meta|el plan|ahorr|apart|junt|falta|cuanto|llego|llegaria|alcanz|tips?|plazo|fecha|cuota)/
+export const CONTEXTO_VACIO = {
+  tema: null,
+  monto: null,
+  meta: { monto: null, enDolares: false, fecha: null, que: null, ahorrado: null, inicial: null },
+  campana: null,
+}
 
-export const CONTEXTO_VACIO = { tema: null, monto: null, meta: { monto: null, enDolares: false, fecha: null, que: null } }
+const SALUDA = /^(hola|holi|buenas|buen dia|buenos dias|buenas tardes|buenas noches|que tal|hey)\b[\s!.,?]*(lucas)?[\s!.,?]*$/
+const GRACIAS = /^(ok\s+|ya\s+|listo\s+)?(gracias|muchas gracias|mil gracias|genial|perfecto|chevere|bacan)\b/
+const PIDE_INGRESO =
+  /\b(ingresos?|sueldo|salario|gano|ganara|ganaria|ganar|ganando|me pagan|me pagaran|me pagarian|me suben)\b/
+// «un trabajo extra de 800 al mes» suma a lo que ya gana; «si gano 6000» es el total.
+const ES_EXTRA = /\b(extra|adicional|aparte|cachuelo|chamba|ademas|mas al mes)\b/
+const PIDE_EXTRA = /\b(trabajo|chamba|cachuelo|ingresos?)\s+(extra|adicional|aparte)\b|\b(cachuelo|chamba)\b/
+// Plata que llega una sola vez: se mide como supuesto sobre la meta, no se guarda.
+const UNICO = /\b(gratificacion|grati|cts|bono|aguinaldo|utilidades|herencia|premio)\b/
+const NOMBRE_UNICO = { grati: 'gratificación', gratificacion: 'gratificación', cts: 'CTS' }
+// «si aparto 500 al mes», «ahorrando 300 por quincena»: un ritmo propuesto, no el precio de la meta.
+const PERIODO = '(al mes|mensual\\w*|cada mes|por mes|cada cobro|por cobro|cada quincena|por quincena|quincenal\\w*)'
+const APORTE_PERIODICO = new RegExp(
+  `\\b(?:apart|ahorr|guard|junt|pon|met|deposit)\\w*\\s+(?:unos\\s+)?(?:s\\/\\s*)?(\\d[\\d.,]*)\\s*(?:soles\\s+)?${PERIODO}`,
+)
+const SI_APARTO = /\bsi\s+(?:aparto|ahorro|guardo|junto|pongo|meto)\s+(?:unos\s+)?(?:s\/\s*)?(\d[\d.,]*)/
+const PRECIO = /\b(cuesta|cuestan|vale|valen|precio|sale|esta en|esta a)\b/
+const PIDE_CAMPANA = /\b(campanas?|ofertas?|ofertaq|promos?|promociones?|descuentos?|beneficios?|convenios?)\b/
+// «que sea toyota», «de marca kia»: la persona prefiere una marca y Lucas le cuenta la campaña que sí hay.
+const PIDE_MARCA = /\b(?:que sea|de (?:la )?marca|marca)\s+(?:un[ao]?\s+)?([a-z]{3,})\b/
+const QUIERE_INFO =
+  /^(si|sip|claro|dale|ya|ok|okey|bueno|por favor|cuentame)\b|\b(mas info\w*|me interesa|como (la )?uso|como funciona|condiciones|detalles?)\b/
 
 // Une lo nuevo de la meta con lo que ya se sabía. Si nombra otra cosa con su precio, es una meta nueva.
+// Un monto dentro de una meta puede ser el precio, lo que ya tiene o la inicial.
+function rolDelMonto(texto) {
+  if (/\binicial\b/.test(texto)) return 'inicial'
+  if (/(ahorrad|juntad|guardad|\bya tengo\b|\bllevo\b|\bya junte\b|\btengo\b)/.test(texto) && !PRECIO.test(texto)) {
+    return 'ahorrado'
+  }
+  return 'precio'
+}
+
 function metaCon(anterior, texto, hoy) {
-  const que = texto.match(OBJETO_META)?.[1] ?? null
-  const monto = montoDeMeta(texto)
+  const hallado = texto.match(OBJETO_META)?.[1] ?? null
+  const que = NOMBRE_META[hallado] ?? hallado
+  const leido = montoDeMeta(texto)
+  const rol = leido === null ? null : rolDelMonto(texto)
+  const monto = rol === 'precio' ? leido : null
+  const enSolesLeido = leido === null ? null : enSolesDe({ monto: leido, enDolares: EN_DOLARES.test(texto) })
   const fecha = fechaDeMeta(texto, hoy)
   // Nombrar otra cosa empieza una meta nueva: el precio del concierto no es el del carro.
   const nueva = que && anterior.que && que !== anterior.que
   const base = nueva ? CONTEXTO_VACIO.meta : anterior
-  return {
+  const meta = {
     que: que ?? base.que,
     monto: monto ?? base.monto,
     enDolares: monto !== null ? EN_DOLARES.test(texto) : base.enDolares,
     fecha: fecha ?? base.fecha,
+    ahorrado: rol === 'ahorrado' ? enSolesLeido : (base.ahorrado ?? null),
+    inicial: rol === 'inicial' ? enSolesLeido : (base.inicial ?? null),
+  }
+  // «la inicial es el 20 %»: sale del precio que ya se conoce.
+  const porcentaje = /\binicial\b/.test(texto) && texto.match(/(\d+(?:[.,]\d+)?)\s*(%|por ciento)/)
+  if (porcentaje && meta.monto) {
+    meta.inicial = Math.round((enSolesDe(meta) * Number(porcentaje[1].replace(',', '.'))) / 100)
+  }
+  return meta
+}
+
+// «¿cuánto gasté en comida?»: palabras de la persona → categoría del motor.
+const PALABRAS_CATEGORIA = [
+  [/\b(comida|delivery|restaurant\w*|almuerzo\w*|cena\w*|menu)\b/, 'comida'],
+  [/\b(transporte|taxi\w*|movilidad|uber|bus|combi|gasolina)\b/, 'transporte'],
+  [/\b(salidas?|fiestas?|bar|tragos|juergas?)\b/, 'salidas'],
+  [/\b(hormiga|cafes?|snacks?|golosinas?|antojos?)\b/, 'hormiga'],
+  [/\b(suscripcion\w*|streaming|plataformas?)\b/, 'suscripciones'],
+  [/\b(entretenimiento|cine|juegos?)\b/, 'entretenimiento'],
+]
+const PIDE_CATEGORIA = /\b(gaste|gastado|gastamos|gasto|gastos|se me va|se va|va en)\b/
+
+function categoriaPedida(texto) {
+  return PALABRAS_CATEGORIA.find(([regla]) => regla.test(texto))?.[1] ?? null
+}
+
+function gastoEnCategoria(cliente, id) {
+  const c = cliente.categorias.find((x) => x.id === id)
+  if (!c) return NO_ENTIENDO
+  const diferencia = Math.round(c.total - c.promedio3m)
+  const frente =
+    diferencia > 0
+      ? `Es ${enSoles(diferencia)} más que tu promedio.`
+      : diferencia < 0
+        ? `Es ${enSoles(-diferencia)} menos que tu promedio.`
+        : 'Igual que tu promedio.'
+  return {
+    texto: `En los últimos 30 días gastaste ${enSolesRedondo(c.total)} en ${c.nombre.toLowerCase()}. ${frente}`,
+    cifras: [
+      { etiqueta: c.nombre, valor: enSolesRedondo(c.total) },
+      { etiqueta: 'Tu promedio', valor: enSolesRedondo(c.promedio3m) },
+    ],
   }
 }
 
@@ -378,21 +576,71 @@ export function interpretar(pregunta, contexto, hoy) {
   const texto = normalizar(pregunta).trim().replace(/^[¿¡\s]+/, '')
   if (esPedidoDeOperacion(pregunta)) return { intencion: 'limites', contexto }
   if (SALUDA.test(texto)) return { intencion: 'saludo', contexto }
-  const monto = montoEn(texto)
+  if (GRACIAS.test(texto) && !/\d/.test(texto)) return { intencion: 'gracias', contexto }
+
+  const conNumeros = numerosEnPalabras(texto)
+  const monto = montoEn(sinNoMontos(conNumeros))
   const montoValido = monto > 0 ? monto : null
-  const conMontoOFecha = montoDeMeta(texto) !== null || fechaDeMeta(texto, hoy) !== null
+  const enMeta = contexto.tema === 'meta'
+  const pideMeta = PIDE_META.test(texto)
+  const sigueMeta = pideMeta || enMeta
+  const noEsGasto = !/\b(gast|regalo)/.test(texto)
+  const montoLeido = montoDeMeta(texto)
+
+  // Supuestos sobre la meta que no cambian su precio: un bono que llega una vez, otro ingreso, otro ritmo.
+  const unico = texto.match(UNICO)?.[1]
+  if (unico && enMeta && montoLeido && noEsGasto) {
+    return { intencion: 'unico', unico: { monto: montoLeido, nombre: NOMBRE_UNICO[unico] ?? unico }, contexto }
+  }
+  if ((PIDE_INGRESO.test(texto) || PIDE_EXTRA.test(texto)) && noEsGasto && montoLeido) {
+    return { intencion: 'ingreso', ingreso: { monto: montoLeido, extra: ES_EXTRA.test(texto) }, contexto }
+  }
+  const aporteHallado = conNumeros.match(APORTE_PERIODICO) ?? conNumeros.match(SI_APARTO)
+  if (aporteHallado && noEsGasto) {
+    const aporte = aNumero(aporteHallado[1]) * (/quincen/.test(aporteHallado[0]) ? 2 : 1)
+    const meta = sigueMeta ? metaCon(contexto.meta, conNumeros.replace(aporteHallado[0], ' '), hoy) : contexto.meta
+    if (meta.monto || meta.inicial) {
+      const campana = campanaPara(meta.que)?.id ?? contexto.campana
+      return { intencion: 'aporte', aporte, contexto: { ...contexto, tema: 'meta', meta, campana } }
+    }
+    return { intencion: 'ahorro', contexto: { ...contexto, tema: 'ahorro', monto: aporte } }
+  }
+
+  const categoria = categoriaPedida(texto)
+  if (categoria && !montoValido && PIDE_CATEGORIA.test(texto)) {
+    return { intencion: 'categoria', categoria, contexto: { ...contexto, tema: 'categorias' } }
+  }
+
+  const conMontoOFecha = montoLeido !== null || fechaDeMeta(texto, hoy) !== null
   const pideGasto = montoValido && /(gast|regalo|pag)/.test(texto)
   const pideCobro = /(cobro|fin de mes|rojo)/.test(texto)
   const pideCategorias = /(gasto mas|en que gasto|categoria|donde se va)/.test(texto)
   const otroTema = pideGasto || pideCobro || pideCategorias
-  const enMeta = contexto.tema === 'meta'
+
+  // Campañas: se preguntan directo o salen al nombrar una marca dentro de una meta.
+  const marca = texto.match(PIDE_MARCA)?.[1] ?? null
+  const metaAhora = sigueMeta ? metaCon(contexto.meta, texto, hoy) : contexto.meta
+  const campana = campanaPara(texto) ?? campanaPara(metaAhora.que)
+  const pideCampana = PIDE_CAMPANA.test(texto)
+  if (!otroTema && (pideCampana || (marca && campana))) {
+    return {
+      intencion: 'campana',
+      marca: pideCampana ? null : marca,
+      contexto: { ...contexto, tema: sigueMeta ? 'meta' : 'campana', meta: metaAhora, campana: campana?.id ?? null },
+    }
+  }
+  const ofrecida = contexto.campana && (enMeta || contexto.tema === 'campana')
+  if (ofrecida && !otroTema && !conMontoOFecha && QUIERE_INFO.test(texto)) {
+    return { intencion: 'campana-detalle', contexto }
+  }
   if (contexto.tema && PIDE_MAS.test(texto) && !conMontoOFecha) return { intencion: 'detalle', contexto }
 
   const esMeta =
-    PIDE_META.test(texto) ||
-    (enMeta && !otroTema && (conMontoOFecha || SIGUE_EL_TEMA.test(texto) || HABLA_DE_LA_META.test(texto)))
+    pideMeta || (enMeta && !otroTema && (conMontoOFecha || SIGUE_EL_TEMA.test(texto) || HABLA_DE_LA_META.test(texto)))
   if (esMeta) {
-    return { intencion: 'meta', contexto: { ...contexto, tema: 'meta', meta: metaCon(contexto.meta, texto, hoy) } }
+    const meta = metaCon(contexto.meta, texto, hoy)
+    const deLaMeta = campanaPara(meta.que)?.id ?? null
+    return { intencion: 'meta', contexto: { ...contexto, tema: 'meta', meta, campana: deLaMeta ?? contexto.campana } }
   }
   const tema = (t, m = montoValido) => ({ intencion: t, contexto: { ...contexto, tema: t, monto: m } })
   if (/(ahorr|apart|guardar|colchon)/.test(texto)) return tema('ahorro')
@@ -410,9 +658,91 @@ export function contextoDe(previas, hoy) {
 }
 
 // `previas`: todo lo que la persona escribió antes en este chat, en orden.
+// Las campañas viven en el front: estas preguntas se responden aquí aunque el agente esté activo.
+export function esPreguntaDeCampana(pregunta, previas, hoy) {
+  const { intencion } = interpretar(pregunta, contextoDe(previas, hoy), hoy)
+  return intencion === 'campana' || intencion === 'campana-detalle'
+}
+
+// La meta suma su campaña: el aviso solo la primera vez; el ahorro, en cifras, siempre que haya precio.
+function metaConCampana(cliente, contexto, anterior) {
+  const plan = planDeAhorro(cliente, contexto.meta)
+  const campana = campanaPorId(contexto.campana)
+  if (!campana || campanaPara(contexto.meta.que) !== campana) return plan
+  const precio = enSolesDe(contexto.meta)
+  const nueva = anterior.campana !== campana.id
+  return {
+    texto: nueva ? `${plan.texto.replace(/ ¿Para cuándo lo quieres\?$/, '')} ${avisoDeCampana(campana, precio)}` : plan.texto,
+    cifras: precio ? [...plan.cifras, ...cifrasDeCampana(campana, precio)] : plan.cifras,
+  }
+}
+
+// Supuesto visible: si gana más y gasta lo mismo, la diferencia se suma a lo que hoy puede apartar sin rojo.
+// La meta medida con otro ritmo de apartado: cuándo llega, o si llega a la fecha que pidió.
+function metaConRitmo(cliente, meta, apartado) {
+  const { hoy, proximoIngreso, finPronostico } = cliente
+  const { objetivo, ahorrado } = objetivoDe(meta)
+  const plan = planDeMeta(
+    { objetivo, ahorrado, fecha: meta.fecha ?? proximoIngreso.fecha },
+    { primerApartado: proximoIngreso.fecha, finPronostico, hoy, apartado },
+  )
+  const nombre = tuMeta(meta.que)
+  if (meta.fecha && plan.alcanza) return `sí llegas con ${nombre} para ${nombreFecha(meta.fecha, hoy)}.`
+  const aTiempo = meta.fecha ? ` Para ${nombreFecha(meta.fecha, hoy)} necesitarías ${enSoles(plan.necesario)} al mes.` : ''
+  return `juntas ${nombre} de ${enSoles(objetivo)} ${cuando(plan.llegaEl, hoy)}.${aTiempo}`
+}
+
+function hayMeta(contexto) {
+  return contexto.tema === 'meta' && Boolean(contexto.meta.monto || contexto.meta.inicial)
+}
+
+// Supuesto visible: si gana más y gasta lo mismo, la diferencia se suma a lo que hoy puede apartar sin rojo.
+function conOtroIngreso(cliente, persona, contexto, { monto, extra }) {
+  const actual = persona.ingresoMensual
+  const puedes = cliente.apartado?.monto ?? 0
+  const nuevo = extra ? actual + monto : monto
+  const suma = nuevo - actual
+  const cifras = [
+    { etiqueta: extra ? 'Ingreso extra que consultas' : 'Ingreso que consultas', valor: enSoles(monto) },
+    { etiqueta: 'Tu ingreso hoy', valor: enSoles(actual) },
+  ]
+  if (suma <= 0) {
+    return {
+      texto: `Hoy ganas unos ${enSoles(actual)} al mes. Con ${enSoles(nuevo)} no tendrías más margen: lo primero sería ajustar tu gasto para no quedar en rojo.`,
+      cifras,
+    }
+  }
+  const apartado = Math.floor((puedes + suma) / 10) * 10
+  cifras.push({ etiqueta: 'Podrías apartar al mes', valor: enSoles(apartado) })
+  const si = extra ? `Si sumas ${enSoles(monto)} al mes` : `Si ganas ${enSoles(nuevo)} al mes`
+  const inicio = `${si} y gastas lo mismo que hoy, podrías apartar unos ${enSoles(apartado)} al mes en vez de ${enSoles(puedes)}.`
+  if (!hayMeta(contexto)) return { texto: inicio, cifras }
+  const ritmo = metaConRitmo(cliente, contexto.meta, apartado)
+  return { texto: `${inicio} Así ${ritmo}`, cifras }
+}
+
+// «¿y si aparto 500 al mes?»: se mide con ese ritmo y se dice si hoy ese monto lo deja en rojo.
+function conAporte(cliente, persona, contexto, aporte) {
+  const puedes = cliente.apartado?.monto ?? 0
+  const seguro = apartadoSinRojo(persona, aporte, ajusteActual(cliente))
+  const riesgo = seguro
+    ? ' Hoy ese monto no te deja en rojo.'
+    : ` Ojo: hoy ese monto te dejaría en rojo; sin riesgo puedes apartar ${enSoles(puedes)}.`
+  return {
+    texto: `Apartando ${enSoles(aporte)} al mes, ${metaConRitmo(cliente, contexto.meta, aporte)}${riesgo}`,
+    cifras: [
+      { etiqueta: 'Apartas al mes', valor: enSoles(aporte) },
+      { etiqueta: 'Sin riesgo hoy', valor: enSoles(puedes) },
+    ],
+  }
+}
+
 export function responder(pregunta, cliente, persona, previas = []) {
-  const { intencion, contexto } = interpretar(pregunta, contextoDe(previas, cliente.hoy), cliente.hoy)
+  const anterior = contextoDe(previas, cliente.hoy)
+  const { intencion, contexto, marca, ingreso, aporte, unico, categoria } = interpretar(pregunta, anterior, cliente.hoy)
   switch (intencion) {
+    case 'categoria':
+      return gastoEnCategoria(cliente, categoria)
     case 'limites':
       return LIMITES
     case 'saludo':
@@ -425,8 +755,23 @@ export function responder(pregunta, cliente, persona, previas = []) {
         cifras: [],
         pose: 'pensando',
       }
+    case 'gracias':
+      return { texto: '¡De nada! Aquí estoy para lo que necesites.', cifras: [], pose: 'celebra' }
+    case 'ingreso':
+      return { ...conOtroIngreso(cliente, persona, contexto, ingreso), pose: 'ahorra' }
+    case 'aporte':
+      return { ...conAporte(cliente, persona, contexto, aporte), pose: 'ahorra' }
+    case 'unico':
+      return { ...planDeAhorro(cliente, contexto.meta, { unico }), pose: 'ahorra' }
+    case 'campana':
+      return {
+        ...respuestaCampana(campanaPorId(contexto.campana), { precio: enSolesDe(contexto.meta), marca }),
+        pose: 'senala',
+      }
+    case 'campana-detalle':
+      return { ...detalleCampana(campanaPorId(contexto.campana), enSolesDe(contexto.meta)), pose: 'senala' }
     case 'meta':
-      return { ...planDeAhorro(cliente, contexto.meta), pose: 'ahorra' }
+      return { ...metaConCampana(cliente, contexto, anterior), pose: 'ahorra' }
     case 'ahorro':
       return { ...cuantoAhorrar(cliente, persona, contexto.monto), pose: 'ahorra' }
     case 'gasto':

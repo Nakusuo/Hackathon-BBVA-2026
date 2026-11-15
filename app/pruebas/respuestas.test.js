@@ -180,7 +180,7 @@ test('la charla del concierto: «en 3 meses» es plazo, «explícame más» da l
     'pero el carro esta alrededor de 12000 soles',
   ])
   assert.match(saludo.texto, /^Hola/)
-  assert.match(meta.texto, /^Tu concierto cuesta S\/.450\./)
+  assert.match(meta.texto, /^Tu entrada cuesta S\/.450\./)
   assert.match(meta.texto, /Lo que más te ayuda/)
   assert.match(detalle.texto, /3 × S\/.40 = S\/.120/)
   assert.match(carro.texto, /¿Cuánto cuesta\?/)
@@ -196,4 +196,79 @@ test('«¿por qué?» después de «¿Llego a mi cobro?» explica el cálculo; s
 
 test('un monto suelto pregunta si es compra o meta', () => {
   assert.match(preguntar('12000').texto, /¿S\/.12,000 es algo que quieres comprar ahora o una meta para juntar\?/)
+})
+
+test('una meta con campaña suma el ahorro y ofrece más info solo la primera vez', () => {
+  const [entrada, detalle] = charla(['quiero ir al concierto, la entrada está 450', 'sí, más info'])
+  assert.match(entrada.texto, /^Tu entrada cuesta S\/.450\..*Ticketera Sol\. Te ahorras S\/.90\. ¿Quieres más info\?$/)
+  assert.ok(entrada.cifras.some((c) => c.etiqueta === 'Pagarías' && c.valor === `S/${NBSP}360`))
+  assert.match(detalle.texto, /^Ticketera Sol: .*Tú decides\.$/)
+})
+
+test('si pide una marca sin campaña, Lucas cuenta la que sí hay', () => {
+  const r = charla(['quiero comprarme un carro', 'ya pero que sea toyota', 'cuesta 60 mil'])
+  assert.match(r[1].texto, /^Con Toyota no hay campaña, pero con Autos Andinos/)
+  assert.doesNotMatch(r[2].texto, /Ojo/, 'la campaña ya se contó')
+  assert.ok(r[2].cifras.some((c) => c.etiqueta === 'Pagarías' && c.valor === `S/${NBSP}58,000`))
+})
+
+test('preguntar por campañas sin decir para qué lista los rubros, sin cifras', () => {
+  const r = preguntar('¿hay ofertas con el banco?')
+  assert.match(r.texto, /entradas, autos, viajes y tecnología/)
+  assert.deepEqual(r.cifras, [])
+})
+
+test('un «sí» sin campaña ofrecida no inventa una', () => {
+  assert.match(preguntar('sí').texto, /No te entendí/)
+})
+
+test('un plazo en semanas o días es la fecha, no el precio de la meta', () => {
+  const r = charla(['quiero ir al concierto, la entrada está 450', 'quiero juntarlo a futuro, la venta es en 4 semanas'])
+  assert.match(r[1].texto, /^Tu entrada cuesta S\/.450\. Para el 12 dic de 2026/)
+})
+
+test('«¿y si gano 6000 al mes?» es un ingreso supuesto: no cambia el precio de la meta', () => {
+  const r = charla(['quiero comprarme un carro de 12000 dolares', 'y si obtengo un ingreso de 6000 mensual ?', 'y para fin de 2028?'])
+  assert.match(r[1].texto, /^Si ganas S\/.6,000 al mes y gastas lo mismo que hoy/)
+  assert.match(r[1].texto, /tu carro de S\/.45,000/)
+  assert.match(r[2].texto, /^Tu carro cuesta US\$ 12,000.*Para fin de 2028/)
+})
+
+test('un ingreso menor al de hoy no promete más margen', () => {
+  assert.match(preguntar('¿y si gano 1000 al mes?').texto, /no tendrías más margen/)
+})
+
+// Cada número tiene un papel: precio, plazo, fecha, edad, lo ya ahorrado, la inicial, un ritmo o un ingreso.
+const CASOS_DE_NUMEROS = [
+  [['quiero un carro de 45000', 'tengo 25 años, me alcanza?'], /^Tu carro cuesta S\/.45,000\./],
+  [['quiero un carro de 45000', 'ya tengo 5000 ahorrados'], /Ya tienes S\/.5,000: te faltan S\/.40,000/],
+  [['quiero un carro de 45000', 'la inicial es de 9000'], /cuesta S\/.45,000 y la inicial es de S\/.9,000/],
+  [['quiero un carro de 45000', 'la inicial es el 20%'], /la inicial es de S\/.9,000/],
+  [['quiero un carro de 45000', 'y si aparto 500 al mes?'], /^Apartando S\/.500 al mes, juntas tu carro de S\/.45,000/],
+  [['quiero una laptop de 3000', 'y si aparto 100 por quincena?'], /^Apartando S\/.200 al mes/],
+  [['quiero un carro de 45000', 'y si consigo un trabajo extra de 800 al mes?'], /^Si sumas S\/.800 al mes/],
+  [['quiero un carro de 45000', 'y si me dan la gratificacion de 2600 en diciembre?'], /Si apartas tu gratificación de S\/.2,600, te faltarían S\/.42,400/],
+  [['quiero un carro de 45000', 'para marzo'], /Para el 31 mar de 2027/],
+  [['quiero un carro de 45000', 'para el 15 de marzo de 2027'], /^Tu carro cuesta S\/.45,000\. Para el 15 mar de 2027/],
+  [['quiero un carro de 45000', 'en año y medio?'], /Para el 14 may de 2028/],
+  [['quiero una laptop de S/3500 en 2 quincenas'], /^Tu laptop cuesta S\/.3,500\. Para el 14 dic de 2026/],
+  [['quiero un celular de 1.5k'], /^Tu celular cuesta S\/.1,500\./],
+  [['quiero un celular de mil quinientos'], /^Tu celular cuesta S\/.1,500\./],
+  [['quiero unas zapatillas de 400'], /^Tus zapatillas cuestan S\/.400\./],
+  [['quiero un depa de 300 mil para 2035'], /en más de 20 años/],
+  [['tengo 2 hijos, cuanto puedo ahorrar?'], /podrías apartar S\/.40\./],
+  [['cuánto gasto en taxis?'], /^En los últimos 30 días gastaste S\/.180 en transporte/],
+  [['hola'], /^Hola/],
+  [['puedo gastar S/150 en un regalo?', 'gracias lucas'], /^¡De nada!/],
+]
+
+test('cada número se lee con su papel y no como el precio de la meta', () => {
+  for (const [mensajes, esperado] of CASOS_DE_NUMEROS) {
+    assert.match(charla(mensajes).at(-1).texto, esperado, mensajes.join(' → '))
+  }
+})
+
+test('un aporte que hoy deja en rojo se avisa; uno que cabe, no', () => {
+  assert.match(charla(['quiero una laptop de 3000', 'y si aparto 500 al mes?'])[1].texto, /te dejaría en rojo/)
+  assert.match(charla(['quiero una laptop de 3000', 'y si aparto 20 al mes?'])[1].texto, /no te deja en rojo/)
 })
