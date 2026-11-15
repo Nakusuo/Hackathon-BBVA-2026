@@ -132,7 +132,7 @@ def test_gemini_sin_clave_no_llama(red):
     assert red.llamadas == []
 
 
-@pytest.mark.parametrize("modo,esperado", [("gemini", ["gemini", "ollama"]), ("compatible", ["compatible", "ollama"]), ("openai", ["compatible", "ollama"]), ("plantillas", []), ("ollama", ["ollama"]), ("cualquier_otro", ["ollama"])])
+@pytest.mark.parametrize("modo,esperado", [("gemini", ["gemini"]), ("compatible", ["compatible"]), ("openai", ["compatible"]), ("plantillas", []), ("ollama", ["ollama"]), ("cualquier_otro", ["ollama"])])
 def test_la_cadena_de_proveedores_segun_la_configuracion(monkeypatch, modo, esperado):
     monkeypatch.setenv("LLM_PROVIDER", modo)
     assert [p.nombre for p in PV.cadena()] == esperado
@@ -203,3 +203,17 @@ def test_texto_de_gemini_con_una_sola_parte_no_cambia_nada():
 def test_el_juez_rechaza_un_borrador_que_nombra_la_seccion_interna_del_prompt(texto, filtra):
     from src.agente_analitico.grafo import _filtra_el_prompt
     assert _filtra_el_prompt(texto) is filtra
+
+
+def test_el_respaldo_local_es_opcional_y_por_defecto_si_la_api_cae_responden_las_plantillas(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "gemini")
+    assert [p.nombre for p in PV.cadena()] == ["gemini"]   # sin respaldo local: si Gemini falla, el agente contesta con plantillas
+    monkeypatch.setenv("LLM_FALLBACK_LOCAL", "1")
+    assert [p.nombre for p in PV.cadena()] == ["gemini", "ollama"]
+
+
+@pytest.mark.parametrize("texto,vacia", [("Tu decides.", True), ("  Tu decides  ", True), ("Si.", True), ("No lo se. Tu decides.", True),
+                                         ("Tu saldo esperado es de S/ 7,395 en 30 dias, con un rango razonable. Tu decides.", False), ("La TCEA es el costo total anual de un credito, con intereses y comisiones.", False)])
+def test_el_juez_rechaza_un_borrador_que_casi_no_dice_nada(texto, vacia):
+    from src.agente_analitico.grafo import _es_respuesta_vacia
+    assert _es_respuesta_vacia(texto) is vacia

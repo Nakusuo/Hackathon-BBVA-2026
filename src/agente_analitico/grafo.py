@@ -41,12 +41,37 @@ OPERACION = (r"transfier|transferir|p[aá]sa(?:le|me|selo)\b|yapea|plinea|c[aá]
 # Mora y reclamos: es una pregunta de derechos, aunque nombre una tarjeta, un cobro o un prestamo
 MORA_Y_RECLAMOS = r"derechos?|reclam|atras[eéo]|\bmora\b|no pago|dej[eé] de pagar|me cobran de m[aá]s|no reconozco|datos personales"
 
+# Conversacion natural: una persona suele empezar con «hola», «oye» o «ayudame», o contar como se siente, sin una pregunta concreta. Eso no se rechaza: se acoge y se ofrecen opciones.
+SALUDO = (r"hola+|holi+|ola+|al[oó]|wenas?|buen[ao]s(?: d[ií]as| tardes| noches)?|buen d[ií]a|hey|ey|epa|oye|oiga|disculpa|disculpe|saludos|qu[eé] tal|qu[eé] onda|"
+          r"hello|hi|howdy|greetings|good (?:morning|afternoon|evening|night)")
+RELLENO = (r"por favor|porfa|una consulta|tengo una consulta|tengo una duda|quiero preguntar|quiero consultar|necesito ayuda|necesito apoyo|me puedes ayudar|puedes ayudarme|me ayudas|ay[uú]dame|ay[uú]denme|ayuda|"
+           r"auxilio|gracias|muchas gracias|ok|okey|listo|vale|dale|chau|adi[oó]s|hasta luego|nos vemos|c[oó]mo est[aá]s|c[oó]mo te va|c[oó]mo andas|qui[eé]n eres|qu[eé] eres|qu[eé] puedes hacer|en qu[eé] me ayudas|"
+           r"qu[eé] haces|no s[eé]|no entiendo|nada|cualquier cosa|lo que sea|una cosita|una cosa|algo|un favor|bien|todo bien|m[aá]s o menos|ah|eh|mm+|jaja+|"
+           # se le habla al agente por su nombre o de forma coloquial; respuestas sueltas; presentaciones y preguntas sobre quien es
+           r"lucas|amig[oa]|bot|asistente|copiloto|compa|hermano|hermana|bro|s[ií]|no|claro|exacto|tal vez|quiz[aá]s?|pues|bueno|entonces|ya|aj[aá]|uhm+|hmm+|xd+|jeje+|jiji+|lol|haha+|"
+           r"tengo una pregunta|una pregunta|quisiera (?:saber|preguntar|consultar)(?: algo)?|quiero (?:saber|preguntar|consultar)(?: algo)?|puedo preguntar(?:te)?(?: algo)?|puedo hacerte una pregunta|necesito saber algo|"
+           r"c[oó]mo te llamas|c[oó]mo te dicen|tu nombre|eres (?:un )?(?:bot|robot|ia|humano|persona)|thanks|thank you|gracias por todo|"
+           r"there|everyone|friend|please|help|help me|i need help|need help|can you help me|i have a question|a question|question")
+CONVERSACION = rf"^[\W_]*(?:(?:{SALUDO}|{RELLENO})\b[\s,.!?¿¡:;-]*)+$"   # el mensaje entero es saludo o relleno: nada concreto que responder todavia
+DESPEDIDA = r"chau|adi[oó]s|hasta luego|nos vemos"
+# Emociones o una situacion dificil contada con palabras propias: se responde con empatia y se ofrece por donde empezar
+EMOCIONAL = (r"preocup|angusti|agobi|estres|ahog|desespera|miedo|ansios|triste|p[eé]sim|cansad|harto|no puedo m[aá]s|no s[eé] qu[eé] hacer|no s[eé] c[oó]mo|me siento|"
+             r"estoy (muy |bien |re )?(mal|apurad|complicad|ajustad|fregad|asustad)|problemas? (de|con) (mi )?(plata|dinero|deudas?)|estoy sin (plata|dinero|trabajo)|me qued[eé] sin|perd[ií] mi trabajo|me despidieron|"
+             r"no tengo (plata|dinero|con qu[eé])|me cuesta (llegar|pagar)")
+# Mensaje abierto: pide ayuda o habla de si mismo sin decir de que (no es un tema ajeno como una receta o una pregunta de cultura general)
+ABIERTO = r"ayud|problema|duda|consulta|necesito|no s[eé]|no entiendo|hablar con|conversar|contarte|desahog|apoyo|orient|quiero (algo|saber algo|preguntar)|tengo (algo|una cosa|un tema)"
+# Una pregunta sobre el mundo («¿que hora es?», «¿cuanto cuesta un iPhone?») no trae nada de la persona: eso si se rechaza con amabilidad. Si trae algo suyo («mi casa», «me falta», «puedo»), lo entiende la IA.
+PREGUNTA_DEL_MUNDO = r"^[\s¿¡]*(?:qu[eé]|cu[aá]l(?:es)?|cu[aá]nt[oa]s?|qui[eé]n(?:es)?|d[oó]nde|c[oó]mo|cu[aá]ndo|por qu[eé]|en qu[eé]|a qu[eé]|de qu[eé]|para qu[eé])\b"
+PERSONAL = r"\b(?:mi|mis|m[ií]o|m[ií]a|me|conmigo|tengo|debo|puedo|quiero|necesito|estoy|soy|tuve|ten[ií]a|pagar|pago|pagu[eé])\b"
+INTENCIONES_ABIERTAS = ("conversacion", "apoyo", "general", "fuera_de_tema", "fuera_de_alcance")   # las respuestas que llevan opciones (botones)
+
 REGLAS_INTENCION = [
     # seguridad: intentos de sacar instrucciones internas, claves o datos de otras personas, o de saltarse las reglas
     ("seguridad", r"system prompt|prompt del sistema|tu prompt|tus instrucciones|instrucciones (previas|anteriores|internas)|revela|ignora (tus|las|todas|todo)|olvida (tus|las|todas|todo)|jailbreak|\bDAN\b|contrase[ñn]a|api[ _-]?key|clave de (api|acceso)|\btoken\b|hackea|inyecci[oó]n|exploit|vulnerabilidad|"
+                  r"ignore (?:your|all|the|any|previous)|disregard (?:your|all|the|previous)|your (?:system )?(?:prompt|instructions)|reveal your|you are now|pretend (?:to be|you)|developer mode|api key|other (?:customer|person|user)|"
                   r"datos de (otro|otra|otros)|de otro cliente|de otra persona|de otra gente|de terceros|cuentas? de (otro|otra|otros|otras)|act[uú]a como|ahora eres|modo (desarrollador|dios|admin)|sin (reglas|filtros|restricciones|l[ií]mites)"),
     # saludos y ayuda: se contestan con lo que si hace Lucas, no como un tema ajeno
-    ("general", r"^\W*(hola|buenas|buenos d[ií]as|buenas tardes|buenas noches|hey|gracias|ok|listo|ayuda|qu[eé] puedes hacer|en qu[eé] me ayudas|qu[eé] haces)\W*$"),
+    ("conversacion", CONVERSACION),
     # fuera de tema: codigo, matematica y cultura general, que no son de este asistente
     ("fuera_de_tema", r"c[oó]digo|\bscript\b|python|javascript|typescript|\bsql\b|\bjava\b|algoritmo|ecuaci[oó]n|integral|derivada|teorema|demuestra|problema (de )?matem|resuelve (esta|este|el|la)|tarea de|compila|\bhtml\b|\bcss\b|\bbash\b|\bregex\b|receta|capital de|qui[eé]n gan[oó]|poema|chiste"),
     ("fuera_de_alcance", OPERACION),
@@ -59,7 +84,7 @@ REGLAS_INTENCION = [
     ("tasas", r"\btasas?\b|inter[eé]s|tcea|refinanci|baj[oó] la tasa"),
     ("ofertas", r"pr[eé]stamo|cr[eé]dito|tarjeta|invertir|inversi[oó]n|dep[oó]sito|oferta"),
     ("salud_nivel", r"nivel|puntos|salud financiera|puntaje|campe[oó]n|maestro|aprendiz|luchador|canje|beneficio"),
-    ("pronostico", r"alcanza|llego|fin de mes|saldo|rojo|cobro|pr[oó]ximo|pr[oó]ximos meses|cu[aá]nto (voy a|tendr|ganar|gastar)|proyecci|ingresos"),
+    ("pronostico", r"alcanza|llego|fin de mes|saldo|rojo|cobro|pr[oó]ximo|pr[oó]ximos meses|cu[aá]nto (voy a|tendr|ganar|gastar)|proyecci|ingresos|me quedo sin (plata|dinero)|quedarme sin (plata|dinero)|c[oó]mo (voy|ando|me va|me est[aá] yendo)( (este|en este|con este|el|en el))? ?mes|c[oó]mo (voy|ando)\W*$"),
     ("recomendaciones", r"recomiend|qu[eé] hago|consejo|ahorrar|meta|reducir|gast"),
     ("educacion", r"c[oó]mo (armo|hago|llevo)"),
 ]
@@ -67,15 +92,15 @@ PLAN = {
     "pronostico": ["pronostico", "salud"], "recomendaciones": ["pronostico", "salud", "clima", "recomendador"], "salud_nivel": ["salud"], "fen": ["clima", "recomendador", "educador"],
     "tasas": ["tasas", "salud", "educador"], "ofertas": ["pronostico", "salud", "tasas", "recomendador"], "educacion": ["educador"], "ingreso_extra": ["salud", "recomendador"],
     "baja_de_tasa": ["tasas", "salud", "recomendador"], "riesgo_rojo": ["pronostico", "salud", "recomendador"], "general": ["pronostico", "salud", "recomendador"], "fuera_de_alcance": [],
-    "fuera_de_tema": [], "seguridad": [], "calendario": ["calendario", "salud", "recomendador", "educador"], "gasto_atipico": ["pronostico", "salud", "recomendador"], "tipo_de_cambio": ["tasas"],
+    "fuera_de_tema": [], "seguridad": [], "conversacion": [], "apoyo": ["pronostico", "salud", "recomendador"], "calendario": ["calendario", "salud", "recomendador", "educador"], "gasto_atipico": ["pronostico", "salud", "recomendador"], "tipo_de_cambio": ["tasas"],
 }
 # Evento proactivo -> intencion. Un evento desconocido cae a 'general' (nunca rompe el agente).
 EVENTO_A_INTENCION = {"ingreso_extra": "ingreso_extra", "baja_de_tasa": "baja_de_tasa", "fen_comunicado": "fen", "riesgo_rojo": "riesgo_rojo", "calendario_laboral": "calendario",
                       "libre_disposicion_por_vencer": "calendario", "gratificacion_pendiente": "calendario", "gasto_atipico": "gasto_atipico"}
 SIN_LLM = ("fuera_de_alcance", "fuera_de_tema", "seguridad")   # se responden con plantilla: no gastan tokens ni dan pie a que el modelo se desvie
 # Politica de ahorro de tokens (MVP): el LLM solo redacta lo que una plantilla no cubre bien. LLM_USO=siempre lo usa en todo (pruebas); LLM_USO=ahorro es el defecto.
-INTENCIONES_CON_LLM = ("educacion", "general")
-INTENCIONES_DE_SALDO = ("pronostico", "riesgo_rojo", "general")   # respuestas que hablan del saldo: ahi se aclara la fecha de los datos del cliente
+INTENCIONES_CON_LLM = ("educacion", "general", "apoyo")   # lo nuevo, lo abierto y lo emocional van a la IA; un saludo se contesta con plantilla (0 tokens)
+INTENCIONES_DE_SALDO = ("pronostico", "riesgo_rojo", "general", "apoyo")   # respuestas que hablan del saldo: ahi se aclara la fecha de los datos del cliente
 AYUDO_EN = ("Si puedo ver si llegas a fin de mes y cuanto ingresaras y gastaras en los proximos meses, revisar tu salud financiera y tu nivel, darte recomendaciones para ahorrar o "
             "gastar mejor, avisarte de El Nino en tu zona y explicarte conceptos como la TCEA o tus derechos.")
 MODULOS_RAG = {"fen": ["fenomeno_el_nino"], "tasas": ["deudas", "derechos"], "educacion": None, "ofertas": ["deudas", "salud_financiera"], "calendario": ["laboral"]}
@@ -85,6 +110,7 @@ class Estado(TypedDict, total=False):
     customer_id: str
     pregunta: str
     modo_conversacion: str
+    opciones: list
     evento: dict
     ctx: dict
     intencion: str
@@ -118,6 +144,24 @@ FINANZAS = r"plata|dinero|gast|ahorr|cuenta|saldo|sueldo|ingres|deuda|pago|banco
 def _termina_en_oracion_completa(txt: str) -> bool:
     """Un texto del LLM debe cerrar con puntuacion final. Un corte por el tope de tokens deja la ultima palabra a medias («...que eleg»)."""
     return txt.rstrip()[-1:] in tuple(".!?…)»\"”*")
+
+
+def _es_respuesta_vacia(txt: str) -> bool:
+    """Un borrador que solo trae el cierre («Tu decides.») o una frase suelta no responde nada: se rechaza como una cifra inventada (fallo real de la QA: un modelo local contesto solo «Tu decides.»)."""
+    cuerpo = re.sub(r"(?i)tu decides\.?", "", txt).strip(" \n\t.*-")
+    return len(cuerpo) < 40
+
+
+# Intenciones donde los datos DE LA PERSONA contestan la pregunta (su saldo, su nivel, sus recomendaciones, su calendario): ahi una negativa del LLM («no tengo esa informacion, pregunta a un asesor») es una evasiva.
+# No se incluyen fen, tasas, ofertas ni tipo de cambio: ahi se puede preguntar por un documento o un dato externo que no esta («el comunicado 35 del ENFEN», «la tasa de otro banco») y decir que no se tiene es lo honesto.
+INTENCIONES_CON_DATOS = ("pronostico", "salud_nivel", "recomendaciones", "calendario", "riesgo_rojo", "ingreso_extra", "gasto_atipico")
+
+
+def _es_evasiva(txt: str) -> bool:
+    """El LLM se nego a responder («No tengo esa informacion a la mano, te sugiero preguntar a un asesor») cuando las herramientas SI traian los datos. Fallo real de la QA con Gemini: en 4 de 6 intentos
+    contesto asi sobre el programa de puntos teniendolo en los datos. Se detecta por la frase con la que abre el borrador."""
+    inicio = re.sub(r"^\W*(?:¡?hola\W+)?", "", txt.strip(), flags=re.I)[:90].lower()
+    return re.match(r"(?:lo siento\W+)?no (?:tengo|cuento con|dispongo de|manejo) ", inicio) is not None
 
 
 def _filtra_el_prompt(txt: str) -> bool:
@@ -155,7 +199,15 @@ def detectar_intencion(pregunta: str, evento: dict | None = None) -> str:
             continue   # «como funciona el programa de puntos»: lo responden los datos del cliente (salud_nivel)
         if re.search(patron, pregunta, flags=re.I):
             return nombre
-    return "general" if re.search(FINANZAS, pregunta, flags=re.I) else "fuera_de_tema"
+    if re.search(EMOCIONAL, pregunta, flags=re.I):
+        return "apoyo"   # solo si ninguna regla de tema aplico: «me preocupa el Nino» sigue siendo una pregunta de El Nino
+    if re.search(FINANZAS, pregunta, flags=re.I):
+        return "general"
+    if re.search(ABIERTO, pregunta, flags=re.I):
+        return "conversacion"   # lo vago se acoge con opciones
+    if re.search(PREGUNTA_DEL_MUNDO, pregunta, flags=re.I) and not re.search(PERSONAL, pregunta, flags=re.I):
+        return "fuera_de_tema"   # una pregunta de cultura general, sin nada de la persona: rechazo amable con opciones
+    return "general"   # lo que las reglas no reconocen lo interpreta la IA (si falla o no hay, la plantilla pide aclarar y ofrece opciones): reglas e IA se apoyan, nunca se rechaza por no entender
 
 
 # ------------------------------------------------------------------ agentes especialistas (solo lectura)
@@ -179,7 +231,9 @@ def _a_salud(est, repo, **_):
     ficha = N.ficha(c["nivel"])
     prog = N.progreso(c["nivel"], f, c["salud"])
     pts = c["memoria"]["puntos"]
-    programa = {**PP.resumen_para_usuario(c["nivel"]), "por_cada_soles_de_consumo": 10, "por_cada_soles_apartados": 100}   # los dos montos viajan en los datos: toda cifra del texto se puede rastrear
+    programa = {**PP.resumen_para_usuario(c["nivel"]), "por_cada_soles_de_consumo": 10, "por_cada_soles_apartados": 100,   # los dos montos viajan en los datos: toda cifra del texto se puede rastrear
+                "como_funciona": "Ganas puntos por conductas sanas: por consumo (con tarjeta o QR, cuando tu caja esta ordenada) y por lo que apartas para ahorrar; no se premia gastar mas. "
+                                 "Con tus puntos puedes hacer canjes cuando alcanzas lo necesario para cada uno, y subes de nivel cuando mejoran tu salud financiera y tu colchon."}
     return {"salud": {"salud_financiera": c["salud"], "nivel": ficha["titulo"], "resumen_nivel": ficha["resumen"], "puntos": pts, "canjes_disponibles": [x["nombre"] for x in N.canjes_disponibles(pts)],
                       "lo_que_mas_resta": SA.explicar(f, 2), "para_subir": prog, "programa_de_puntos": programa}}
 
@@ -293,6 +347,51 @@ def extracto(texto: str, pregunta: str, limite: int = 360) -> str:
     return salida if salida.endswith("...") else salida + "."
 
 
+def _opciones(est) -> list:
+    """Opciones de respuesta rapida (botones) segun el contexto de la persona: lo que mas le conviene mirar primero. Cada una trae la pregunta que se envia si la toca."""
+    c = est["ctx"]
+    ops = []
+
+    def add(id_, texto, pregunta):
+        ops.append({"id": id_, "texto": texto, "pregunta": pregunta})
+    if c["pronostico"]["p_rojo"] >= 0.15:
+        add("riesgo_rojo", "Mi riesgo de quedar en rojo", "¿Voy a quedar en rojo este mes?")
+    else:
+        add("pronostico", "¿Llego a fin de mes?", "¿Llego a fin de mes con mi plata?")
+    cal = c.get("calendario") or {}
+    if cal.get("aplica") and cal.get("eventos") and cal["eventos"][0].get("dias_para", 99) <= 45:
+        add("calendario", "Mi CTS y mi gratificación", "¿Cuándo me cae la CTS y puedo retirarla?")
+    add("recomendaciones", "Ideas para ahorrar y gastar mejor", "¿Qué me recomiendas hacer con mi plata este mes?")
+    add("salud_nivel", "Mi salud financiera y mi nivel", "¿En qué nivel estoy y cómo está mi salud financiera?")
+    if RC.alerta_fen(c["departamento"], c["hoy"]):
+        add("fen", "El Niño en mi zona", "¿Estoy en riesgo por el Fenómeno El Niño y qué hago para prepararme?")
+    add("educacion", "Entender mis derechos y mis deudas", "¿Qué derechos tengo si me atraso en un pago?")
+    return ops[:4]
+
+
+def _menu(ops: list) -> str:
+    return " • ".join(o["texto"] for o in ops)   # sin numeros: el verificador de cifras los tomaria por montos
+
+
+def _plantilla_conversacional(est, intent: str) -> str:
+    """Saludo, mensaje abierto, emocion o algo que no se entendio: se acoge con calidez y se ofrecen opciones en vez de rechazar. Sin cifras; sin LLM."""
+    titulo = N.ficha(est["ctx"]["nivel"])["titulo"]
+    texto = (est.get("pregunta") or "").lower()
+    menu = _menu(_opciones(est))
+    if intent == "apoyo":
+        return (f"Siento que estes pasando por eso, {titulo}, y gracias por contarmelo: aqui estoy para ayudarte paso a paso y sin juzgarte. "
+                f"Para ayudarte mejor, ¿con cual de estas quieres empezar? {menu} O cuentame un poco mas con tus palabras. Tu decides.")
+    if re.search(DESPEDIDA, texto):
+        return f"¡Hasta pronto, {titulo}! Cuando quieras volver a revisar tu plata, aqui estare. Tu decides."
+    if "gracias" in texto:
+        return f"¡Con gusto, {titulo}! ¿Quieres revisar algo mas? {menu} Tu decides."
+    if intent == "general":
+        return (f"Quiero ayudarte, {titulo}, pero no estoy seguro de haber entendido bien lo que necesitas. ¿Es alguna de estas? {menu} "
+                f"O cuentame con otras palabras y lo vemos juntos. Tu decides.")
+    return (f"¡Hola, {titulo}! Soy Lucas, tu copiloto de plata. Cuentame con confianza que te gustaria revisar o que te preocupa; si prefieres, elige una opcion: {menu} "
+            f"¿Por donde empezamos? Tu decides.")
+
+
 def plantilla(est) -> str:
     c, d, intent = est["ctx"], est["datos"], est["intencion"]
     ficha = N.ficha(c["nivel"])
@@ -319,7 +418,10 @@ def plantilla(est) -> str:
         motivo = {"fuera_de_alcance": "Eso no lo hago: no muevo dinero, no compro ni vendo dolares y no te digo en que invertir.",
                   "fuera_de_tema": "De eso no puedo ayudarte: no resuelvo problemas de matematica, no escribo codigo ni respondo temas ajenos a tu plata.",
                   "seguridad": "Eso no lo puedo hacer: no comparto instrucciones internas, claves ni informacion de otras personas, y mis reglas no se pueden saltar."}[intent]
-        return f"{L[0]} {motivo} {AYUDO_EN} Tu decides."
+        extra = "" if intent == "seguridad" else f" Si prefieres, elige una opcion: {_menu(_opciones(est))}"
+        return f"{L[0]} {motivo} {AYUDO_EN}{extra} Tu decides."
+    if intent in ("conversacion", "apoyo") or (intent == "general" and est.get("pregunta") and not est.get("evento")):
+        return _plantilla_conversacional(est, intent)
     if "pronostico" in d:
         p = d["pronostico"]["pronostico_30_dias"]
         mv = d["pronostico"].get("movimientos_recientes")
@@ -388,7 +490,13 @@ def plantilla(est) -> str:
         L.append(f"- {r['accion']}{imp} Por que: {r['por_que'][0]}.")
     if est.get("rag"):
         r0 = est["rag"][0]
-        L.append(f"Segun {r0['titulo']} (pag. {r0['pagina']}){_aviso_de_origen(r0)}: {extracto(r0['texto'], est.get('pregunta', ''))}")
+        ex = extracto(r0["texto"], est.get("pregunta", ""))
+        claves = {w for w in re.findall(r"[a-zñáéíóú]{4,}", (est.get("pregunta") or "").lower()) if w not in PALABRAS_VACIAS}
+        comunes = claves & set(re.findall(r"[a-zñáéíóú]{4,}", ex.lower()))   # palabras de la pregunta que de verdad aparecen en la frase que se cita
+        if r0.get("similitud", 1.0) >= 0.75 or len(comunes) >= 2:
+            L.append(f"Segun {r0['titulo']} (pag. {r0['pagina']}){_aviso_de_origen(r0)}: {ex}")
+        else:   # la fuente se parece pero no responde con claridad: mejor decirlo que citar una frase suelta
+            L.append(f"Encontre una fuente relacionada ({r0['titulo']}, pag. {r0['pagina']}), pero no responde con claridad a tu pregunta, asi que prefiero no inventar una respuesta.")
     elif est.get("rag_estado", "").startswith("sin_evidencia"):
         L.append("Sobre eso no encuentro informacion en las fuentes que tengo, asi que prefiero no inventarla.")
     L.append("Tu decides.")
@@ -513,8 +621,12 @@ def construir_grafo(repo, buscador=None, modo: str = "agente_unico", usar_juez_l
         v = verificar(txt, _permitidos(est))
         if v["ok"] and not _termina_en_oracion_completa(txt):   # un borrador cortado a la mitad se rechaza igual que uno con una cifra inventada
             v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["respuesta cortada: no termina en una oracion completa"]}
+        if v["ok"] and _es_respuesta_vacia(txt):
+            v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["respuesta vacia: casi no dice nada"]}
         if v["ok"] and _filtra_el_prompt(txt):
             v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["filtra el nombre interno de la seccion de datos del prompt"]}
+        if v["ok"] and est["intencion"] in INTENCIONES_CON_DATOS and _es_evasiva(txt):   # si se niega pero los datos estaban, se reintenta y, si insiste, responde la plantilla (que si usa los datos)
+            v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["respuesta evasiva: los datos si traian la informacion, respondela con ellos"]}
         jl = {}
         if v["ok"] and usar_juez_llm:
             jl = juzgar(_datos_texto(est), txt, usar_gemini=est.get("proveedor") == "gemini")
@@ -540,7 +652,8 @@ def construir_grafo(repo, buscador=None, modo: str = "agente_unico", usar_juez_l
         v = verificar(txt, _permitidos(est))
         FAQ.registrar(est, txt)   # cuenta la consulta y, si la respuesta es de concepto y reutilizable, la guarda para la proxima persona
         citas = [{"titulo": r["titulo"], "pagina": r["pagina"], "documento": r["documento"], "enlace": r.get("enlace", ""), "licencia_nivel": r["licencia_nivel"]} for r in est.get("rag", [])]
-        return {"respuesta": txt, "citas": citas, "veredicto": {**est.get("veredicto", {}), "cifras_verificadas_final": v["cifras_verificadas"], "cifras_sin_respaldo_final": v["cifras_sin_respaldo"]},
+        return {"opciones": _opciones(est) if est["intencion"] in INTENCIONES_ABIERTAS and est.get("modo_conversacion") != "proactivo" else [],
+                "respuesta": txt, "citas": citas, "veredicto": {**est.get("veredicto", {}), "cifras_verificadas_final": v["cifras_verificadas"], "cifras_sin_respaldo_final": v["cifras_sin_respaldo"]},
                 "trazas": est["trazas"] + ["finalizar"]}
 
     g = StateGraph(Estado)
@@ -581,7 +694,13 @@ def responder(app, customer_id: str, pregunta: str = "", evento: dict | None = N
     return {"respuesta": est["respuesta"], "intencion": est["intencion"], "proveedor": est["proveedor"], "citas": est["citas"], "cifras_verificadas": est["veredicto"].get("cifras_verificadas_final", 0),
             "cifras_sin_respaldo": est["veredicto"].get("cifras_sin_respaldo_final", []), "trazas": est["trazas"], "llamadas_llm": est["llamadas_llm"], "segundos": round(time.time() - est["t0"], 2),
             "recomendaciones": [{"id": r["id"], "accion": r["accion"], "impacto_soles": r["impacto_soles"], "confianza": r["confianza"]} for r in est.get("recos", [])], "rag_estado": est["rag_estado"],
-            "idioma": est.get("idioma", "es"), "respuesta_es": est.get("respuesta_es", est["respuesta"]), "traduccion": est.get("traduccion", {})}
+            "idioma": est.get("idioma", "es"), "respuesta_es": est.get("respuesta_es", est["respuesta"]), "traduccion": est.get("traduccion", {}), "opciones": est.get("opciones", [])}
+
+
+def bienvenida(app, customer_id: str, idioma: str | None = None) -> dict:
+    """Mensaje con el que el chat puede ABRIR la conversacion antes de que la persona escriba nada: saludo de plantilla (cero tokens) con opciones segun su perfil.
+    Si la persona responde con algo distinto, ese mensaje entra por `responder` y el agente lo entiende, contesta si sabe, o dice con honestidad que no puede y vuelve a ofrecer opciones."""
+    return responder(app, customer_id, "hola", idioma=idioma)
 
 
 def exportar_diagramas(carpeta: str, repo, buscador=None) -> dict:

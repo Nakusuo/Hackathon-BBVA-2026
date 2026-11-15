@@ -81,7 +81,7 @@ def test_si_la_api_se_cae_el_agente_sigue_respondiendo_con_plantillas(agente):
 def test_una_api_externa_no_recibe_el_id_ni_la_zona_de_la_persona(agente):
     api = ApiFalsa(["Hola, te ayudo con tu plata. Tu decides."], externa=True)
     app, cid, responder = agente(api)
-    responder(app, cid, "Hola")   # intencion general: va al LLM con lo que sabe de la persona (vive en Piura, zona expuesta al Nino)
+    responder(app, cid, "ayuda con mi plata")   # intencion general (un simple «hola» ya no llega a la IA: se contesta con plantilla): va al LLM con lo que sabe de la persona (vive en Piura, zona expuesta al Nino)
     enviado = api.recibido[0]["datos"]
     assert "Piura" not in enviado and cid not in enviado and "tu zona" in enviado
 
@@ -89,7 +89,7 @@ def test_una_api_externa_no_recibe_el_id_ni_la_zona_de_la_persona(agente):
 def test_un_modelo_local_si_recibe_los_datos_completos_porque_no_salen_de_la_maquina(agente):
     api = ApiFalsa(["Hola, te ayudo con tu plata. Tu decides."], externa=False)
     app, cid, responder = agente(api)
-    responder(app, cid, "Hola")
+    responder(app, cid, "ayuda con mi plata")
     assert "Piura" in api.recibido[0]["datos"]
 
 
@@ -115,3 +115,37 @@ def test_los_pedidos_prohibidos_ni_siquiera_llegan_a_la_api(agente, pedido):
     app, cid, responder = agente(api)
     r = responder(app, cid, pedido)
     assert api.recibido == [] and r["llamadas_llm"] == 0 and r["proveedor"] == "plantilla"
+
+
+@pytest.mark.parametrize("texto,esperada", [("No tengo esa información a la mano, te sugiero preguntar a un asesor o al canal de reclamos. Tu decides.", True), ("¡Hola! No tengo la información exacta de eso. Tu decides.", True),
+                                            ("Lo siento, no tengo el dato.", True), ("En tu nivel Constructor, ganas 1.0 punto por cada 10 soles. Tu decides.", False), ("Con tu nivel tienes más puntos. No tengo canjes aún. Tu decides.", False)])
+def test_se_reconoce_una_respuesta_evasiva_por_como_abre(texto, esperada):
+    from src.agente_analitico.grafo import _es_evasiva
+    assert _es_evasiva(texto) is esperada
+
+
+def test_una_respuesta_evasiva_cuando_los_datos_si_estaban_se_rechaza_y_responde_la_plantilla(agente, monkeypatch):
+    """Fallo real de la QA con Gemini: sobre el programa de puntos contesto «no tengo esa informacion, pregunta a un asesor» teniendolo en los datos. El juez lo rechaza, se reintenta y, si insiste, responde la plantilla."""
+    monkeypatch.setenv("LLM_USO", "siempre")
+    api = ApiFalsa(["No tengo esa información a la mano, te sugiero preguntar a un asesor o al canal de reclamos. Tu decides."])
+    app, cid, responder = agente(api)
+    r = responder(app, cid, "¿Cómo funciona el programa de puntos?")
+    assert r["intencion"] == "salud_nivel" and r["proveedor"] == "plantilla" and r["llamadas_llm"] == 2
+    assert "punto" in r["respuesta"].lower() and "no tengo esa informaci" not in r["respuesta"].lower() and "evasiva" in api.recibido[1]["feedback"]
+
+
+def test_en_una_pregunta_de_concepto_decir_que_no_se_tiene_la_informacion_si_es_valido(agente):
+    """En `educacion` las fuentes pueden no traer la respuesta: ahi decir que no se tiene es honesto, no una evasiva."""
+    api = ApiFalsa(["No tengo a la mano esa información en las fuentes que consulto; te sugiero preguntar a un asesor. Tu decides."])
+    app, cid, responder = agente(api)
+    r = responder(app, cid, PREGUNTA)
+    assert r["proveedor"] == "falsa" and r["llamadas_llm"] == 1
+
+
+def test_decir_que_no_se_tiene_un_documento_externo_no_es_evasiva_en_el_nino(agente, monkeypatch):
+    """Fallo real de la QA al pasarse de estricto: «¿que dijo el comunicado 35 del ENFEN?» no esta en los datos; decir que no se tiene es honesto y no debe rechazarse (si no, cae una plantilla que vuelca datos sin relacion)."""
+    monkeypatch.setenv("LLM_USO", "siempre")
+    api = ApiFalsa(["No tengo a la mano información sobre el comunicado número 35 del ENFEN; te sugiero revisar su página oficial. Tu decides."])
+    app, cid, responder = agente(api)
+    r = responder(app, cid, "¿Qué dijo el comunicado número 35 del ENFEN sobre mi zona?")
+    assert r["intencion"] == "fen" and r["proveedor"] == "falsa" and r["llamadas_llm"] == 1 and "comunicado" in r["respuesta"]

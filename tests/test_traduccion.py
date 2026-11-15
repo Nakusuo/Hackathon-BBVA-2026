@@ -223,3 +223,22 @@ def test_la_traduccion_de_gemini_une_las_partes_y_descarta_una_cortada(monkeypat
     visto["respuesta"] = {"candidates": [{"content": {"parts": [{"text": "Hello, your bal"}]}, "finishReason": "MAX_TOKENS"}]}
     with pytest.raises(RuntimeError, match="incompleta"):
         TR._gemini("sistema", "Hola, tu saldo es bajo.")
+
+
+def test_si_la_primera_traduccion_pierde_una_cifra_se_reintenta_y_se_acepta_la_integra(monkeypatch):
+    """Fallo real de la QA con Gemini en quechua: a veces la traduccion pierde un marcador o altera una cifra. Cada traduccion sale algo distinta: un segundo intento la recupera, sin relajar la validacion."""
+    llamadas = []
+
+    def inestable(t, o, d):
+        llamadas.append(1)
+        return "Your balance will be 999" if len(llamadas) == 1 else "Your balance will be " + t.split("saldo sera ")[1]
+    _con_proveedor(monkeypatch, inestable)
+    r = TR.traducir("Tu saldo sera S/ 1,200.50 al cierre.", "es", "en")
+    assert r["ok"] and len(llamadas) == 2 and "1,200.50" in r["texto"]
+
+
+def test_si_las_dos_traducciones_alteran_una_cifra_queda_el_espanol(monkeypatch):
+    llamadas = []
+    _con_proveedor(monkeypatch, lambda t, o, d: llamadas.append(1) or "Your balance will be 999")
+    r = TR.traducir("Tu saldo sera S/ 1,200.50 al cierre.", "es", "en")
+    assert not r["ok"] and len(llamadas) == 2 and r["texto"] == "Tu saldo sera S/ 1,200.50 al cierre." and "alterados" in r["motivo"]
