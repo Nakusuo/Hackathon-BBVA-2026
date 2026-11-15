@@ -336,47 +336,12 @@
 .hero {
   position: relative;
   display: grid;
-  gap: 4px;
-  padding: 20px;
-  border-radius: 20px;
+  justify-items: center;
+  gap: 6px;
+  padding: 12px 16px 12px;
+  border-radius: 24px;
   background: var(--azul-profundo);
   color: var(--sobre-azul);
-  /* Una segunda tarjeta asoma por debajo, como en una billetera: una sombra sólida, sin capas que tapen el contenido. */
-  box-shadow: 0 10px 0 -4px var(--azul-profundo), 0 18px 30px -18px var(--azul-profundo);
-}
-
-.hero-etiqueta,
-.hero-cobro {
-  color: var(--sobre-azul-suave);
-}
-
-.hero-cifra {
-  font-size: 3.25rem;
-  font-weight: 800;
-  line-height: 1.05;
-}
-
-.hero-actual {
-  justify-self: start;
-  margin-top: 6px;
-  font-weight: 600;
-}
-
-/* Gastar más de lo seguro se marca con un subrayado rojo claro; el texto «de más» dice lo mismo sin depender del color. */
-.hero-actual-alto {
-  text-decoration: underline;
-  text-decoration-color: var(--riesgo-claro);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 5px;
-}
-
-/* El corte punteado separa lo que gastas de lo que cobras, como el recorte de la referencia. */
-.hero-cobro {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1.5px dashed rgb(255 255 255 / 0.35);
 }
 
 @media (min-width: 760px) {
@@ -385,21 +350,93 @@
   }
 }
 
-.hero-barra {
-  display: block;
-  height: 6px;
-  margin-top: 4px;
-  border-radius: 4px;
-  background: rgb(255 255 255 / 0.18);
-  overflow: hidden;
+.hero-datos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 14px;
+  width: 100%;
+  color: var(--sobre-azul-suave);
+  font-weight: 600;
 }
 
-.hero-barra span {
+.hero-dato {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-dato svg {
+  flex: none;
+}
+
+.hero-medidor {
+  position: relative;
+  width: min(100%, 210px);
+}
+
+.medidor-arco {
   display: block;
-  height: 100%;
-  border-radius: 4px;
-  background: var(--sobre-azul);
-  transform-origin: left;
+  width: 100%;
+}
+
+.raya {
+  stroke: var(--medidor-vacio);
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+
+.raya-llena {
+  stroke: var(--medidor-lleno);
+}
+
+/* Los segmentos del exceso van al final en color de riesgo; el texto «de más» lo dice sin depender del color. */
+.raya-pasada {
+  stroke: var(--riesgo-claro);
+}
+
+/* El nombre de la animación lo pone el componente y solo si no pidieron reducir movimiento. */
+.raya {
+  animation: 0.3s backwards;
+}
+
+@keyframes encender {
+  from {
+    stroke: var(--medidor-vacio);
+  }
+}
+
+.hero-cifra {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2.375rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.hero-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 10px;
+}
+
+.hero-etiqueta {
+  color: var(--sobre-azul-suave);
+  font-weight: 600;
+}
+
+.hero-exceso {
+  padding: 2px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--riesgo-claro);
+  background: rgb(255 255 255 / 0.12);
+  color: var(--riesgo-suave);
+  font-weight: 700;
 }
 
 .aviso-corto {
@@ -419,6 +456,8 @@
   gap: 8px;
   padding: 14px 10px 14px 16px;
   border-radius: var(--radio);
+  border: 1px solid var(--borde);
+  background: var(--superficie);
 }
 
 .aviso-texto {

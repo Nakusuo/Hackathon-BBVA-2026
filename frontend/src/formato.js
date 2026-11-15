@@ -52,10 +52,11 @@ export function diasEntre(desdeIso, hastaIso) {
   return Math.round((aFecha(hastaIso) - aFecha(desdeIso)) / 86400000)
 }
 
-// Parte del ciclo de cobro que ya pasó, entre 0 y 1: con un cobro a más de 30 días (o ya vencido)
-// la barra no puede salirse ni quedar en negativo.
-export function avanceDelCiclo(diasQueFaltan, diasDelCiclo = 30) {
-  return Math.min(1, Math.max(0, 1 - diasQueFaltan / diasDelCiclo))
+// Cuánto del gasto diario seguro ya se va en el gasto de hoy, entre 0 y 1: pasarse llena el medidor,
+// sin salirse de él (lo que sobra lo dice el texto «de más»).
+export function llenadoDelGasto(gastoActual, gastoSeguro) {
+  if (gastoSeguro <= 0) return gastoActual > 0 ? 1 : 0
+  return Math.min(1, Math.max(0, gastoActual / gastoSeguro))
 }
 
 export function textoDiasEnRojo(riesgo) {

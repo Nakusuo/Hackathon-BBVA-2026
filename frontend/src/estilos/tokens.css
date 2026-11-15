@@ -32,6 +32,15 @@
   --riesgo-fondo: #fdeeec;
   --bien: #1d6b46;
   --bien-fondo: #e8f4ee;
+  /* Medidor del Resumen: va sobre --azul-profundo; el verde claro solo es el llenado y el rosa suave, el exceso. */
+  --medidor-lleno: #7fe3a8;
+  --medidor-vacio: rgb(255 255 255 / 0.22);
+  --riesgo-suave: #ffd2cd;
+  /* Bolsillo oscuro de la billetera de la banca: igual de oscuro en los dos temas, con la costura clara. */
+  --bolsillo: #24272d;
+  --bolsillo-costura: rgb(255 255 255 / 0.38);
+  --sobre-bolsillo: #f4f6f9;
+  --sobre-bolsillo-suave: #c9cfd9;
   --vidrio: rgb(255 255 255 / 0.72);
   --vidrio-borde: rgb(255 255 255 / 0.9);
   --brillo: rgb(33 96 224 / 0.35);
@@ -75,6 +84,7 @@
   --riesgo-fondo: #3a1d1b;
   --bien: #5fd39a;
   --bien-fondo: #14301f;
+  --bolsillo: #2b2f37;
   --vidrio: rgb(255 255 255 / 0.06);
   --vidrio-borde: rgb(255 255 255 / 0.14);
   --brillo: rgb(58 125 255 / 0.22);
