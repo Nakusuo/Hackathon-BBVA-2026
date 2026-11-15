@@ -70,7 +70,10 @@ img.zoom{cursor:zoom-in}
 .nodo b{display:block;font:700 25px/1.15 var(--texto)}
 .nodo span{display:block;font-size:20px;line-height:1.2;color:var(--suave);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nodo.on{background:var(--cl);box-shadow:0 0 0 4px var(--cl)}
-.nodo.dim{opacity:.42}
+.nodo.dim{background:#fff;border-color:#E3E8ED}
+.nodo.dim b{color:#A9B3BF}.nodo.dim span{color:#C2CAD3}
+.nodo.persona.dim{background:#E6EBF1;border-color:#E6EBF1}
+.nodo.persona.dim b{color:#8A97A8}.nodo.persona.dim span{color:#9AA6B5}
 .nodo.persona{height:176px;background:var(--marino);border-color:var(--marino);color:#fff;padding:22px 22px}
 .nodo.persona b{font:800 34px/1.1 var(--display)}
 .nodo.persona span{color:#BBD3F0;font-size:23px;white-space:normal;margin-top:8px;line-height:1.28}
@@ -461,7 +464,7 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
     {id:'jue',col:3,c:'verde',t:'Verificador y juez',s:'Cifras con respaldo',d:'Rechaza cifras sin respaldo y respuestas cortadas, vacías, evasivas, con código o con promesas.',m:[['0','cifras sin respaldo en ' + D.calidad.agente_plantillas.n + ' preguntas']]},
     {id:'pla',col:3,c:'gris',t:'Plantilla de respaldo',s:'Si la IA falla o inventa',d:'Misma respuesta verificada, mismas cifras y citas, sin IA.',m:[]},
     {id:'tra',col:3,c:'verde',t:'Traducción',s:'Español, inglés y quechua',d:'Protege cifras y nombres y avisa que la traducción es automática.',m:[]},
-    {id:'ui',col:4,c:'marino',persona:true,t:'Tu pantalla',s:'Aviso a tiempo, saldo con banda, qué hacer y por qué, y chat con botones.',d:'La persona recibe un aviso antes de quedarse en rojo, ve su saldo con banda y entiende por qué se le recomienda cada cosa, con supuestos y confianza. Cada botón la lleva a una respuesta real.',m:[['8 de 8','botones que llevan a una respuesta real']]},
+    {id:'ui',col:4,c:'marino',persona:true,t:'Tu pantalla',s:'Aviso a tiempo, saldo con banda, qué hacer y chat.',d:'La persona recibe un aviso antes de quedarse en rojo, ve su saldo con banda y entiende por qué se le recomienda cada cosa, con supuestos y confianza. Cada botón la lleva a una respuesta real.',m:[['8 de 8','botones que llevan a una respuesta real']]},
     {id:'api',col:4,c:'gris',persona:true,t:'API y app',s:'Integración final con el equipo',tag:'en integración',d:'El agente se conecta a la API del equipo y cambia de proveedor de IA con tres variables de entorno.',m:[['3','variables para cambiar de IA']]}];
   const A = [['gen','seg'],['gen','pron'],['gen','rojo'],['gen','pol'],['gen','mov'],['bcrp','pron'],['enfen','vig'],['norm','rag'],['norm','cal'],
     ['seg','her'],['pron','her'],['rojo','her'],['pol','her'],['mov','her'],['rag','her'],['cal','her'],['viv','her'],['vig','red'],['rou','her'],
@@ -507,7 +510,7 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
   const cx = n => n.x + (n.circ ? 32 : 75), W = 150, byId = Object.fromEntries(nodos.map(n => [n.id, n]));
   const aristas = [['ini','car','h'],['car','tre','h'],['tre','rou','h'],['rou','her','h'],['her','red','v'],['red','jue','hl'],['jue','pla','hl',1],['pla','fin','hl'],['jue','fin','arco',1],['jue','red','retorno',1],['fin','trs','hl'],['trs','end','hl']];
   const svg = $('#grafo');
-  svg.innerHTML = `<defs><marker id="pt" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>`;
+  svg.innerHTML = `<defs><marker id="pt" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="15" markerHeight="15" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>`;
   function ruta(a,b,tipo){
     const A = byId[a], B = byId[b], ya = A.y + (A.circ ? 32 : 38), yb = B.y + (B.circ ? 32 : 38);
     if (tipo === 'h') return `M${A.x + (A.circ?64:W)},${ya} L${B.x - 4},${yb}`;
@@ -517,7 +520,7 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
     return `M${cx(A)+30},${A.y+80} C${cx(A)+30},${A.y+125} ${cx(B)-30},${B.y+125} ${cx(B)-30},${B.y+80}`;
   }
   aristas.forEach(([a,b,t,c],i) => { svg.appendChild(el('path', {d:ruta(a,b,t), class:'ge' + (c ? ' cond' : ''), 'marker-end':'url(#pt)', id:'e'+i})); });
-  svg.appendChild(el('text', {x:1313, y:458, class:'gl'}, 'si falla o inventa')); svg.appendChild(el('text', {x:1215, y:690, class:'gl'}, 'si la aprueba')); svg.appendChild(el('text', {x:1580, y:600, class:'gl'}, 'reintento'));
+  svg.appendChild(el('text', {x:1313, y:458, class:'gl'}, 'si falla o inventa')); svg.appendChild(el('text', {x:1236, y:640, class:'gl'}, 'si la aprueba')); svg.appendChild(el('text', {x:1580, y:600, class:'gl'}, 'reintento'));
   const cont = $('#grafoNodos');
   nodos.forEach(n => { const b = document.createElement('button'); b.className = 'gn' + (n.circ ? ' circ' : ''); b.dataset.id = n.id; b.style.left = n.x + 'px'; b.style.top = n.y + 'px'; b.textContent = n.t; cont.appendChild(b); });
   $('#cons').innerHTML = MP.consultas.map((q,i) => { const c = carr[q.camino]; return `<button data-i="${i}" style="--c:${c.c};--cl:${c.cl}">${q.consulta}</button>`; }).join('');
