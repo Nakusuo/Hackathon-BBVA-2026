@@ -9,7 +9,7 @@ import { LARGO_MAXIMO, preguntarALucas } from './clienteChat.js'
 import { metaDesdePropuesta } from './metas.js'
 import { PREGUNTAS_SUGERIDAS } from './respuestas.js'
 import { burbujasDe } from './textoChat.js'
-
+// El agente es opcional: con VITE_CHAT_AGENTE=si usa POST /api/v1/chat; si no, plantillas con las cifras de la pantalla.
 // Apagado hasta que exista POST /api/v1/chat en FastAPI; las demás lecturas no dependen de esto.
 const AGENTE = import.meta.env.VITE_CHAT_AGENTE === 'si'
 
