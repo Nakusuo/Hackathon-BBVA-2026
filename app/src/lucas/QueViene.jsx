@@ -1,6 +1,7 @@
 import { CaretDown, CaretUp, Warning, X } from '@phosphor-icons/react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AvisoBreve from '../componentes/AvisoBreve.jsx'
 import {
   Area,
   CartesianGrid,
@@ -132,7 +133,8 @@ function estadoDelPanel(vista, periodo) {
 export default function QueViene({ cliente, alAgregar, alQuitar }) {
   const [periodo, setPeriodo] = useState('ingreso')
   const [borrador, setBorrador] = useState(VACIO)
-  const [agregado, setAgregado] = useState('')
+  const [agregado, setAgregado] = useState(null)
+  const cerrarAgregado = useCallback(() => setAgregado(null), [])
   // El simulador va plegado: abierto ocupa casi una pantalla y Qué viene debe caber en 1.5 de celular.
   const [simulando, setSimulando] = useState(false)
 
@@ -165,7 +167,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
   const resumen = `Saldo de hoy ${enSoles(saldoHoy)}. El peor caso es ${enSoles(panel.peorMonto)} el ${fechaDia(panel.peorFecha)}. ${panel.rojo ?? panel.bien}`
 
   function cambiar(campo, valor) {
-    setAgregado('')
+    setAgregado(null)
     setBorrador((previo) => ({ ...previo, [campo]: valor }))
     // La vista sigue a la fecha: lo que cae después del cobro no se ve en «Hasta mi cobro».
     if (campo === 'fecha' && valor) setPeriodo(valor >= proximoIngreso.fecha ? 'mes' : 'ingreso')
@@ -180,7 +182,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
   function agregar(nuevo) {
     alAgregar(nuevo)
     setBorrador(VACIO)
-    setAgregado(`Agregué ${nuevo.concepto} (${enSoles(nuevo.monto)}) el ${fechaDia(nuevo.fecha)}. Ya está en tu pronóstico.`)
+    setAgregado({ texto: `Agregué ${nuevo.concepto} (${enSoles(nuevo.monto)}) el ${fechaDia(nuevo.fecha)}.` })
   }
 
   return (
@@ -330,9 +332,7 @@ export default function QueViene({ cliente, alAgregar, alQuitar }) {
         <ExplicameFacil puntos={explicarQueViene(cliente)} />
       </section>
       {/* Al final y no entre el panel y la hoja: así la hoja sigue montada sobre el panel. */}
-      <p className="solo-lector" role="status">
-        {agregado}
-      </p>
+      <AvisoBreve aviso={agregado} alCerrar={cerrarAgregado} />
     </>
   )
 }
