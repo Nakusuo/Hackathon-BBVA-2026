@@ -6,6 +6,8 @@ import re
 import threading
 from collections import OrderedDict
 
+from src.api import chat_demo
+from src.api.persona_demo import ID_DEMO
 from src.comun.rutas import cargar_env
 
 log = logging.getLogger("lucas.api.agente")
@@ -72,6 +74,8 @@ class Agente:
     def responder(self, customer_id: str, mensaje: str, conversacion: str | None = None) -> dict:
         from src.agente_analitico.grafo import con_contexto, responder
 
+        if customer_id == ID_DEMO and (de_la_demo := chat_demo.responder(mensaje)):
+            return de_la_demo
         cliente = self.cliente(customer_id)
         clave = (cliente, conversacion or "")
         pregunta = con_contexto(mensaje, self._previas.get(clave)) if conversacion else mensaje
