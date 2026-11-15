@@ -21,11 +21,15 @@ function enRojo(riesgo) {
 }
 
 export function explicarResumen(cliente) {
-  const { gastoDiarioSeguro, gastoDiarioActual, proximoIngreso } = cliente
+  const { gastoDiarioSeguro, gastoDiarioActual, proximoIngreso, riesgo } = cliente
+  // Con gasto seguro 0 «hasta S/ 0 al día y llegas» sería falso: ni sin gastar se llega sin rojo.
+  const sinMargen = riesgo && gastoDiarioSeguro === 0
   return [
     {
       termino: 'Lo que puedes gastar',
-      texto: `Hasta ${enSoles(gastoDiarioSeguro)} al día y llegas a tu cobro del ${fechaDia(proximoIngreso.fecha)}. Gastas ${enSoles(gastoDiarioActual)} al día.`,
+      texto: sinMargen
+        ? `Ni sin gastar nada llegas a tu cobro del ${fechaDia(proximoIngreso.fecha)} sin quedar en rojo: hay que mover o pausar un pago. Gastas ${enSoles(gastoDiarioActual)} al día.`
+        : `Hasta ${enSoles(gastoDiarioSeguro)} al día y llegas a tu cobro del ${fechaDia(proximoIngreso.fecha)}. Gastas ${enSoles(gastoDiarioActual)} al día.`,
     },
     peorCaso(cliente),
     enRojo(cliente.riesgo),

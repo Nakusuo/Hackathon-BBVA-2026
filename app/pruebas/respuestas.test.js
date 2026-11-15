@@ -411,7 +411,10 @@ test('con gasto seguro 0 nunca promete «sin quedar en rojo»: lo dice y señala
     for (const conversacion of [['¿cuánto puedo gastar hoy?'], ['¿Llego a mi cobro?'], ['¿Llego a mi cobro?', 'explícame más']]) {
       const previas = conversacion.slice(0, -1)
       const r = responder(conversacion.at(-1), sinMargen, def.persona, previas)
-      assert.match(r.texto, /Aunque no gastes nada más/, `${def.id}: ${conversacion.join(' → ')}`)
+      // El monto citado es el peor caso a tu ritmo de hoy (el del motor), y la frase lo dice así.
+      assert.match(r.texto, new RegExp(`A tu ritmo de hoy, en un mes malo, .* quedarías en ${sinMargen.riesgo.peorMonto < 0 ? '−' : ''}S/.${Math.abs(sinMargen.riesgo.peorMonto).toLocaleString('en-US')}[.]`), `${def.id}: ${conversacion.join(' → ')}`)
+      assert.match(r.texto, /ni sin gastar nada más llegas/, `${def.id}: ${conversacion.join(' → ')}`)
+      assert.doesNotMatch(r.texto, /RapiFood|MusiKa|gastas un poco más/, 'sin tips de consumo ni frases que se contradicen')
       assert.doesNotMatch(r.texto, /S\/.0 al día|eso no pasa|llegas a tu cobro del \w+ \d+ incluso/, `${def.id}: ${conversacion.join(' → ')}`)
     }
   }
@@ -433,10 +436,10 @@ test('«ok», «sí» o «no» con la meta ya fechada no piden la fecha', () => 
 
 test('tras un monto suelto, «ahorro desde hoy» es meta y «hoy, con mis ahorros» es gasto', () => {
   const gasto = /^(Sí, te alcanza|Si lo compras|Con ese gasto|No te alcanza)/
-  for (const f of ['lo compro hoy con lo que tengo ahorrado', 'hoy, con mis ahorros', 'lo pago hoy con lo ahorrado']) {
+  for (const f of ['lo compro hoy con lo que tengo ahorrado', 'hoy, con mis ahorros', 'lo pago hoy con lo ahorrado', 'lo compro hoy con los ahorros', 'hoy lo saco de mis ahorros', 'lo pago hoy de mis ahorros', 'lo compro hoy con lo que ahorre', 'hoy uso mis ahorros', 'lo compro hoy con plata ahorrada', 'lo compro hoy, ya lo tengo ahorrado', 'no es meta, lo compro hoy', 'ahora mismo, no es para ahorrar']) {
     assert.match(charla(['500', f])[1].texto, gasto, f)
   }
-  for (const f of ['ahorro desde hoy', 'desde hoy lo ahorro', 'ahorrando desde hoy']) {
+  for (const f of ['ahorro desde hoy', 'desde hoy lo ahorro', 'ahorrando desde hoy', 'quiero ahorrar desde hoy', 'es para mi ahorro', 'quiero juntar con mis ahorros']) {
     assert.match(charla(['500', f])[1].texto, /^Tu meta es de S\/.500\./, f)
   }
 })

@@ -60,15 +60,15 @@ function llegarAlCobro(cliente) {
   }
 }
 
-// Con gasto seguro 0 no hay «baja a S/ X al día» que salve el mes: decirlo y señalar lo que sí mueve el día más justo.
+// Con gasto seguro 0 no hay «baja a S/ X al día» que salve el mes. El peor caso que se cita es a tu ritmo de hoy
+// (es el que calcula el motor), y bajar el consumo no basta: lo que mueve el día más justo es un pago o un ingreso.
 function sinMargen(cliente) {
   const { riesgo, proximoIngreso, gastoDiarioActual } = cliente
-  const evitar = queEvitar(cliente)
   return {
-    texto: `Aunque no gastes nada más, en un mes malo no llegas a tu cobro del ${fechaDia(proximoIngreso.fecha)} sin quedar en rojo: ${textoDiasEnRojo(riesgo).toLowerCase()} quedarías en ${enSoles(riesgo.peorMonto)}. Hace falta mover o pausar un pago.${evitar ? ` ${evitar}` : ''}`,
+    texto: `A tu ritmo de hoy, en un mes malo, ${textoDiasEnRojo(riesgo).toLowerCase()} quedarías en ${enSoles(riesgo.peorMonto)}. Y ni sin gastar nada más llegas a tu cobro del ${fechaDia(proximoIngreso.fecha)} sin quedar en rojo: hace falta mover o pausar un pago antes del ${fechaDia(riesgo.peorFecha)}, o sumar un ingreso.`,
     cifras: [
       { etiqueta: 'Gasto actual por día', valor: enSoles(gastoDiarioActual) },
-      { etiqueta: `Peor caso el ${fechaDia(riesgo.peorFecha)}`, valor: enSoles(riesgo.peorMonto) },
+      { etiqueta: `Peor caso a tu ritmo, el ${fechaDia(riesgo.peorFecha)}`, valor: enSoles(riesgo.peorMonto) },
       { etiqueta: 'Gasto seguro por día', valor: enSoles(0) },
     ],
     pose: 'alerta',
@@ -503,7 +503,7 @@ function masDetalle(cliente, persona, contexto) {
   if (contexto.tema === 'cobro' || contexto.tema === 'gasto' || contexto.tema === 'cuanto-gastar') {
     if (riesgo && gastoDiarioSeguro === 0) {
       const r = sinMargen(cliente)
-      return { ...r, texto: `Lo calculo para un mes malo, en el que gastas un poco más de lo normal o te pagan menos. ${r.texto}` }
+      return { ...r, texto: `Lo calculo con tus pagos de aquí a tu cobro, para un mes malo en el que te pagan menos o se te junta algún gasto. ${r.texto}` }
     }
     return {
       texto: riesgo
@@ -707,8 +707,10 @@ function leer(pregunta, contexto, cliente) {
   // «12000» y luego «es una meta» o «para comprar ahora»: el monto de antes es el precio o el gasto.
   if (contexto.tema === 'monto-suelto' && montoLeido === null) {
     // «quiero comprarlo ahora» responde a la pregunta de Lucas: es un gasto, aunque diga «comprar».
-    const sinConQuePaga = texto.replace(/\bcon (lo que (tengo|llevo) )?(lo |mis? |el )?ahorr\w*/g, ' ')
-    const hablaDeMeta = /\b(meta|ahorr|junt)/.test(sinConQuePaga)
+    // «ahorro desde hoy» es una meta; «de mis ahorros», «ya lo tengo ahorrado» o «con lo que ahorré» es con qué paga.
+    const pagaConAhorros = /\bahorros\b|\bahorrad\w*|\bahorre\b|\b(con|de)\s+(\w+\s+){0,3}ahorr\w*/
+    const niega = /\bno es (para |una )?(meta|ahorr|junt)/.test(texto)
+    const hablaDeMeta = !niega && (/\b(meta|junt)/.test(texto) || (/\bahorr/.test(texto) && !pagaConAhorros.test(texto)))
     if (!hablaDeMeta && /\b(ahora|hoy|ya mismo|al toque)\b/.test(texto)) return tema('gasto', contexto.monto)
     if (pideMeta || hablaDeMeta) {
       const meta = metaCon({ ...CONTEXTO_VACIO.meta, monto: contexto.monto }, texto, hoy)

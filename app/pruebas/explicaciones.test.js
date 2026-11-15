@@ -75,3 +75,11 @@ test('el texto fácil no usa palabras de asesoría ni de crédito', () => {
     assert.doesNotMatch(texto, /préstamo|crédito|invier|invert|asesor/)
   }
 })
+
+test('con gasto seguro 0 el «explícame fácil» del Resumen no promete «hasta S/ 0 al día y llegas»', async () => {
+  const { vistaCon } = await import('../src/motor/cliente.js')
+  const sinMargen = vistaCon([], 'independiente', [], [{ id: 'grande', tipo: 'gasto', fecha: '2026-11-20', monto: 9000 }])
+  const [puedes] = explicarResumen(sinMargen)
+  assert.match(puedes.texto, /^Ni sin gastar nada llegas/)
+  assert.doesNotMatch(puedes.texto, /S\/.0 al día/)
+})
