@@ -1,5 +1,6 @@
 """`demo-001` debe decir lo mismo que el motor del front. La prueba de que los JSON siguen al motor está en
 frontend/pruebas/demo001.test.js; aquí se comprueba que la API sirve esos JSON y que no se contradicen entre sí."""
+
 import json
 
 import pytest
@@ -18,7 +19,11 @@ def _guardado(nombre: str) -> dict:
 
 @pytest.mark.parametrize(
     ("ruta_api", "archivo"),
-    [("health", "health.json"), ("events", "events.json"), ("recommendations", "recommendations.json")],
+    [
+        ("health", "health.json"),
+        ("events", "events.json"),
+        ("recommendations", "recommendations.json"),
+    ],
 )
 def test_la_api_sirve_lo_que_genera_el_motor(ruta_api, archivo):
     assert client.get(f"{BASE}/{ruta_api}").json() == _guardado(archivo)

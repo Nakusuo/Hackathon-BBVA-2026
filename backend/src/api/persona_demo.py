@@ -1,5 +1,6 @@
 """Respuestas de `demo-001`: las genera el motor del front (frontend/scripts/exportar-persona-demo.mjs) y la API
 solo las sirve, para que lo que devuelve coincida con lo que muestra la pantalla. No hay cifras escritas aquí."""
+
 import json
 from functools import cache
 

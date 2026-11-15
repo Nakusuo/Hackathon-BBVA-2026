@@ -20,9 +20,7 @@ def _pronostico_real(customer_id: str, days: int) -> dict | None:
         return pronostico_contrato(agente.repo, agente.cliente(customer_id), days)
     except ClienteDesconocido:
         raise
-    except (
-        Exception
-    ):  # sin datos o modelos en esta máquina la ruta responde 404 en vez de caerse
+    except Exception:  # sin datos o modelos en esta máquina la ruta responde 404 en vez de caerse
         log.warning("Pronóstico real no disponible", exc_info=True)
         return None
 
