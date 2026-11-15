@@ -13,6 +13,7 @@ Para mejorar con embeddings: `exportar_para_embeddings()` deja las preguntas y r
 como un modulo «faq» o usarlas para encontrar preguntas parecidas por significado y no solo por palabras."""
 import hashlib
 import json
+import logging
 import os
 import re
 import sqlite3
@@ -21,6 +22,8 @@ from contextlib import closing
 
 from src.comun import reloj
 from src.comun.rutas import ruta
+
+log = logging.getLogger(__name__)
 
 INTENCIONES = ("educacion",)   # solo preguntas de concepto: no dependen de los datos de la persona
 UMBRAL_PARECIDO = 0.8          # similitud de Jaccard entre las palabras de dos preguntas para considerarlas la misma
@@ -193,6 +196,7 @@ def registrar(est: dict, respuesta: str) -> str:
             con.commit()
             return "aprendida"
     except Exception:  # noqa: BLE001 - aprender es un extra: un fallo aqui jamas debe afectar la respuesta
+        log.warning("No se pudo guardar la pregunta frecuente aprendida", exc_info=True)
         return "no_aplica"
 
 

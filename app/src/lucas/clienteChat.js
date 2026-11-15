@@ -66,7 +66,7 @@ export async function preguntarALucas(texto, { cliente, persona, conversacion, a
     ...responderConPlantilla(texto, cliente, persona, previas),
   })
   // Los pedidos de operación o inversión se cortan aquí: no hace falta mandarlos a ningún servidor.
-  if (!activo || esPedidoDeOperacion(texto) || esPreguntaDeCampana(texto, previas, cliente.hoy)) return plantilla()
+  if (!activo || esPedidoDeOperacion(texto) || esPreguntaDeCampana(texto, previas, cliente)) return plantilla()
 
   let cuerpo
   try {
