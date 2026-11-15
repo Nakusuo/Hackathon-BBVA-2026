@@ -132,3 +132,18 @@ test('un «sí» tras una campaña que no se ofreció va al agente', async () =>
   await preguntarALucas('sí', opciones({ previas: ['quiero ir al concierto, la entrada está 450'], pedir: falsoFetch(RESPUESTA, registro) }))
   assert.equal(registro.length, 1)
 })
+
+test('las opciones del agente llegan como botones con la pregunta que envían; las incompletas se descartan', async () => {
+  const lista = [
+    { id: 'pronostico', label: '¿Llego a fin de mes?', question: '¿Llego a fin de mes con mi plata?' },
+    { id: 'roto', label: '', question: 'x' },
+    { id: 'salud', label: 'Mi salud financiera', question: '¿Cómo está mi salud financiera?' },
+  ]
+  const r = await preguntarALucas('hola', opciones({ pedir: falsoFetch({ ...RESPUESTA, options: lista }) }))
+  assert.deepEqual(r.opciones, [
+    { id: 'pronostico', texto: '¿Llego a fin de mes?', pregunta: '¿Llego a fin de mes con mi plata?' },
+    { id: 'salud', texto: 'Mi salud financiera', pregunta: '¿Cómo está mi salud financiera?' },
+  ])
+  const sin = await preguntarALucas('hola', opciones({ pedir: falsoFetch(RESPUESTA) }))
+  assert.deepEqual(sin.opciones, [])
+})

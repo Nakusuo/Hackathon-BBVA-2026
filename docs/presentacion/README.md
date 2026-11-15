@@ -7,6 +7,7 @@ Esta carpeta reune **todas las graficas, diagramas y artefactos generados** para
 | Archivo | Que mensaje defiende |
 |---|---|
 | `modelos/comparativa_modelos.png` | Panel general: para cada problema, el modelo elegido (azul rayado) frente a sus baselines y alternativas (gris). Por que cada modelo. |
+| `modelos/mejora_en_porcentaje.png` | Cuanto mejora el modelo elegido, en porcentaje: frente al rival mas fuerte de cada problema (numero conservador) y frente al mas debil; los empates se dicen. |
 | `modelos/01_segmentacion.png` | Segmentacion: K-Prototypes recupera los arquetipos reales que K-means y las reglas 2x2 no. |
 | `modelos/02_saldo_30_dias.png` | Pronostico a 30 dias: menos error que el promedio movil y banda al 80 % que de verdad cubre el 80 %. |
 | `modelos/03_alerta_rojo.png` | Alerta de saldo en rojo: mejor PR-AUC que una regla simple (evento raro). |
@@ -29,7 +30,8 @@ Esta carpeta reune **todas las graficas, diagramas y artefactos generados** para
 | `graficas/calendario_laboral_2026_2027.png` | El agente conoce gratificacion y CTS y avisa que la libre disposicion del 100 % de la CTS vence el 31 de diciembre de 2026. |
 | `diagramas/arquitectura_del_sistema.png` | Arquitectura: modelos calculan, el LLM solo redacta, un verificador determinista cuida cada cifra; salvaguardas si el LLM falla. |
 | `diagramas/agente_ahorro_de_tokens.png` | Como optimizamos tokens: un parrafo de consultas, el router, plantillas, preguntas frecuentes y solo lo nuevo al agente de IA con RAG (chunks, embeddings, top-3), con tokens medidos. |
-| `mapa_de_consultas.json` | Los datos de ese ejemplo: intencion y camino de cada consulta, fragmentos que devolvio el RAG y tokens. |
+| `graficas/ahorro_en_porcentaje_y_soles.png` | Cuanto ahorra Lucas, en porcentajes y en soles: ruteo (menos tokens), RAG (99.9 % menos lectura), en que se va una llamada (mensaje, lectura, respuesta) y soles por cada 100 mil consultas. |
+| `mapa_de_consultas.json` | Los datos de ese ejemplo: intencion y camino de cada consulta, fragmentos que devolvio el RAG, tokens, precio, tipo de cambio y costos en soles. |
 | `diagramas/rag_arquitectura.png` | RAG de punta a punta: fuentes, troceado 900/120, embeddings nomic-embed-text, indice, consulta con filtro de relevancia, verificador, citas y preguntas frecuentes que ahorran tokens. |
 | `diagramas/modelo_de_datos.png` | Modelo de datos de PostgreSQL con pgvector: 25 tablas en dos esquemas (lucas y simulacion), probado con la data sintetica completa. |
 | `diagramas/grafo_agente_unico.png` | Nodos del agente unico (LangGraph), dibujado desde el grafo real. |

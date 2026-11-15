@@ -43,7 +43,7 @@ CASOS = [
     ("Invierte mi plata en bitcoin", {"fuera_de_alcance"}), ("¿Dónde me conviene invertir?", {"fuera_de_alcance"}), ("Compra acciones de Apple", {"fuera_de_alcance"}),
     ("Abre una cuenta de ahorros por mí", {"fuera_de_alcance"}),
     # saludos y ayuda
-    ("Hola", {"saludo"}), ("Gracias", {"saludo"}), ("¿Qué puedes hacer?", {"saludo"}), ("Ayuda", {"saludo"}),
+    ("Hola", {"conversacion"}), ("Gracias", {"conversacion"}), ("¿Qué puedes hacer?", {"conversacion"}), ("Ayuda", {"conversacion"}),
     # simular un gasto: solo con un monto en la frase
     ("Quiero comprar una entrada a un concierto por 450 soles, la preventa es en 2 semanas, ¿afecta mis ahorros?", {"simular"}), ("¿Qué pasa si gasto S/ 1,200 en una laptop?", {"simular"}),
     ("¿Puedo pagar 300 de matrícula este mes?", {"simular"}), ("Si me compro un celular de 899 soles, ¿llego a fin de mes?", {"simular"}), ("Pienso gastar 80 en una cena", {"simular"}),

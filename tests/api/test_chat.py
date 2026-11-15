@@ -79,8 +79,19 @@ def test_falta_el_mensaje(client):
 
 
 def test_el_saludo_conserva_el_hola_y_las_demas_respuestas_no_lo_repiten(client):
-    client.agente.grafo = {"intencion": "saludo", "respuesta": "Hola, Constructor. Soy Lucas.\nPuedo ver si llegas a fin de mes. Tu decides."}
+    client.agente.grafo = {"intencion": "conversacion", "respuesta": "Hola, Constructor. Soy Lucas.\nPuedo ver si llegas a fin de mes. Tu decides."}
     assert client.post(BASE_URL, json=mensaje()).json()["answer"] == "Hola, Constructor. Soy Lucas.\nPuedo ver si llegas a fin de mes."
+
+
+def test_las_opciones_llegan_como_botones_y_el_menu_escrito_se_quita(client):
+    opciones = [{"id": "pronostico", "texto": "¿Llego a fin de mes?", "pregunta": "¿Llego a fin de mes con mi plata?"},
+                {"id": "salud_nivel", "texto": "Mi salud financiera", "pregunta": "¿Cómo está mi salud financiera?"}]
+    client.agente.grafo = {"intencion": "conversacion", "opciones": opciones,
+                           "respuesta": "¡Hola, Constructor! Elige una opcion: ¿Llego a fin de mes? • Mi salud financiera ¿Por donde empezamos? Tu decides."}
+    data = client.post(BASE_URL, json=mensaje()).json()
+    assert data["answer"] == "¡Hola, Constructor! Elige una opcion: ¿Por donde empezamos?"
+    assert data["options"] == [{"id": "pronostico", "label": "¿Llego a fin de mes?", "question": "¿Llego a fin de mes con mi plata?"},
+                               {"id": "salud_nivel", "label": "Mi salud financiera", "question": "¿Cómo está mi salud financiera?"}]
 
 
 def test_la_conversacion_recuerda_la_ultima_pregunta_con_tema_y_no_mezcla_conversaciones(client):

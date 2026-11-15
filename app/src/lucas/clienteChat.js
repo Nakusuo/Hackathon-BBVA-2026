@@ -35,6 +35,17 @@ function leerPropuesta(p) {
   return ok ? { nombre: p.name.trim().slice(0, 40), objetivo: p.target, fecha: p.date } : null
 }
 
+const MAX_OPCIONES = 4
+
+// Botones de respuesta rápida del agente: solo los que traen texto y pregunta; el resto se descarta.
+function leerOpciones(opciones) {
+  if (!Array.isArray(opciones)) return []
+  return opciones
+    .filter((o) => o && typeof o.label === 'string' && o.label.trim() && typeof o.question === 'string' && o.question.trim())
+    .slice(0, MAX_OPCIONES)
+    .map((o, i) => ({ id: String(o.id ?? i), texto: o.label.trim(), pregunta: o.question.trim().slice(0, LARGO_MAXIMO) }))
+}
+
 export function esRespuestaValida(cuerpo) {
   return Boolean(cuerpo) && typeof cuerpo.answer === 'string' && cuerpo.answer.trim() !== ''
 }
@@ -60,6 +71,7 @@ export function desdeAgente(cuerpo) {
       })),
     aviso: null,
     propuesta: leerPropuesta(cuerpo.goal_proposal),
+    opciones: leerOpciones(cuerpo.options),
   }
 }
 

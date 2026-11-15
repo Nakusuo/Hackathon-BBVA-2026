@@ -22,6 +22,14 @@ class PropuestaMeta(BaseModel):
     date: str
 
 
+class Opcion(BaseModel):
+    """Botón de respuesta rápida: el chat envía `question` si la persona lo toca."""
+
+    id: str
+    label: str
+    question: str
+
+
 class ChatResponse(BaseModel):
     conversation_id: str = Field(min_length=1)
     answer: str = Field(min_length=1)
@@ -31,3 +39,4 @@ class ChatResponse(BaseModel):
     tools_used: list[str] = Field(default_factory=list)
     intent: str | None = None
     goal_proposal: PropuestaMeta | None = None
+    options: list[Opcion] = Field(default_factory=list)

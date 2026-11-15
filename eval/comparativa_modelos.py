@@ -1,6 +1,7 @@
 """Comparativa de modelos para la presentacion: para cada problema, los candidatos que se midieron, cual se eligio y por que, con una tabla y una grafica.
 Todo sale de models/*.json (nada escrito a mano): las cifras de la explicacion se toman de los mismos archivos que la grafica, asi no se pueden desalinear.
-Salidas: docs/comparativa_modelos.md, docs/comparativa_modelos.csv, docs/presentacion/modelos/comparativa_modelos.png (panel general) y docs/presentacion/modelos/<problema>.png (una por diapositiva).
+Salidas: docs/comparativa_modelos.md, docs/comparativa_modelos.csv, docs/presentacion/modelos/comparativa_modelos.png (panel general), docs/presentacion/modelos/<problema>.png (una por diapositiva)
+y docs/presentacion/modelos/mejora_en_porcentaje.png (cuanto mejora el elegido frente a su rival mas fuerte, en %).
 Uso: python eval/comparativa_modelos.py"""
 import csv
 import json
@@ -227,6 +228,57 @@ def guardar_figuras(P: list[dict]) -> None:
     plt.close(fig)
 
 
+def mejora_porcentual(P: list[dict]) -> list[dict]:
+    """Cuanto mejora el modelo elegido frente a cada rival, en % de la metrica del rival (positivo = el elegido es mejor). Se reporta frente al rival MAS FUERTE (el numero conservador) y frente al mas debil.
+    Se excluye el problema cuya metrica es «cercania a un objetivo» (la cobertura de la banda). Los % de metricas distintas (error, PR-AUC, F1) no son comparables entre si: cada barra es un problema."""
+    filas = []
+    for p in P:
+        if p["mejor"] == "objetivo" or len(p["candidatos"]) < 2:
+            continue
+        e = p["candidatos"][p["elegido"]][1]
+        mejoras = []
+        for i, (n, v) in enumerate(p["candidatos"]):
+            if i == p["elegido"] or v == 0:
+                continue
+            mejoras.append(((v - e) / v if p["mejor"] == "menor" else (e - v) / v, n))
+        if not mejoras:
+            continue
+        fuerte, debil = min(mejoras), max(mejoras)
+        filas.append({"problema": p["titulo"], "metrica": p["metrica"], "elegido": p["candidatos"][p["elegido"]][0], "valor_elegido": e, "rival_mas_fuerte": fuerte[1], "mejora_vs_mas_fuerte": fuerte[0],
+                      "rival_mas_debil": debil[1], "mejora_vs_mas_debil": debil[0]})
+    return sorted(filas, key=lambda r: r["mejora_vs_mas_fuerte"], reverse=True)
+
+
+def guardar_mejora(M: list[dict]) -> None:
+    """Barras horizontales: la mejora (%) del modelo elegido frente a su rival mas fuerte; el rombo marca la mejora frente al rival mas debil. En gris, lo que es empate (menos de 1 %)."""
+    n, CAP = len(M), 100.0   # una barra enorme (p. ej. un baseline con F1 muy bajo) aplastaria al resto: se dibuja hasta CAP y la cifra real va escrita
+    fig, ax = plt.subplots(figsize=(11.5, 0.52 * n + 2.4), dpi=200, facecolor=SUPERFICIE)
+    y = np.arange(n)[::-1]
+    for yy, r in zip(y, M):
+        v, d = r["mejora_vs_mas_fuerte"] * 100, r["mejora_vs_mas_debil"] * 100
+        ax.barh(yy, min(v, CAP), height=0.56, color=AZUL if v >= 1 else GRIS, linewidth=0, zorder=2)
+        ax.plot([min(d, CAP)], [yy], marker="D", markersize=6, color=TINTA, zorder=4)
+        recorte = "  (barra recortada)" if v > CAP else ""
+        ax.text(max(min(v, CAP), min(d, CAP), 0) + 2.0, yy + 0.02, f"{v:+.1f} %{recorte}" + ("  (empate)" if abs(v) < 1 else "") + (f"   · vs mas debil {d:+.0f} %" if abs(d - v) >= 1 else ""),
+                va="center", ha="left", fontsize=9.6, fontweight="bold", color=TINTA, zorder=3, bbox=dict(facecolor=SUPERFICIE, edgecolor="none", pad=1.2))
+    ax.set_yticks(y)
+    ax.set_yticklabels([textwrap.fill(r["problema"], 34) for r in M], fontsize=9.5, color=TINTA)
+    ax.set_xlim(min(-5, min(r["mejora_vs_mas_fuerte"] for r in M) * 100 - 2), CAP * 2.1)
+    ax.axvline(0, color=TINTA_2, linewidth=1.0, zorder=1)
+    for lado in ("top", "right", "bottom"):
+        ax.spines[lado].set_visible(False)
+    ax.spines["left"].set_color("#c9c8c2")
+    ax.set_xticks([])
+    ax.tick_params(axis="y", length=0)
+    ax.set_facecolor(SUPERFICIE)
+    fig.text(0.015, 0.975, "Cuanto mejora el modelo elegido, en porcentaje", fontsize=15, fontweight="bold", color=TINTA, va="top")
+    fig.text(0.015, 0.935, "Barra azul: mejora frente al rival MAS FUERTE de cada problema (el numero conservador). Rombo: mejora frente al mas debil. Gris: empate.", fontsize=9.5, color=TINTA_2, va="top")
+    fig.text(0.015, 0.012, "Datos sinteticos · fuente: models/*.json (eval/comparativa_modelos.py) · mejora relativa a la metrica del rival; cada barra es un problema y sus metricas no son comparables entre si.", fontsize=8, color=TINTA_2)
+    fig.subplots_adjust(left=0.27, right=0.97, top=0.88, bottom=0.07)
+    fig.savefig(os.path.join(DOCS, "presentacion", "modelos", "mejora_en_porcentaje.png"), facecolor=SUPERFICIE)
+    plt.close(fig)
+
+
 def escribir_documentos(P: list[dict]) -> None:
     filas = []
     for p in P:
@@ -237,6 +289,13 @@ def escribir_documentos(P: list[dict]) -> None:
              "Cada fila trae también el límite de la comparación: lo que no demuestra.\n\n"
              "![Comparativa de modelos](presentacion/modelos/comparativa_modelos.png)\n\n"
              "Una imagen por problema para las diapositivas: `docs/presentacion/modelos/`.\n\n"
+             "## Cuánto mejora el elegido, en porcentaje\n\n"
+             "![Mejora en porcentaje](presentacion/modelos/mejora_en_porcentaje.png)\n\n"
+             "Mejora relativa a la métrica del rival (positivo = el elegido es mejor), frente al rival **más fuerte** (el número conservador) y frente al más débil. Los porcentajes de métricas distintas no son comparables entre sí: cada fila es un problema. "
+             "Un empate no es un fallo: en segmentación el elegido gana en recuperar los arquetipos, no en la silueta; en la proyección mensual y en la política de ahorro empata en la métrica mostrada y gana en otra (cobertura de la banda y colchón); y en el agente y el RAG se eligió el más simple. "
+             "Las barras se recortan a 100 % para que una mejora enorme (el baseline de gastos fijos tiene un F1 muy bajo) no aplaste al resto; la cifra real va escrita.\n\n"
+             "| Problema | Métrica | Elegido | Rival más fuerte | Mejora | Rival más débil | Mejora |\n|---|---|---|---|---|---|---|\n" + "\n".join(
+                 f"| {r['problema']} | {r['metrica']} | {r['elegido']} | {r['rival_mas_fuerte']} | **{r['mejora_vs_mas_fuerte']:+.1%}** | {r['rival_mas_debil']} | {r['mejora_vs_mas_debil']:+.1%} |" for r in mejora_porcentual(P)) + "\n\n"
              "| Problema | Métrica | Resultados (elegido en negrita) | Elegido | Por qué se eligió | Límite |\n|---|---|---|---|---|---|\n" + "\n".join(filas) + "\n"
              f"\n<!-- huella_metricas: {huella(METRICAS)} (la puerta de calidad compara esta huella con la de las metricas actuales) -->\n")
     with open(os.path.join(DOCS, "comparativa_modelos.md"), "w", encoding="utf-8") as f:
@@ -253,6 +312,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     P = problemas()
     guardar_figuras(P)
+    guardar_mejora(mejora_porcentual(P))
     escribir_documentos(P)
     print(f"{len(P)} problemas comparados -> docs/comparativa_modelos.md, .csv y docs/presentacion/")
     for p in P:

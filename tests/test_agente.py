@@ -254,8 +254,8 @@ def test_un_saludo_se_responde_al_instante_sin_modelo_ni_cifras_del_cliente(agen
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, saludo)
-    assert r["intencion"] == "saludo" and r["proveedor"] == "plantilla" and r["llamadas_llm"] == 0
-    assert "Puedo ver si llegas a fin de mes" in r["respuesta"] and "S/" not in r["respuesta"]
+    assert r["intencion"] == "conversacion" and r["proveedor"] == "plantilla" and r["llamadas_llm"] == 0
+    assert r["opciones"] and "S/" not in r["respuesta"]
 
 
 def test_el_plan_de_una_meta_parte_de_las_finanzas_de_la_persona_suma_el_convenio_y_cierra_los_numeros(agente, reloj_de_prueba):

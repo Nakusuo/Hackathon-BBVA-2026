@@ -166,7 +166,20 @@ function GuardarMeta({ propuesta, cliente, metas, alCrearMeta, alEditarMeta }) {
   )
 }
 
-function Mensaje({ mensaje, cliente, metas, alCrearMeta, alEditarMeta }) {
+function Opciones({ opciones, ocupado, alPreguntar }) {
+  return (
+    <div className="opciones-chat" role="group" aria-label="Opciones para seguir">
+      {opciones.map((o) => (
+        <button key={o.id} type="button" className="faq-opcion opcion-chat" disabled={ocupado} onClick={() => alPreguntar(o.pregunta)}>
+          <span>{o.texto}</span>
+          <CaretRight size={18} aria-hidden="true" />
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function Mensaje({ mensaje, cliente, metas, alCrearMeta, alEditarMeta, ocupado, alPreguntar }) {
   const reducido = useReducedMotion()
   const entra = entradaDe(reducido)
   if (mensaje.autor === 'tu') {
@@ -197,6 +210,9 @@ function Mensaje({ mensaje, cliente, metas, alCrearMeta, alEditarMeta }) {
             <Bloques bloques={bloques} desde={inicioDe[i]} />
             {i === burbujas.length - 1 && mensaje.cifras?.length > 0 && <Cifras mensaje={mensaje} />}
             {i === burbujas.length - 1 && mensaje.fuentes?.length > 0 && <Fuentes fuentes={mensaje.fuentes} />}
+            {i === burbujas.length - 1 && mensaje.opciones?.length > 0 && alPreguntar && (
+              <Opciones opciones={mensaje.opciones} ocupado={ocupado} alPreguntar={alPreguntar} />
+            )}
             {i === burbujas.length - 1 && mensaje.propuesta && alCrearMeta && (
               <GuardarMeta
                 propuesta={mensaje.propuesta}
@@ -321,6 +337,8 @@ export default function Chat({ cliente, persona, metas = [], alCrearMeta, alEdit
             metas={metas}
             alCrearMeta={alCrearMeta}
             alEditarMeta={alEditarMeta}
+            ocupado={pensando}
+            alPreguntar={preguntar}
           />
         ))}
         {pensando && <Pensando />}

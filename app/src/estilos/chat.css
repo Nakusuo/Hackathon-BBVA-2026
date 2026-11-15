@@ -348,3 +348,9 @@
   flex: none;
   color: var(--verde, var(--azul-texto));
 }
+
+/* Botones de respuesta rápida que propone el agente cuando el mensaje es abierto o no lo entendió. */
+.opciones-chat {
+  display: grid;
+  gap: 6px;
+}

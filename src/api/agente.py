@@ -24,11 +24,14 @@ def _leer_alias(texto: str) -> dict[str, str]:
     return {alias.strip(): cliente.strip() for alias, cliente in pares}
 
 
-def para_el_chat(texto: str, intencion: str) -> str:
+def para_el_chat(texto: str, intencion: str, opciones: list[dict]) -> str:
     """El chat ya muestra «Orientación, no asesoría. Tú decides.» bajo la caja de texto y saluda una sola vez:
-    se quitan el saludo y el cierre que el agente repite en cada respuesta."""
-    if intencion != "saludo":
+    se quitan el saludo y el cierre que el agente repite en cada respuesta. Si hay opciones, el chat las pinta como botones
+    y el menú escrito («A • B • C») sobra."""
+    if intencion not in ("conversacion", "apoyo"):
         texto = re.sub(r"^Hola, [^.\n]{1,30}\.\s*", "", texto)
+    if opciones:
+        texto = texto.replace(" • ".join(o["texto"] for o in opciones), "").replace("  ", " ")
     return re.sub(r"\s*Tu decides?\.\s*$", "", texto.strip(), flags=re.I).strip() or texto.strip()
 
 
@@ -66,10 +69,10 @@ class Agente:
         clave = (cliente, conversacion or "")
         pregunta = con_contexto(mensaje, self._previas.get(clave)) if conversacion else mensaje
         r = responder(self.grafo, cliente, pregunta)
-        if conversacion and r["intencion"] not in ("general", "fuera_de_tema", "saludo", "seguridad", "fuera_de_alcance"):
+        if conversacion and r["intencion"] not in ("general", "fuera_de_tema", "conversacion", "apoyo", "seguridad", "fuera_de_alcance"):
             self._recordar(clave, pregunta)
         return {
-            "answer": para_el_chat(r["respuesta"], r["intencion"]),
+            "answer": para_el_chat(r["respuesta"], r["intencion"], r.get("opciones") or []),
             "provider": r["proveedor"],
             # Verificada = ninguna cifra del texto final quedó sin respaldo en lo que devolvieron las herramientas.
             "verified": not r["cifras_sin_respaldo"],
@@ -80,6 +83,7 @@ class Agente:
             "tools_used": [t.split(":", 1)[1] for t in r["trazas"] if t.startswith("agente:")],
             "intent": r["intencion"],
             "goal_proposal": _propuesta(r.get("propuesta_meta")),
+            "options": [{"id": o["id"], "label": o["texto"], "question": o["pregunta"]} for o in r.get("opciones") or []],
         }
 
 
