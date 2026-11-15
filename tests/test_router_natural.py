@@ -51,6 +51,8 @@ CASOS = [
     # meta de ahorro y compra sin precio
     ("quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo", {"meta"}), ("¿Cuánto tengo que ahorrar al mes para juntar 5000 soles en 10 meses?", {"meta"}),
     ("Quiero ahorrar para una laptop de S/ 3,500", {"meta"}), ("quiero comprar un carro", {"compra"}), ("Me gustaría comprarme una moto", {"compra"}),
+    ("propon un plan de ahorro para poder irme de viaje a Brasil y que aerolineas tienen descuento con el banco", {"meta"}), ("Quiero juntar plata para un viaje", {"meta"}),
+    ("¿Qué convenios con el banco hay para comprar una laptop?", {"meta"}),
     # resumen de lo ahorrado
     ("Haz un resumen de mis estadísticas de ahorro", {"ahorro"}), ("¿Cuánto llevo ahorrado?", {"ahorro"}), ("¿Cómo va mi ahorro?", {"ahorro"}), ("¿Cuánto he ahorrado este año?", {"ahorro"}),
 ]

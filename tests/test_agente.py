@@ -258,21 +258,41 @@ def test_un_saludo_se_responde_al_instante_sin_modelo_ni_cifras_del_cliente(agen
     assert "Puedo ver si llegas a fin de mes" in r["respuesta"] and "S/" not in r["respuesta"]
 
 
-def test_la_meta_dice_cuanto_apartar_al_mes_y_lo_compara_con_lo_que_la_persona_ya_aparta(agente, reloj_de_prueba):
+def test_el_plan_de_una_meta_parte_de_las_finanzas_de_la_persona_suma_el_convenio_y_cierra_los_numeros(agente, reloj_de_prueba):
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, "quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo")
-    aparta = repo.ahorro_reciente(cid)["apartado_promedio_mensual"]
+    f = repo.contexto(cid)["features"]
     assert r["intencion"] == "meta" and r["proveedor"] == "plantilla" and not r["cifras_sin_respaldo"]
-    assert "S/ 12,000 a fin de año" in r["respuesta"] and "S/ 6,000 al mes" in r["respuesta"] and "S/ 12," not in r["respuesta"].replace("S/ 12,000", "")
-    assert (f"S/ {aparta:,.0f} al mes" in r["respuesta"]) or "no apartaste nada" in r["respuesta"]
+    bloques = r["respuesta"].split("\n\n")
+    assert [b.split("\n")[0] for b in bloques if b.startswith("## ")] == ["## Lo que puedes hacer", "## Convenio del banco", "## Los números"] and "## Tu punto de partida" in bloques[0]
+    assert f"Ganas unos S/ {f['ingreso_medio']:,.0f} al mes" in r["respuesta"]
+    assert "Autos Andinos: S/ 2,000 de descuento" in r["respuesta"] and "- Precio: S/ 12,000" in r["respuesta"] and "- Te toca juntar: S/ 10,000" in r["respuesta"]
+    assert "Para tenerlo a fin de año necesitas S/ 5,000 al mes" in r["respuesta"]
 
 
-def test_sin_plazo_la_meta_se_calcula_a_doce_meses_y_lo_dice(agente):
+def test_un_plan_sin_precio_dice_cuanto_se_puede_apartar_y_pide_el_precio(agente, reloj_de_prueba):
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
-    r = responder(apps["agente_unico"], cid, "¿Cuánto debo ahorrar para comprar una moto de 6000 soles?")
-    assert r["intencion"] == "meta" and "S/ 500 al mes" in r["respuesta"] and "No me dijiste para cuándo" in r["respuesta"] and not r["cifras_sin_respaldo"]
+    r = responder(apps["agente_unico"], cid, "propon un plan de ahorro para poder irme de viaje a Brasil y que aerolineas tienen descuento con el banco")
+    assert r["intencion"] == "meta" and not r["cifras_sin_respaldo"] and "Dime cuánto cuesta y para cuándo" in r["respuesta"]
+    assert "Viajes Horizonte" in r["respuesta"] and "no aplica: cubre solo pasajes nacionales" in r["respuesta"] and "Vale hasta" not in r["respuesta"]
+
+
+def test_el_convenio_que_si_cubre_el_pedido_se_ofrece_con_su_vigencia_y_su_descuento_con_tope(agente, reloj_de_prueba):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "quiero ahorrar para un viaje a Cusco de 3000 soles en 6 meses")
+    assert "Vale hasta el domingo 28 de febrero de 2027" in r["respuesta"] and "- Descuento con Viajes Horizonte: -S/ 200" in r["respuesta"] and "- Te toca juntar: S/ 2,800" in r["respuesta"]
+    assert "necesitas S/ 467 al mes" in r["respuesta"] and not r["cifras_sin_respaldo"]
+
+
+def test_una_meta_sin_convenio_ni_plazo_dice_en_cuantos_meses_se_llega_con_el_plan(agente):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "¿Cuánto debo ahorrar para pagar un curso de 6000 soles?")
+    assert r["intencion"] == "meta" and "Convenio del banco" not in r["respuesta"] and "- Precio: S/ 6,000" in r["respuesta"] and not r["cifras_sin_respaldo"]
+    assert "llegas en" in r["respuesta"] or "no te queda margen" in r["respuesta"]
 
 
 def test_una_compra_sin_precio_pide_el_precio_en_vez_de_tratarla_como_tema_ajeno(agente):
@@ -280,6 +300,22 @@ def test_una_compra_sin_precio_pide_el_precio_en_vez_de_tratarla_como_tema_ajeno
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, "quiero comprar un carro")
     assert r["intencion"] == "compra" and r["llamadas_llm"] == 0 and "¿Cuánto cuesta" in r["respuesta"] and "no puedo ayudarte" not in r["respuesta"]
+
+
+def test_el_juez_rechaza_un_borrador_que_solo_trae_la_frase_de_cierre(agente, monkeypatch):
+    from src.agente_analitico import proveedores as PV
+    from src.agente_analitico.grafo import responder
+
+    class SoloCierre:
+        nombre, externo = "falso", False
+
+        def redactar(self, *_):
+            return "Tu decide."
+
+    repo, apps, cid = agente
+    monkeypatch.setattr(PV, "cadena", lambda: [SoloCierre()])
+    r = responder(apps["agente_unico"], cid, "Necesito organizarme con mi plata")
+    assert r["intencion"] == "general" and r["proveedor"] == "plantilla" and len(r["respuesta"].split()) > 15
 
 
 @pytest.mark.parametrize("pregunta,ausente", [("¿Llego a fin de mes con mi plata?", ["salud financiera", "El Nino", "tasa de referencia"]),

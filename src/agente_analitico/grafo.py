@@ -19,6 +19,8 @@ from src.agente_analitico.verificador import aplanar, numeros_de, verificar
 from src.bcrp.cliente import ultimo_con_variacion
 from src.comun.rutas import cargar_env, ruta
 from src.generador.contexto import cargar_yaml
+from src.models import calendario_laboral as CL
+from src.models import campanas as CA
 from src.models import niveles as N
 from src.models import ofertas as O
 from src.models import programa_puntos as PP
@@ -45,7 +47,8 @@ MORA_Y_RECLAMOS = r"derechos?|reclam|atras[eéo]|\bmora\b|no pago|dej[eé] de pa
 # «¿Y si gasto S/ 450?»: solo es una simulacion si la frase trae un monto (lo comprueba detectar_intencion); sin monto sigue su camino normal
 SIMULAR = r"\bsi (?:me )?(?:gasto|compro|pago)\b|(?:puedo|podr[ií]a|quiero|quisiera|voy a|pienso|planeo) (?:gastar|comprar(?:me)?|pagar)|\bsimula|qu[eé] pasa(?:r[ií]a)? si"
 # «¿Cuanto debo ahorrar para comprar X?»: es una meta de ahorro, no un gasto de hoy. Va antes que simular porque la frase suele traer «quiero comprar»
-META = r"cu[aá]nto (?:debo|deber[ií]a|tengo que|necesito|me falta|hay que) (?:ir )?(?:ahorr|apart|junt|guard)\w*|(?:ahorrar|juntar|apartar|guardar) (?:\S+ ){0,3}para (?:compr|un|una|mi|el|la)\w*|para poder comprar"
+META = (r"cu[aá]nto (?:debo|deber[ií]a|tengo que|necesito|me falta|hay que) (?:ir )?(?:ahorr|apart|junt|guard)\w*|(?:ahorrar|juntar|apartar|guardar) (?:\S+ ){0,3}para (?:poder |compr|un|una|mi|el|la|ir|viaj)\w*|"
+        r"para poder (?:comprar|irme|viajar|pagar)|plan (?:de|para) (?:ahorr|junt)\w*|(?:convenio|descuento)s? (?:con|del|de) (?:el |mi |nuestro )?banco")
 # Quiere comprar algo y no dijo cuanto cuesta: se le pide el precio en vez de tratarlo como un tema ajeno
 COMPRA = r"(?:quiero|quisiera|voy a|pienso|planeo|me gustar[ií]a) comprar(?:me)?\b"
 # Balance de lo que la persona ya aparto; «como ahorro mas» sigue siendo una recomendacion
@@ -144,6 +147,9 @@ def _filtra_el_prompt(txt: str) -> bool:
 OTRO_IDIOMA = re.compile(r"\b(?:voc[eê]s?|n[aã]o|tamb[eé]m|ent[aã]o|ainda|al[eé]m|voc[eê]|seus?|suas?|uma|pelo|pela|isso|est[aá] sendo|the|and|your)\b", flags=re.I)
 
 
+PALABRAS_MINIMAS = 8   # con la orden de ser breve, el modelo local a veces devuelve solo la frase de cierre
+
+
 def _mezcla_otro_idioma(txt: str) -> bool:
     return len(OTRO_IDIOMA.findall(txt)) >= 3
 
@@ -212,7 +218,7 @@ def detectar_intencion(pregunta: str, evento: dict | None = None) -> str:
             continue   # «para que sirve la CTS»: se explica con las fuentes, no con fechas y montos
         if patron == CONCEPTO and re.search(PROGRAMA, pregunta, flags=re.I):
             continue   # «como funciona el programa de puntos»: lo responden los datos del cliente (salud_nivel)
-        if nombre in ("simular", "meta") and monto_de(pregunta) is None:
+        if nombre == "simular" and monto_de(pregunta) is None:
             continue
         if re.search(patron, pregunta, flags=re.I):
             return nombre
@@ -309,20 +315,38 @@ def _a_ahorro(est, repo, **_):
     return {"ahorro": d}
 
 
-PLAZO_SIN_FECHA_MESES = 12
+RECORTE_HORMIGA = 0.5   # supuesto visible del plan: bajar a la mitad los gastos pequenos (delivery, antojos)
 
 
 def _a_meta(est, repo, **_):
-    """Cuanto apartar al mes para juntar un monto a una fecha, frente a lo que la persona ya viene apartando. La division la hace la herramienta, no el redactor."""
+    """Plan para una meta: de donde parte la persona, que ajustes le suman, que convenio del banco aplica y los numeros finales.
+    Todas las cuentas se hacen aqui con sus datos; el redactor solo las cuenta."""
     from datetime import date
 
-    c = est["ctx"]
-    monto = monto_de(est.get("pregunta", ""))
-    plazo = plazo_de(est.get("pregunta", ""), date.fromisoformat(c["hoy"]))
-    meses, cuando = plazo or (PLAZO_SIN_FECHA_MESES, None)
+    c, pregunta = est["ctx"], est.get("pregunta", "")
+    f, hoy = c["features"], date.fromisoformat(c["hoy"])
+    gasto = round(f["gasto_sobre_ingreso"] * f["ingreso_medio"], 0)
     aparta = repo.ahorro_reciente(c["customer_id"])["apartado_promedio_mensual"]
-    return {"meta": {"monto": round(monto, 0), "meses": meses, "cuando": cuando, "apartar_por_mes": float(-(-monto // meses)), "apartas_hoy_por_mes": aparta,
-                     "meses_a_tu_ritmo": int(-(-monto // aparta)) if aparta > 0 else None, "ingreso_mensual": round(c["features"]["ingreso_medio"], 0)}}
+    ajustes = [{"que": "Bajar a la mitad tus gastos hormiga (delivery y antojos)", "soles_al_mes": round(RECORTE_HORMIGA * f["pct_hormiga"] * gasto, 0)},
+               {"que": "Cancelar la suscripción que pagas dos veces", "soles_al_mes": round(c["monto_duplicada"], 0) if c["duplicadas"] else 0.0},
+               {"que": "Activar el redondeo de tus gastos", "soles_al_mes": float(c["ahorro_redondeo_mensual"])}]
+    ajustes = [a for a in ajustes if a["soles_al_mes"] >= 10]
+    capacidad = aparta + sum(a["soles_al_mes"] for a in ajustes)
+    d = {"ingreso_mensual": round(f["ingreso_medio"], 0), "gasto_mensual": gasto, "apartas_hoy_por_mes": aparta, "ajustes": ajustes, "podrias_apartar_por_mes": capacidad, "convenio": None}
+    conv = CA.campana_para(pregunta, hoy)
+    if conv:
+        d["convenio"] = {"aliado": conv["aliado"], "beneficio": CA.beneficio(conv), "rubro": conv["rubro"], "condicion": conv["condicion"], "aplica": conv["aplica"], "motivo": conv["motivo"],
+                         "vigente_hasta": CL.texto_fecha(date.fromisoformat(conv["hasta"]))}
+    monto = monto_de(pregunta)
+    if monto:
+        rebaja = CA.descuento(conv, monto) if conv else 0.0
+        a_juntar = monto - rebaja
+        meses, cuando = plazo_de(pregunta, hoy) or (None, None)
+        d["numeros"] = {"precio": round(monto, 0), "descuento": rebaja, "a_juntar": a_juntar, "meses_pedidos": meses, "cuando": cuando, "por_mes_pedido": float(-(-a_juntar // meses)) if meses else None,
+                        "meses_con_el_plan": int(-(-a_juntar // capacidad)) if capacidad > 0 else None}
+    else:
+        d["numeros"] = {"precio": None, "juntarias_en_6_meses": capacidad * 6, "juntarias_en_12_meses": capacidad * 12}
+    return {"meta": d}
 
 
 def _a_ofertas(est, repo, **_):
@@ -423,17 +447,35 @@ def _lineas_simulacion(s: dict) -> list[str]:
 
 
 def _lineas_meta(m: dict) -> list[str]:
-    L = [f"Para juntar {_soles(m['monto'])} {m['cuando'] or f'en {m['meses']} meses'} tendrías que apartar {_soles(m['apartar_por_mes'])} al mes."]
-    if not m["cuando"]:
-        L.append(f"No me dijiste para cuándo: lo calculé a {m['meses']} meses.")
-    if m["apartar_por_mes"] > m["ingreso_mensual"]:
-        L.append(f"Eso es más de lo que ganas en un mes ({_soles(m['ingreso_mensual'])}): con ese plazo no alcanza.")
-    if m["meses_a_tu_ritmo"] and m["apartas_hoy_por_mes"] < m["apartar_por_mes"]:
-        L.append(f"Hoy apartas unos {_soles(m['apartas_hoy_por_mes'])} al mes: a ese ritmo llegarías en {m['meses_a_tu_ritmo']} meses.")
-    elif m["meses_a_tu_ritmo"]:
-        L.append(f"Hoy ya apartas unos {_soles(m['apartas_hoy_por_mes'])} al mes: vas a tiempo.")
+    """Cuatro bloques separados por una linea en blanco (el chat pinta cada uno en su propio mensaje): punto de partida, que hacer, convenio y numeros."""
+    L = ["## Tu punto de partida", f"Ganas unos {_soles(m['ingreso_mensual'])} al mes y gastas {_soles(m['gasto_mensual'])}.",
+         f"Hoy apartas {_soles(m['apartas_hoy_por_mes'])} al mes." if m["apartas_hoy_por_mes"] > 0 else "En los últimos meses no apartaste nada."]
+    if m["ajustes"]:
+        L += ["", "## Lo que puedes hacer", *[f"- {a['que']}: +{_soles(a['soles_al_mes'])} al mes" for a in m["ajustes"]], f"Con eso apartarías {_soles(m['podrias_apartar_por_mes'])} al mes."]
+    cv = m["convenio"]
+    if cv:
+        L += ["", "## Convenio del banco", f"{cv['aliado']}: {cv['beneficio']} en {cv['rubro']}, {cv['condicion']}."]
+        L.append(f"Vale hasta el {cv['vigente_hasta']}." if cv["aplica"] else f"Para lo que buscas no aplica: {cv['motivo']}.")
+        L.append("Es un convenio de ejemplo.")
+    n = m["numeros"]
+    L += ["", "## Los números"]
+    if n["precio"] is None:
+        if m["podrias_apartar_por_mes"] > 0:
+            L.append(f"A ese ritmo juntarías {_soles(n['juntarias_en_6_meses'])} en 6 meses y {_soles(n['juntarias_en_12_meses'])} en 12 meses.")
+        L.append("Dime cuánto cuesta y para cuándo, y cierro los números.")
+        return L
+    L.append(f"- Precio: {_soles(n['precio'])}")
+    if n["descuento"]:
+        L += [f"- Descuento con {cv['aliado']}: -{_soles(n['descuento'])}", f"- Te toca juntar: {_soles(n['a_juntar'])}"]
+    if n["meses_pedidos"]:
+        alcanza = m["podrias_apartar_por_mes"] >= n["por_mes_pedido"]
+        L.append(f"Para tenerlo {n['cuando']} necesitas {_soles(n['por_mes_pedido'])} al mes: {'con el plan sí llegas' if alcanza else 'con el plan no alcanza'}.")
+        if alcanza:
+            return L
+    if n["meses_con_el_plan"]:
+        L.append(f"Apartando {_soles(m['podrias_apartar_por_mes'])} al mes llegas en {n['meses_con_el_plan']} meses.")
     else:
-        L.append("En los últimos meses no apartaste nada: empieza con un monto fijo el día que cobras.")
+        L.append("Hoy no te queda margen para apartar: primero hay que bajar gastos.")
     return L
 
 
@@ -717,6 +759,8 @@ def construir_grafo(repo, buscador=None, modo: str = "agente_unico", usar_juez_l
         v = verificar(txt, _permitidos(est))
         if v["ok"] and not _termina_en_oracion_completa(txt):   # un borrador cortado a la mitad se rechaza igual que uno con una cifra inventada
             v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["respuesta cortada: no termina en una oracion completa"]}
+        if v["ok"] and len(re.sub(r"tu decides?\.?", "", txt, flags=re.I).split()) < PALABRAS_MINIMAS:
+            v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["respuesta vacia: no contesta la pregunta"]}
         if v["ok"] and _mezcla_otro_idioma(txt):
             v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["no esta escrita en espanol"]}
         if v["ok"] and _filtra_el_prompt(txt):
