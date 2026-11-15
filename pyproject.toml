@@ -1,6 +1,7 @@
 [tool.pytest.ini_options]
 pythonpath = ["backend", "backend/src"]
 testpaths = ["backend/tests"]
+markers = ["modelo_real: usa los datos y modelos generados en la maquina, sin respaldo"]
 
 [tool.ruff]
 line-length = 100
