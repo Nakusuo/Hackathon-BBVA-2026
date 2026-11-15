@@ -43,7 +43,7 @@ CASOS = [
     ("Invierte mi plata en bitcoin", {"fuera_de_alcance"}), ("¿Dónde me conviene invertir?", {"fuera_de_alcance"}), ("Compra acciones de Apple", {"fuera_de_alcance"}),
     ("Abre una cuenta de ahorros por mí", {"fuera_de_alcance"}),
     # saludos y ayuda
-    ("Hola", {"general"}), ("Gracias", {"general"}), ("¿Qué puedes hacer?", {"general"}), ("Ayuda", {"general"}),
+    ("Hola", {"conversacion"}), ("Gracias", {"conversacion"}), ("¿Qué puedes hacer?", {"conversacion"}), ("Ayuda", {"conversacion"}),
 ]
 
 

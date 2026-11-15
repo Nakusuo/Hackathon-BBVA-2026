@@ -1,9 +1,9 @@
 {
- "fecha": "2026-11-14T18:19:41",
+ "fecha": "2026-11-14T23:27:27",
  "reloj": "2026-11-14",
- "segundos": 88.0,
+ "segundos": 122.0,
  "cuenta": {
-  "PASS": 49,
+  "PASS": 52,
   "WARN": 3,
   "FAIL": 0,
   "NOT RUN": 3
@@ -14,12 +14,12 @@
    "id": "P1",
    "que": "Suite de pruebas de analitica e IA (pytest, sin red ni Gemini)",
    "estado": "PASS",
-   "detalle": "459 passed, 1 skipped in 53.03s"
+   "detalle": "602 passed, 1 skipped in 89.58s (0:01:29)"
   },
   {
    "area": "Pruebas",
    "id": "P1b",
-   "que": "Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte",
+   "que": "Pruebas del agente del producto (PR #5, Jeffrey): no estan en esta rama; se corren en la rama develop al integrar todo (proximo paso)",
    "estado": "NOT RUN",
    "detalle": "no hay pruebas del agente del producto en esta rama"
   },
@@ -210,7 +210,7 @@
    "id": "C8",
    "que": "Traduccion es->en con cifras y nombres protegidos",
    "estado": "PASS",
-   "detalle": "es->en por gemini en 2.01 s, cifras intactas"
+   "detalle": "es->en por gemini en 1.72 s, cifras intactas"
   },
   {
    "area": "Conexiones",
@@ -222,9 +222,9 @@
   {
    "area": "Conexiones",
    "id": "C9b",
-   "que": "Google Cloud Translation: llamada real con clave",
+   "que": "Google Cloud Translation: llamada real con clave (proximo paso)",
    "estado": "NOT RUN",
-   "detalle": "no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini."
+   "detalle": "proximo paso: no hay GOOGLE_TRANSLATE_API_KEY propia (una clave de Gemini da 401 en esa API). El contrato esta probado con respuestas simuladas y se traduce con Gemini."
   },
   {
    "area": "Conexiones",
@@ -236,9 +236,9 @@
   {
    "area": "Conexiones",
    "id": "C10b",
-   "que": "Calidad del quechua revisada por un hablante nativo",
+   "que": "Calidad del quechua revisada por un hablante nativo (proximo paso)",
    "estado": "NOT RUN",
-   "detalle": "no hay revision de un hablante nativo; el aviso al usuario lo dice"
+   "detalle": "proximo paso: hay evidencia objetiva (FLORES-200) pero la revision de un hablante nativo queda para despues; el aviso al usuario lo dice"
   },
   {
    "area": "Conexiones",
@@ -287,7 +287,7 @@
    "id": "G2",
    "que": "QA con Gemini real (una sola corrida): perfil, calendario, premisa falsa, datos vivos, idiomas y adversarios",
    "estado": "PASS",
-   "detalle": "Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 17 llamadas y 45,463 tokens de entrada"
+   "detalle": "Gemini real: perfil 11/11, adversas 16/16, datos vivos y idiomas OK, 51 llamadas y 140,543 tokens de entrada"
   },
   {
    "area": "Agente",
@@ -312,6 +312,20 @@
   },
   {
    "area": "Agente",
+   "id": "G6",
+   "que": "QA final con tokens reales: conversaciones de varias preguntas seguidas (sin cortarse ni repetirse) y preguntas-trampa que no deben inventar datos",
+   "estado": "PASS",
+   "detalle": "con Gemini real: 14/14 respuestas de conversaciones seguidas completas, sin repetirse ni quedarse a medias, y 9/9 preguntas-trampa (datos que no existen) sin inventar nada ni prometer; mayor tiempo de respuesta 7 s"
+  },
+  {
+   "area": "Agente",
+   "id": "G7",
+   "que": "Chat conversacional con tokens reales: saludos de cualquier hora e idioma, ayuda sin tema y emociones se acogen con calidez y opciones (sin tokens en los saludos); lo que ninguna regla entiende lo interpreta la IA; cada boton lleva a una respuesta real y la conversacion de varios turnos nunca se cuelga",
+   "estado": "PASS",
+   "detalle": "con Gemini real: 25/25 mensajes de apertura (saludos de cualquier hora e idioma, ayuda sin tema, emociones, mensajes que ninguna regla reconoce; 2 obligando a la IA a saludar) acogidos con calidez y opciones, sin «no entiendo»; 8/8 botones que llevan a una respuesta real; 19/19 turnos de recorridos de varias preguntas (saludo, algo que no entiende, pregunta ajena y luego una consulta concreta) sin colgarse ni cerrarse, con la IA entrando en 10 turnos; los saludos no gastan tokens; reintentos por cuota del plan gratuito: 0"
+  },
+  {
+   "area": "Agente",
    "id": "G4",
    "que": "No hay metricas de Gemini desfasadas (las anteriores a la seguridad se retiraron)",
    "estado": "PASS",
@@ -322,7 +336,7 @@
    "id": "S1",
    "que": "Ninguna clave de API en lo versionado",
    "estado": "PASS",
-   "detalle": "172 archivos versionados sin claves de API"
+   "detalle": "205 archivos versionados sin claves de API"
   },
   {
    "area": "Seguridad",
@@ -336,7 +350,7 @@
    "id": "S3",
    "que": "Sin rutas absolutas de ninguna laptop en codigo, parametros, metricas ni documentos",
    "estado": "PASS",
-   "detalle": "102 archivos propios sin rutas absolutas"
+   "detalle": "125 archivos propios sin rutas absolutas"
   },
   {
    "area": "Seguridad",
@@ -378,14 +392,14 @@
    "id": "R4",
    "que": "Carpeta de presentacion y documentacion completa: cada artefacto indexado existe, hay una grafica por problema y no quedan figuras sueltas ni duplicadas",
    "estado": "PASS",
-   "detalle": "31 artefactos indexados en docs/presentacion/README.md, todos existen: una grafica por cada uno de los 14 problemas de la comparativa, diagramas de nodos y graficas de valor"
+   "detalle": "33 artefactos indexados en docs/presentacion/README.md, todos existen: una grafica por cada uno de los 14 problemas de la comparativa, diagramas de nodos y graficas de valor"
   },
   {
    "area": "Reproducibilidad",
    "id": "R5",
    "que": "Seguimiento con MLflow: comparaciones y modelos de produccion registrados, resumen al dia con las metricas",
    "estado": "PASS",
-   "detalle": "14 comparaciones (baseline frente a elegido) y 6 modelos de produccion registrados con alias «produccion»; resumen vigente (huella 781fc3be87a20fa7)"
+   "detalle": "14 comparaciones (baseline frente a elegido) y 6 modelos de produccion registrados con alias «produccion»; resumen vigente (huella 89259a180d49264b)"
   },
   {
    "area": "Reproducibilidad",
@@ -393,16 +407,24 @@
    "que": "Modelo de datos para PostgreSQL: esquema, documento y cargador validados contra una base real",
    "estado": "PASS",
    "detalle": "esquema de 25 tablas (lucas y simulacion) probado contra PostgreSQL 16.16 (Debian 16.16-1.pgdg12+1) con pgvector 0.8.7: carga completa con conteos iguales a los Parquet, cascadas, restricciones y busqueda vectorial; documento al dia"
+  },
+  {
+   "area": "Reproducibilidad",
+   "id": "R7",
+   "que": "Informe final guardado en la rama con el formato del equipo (.claude/equipo/<nombre>/registro.md)",
+   "estado": "PASS",
+   "detalle": "informe final guardado en el formato del equipo (.claude/equipo/diego/registro.md): lo que hice, lo que acordamos, lo que falta y el informe completo (1071 lineas)"
   }
  ],
  "no_verificado": [
-  "Quechua: lo midió un benchmark público (FLORES-200, chrF), pero no lo revisó un hablante nativo; la respuesta lleva un aviso.",
-  "Google Cloud Translation: el contrato se probó con respuestas simuladas y contra su documentación; no hay clave propia para una llamada real (la de Gemini no se usa con otras APIs). Se traduce con Gemini.",
-  "Datos reales de un banco: todo se evaluó con datos sintéticos; con datos reales las métricas serán otras.",
-  "Sentimiento: el set independiente lo escribió un modelo de lenguaje (no personas) y el sentimiento no está en producción.",
-  "Programa de puntos: la rentabilidad a varios años depende de supuestos de conducta del equipo (consumo, ahorro, abandono); solo un piloto con grupo de control los mide.",
-  "Redacción con juez LLM: JUEZ_LLM está apagado por ahorro de tokens; la verificación de cifras es determinista, y la calidad de redacción de Gemini se revisó en una sola corrida de QA.",
-  "Carga en producción: se midió el costo por consulta en esta laptop, no el rendimiento con miles de usuarios simultáneos.",
-  "Libre disposición de la CTS después de 2026: se verificó la Ley 32322 (texto oficial) y el proyecto de ley que propone ampliarla (en evaluación, no es ley); cualquier cambio posterior a 2026-11-14 no se conoce hasta volver a contrastarla."
+  "Proximo paso: revision del quechua por un hablante nativo (hoy hay evidencia objetiva: FLORES-200, chrF 34 frente a un piso de 18; la respuesta lleva un aviso).",
+  "Proximo paso: llamada real a Google Cloud Translation con clave propia (el contrato esta probado con respuestas simuladas y contra su documentacion; una clave de Gemini da 401 en esa API). Se traduce con Gemini.",
+  "Proximo paso: piloto con grupo de control del programa de puntos (la rentabilidad a varios anios depende de supuestos de conducta del equipo; con solo lo medido pierde S/ 5.52 por usuario al anio).",
+  "Proximo paso, en la rama develop al integrar: las pruebas del agente de Jeffrey (PR #5) y el adaptador al contrato de la API.",
+  "Proximo paso: medir la carga en produccion (se midio el costo por consulta en esta laptop, no miles de usuarios simultaneos).",
+  "Limite: el set independiente de sentimiento lo escribio un modelo de lenguaje (no personas) y el sentimiento no esta en produccion.",
+  "Limite: JUEZ_LLM esta apagado por ahorro de tokens; la verificacion de cifras es determinista y la calidad de redaccion de Gemini se reviso en corridas de QA.",
+  "Estado verificado el 2026-11-14 (CTS): la libre disposicion del 100 % vence el 31-12-2026 (Ley 32322, texto oficial) y el proyecto de ley que propone extenderla hasta 2028 (El Peruano, nota 308663, 9-11-2026) esta en evaluacion en el Congreso, no es ley; el agente dice las dos cosas.",
+  "Criterio del MVP (cerrado): todo se evaluo con datos sinteticos, como pide el reto; con datos reales de una entidad las metricas seran otras y el generador acepta una tabla semilla (ENAHO) para regenerar."
  ]
 }

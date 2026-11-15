@@ -117,25 +117,22 @@ def traducir(texto: str, origen: str, destino: str) -> dict:
     protegido, valores = proteger(texto)
     errores = []
     for nombre, f in PROVEEDORES:
-        salida = None
-        for intento in (1, 2):
+        for intento in (1, 2):   # dos intentos por proveedor: ante un error transitorio y tambien si la traduccion pierde un marcador o altera una cifra (cada traduccion sale algo distinta; la validacion NO se relaja)
             try:
                 salida = f(protegido, origen, destino)
-                break
             except Exception as e:  # sin red, sin clave o limite de uso: un error transitorio se reintenta una vez; si no, se prueba el siguiente proveedor
                 if intento == 1 and _transitorio(e):
                     time.sleep(1.5)
                     continue
                 errores.append(f"{nombre}: {type(e).__name__}{_codigo_http(e)}")
                 break
-        if salida is None:
-            continue
-        if nombre == "google_cloud":  # Google no conoce los marcadores: puede espaciarlos, se normalizan
-            salida = re.sub(r"⟦\s*(\d+)\s*⟧", r"⟦\1⟧", salida)
-        final, ok = restaurar(salida, valores)
-        if ok and not set(numeros_de(final)) - set(numeros_de(texto)):
-            return {"texto": final, "ok": True, "proveedor": nombre, "segundos": round(time.time() - t0, 2), "motivo": ""}
-        errores.append(f"{nombre}: marcadores o cifras alterados")
+            if nombre == "google_cloud":  # Google no conoce los marcadores: puede espaciarlos, se normalizan
+                salida = re.sub(r"⟦\s*(\d+)\s*⟧", r"⟦\1⟧", salida)
+            final, ok = restaurar(salida, valores)
+            if ok and not set(numeros_de(final)) - set(numeros_de(texto)):
+                return {"texto": final, "ok": True, "proveedor": nombre, "segundos": round(time.time() - t0, 2), "motivo": ""}
+            if intento == 2:
+                errores.append(f"{nombre}: marcadores o cifras alterados")
     return {"texto": texto, "ok": False, "proveedor": "ninguno", "segundos": round(time.time() - t0, 2), "motivo": "; ".join(errores)}
 
 

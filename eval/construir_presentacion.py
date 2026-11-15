@@ -340,8 +340,8 @@ def ahorro_de_tokens(buscador) -> str:
     ax.set_position([0, 0, 1, 1])
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    fig.text(0.015, 0.975, "Como optimizamos tokens: la ruta de cada consulta", fontsize=15, fontweight="bold", color=TINTA, va="top")
-    fig.text(0.015, 0.94, "Lo generico se responde con plantillas (0 tokens); solo lo nuevo llega al agente de IA, y llega con 3 fragmentos recuperados por embeddings, no con el corpus", fontsize=10, color=TINTA_2, va="top")
+    fig.text(0.015, 0.975, "Como optimizamos tokens: la ruta de cada consulta y cuanto ahorra (en %)", fontsize=15, fontweight="bold", color=TINTA, va="top")
+    fig.text(0.015, 0.94, "Lo generico se responde con plantillas (0 % de tokens); solo lo nuevo llega al agente de IA, y llega con 3 fragmentos recuperados por embeddings, no con el corpus", fontsize=10, color=TINTA_2, va="top")
     # entrada
     ax.add_patch(FancyBboxPatch((0.015, 0.40), 0.27, 0.49, boxstyle="round,pad=0.01,rounding_size=0.015", linewidth=1.6, edgecolor=GRIS, facecolor="#ffffff", zorder=3))
     ax.text(0.03, 0.865, "Entrada: un parrafo de consultas", fontsize=10, fontweight="bold", color=TINTA, va="top", zorder=4)
@@ -351,12 +351,12 @@ def ahorro_de_tokens(buscador) -> str:
         ax.text(0.03, y, linea, fontsize=8.6, color=TINTA, va="top", zorder=4)
         y -= 0.052 if "\n" not in linea else 0.07
     # router
-    caja(ax, 0.315, 0.575, 0.115, 0.14, "Router de reglas\n(detecta el tema)\n0 tokens", AZUL, tam=8.6, negrita=True, relleno="#eef4fc", envolver=16)
+    caja(ax, 0.315, 0.575, 0.115, 0.14, "Router de reglas\n(detecta el tema)\n0 % de tokens", AZUL, tam=8.6, negrita=True, relleno="#eef4fc", envolver=16)
     flecha(ax, (0.285, 0.645), (0.315, 0.645))
     # carriles
-    carriles = [("herramientas_y_plantilla", "Tema conocido: los modelos calculan y una PLANTILLA redacta", "0 tokens", AZUL, 0.775, "pronostico, calendario, tipo de cambio, nivel, tasas, El Nino, ofertas"),
-                ("plantilla_fija", "Seguridad, fuera de alcance o fuera de tema: PLANTILLA fija", "0 tokens", GRIS, 0.665, "operaciones, instrucciones internas, codigo, chistes"),
-                ("preguntas_frecuentes", "Pregunta de concepto ya respondida y verificada: PREGUNTAS FRECUENTES", "0 tokens", VERDE, 0.555, "misma pregunta, mismo nivel, con sus citas")]
+    carriles = [("herramientas_y_plantilla", "Tema conocido: los modelos calculan y una PLANTILLA redacta", "0 % de tokens (-100 %)", AZUL, 0.775, "pronostico, calendario, tipo de cambio, nivel, tasas, El Nino, ofertas"),
+                ("plantilla_fija", "Seguridad, fuera de alcance o fuera de tema: PLANTILLA fija", "0 % de tokens (-100 %)", GRIS, 0.665, "operaciones, instrucciones internas, codigo, chistes"),
+                ("preguntas_frecuentes", "Concepto ya respondido: PREGUNTAS FRECUENTES", "0 % de tokens (-100 %)", VERDE, 0.555, "misma pregunta, mismo nivel, con sus citas")]
     for clave, titulo, tok, col, yy, nota in carriles:
         ns = por.get(clave, [])
         ax.add_patch(FancyBboxPatch((0.47, yy), 0.51, 0.085, boxstyle="round,pad=0.008,rounding_size=0.012", linewidth=1.6, edgecolor=col, facecolor="#ffffff", zorder=3))
@@ -368,7 +368,7 @@ def ahorro_de_tokens(buscador) -> str:
     ns = por.get("rag_y_ia", [])
     ax.add_patch(FancyBboxPatch((0.47, 0.23), 0.51, 0.30, boxstyle="round,pad=0.008,rounding_size=0.012", linewidth=1.8, edgecolor=NARANJA, facecolor="#fffaf5", zorder=3))
     ax.text(0.485, 0.515, "Pregunta de concepto NUEVA: agente de IA con RAG", fontsize=9, fontweight="bold", color=TINTA, va="top", zorder=4)
-    ax.text(0.965, 0.515, f"~{M['tokens_por_llamada_medidos_en_la_qa']['entrada'] + M['tokens_por_llamada_medidos_en_la_qa']['salida']:,} tokens", fontsize=9.5, fontweight="bold", color=NARANJA, va="top", ha="right", zorder=4)
+    ax.text(0.965, 0.515, f"{M['con_ruteo'] / M['todo_al_llm']:.1%} de los tokens ({len(ns)} de {len(M['consultas'])})", fontsize=9.5, fontweight="bold", color=NARANJA, va="top", ha="right", zorder=4)
     ax.text(0.485, 0.485, f"consulta {', '.join(map(str, ns))}: «{C[ns[0]]['consulta']}»" if ns else "", fontsize=8.2, color=TINTA_2, va="top", zorder=4)
     flecha(ax, (0.43, 0.62), (0.47, 0.40), color=NARANJA)
     paso = [("1. Chunks\ncorpus troceado una vez: 900 caracteres, solape 120", AZUL), ("2. Embeddings\nla pregunta se vectoriza (search_query, 768 dim) y se compara con los de los chunks", VERDE),
@@ -385,16 +385,133 @@ def ahorro_de_tokens(buscador) -> str:
         ax.text(0.485, 0.315, "Lo que el RAG devolvio de verdad para esa pregunta:", fontsize=8.2, fontweight="bold", color=TINTA, va="top", zorder=4)
         for k, f in enumerate(rag["fragmentos"]):
             ax.text(0.485, 0.29 - k * 0.025, f"{k + 1}. {textwrap.shorten(f['titulo'], 62)} (pag. {f['pagina']}), similitud {f['similitud']:.2f}, ~{f['tokens_estimados']} tokens", fontsize=7.8, color=TINTA_2, va="top", zorder=4)
-    # balance de tokens
-    ax.add_patch(FancyBboxPatch((0.015, 0.045), 0.965, 0.14, boxstyle="round,pad=0.008,rounding_size=0.012", linewidth=1.6, edgecolor=TINTA_2, facecolor="#ffffff", zorder=3))
-    ax.text(0.03, 0.17, "Balance de este parrafo", fontsize=10, fontweight="bold", color=TINTA, va="top", zorder=4)
+    # balance de tokens, en porcentajes y en soles
+    K = M["costos"]
+    ax.add_patch(FancyBboxPatch((0.015, 0.04), 0.965, 0.16, boxstyle="round,pad=0.008,rounding_size=0.012", linewidth=1.6, edgecolor=TINTA_2, facecolor="#ffffff", zorder=3))
+    ax.text(0.03, 0.19, "Balance de este parrafo: cuanto se ahorra", fontsize=10, fontweight="bold", color=TINTA, va="top", zorder=4)
     n = len(M["consultas"])
-    ax.text(0.03, 0.135, f"Sin ruteo (las {n} consultas al LLM): {n} llamadas x ~{M['tokens_por_llamada_medidos_en_la_qa']['entrada'] + M['tokens_por_llamada_medidos_en_la_qa']['salida']:,} = ~{M['todo_al_llm']:,} tokens", fontsize=9.2, color=TINTA, va="top", zorder=4)
-    ax.text(0.03, 0.105, f"Con ruteo: 1 llamada (la pregunta nueva) = ~{M['con_ruteo']:,} tokens, {M['ahorro']:.0%} menos. Y si el LLM tuviera que leer todo el corpus: ~{M['tokens_del_corpus_completo']:,} tokens por consulta; "
-            f"con el RAG recibe ~{M['tokens_de_los_3_fragmentos']:,}.", fontsize=9.2, color=TINTA, va="top", zorder=4)
-    ax.text(0.03, 0.078, chr(10).join(textwrap.wrap("Si la API cae, la consulta 5 se responde con la plantilla y las mismas citas. " + M["nota"], 190)), fontsize=7.8, color=TINTA_2, va="top", zorder=4)
+    ax.text(0.03, 0.16, f"Tokens: sin ruteo (las {n} consultas al LLM) = 100 %  ·  con ruteo = {M['con_ruteo'] / M['todo_al_llm']:.1%} (1 llamada)  ->  se ahorra el {M['ahorro']:.1%} de los tokens y el {K['parrafo_de_ejemplo']['ahorro_pct']:.1%} del costo.",
+            fontsize=9.2, color=TINTA, va="top", zorder=4)
+    ax.text(0.03, 0.133, f"Lectura de fuentes: si el LLM leyera todo el corpus recibiria ~{M['tokens_del_corpus_completo']:,} tokens por consulta; con el RAG recibe {M['tokens_de_los_3_fragmentos']:,} "
+            f"= {M['tokens_de_los_3_fragmentos'] / M['tokens_del_corpus_completo']:.2%} del corpus  ->  {K['lectura_del_corpus']['reduccion_pct']:.2%} menos.", fontsize=9.2, color=TINTA, va="top", zorder=4)
+    ax.text(0.03, 0.106, f"En soles: S/ {K['por_llamada']['soles']['total']:.4f} por llamada; por cada {K['escala_consultas']:,} consultas, S/ {K['parrafo_de_ejemplo']['sin_ruteo_soles']:,.0f} sin ruteo -> S/ {K['parrafo_de_ejemplo']['con_ruteo_soles']:,.0f} con ruteo "
+            f"(ahorro S/ {K['parrafo_de_ejemplo']['ahorro_soles']:,.0f}); leyendo el corpus entero serian S/ {K['lectura_del_corpus']['soles_por_escala_leyendo_todo']:,.0f}.", fontsize=9.2, color=TINTA, va="top", zorder=4)
+    ax.text(0.03, 0.079, chr(10).join(textwrap.wrap("Si la API cae, la consulta 5 se responde con la plantilla y las mismas citas. " + K["nota"], 205)), fontsize=7.6, color=TINTA_2, va="top", zorder=4)
     fig.text(0.015, 0.015, "Datos sinteticos · router, RAG y tokens medidos de verdad (eval/mapa_de_consultas.py) · politica LLM_USO=ahorro", fontsize=8, color=TINTA_2)
     return guardar(fig, D, "agente_ahorro_de_tokens.png")
+
+
+def pct(v: float, d: int = 1) -> str:
+    return f"{v * 100:.{d}f} %"
+
+
+def ahorro_en_porcentaje_y_soles() -> str:
+    """Cuatro graficas con el ahorro CENTRADO EN PORCENTAJES (y en soles): ruteo de consultas, lectura de fuentes con RAG, en que se va el costo de una llamada (mensaje, lectura, respuesta) y soles por cada 100 mil consultas.
+    Todo sale de docs/presentacion/mapa_de_consultas.json (tokens medidos en la QA x precio publicado x tipo de cambio del BCRP)."""
+    with open(os.path.join(SALIDA, "mapa_de_consultas.json"), encoding="utf-8") as f:
+        M = json.load(f)
+    K = M["costos"]
+    LL, PL, EV = K["lectura_del_corpus"], K["parrafo_de_ejemplo"], K["mezcla_de_evaluacion"]
+    fig, axs = plt.subplots(2, 2, figsize=(13.5, 9.0), dpi=200, facecolor=SUPERFICIE)
+    fig.subplots_adjust(left=0.165, right=0.975, top=0.79, bottom=0.14, hspace=0.66, wspace=0.78)
+    fig.text(0.015, 0.975, "Cuanto ahorra Lucas: tokens y soles, en porcentajes", fontsize=16, fontweight="bold", color=TINTA, va="top")
+    fig.text(0.015, 0.935, "Lo generico se contesta con plantillas, las preguntas repetidas salen de las preguntas frecuentes y la IA solo lee 3 fragmentos, no el corpus. Todo medido, no escrito a mano.",
+             fontsize=10, color=TINTA_2, va="top")
+    for ax in axs.ravel():
+        ax.set_facecolor(SUPERFICIE)
+        for lado in ("top", "right", "bottom"):
+            ax.spines[lado].set_visible(False)
+        ax.spines["left"].set_color("#c9c8c2")
+        ax.set_xticks([])
+        ax.tick_params(axis="y", length=0, labelsize=9, colors=TINTA)
+        ax.grid(False)
+
+    def titulo(ax, t, sub):
+        ax.set_title(t, loc="left", fontsize=11.5, fontweight="bold", color=TINTA, pad=36)
+        ax.text(0, 1.035, chr(10).join(textwrap.wrap(sub, 46)), transform=ax.transAxes, fontsize=8.6, color=TINTA_2, va="bottom")
+
+    def barras(ax, filas, tope=1.9, fmt=None):
+        y = list(range(len(filas)))[::-1]
+        for yy, (nom, v, col, txt) in zip(y, filas):
+            b = ax.barh(yy, max(v, 0.0) * 100, height=0.56, color=col, zorder=3)
+            if col == AZUL:
+                b[0].set_hatch("////")
+                b[0].set_edgecolor("#a9c8f0")
+            ax.text(max(v, 0.0) * 100 + 3, yy, txt, va="center", ha="left", fontsize=9.6, fontweight="bold", color=TINTA, zorder=4)
+        ax.set_yticks(y)
+        ax.set_yticklabels([n for n, *_ in filas], fontsize=9)
+        ax.set_xlim(0, 100 * tope)
+        ax.set_ylim(-0.6, len(filas) - 0.4)
+
+    # 1. ruteo: tokens como porcentaje del caso base (todo al LLM)
+    a = axs[0, 0]
+    ev, pj = EV["proporcion_que_llega_a_la_ia"], PL["proporcion_que_llega_a_la_ia"]
+    barras(a, [("Todo al LLM\n(caso base)", 1.0, GRIS, "100 %"),
+               (f"Con ruteo, {EV['detalle']['preguntas']} preguntas\nde evaluacion", ev, AZUL, f"{pct(ev)}  (−{pct(1 - ev)})"),
+               (f"Con ruteo, parrafo\nde {PL['consultas']} consultas", pj, AZUL, f"{pct(pj)}  (−{pct(1 - pj)})"),
+               ("Parrafo repetido\n(preguntas frecuentes)", 0.0, VERDE, "0 %  (−100 %)")])
+    titulo(a, "1. Ruteo: tokens usados", "% de los tokens del caso base «todo al LLM» (menos es mejor)")
+
+    # 2. lectura de fuentes con RAG
+    a = axs[0, 1]
+    r = LL["tokens_con_rag"] / LL["tokens_corpus"]
+    barras(a, [("El LLM lee\ntodo el corpus", 1.0, GRIS, f"100 %\n{LL['tokens_corpus']:,} tokens"), ("RAG: solo\n3 fragmentos", r, AZUL, f"{pct(r, 2)}  ·  {LL['tokens_con_rag']:,} tokens")], tope=1.95)
+    a.text(0, 0.5, f"−{pct(LL['reduccion_pct'], 2)} de lectura", fontsize=15, fontweight="bold", color=AZUL, va="center", ha="left", zorder=5)
+    titulo(a, "2. RAG: lectura de fuentes", "% de los tokens que recibe el LLM en una pregunta de concepto (menos es mejor)")
+
+    # 3. en que se va una llamada: mensaje enviado, lectura de fuentes y respuesta, en tokens y en costo
+    a = axs[1, 0]
+    PLL = K["por_llamada"]
+    comp = [("mensaje", "Mensaje", AZUL), ("lectura_de_fuentes", "Lectura (RAG)", VERDE), ("respuesta", "Respuesta", NARANJA)]
+    for fila, (nombre, dato) in enumerate((("Costo en S/", PLL["pct_del_costo"]), ("Tokens", PLL["pct_de_los_tokens"]))):
+        izq = 0.0
+        for clave, _, col in comp:
+            v = dato[clave] * 100
+            a.barh(fila, v, left=izq, height=0.56, color=col, edgecolor=SUPERFICIE, linewidth=2, zorder=3)
+            if v >= 6:
+                a.text(izq + v / 2, fila, f"{v:.0f} %", ha="center", va="center", fontsize=10, fontweight="bold", color="#ffffff", zorder=4)
+            izq += v
+    a.text(101, 1, "100 %", va="center", fontsize=9.6, fontweight="bold", color=TINTA)
+    a.text(101, 0, "100 %", va="center", fontsize=9.6, fontweight="bold", color=TINTA)
+    a.set_yticks([1, 0])
+    a.set_yticklabels([f"Tokens\n({sum(PLL['tokens'].values()):,.0f} por llamada)", f"Costo\n(S/ {PLL['soles']['total']:.4f} por llamada)"], fontsize=9)
+    a.set_xlim(0, 118)
+    a.set_ylim(-1.55, 1.55)
+    for i, (_, nom, col) in enumerate(comp):
+        a.add_patch(plt.Rectangle((i * 42, -1.42), 4, 0.3, facecolor=col, linewidth=0, clip_on=False))
+        a.text(i * 42 + 6, -1.27, nom, fontsize=8.6, color=TINTA, va="center")
+    a.text(0, -1.85, f"La respuesta es el {PLL['pct_de_los_tokens']['respuesta'] * 100:.0f} % de los tokens pero el {PLL['pct_del_costo']['respuesta'] * 100:.0f} % del costo (la salida cuesta mas por token).",
+           fontsize=8.4, color=TINTA_2, va="top", clip_on=False)
+    titulo(a, "3. En que se va una llamada al LLM", "% de los tokens y % del costo: mensaje enviado, lectura de fuentes y respuesta")
+
+    # 4. soles por cada 100 mil consultas, cada comparacion contra su propio caso base (=100 %)
+    a = axs[1, 1]
+    grupos = [("Ruteo (preguntas\nde evaluacion)", EV["sin_ruteo_soles"], EV["con_ruteo_soles"], GRIS, AZUL, "Todo al LLM", "Con ruteo"),
+              ("Lectura de fuentes", LL["soles_por_escala_leyendo_todo"], LL["soles_por_escala_con_rag"], GRIS, AZUL, "LLM lee el corpus", "Con RAG")]
+    y, etiquetas, nombres = 0, [], []
+    for g, (nom, base_s, nuevo_s, c0, c1, n0, n1) in enumerate(grupos):
+        for v, col, n, yy in ((base_s, c0, n0, y + 0.5), (nuevo_s, c1, n1, y - 0.5)):
+            b = a.barh(yy, v / base_s * 100, height=0.8, color=col, zorder=3)
+            if col == AZUL:
+                b[0].set_hatch("////")
+                b[0].set_edgecolor("#a9c8f0")
+            extra = "" if v == base_s else f"  (−{pct(1 - v / base_s, 2 if g else 1)}, ahorro S/ {base_s - v:,.0f})"
+            a.text(v / base_s * 100 + 3, yy, f"S/ {v:,.0f}{extra}", va="center", ha="left", fontsize=9.2, fontweight="bold", color=TINTA, zorder=4)
+            etiquetas.append(yy)
+            nombres.append(n)
+        a.text(-4, y + 1.25, nom.replace(chr(10), " "), fontsize=9, fontweight="bold", color=TINTA_2, ha="left", va="bottom", clip_on=False)
+        y -= 3.3
+    a.set_yticks(etiquetas)
+    a.set_yticklabels(nombres, fontsize=9)
+    a.set_xlim(0, 235)
+    a.set_ylim(y + 1.7, 2.45)
+    titulo(a, f"4. En soles, por cada {K['escala_consultas']:,} consultas", "cada barra frente a su caso base (100 %); volumen de ejemplo, no un pronostico")
+    t = K["tipo_de_cambio"]
+    fig.text(0.015, 0.045, f"Datos sinteticos · tokens de la QA real · precio de {K['precio']['modelo']}: {K['precio']['usd_por_millon_de_entrada']:.2f} USD (entrada) y {K['precio']['usd_por_millon_de_salida']:.2f} USD (salida) por millon, "
+             f"{K['precio']['fuente'].replace('https://', '')}, {K['precio']['consultado']} · tipo de cambio BCRP S/ {t['valor']:.3f} por USD ({t['fecha']}).", fontsize=7.8, color=TINTA_2)
+    fig.text(0.015, 0.018, "Estimacion con el plan de pago (el gratuito no cobra), sin descuentos por cache ni por lotes. El ahorro por ruteo depende de la mezcla de consultas que lleguen; la lectura del corpus entero es una hipotesis de comparacion.",
+             fontsize=7.8, color=TINTA_2)
+    return guardar(fig, G, "ahorro_en_porcentaje_y_soles.png")
 
 
 def rag_arquitectura() -> str:
@@ -508,6 +625,7 @@ def modelo_de_datos_diagrama() -> str:
 # ------------------------------------------------------------------------------------------------------------------------------------ indice
 ARCHIVOS = [  # (ruta relativa a docs/presentacion, que mensaje defiende)
     ("modelos/comparativa_modelos.png", "Panel general: para cada problema, el modelo elegido (azul rayado) frente a sus baselines y alternativas (gris). Por que cada modelo."),
+    ("modelos/mejora_en_porcentaje.png", "Cuanto mejora el modelo elegido, en porcentaje: frente al rival mas fuerte de cada problema (numero conservador) y frente al mas debil; los empates se dicen."),
     ("modelos/01_segmentacion.png", "Segmentacion: K-Prototypes recupera los arquetipos reales que K-means y las reglas 2x2 no."),
     ("modelos/02_saldo_30_dias.png", "Pronostico a 30 dias: menos error que el promedio movil y banda al 80 % que de verdad cubre el 80 %."),
     ("modelos/03_alerta_rojo.png", "Alerta de saldo en rojo: mejor PR-AUC que una regla simple (evento raro)."),
@@ -530,7 +648,8 @@ ARCHIVOS = [  # (ruta relativa a docs/presentacion, que mensaje defiende)
     ("graficas/calendario_laboral_2026_2027.png", "El agente conoce gratificacion y CTS y avisa que la libre disposicion del 100 % de la CTS vence el 31 de diciembre de 2026."),
     ("diagramas/arquitectura_del_sistema.png", "Arquitectura: modelos calculan, el LLM solo redacta, un verificador determinista cuida cada cifra; salvaguardas si el LLM falla."),
     ("diagramas/agente_ahorro_de_tokens.png", "Como optimizamos tokens: un parrafo de consultas, el router, plantillas, preguntas frecuentes y solo lo nuevo al agente de IA con RAG (chunks, embeddings, top-3), con tokens medidos."),
-    ("mapa_de_consultas.json", "Los datos de ese ejemplo: intencion y camino de cada consulta, fragmentos que devolvio el RAG y tokens."),
+    ("graficas/ahorro_en_porcentaje_y_soles.png", "Cuanto ahorra Lucas, en porcentajes y en soles: ruteo (menos tokens), RAG (99.9 % menos lectura), en que se va una llamada (mensaje, lectura, respuesta) y soles por cada 100 mil consultas."),
+    ("mapa_de_consultas.json", "Los datos de ese ejemplo: intencion y camino de cada consulta, fragmentos que devolvio el RAG, tokens, precio, tipo de cambio y costos en soles."),
     ("diagramas/rag_arquitectura.png", "RAG de punta a punta: fuentes, troceado 900/120, embeddings nomic-embed-text, indice, consulta con filtro de relevancia, verificador, citas y preguntas frecuentes que ahorran tokens."),
     ("diagramas/modelo_de_datos.png", "Modelo de datos de PostgreSQL con pgvector: 25 tablas en dos esquemas (lucas y simulacion), probado con la data sintetica completa."),
     ("diagramas/grafo_agente_unico.png", "Nodos del agente unico (LangGraph), dibujado desde el grafo real."),
@@ -562,6 +681,7 @@ def main() -> None:
     repo, b = Repositorio(), Buscador()
     hechos.append(serie_diaria_ejemplo(repo))
     hechos.append(ahorro_de_tokens(b))
+    hechos.append(ahorro_en_porcentaje_y_soles())
     for modo in ("agente_unico", "multiagente"):
         hechos.append(grafo_agente(repo, b, modo))
     escribir_indice()

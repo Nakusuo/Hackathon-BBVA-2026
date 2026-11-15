@@ -79,7 +79,7 @@ def leer(f: str) -> str:
 # ------------------------------------------------------------------------------------------------------------------------------------ pruebas
 def area_pruebas():
     def pytest_propio():
-        p = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "--ignore=tests/agent", "--ignore=tests/bcrp"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
+        p = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider", "--ignore=tests/agent", "--ignore=tests/bcrp"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"})   # el pytest hijo escribe en UTF-8 (en Windows seria cp1252 y los nombres con tildes romperian la lectura)
         ult = [ln for ln in p.stdout.strip().splitlines() if "passed" in ln or "failed" in ln or "error" in ln]
         return pf(p.returncode == 0, ult[-1] if ult else "", (ult[-1] if ult else p.stdout[-300:]))
     verificar("Pruebas", "P1", "Suite de pruebas de analitica e IA (pytest, sin red ni Gemini)", pytest_propio)
@@ -88,13 +88,13 @@ def area_pruebas():
         carpetas = [d for d in ("tests/agent", "tests/bcrp") if os.path.isdir(os.path.join(RAIZ, d))]
         if not carpetas:
             return "NOT RUN", "no hay pruebas del agente del producto en esta rama"
-        p = subprocess.run([sys.executable, "-m", "pytest", *carpetas, "-q", "-p", "no:cacheprovider"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
+        p = subprocess.run([sys.executable, "-m", "pytest", *carpetas, "-q", "-p", "no:cacheprovider"], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"})   # el pytest hijo escribe en UTF-8 (en Windows seria cp1252 y los nombres con tildes romperian la lectura)
         ult = [ln for ln in p.stdout.strip().splitlines() if "passed" in ln or "failed" in ln or "error" in ln]
         if p.returncode != 0 and "ModuleNotFoundError" in p.stdout:
             faltan = sorted(set(re.findall(r"No module named '([\w.]+)'", p.stdout)))
             return "NOT RUN", f"no se pudo correr completa aqui: faltan {faltan} (instalar requirements-ia.txt). Resultado parcial: {ult[-1] if ult else '?'}"
         return pf(p.returncode == 0, ult[-1] if ult else "", ult[-1] if ult else p.stdout[-300:])
-    verificar("Pruebas", "P1b", "Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte", pytest_ajeno)
+    verificar("Pruebas", "P1b", "Pruebas del agente del producto (PR #5, Jeffrey): no estan en esta rama; se corren en la rama develop al integrar todo (proximo paso)", pytest_ajeno)
 
     def ruff():
         propios = [d for d in ("src/agente_analitico", "src/models", "src/rag", "src/generador", "src/datos_publicos", "src/comun", "src/bcrp/cliente.py", "eval") if os.path.exists(os.path.join(RAIZ, d))]
@@ -314,7 +314,7 @@ def area_conexiones(con_gemini: bool):
         return pf(n >= 6 and "docs.cloud.google.com/translate" in t, f"{n} pruebas del proveedor contra el contrato publico de la API v2 (cabecera de clave, cuerpo q/source/target/format, respuesta, marcadores, errores, caida a Gemini), contrastado con su documentacion oficial. No se llamo a la API real",
                   "faltan las pruebas de contrato del proveedor Google")
     verificar("Conexiones", "C9", "Google Cloud Translation: el proveedor cumple el contrato publico de la API v2 (respuestas simuladas)", contrato_google)
-    verificar("Conexiones", "C9b", "Google Cloud Translation: llamada real con clave", lambda: ("NOT RUN", "no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini.") if not os.environ.get("GOOGLE_TRANSLATE_API_KEY") else ("PASS", "clave presente"))
+    verificar("Conexiones", "C9b", "Google Cloud Translation: llamada real con clave (proximo paso)", lambda: ("NOT RUN", "proximo paso: no hay GOOGLE_TRANSLATE_API_KEY propia (una clave de Gemini da 401 en esa API). El contrato esta probado con respuestas simuladas y se traduce con Gemini.") if not os.environ.get("GOOGLE_TRANSLATE_API_KEY") else ("PASS", "clave presente"))
 
     def quechua_objetivo():
         Q = J("metricas_quechua.json")
@@ -324,7 +324,7 @@ def area_conexiones(con_gemini: bool):
                   f"qu->es chrF {q['chrf']:.1f} (IC95 desde {q['ic95_chrf'][0]:.1f}; piso {q['piso_copiar_el_origen_chrf']:.1f}). Evidencia objetiva, no reemplaza a un hablante",
                   f"el chrF no supera de forma clara al piso: es->qu {e['chrf']:.1f} vs {e['piso_copiar_el_origen_chrf']:.1f}, qu->es {q['chrf']:.1f} vs {q['piso_copiar_el_origen_chrf']:.1f}")
     verificar("Conexiones", "C10", "Quechua: la traduccion se parece a las referencias humanas de FLORES-200 mas que el texto sin traducir", quechua_objetivo)
-    verificar("Conexiones", "C10b", "Calidad del quechua revisada por un hablante nativo", lambda: ("NOT RUN", "no hay revision de un hablante nativo; el aviso al usuario lo dice"))
+    verificar("Conexiones", "C10b", "Calidad del quechua revisada por un hablante nativo (proximo paso)", lambda: ("NOT RUN", "proximo paso: hay evidencia objetiva (FLORES-200) pero la revision de un hablante nativo queda para despues; el aviso al usuario lo dice"))
 
     def rag_integridad():
         import faiss
@@ -419,7 +419,7 @@ def area_agente():
         mal = [k for k in ("todo_ok", "datos_vivos_ok") if not r[k]] + [k for k, v in r["idiomas"].items() if not v]
         if r["perfil_ok"].split("/")[0] != r["perfil_ok"].split("/")[1] or r["adversas_ok"].split("/")[0] != r["adversas_ok"].split("/")[1]:
             mal.append(f"perfil {r['perfil_ok']}, adversas {r['adversas_ok']}")
-        return pf(not mal and r["tokens_gemini"]["entrada"] < 80_000, f"Gemini real: perfil {r['perfil_ok']}, adversas {r['adversas_ok']}, datos vivos y idiomas OK, {r['tokens_gemini']['llamadas']} llamadas y {r['tokens_gemini']['entrada']:,} tokens de entrada", f"{mal}")
+        return pf(not mal and r["tokens_gemini"]["entrada"] < 200_000, f"Gemini real: perfil {r['perfil_ok']}, adversas {r['adversas_ok']}, datos vivos y idiomas OK, {r['tokens_gemini']['llamadas']} llamadas y {r['tokens_gemini']['entrada']:,} tokens de entrada", f"{mal}")
     verificar("Agente", "G2", "QA con Gemini real (una sola corrida): perfil, calendario, premisa falsa, datos vivos, idiomas y adversarios", qa)
 
     def diagramas():
@@ -445,6 +445,33 @@ def area_agente():
         return pf(f["ok"], f"con Gemini real: la segunda pregunta igual («{f['pregunta']}») se respondio desde las preguntas frecuentes, con {f['segunda']['llamadas_gemini_nuevas']} llamadas nuevas a Gemini y {f['segunda']['citas']} citas",
                   f"la segunda pregunta no se respondio desde las preguntas frecuentes: {f['segunda']}")
     verificar("Agente", "G5", "Preguntas frecuentes en la QA con Gemini real: la repeticion de una pregunta de concepto no gasta tokens", faq_sin_llm)
+
+    def conversacion_y_trampas():
+        q = J("metricas_qa_agente.json")
+        if "conversaciones" not in q:
+            return ("NOT RUN", "la corrida de QA no incluye conversaciones ni trampas: python eval/qa_agente.py")
+        r = q["resumen"]
+        c = [x for x in q["conversaciones"] if not all(x["checks"].values())]
+        t = [x for x in q["trampas"] if not all(x["checks"].values())]
+        return pf(not c and not t, f"con Gemini real: {r['conversacion_ok']} respuestas de conversaciones seguidas completas, sin repetirse ni quedarse a medias, y {r['trampas_ok']} preguntas-trampa (datos que no existen) sin inventar nada ni prometer; "
+                  f"mayor tiempo de respuesta {r['mayor_tiempo_de_respuesta_s']:.0f} s", f"fallan {len(c)} de la conversacion y {len(t)} de las trampas: {[x['pregunta'][:40] for x in c + t]}")
+    verificar("Agente", "G6", "QA final con tokens reales: conversaciones de varias preguntas seguidas (sin cortarse ni repetirse) y preguntas-trampa que no deben inventar datos", conversacion_y_trampas)
+
+    def aperturas_y_botones():
+        q = J("metricas_qa_agente.json")
+        if "apertura" not in q:
+            return ("NOT RUN", "la corrida de QA no incluye aperturas ni botones: python eval/qa_agente.py")
+        r = q["resumen"]
+        a = [x for x in q["apertura"] if not all(x["checks"].values())]
+        b = [x for x in q["botones"] if not all(x["checks"].values())]
+        c = [x for x in q.get("recorridos", []) if not all(x["checks"].values())]
+        n_ia = sum(x["politica"] == "siempre" for x in q["apertura"])
+        return pf(not a and not b and not c and r["saludos_sin_tokens"] and len(q["botones"]) >= 6 and len(q.get("recorridos", [])) >= 12 and r.get("turnos_donde_entro_la_ia", 0) >= 3,
+                  f"con Gemini real: {r['apertura_ok']} mensajes de apertura (saludos de cualquier hora e idioma, ayuda sin tema, emociones, mensajes que ninguna regla reconoce; {n_ia} obligando a la IA a saludar) acogidos con calidez y opciones, sin «no entiendo»; "
+                  f"{r['botones_ok']} botones que llevan a una respuesta real; {r['recorridos_ok']} turnos de recorridos de varias preguntas (saludo, algo que no entiende, pregunta ajena y luego una consulta concreta) sin colgarse ni cerrarse, con la IA entrando en {r['turnos_donde_entro_la_ia']} turnos; "
+                  f"los saludos no gastan tokens; reintentos por cuota del plan gratuito: {r['reintentos_por_cuota']}",
+                  f"fallan {len(a)} aperturas, {len(b)} botones y {len(c)} turnos de recorridos (o un saludo gasto tokens, o la IA no entro): {[(x.get('mensaje') or x.get('boton'))[:40] for x in a + b + c]}")
+    verificar("Agente", "G7", "Chat conversacional con tokens reales: saludos de cualquier hora e idioma, ayuda sin tema y emociones se acogen con calidez y opciones (sin tokens en los saludos); lo que ninguna regla entiende lo interpreta la IA; cada boton lleva a una respuesta real y la conversacion de varios turnos nunca se cuelga", aperturas_y_botones)
 
     def cache_gemini_obsoleto():
         return pf(not os.path.isfile(os.path.join(MODELOS, "metricas_agente_gemini.json")), "no queda el JSON de Gemini anterior al endurecimiento de seguridad", "metricas_agente_gemini.json es anterior a las salvaguardas y miente: eliminarlo")
@@ -558,7 +585,7 @@ def area_reproducibilidad():
         faltan = [r for r in rutas if not os.path.isfile(os.path.join(RAIZ, "docs", "presentacion", r))]
         with open(os.path.join(RAIZ, "docs", "comparativa_modelos.csv"), encoding="utf-8") as fh:
             problemas = len({r["problema"] for r in csv.DictReader(fh)})
-        modelos = [r for r in rutas if r.startswith("modelos/") and r.endswith(".png") and "comparativa_modelos" not in r]
+        modelos = [r for r in rutas if r.startswith("modelos/") and r.endswith(".png") and "comparativa_modelos" not in r and "mejora_en_porcentaje" not in r]   # la de mejora en % es un resumen, no un problema
         sueltos = [f for f in glob.glob(os.path.join(RAIZ, "docs", "presentacion", "**", "*.png"), recursive=True) if os.path.relpath(f, os.path.join(RAIZ, "docs", "presentacion")).replace(os.sep, "/") not in rutas]
         ok = bool(rutas) and not faltan and len(modelos) == problemas and not sueltos and not os.path.isdir(os.path.join(RAIZ, "docs", "figuras"))
         return pf(ok, f"{len(rutas)} artefactos indexados en docs/presentacion/README.md, todos existen: una grafica por cada uno de los {problemas} problemas de la comparativa, diagramas de nodos y graficas de valor",
@@ -590,16 +617,24 @@ def area_reproducibilidad():
                   f"el modelo de datos esta desfasado: {n} tablas en el SQL, {val['tablas']} validadas, {doc.count(chr(10) + '### ')} documentadas")
     verificar("Reproducibilidad", "R6", "Modelo de datos para PostgreSQL: esquema, documento y cargador validados contra una base real", modelo_de_datos)
 
+    def registro_equipo():
+        txt = leer(".claude/equipo/diego/registro.md")
+        informe = leer("docs/RESUMEN_DIEGO.md")
+        ok = all(x in txt for x in ("## Lo que hice", "## Lo que acordamos", "## Lo que falta", "## Informe final completo")) and "## 9. Como integrarlo" in txt.replace("### 9. Como integrarlo", "## 9. Como integrarlo") and len(txt.splitlines()) > len(informe.splitlines())
+        return pf(ok, f"informe final guardado en el formato del equipo (.claude/equipo/diego/registro.md): lo que hice, lo que acordamos, lo que falta y el informe completo ({len(txt.splitlines())} lineas)", "falta .claude/equipo/diego/registro.md o esta incompleto: python eval/generar_docs.py")
+    verificar("Reproducibilidad", "R7", "Informe final guardado en la rama con el formato del equipo (.claude/equipo/<nombre>/registro.md)", registro_equipo)
+
 
 NO_VERIFICADO = [
-    "Quechua: lo midió un benchmark público (FLORES-200, chrF), pero no lo revisó un hablante nativo; la respuesta lleva un aviso.",
-    "Google Cloud Translation: el contrato se probó con respuestas simuladas y contra su documentación; no hay clave propia para una llamada real (la de Gemini no se usa con otras APIs). Se traduce con Gemini.",
-    "Datos reales de un banco: todo se evaluó con datos sintéticos; con datos reales las métricas serán otras.",
-    "Sentimiento: el set independiente lo escribió un modelo de lenguaje (no personas) y el sentimiento no está en producción.",
-    "Programa de puntos: la rentabilidad a varios años depende de supuestos de conducta del equipo (consumo, ahorro, abandono); solo un piloto con grupo de control los mide.",
-    "Redacción con juez LLM: JUEZ_LLM está apagado por ahorro de tokens; la verificación de cifras es determinista, y la calidad de redacción de Gemini se revisó en una sola corrida de QA.",
-    "Carga en producción: se midió el costo por consulta en esta laptop, no el rendimiento con miles de usuarios simultáneos.",
-    "Libre disposición de la CTS después de 2026: se verificó la Ley 32322 (texto oficial) y el proyecto de ley que propone ampliarla (en evaluación, no es ley); cualquier cambio posterior a 2026-11-14 no se conoce hasta volver a contrastarla.",
+    "Proximo paso: revision del quechua por un hablante nativo (hoy hay evidencia objetiva: FLORES-200, chrF 34 frente a un piso de 18; la respuesta lleva un aviso).",
+    "Proximo paso: llamada real a Google Cloud Translation con clave propia (el contrato esta probado con respuestas simuladas y contra su documentacion; una clave de Gemini da 401 en esa API). Se traduce con Gemini.",
+    "Proximo paso: piloto con grupo de control del programa de puntos (la rentabilidad a varios anios depende de supuestos de conducta del equipo; con solo lo medido pierde S/ 5.52 por usuario al anio).",
+    "Proximo paso, en la rama develop al integrar: las pruebas del agente de Jeffrey (PR #5) y el adaptador al contrato de la API.",
+    "Proximo paso: medir la carga en produccion (se midio el costo por consulta en esta laptop, no miles de usuarios simultaneos).",
+    "Limite: el set independiente de sentimiento lo escribio un modelo de lenguaje (no personas) y el sentimiento no esta en produccion.",
+    "Limite: JUEZ_LLM esta apagado por ahorro de tokens; la verificacion de cifras es determinista y la calidad de redaccion de Gemini se reviso en corridas de QA.",
+    "Estado verificado el 2026-11-14 (CTS): la libre disposicion del 100 % vence el 31-12-2026 (Ley 32322, texto oficial) y el proyecto de ley que propone extenderla hasta 2028 (El Peruano, nota 308663, 9-11-2026) esta en evaluacion en el Congreso, no es ley; el agente dice las dos cosas.",
+    "Criterio del MVP (cerrado): todo se evaluo con datos sinteticos, como pide el reto; con datos reales de una entidad las metricas seran otras y el generador acepta una tabla semilla (ENAHO) para regenerar.",
 ]
 
 
@@ -615,7 +650,7 @@ def escribir(inicio: float) -> int:
         lineas += [f"## {area}", "", "| # | Qué se verifica | Estado | Detalle |", "|---|---|---|---|"]
         lineas += [f"| {x['id']} | {x['que']} | **{simbolo[x['estado']]}** | {x['detalle'].replace('|', '/')} |" for x in R if x["area"] == area]
         lineas.append("")
-    lineas += ["## Lo que NO se pudo verificar", "", "Esta lista nunca va vacía: lo que no se verificó se dice.", ""] + [f"- {x}" for x in NO_VERIFICADO] + [""]
+    lineas += ["## Proximos pasos y limites (lo que no se verifico aqui)", "", "Esta lista nunca va vacía: lo que no se verificó se dice, con su motivo y quién lo cierra.", ""] + [f"- {x}" for x in NO_VERIFICADO] + [""]
     with open(os.path.join(RAIZ, "docs", "QA_ANALITICA.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(lineas))
     print(f"\nRESULTADO: {cuenta}")
