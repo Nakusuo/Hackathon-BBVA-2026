@@ -122,3 +122,9 @@ test('un seguimiento de la meta sí va al agente aunque antes se ofreciera una c
   await preguntarALucas('ok, ¿cuánto me falta?', opciones({ previas, pedir: falsoFetch(RESPUESTA, registro) }))
   assert.equal(registro.length, 1)
 })
+
+test('un «sí» tras una campaña que no se ofreció va al agente', async () => {
+  const registro = []
+  await preguntarALucas('sí', opciones({ previas: ['quiero ir al concierto, la entrada está 450'], pedir: falsoFetch(RESPUESTA, registro) }))
+  assert.equal(registro.length, 1)
+})
