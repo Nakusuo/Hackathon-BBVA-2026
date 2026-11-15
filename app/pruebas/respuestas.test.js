@@ -199,17 +199,18 @@ test('un monto suelto pregunta si es compra o meta', () => {
 })
 
 test('una meta con campaña suma el ahorro y ofrece más info solo la primera vez', () => {
-  const [entrada, detalle] = charla(['quiero ir al concierto, la entrada está 450', 'sí, más info'])
-  assert.match(entrada.texto, /^Tu entrada cuesta S\/.450\..*Ticketera Sol\. Te ahorras S\/.90\. ¿Quieres más info\?$/)
-  assert.ok(entrada.cifras.some((c) => c.etiqueta === 'Pagarías' && c.valor === `S/${NBSP}360`))
+  const [entrada, detalle] = charla(['quiero ir al concierto, la entrada está 200', 'sí, más info'])
+  assert.match(entrada.texto, /^Tu entrada cuesta S\/.200\..*Ticketera Sol\. Te ahorras S\/.40\. ¿Quieres más info\?$/)
+  assert.ok(entrada.cifras.some((c) => c.etiqueta === 'Pagarías' && c.valor === `S/${NBSP}160`))
   assert.match(detalle.texto, /^Ticketera Sol: .*Tú decides\.$/)
 })
 
 test('si pide una marca sin campaña, Lucas cuenta la que sí hay', () => {
   const r = charla(['quiero comprarme un carro', 'ya pero que sea toyota', 'cuesta 60 mil'])
-  assert.match(r[1].texto, /^Con Toyota no hay campaña, pero con Autos Andinos/)
+  assert.match(r[1].texto, /^Para esa marca no hay campaña\. Con Autos Andinos/)
+  assert.doesNotMatch(r[1].texto, /toyota|salirte mejor/i, 'no repite marcas reales ni empuja la compra')
   assert.doesNotMatch(r[2].texto, /Ojo/, 'la campaña ya se contó')
-  assert.ok(r[2].cifras.some((c) => c.etiqueta === 'Pagarías' && c.valor === `S/${NBSP}58,000`))
+  assert.ok(!r[2].cifras.some((c) => c.etiqueta === 'Pagarías'), 'a ese ritmo el carro llega después de la campaña')
 })
 
 test('preguntar por campañas sin decir para qué lista los rubros, sin cifras', () => {
@@ -271,4 +272,54 @@ test('cada número se lee con su papel y no como el precio de la meta', () => {
 test('un aporte que hoy deja en rojo se avisa; uno que cabe, no', () => {
   assert.match(charla(['quiero una laptop de 3000', 'y si aparto 500 al mes?'])[1].texto, /te dejaría en rojo/)
   assert.match(charla(['quiero una laptop de 3000', 'y si aparto 20 al mes?'])[1].texto, /no te deja en rojo/)
+})
+
+test('una campaña que vence antes de juntar la plata no se ofrece', () => {
+  // Con los tips la entrada de S/ 450 se junta en enero de 2027 y la campaña vale hasta el 31 dic de 2026.
+  const r = preguntar('quiero ir al concierto, la entrada está 450')
+  assert.doesNotMatch(r.texto, /Ticketera Sol|más info/)
+  assert.ok(!r.cifras.some((c) => c.etiqueta === 'Pagarías'))
+})
+
+test('después de ofrecer la campaña solo un «sí» a secas pide el detalle; lo demás sigue la meta', () => {
+  const inicio = 'quiero ir al concierto, la entrada está 200'
+  for (const sigue of ['ok, ¿cuánto me falta?', 'ya, ¿llego?', 'bueno, ¿y con los tips?']) {
+    assert.doesNotMatch(charla([inicio, sigue])[1].texto, /^Ticketera Sol/, sigue)
+  }
+  assert.match(charla([inicio, 'cuéntame más'])[1].texto, /^Cada vez que cobras/)
+  assert.match(charla([inicio, 'no me interesa'])[1].texto, /^Listo, seguimos con tu plan\.$/)
+  assert.match(charla([inicio, 'no, gracias'])[1].texto, /^Listo/)
+  assert.doesNotMatch(charla([inicio, 'otra cosa', 'sí'])[2].texto, /^Ticketera Sol/, 'el «sí» vale solo en el turno siguiente')
+})
+
+test('«que sea nuevo» o «barato» describen el carro, no una marca', () => {
+  for (const frase of ['que sea nuevo', 'que sea barato', 'que sea usado', 'que sea automatico']) {
+    const r = charla(['quiero un carro', frase])[1]
+    assert.doesNotMatch(r.texto, /marca|No te entendí/, frase)
+  }
+})
+
+test('después de un monto suelto, «una meta» lo toma como precio y «comprar ahora» como gasto', () => {
+  assert.match(charla(['12000', 'una meta'])[1].texto, /^Tu meta es de S\/.12,000\./)
+  assert.match(charla(['12000', 'es para un carro'])[1].texto, /^Tu carro cuesta S\/.12,000\./)
+  assert.match(charla(['12000', 'comprar ahora'])[1].texto, /^No te alcanza: hoy tienes/)
+})
+
+test('«explícame más» explica el gasto consultado con sus mismas cifras y la campaña consultada', () => {
+  const [, gasto, detalle] = charla(['quiero ir al concierto, la entrada está 450', '¿puedo gastar 150 en un regalo?', 'explícame más'])
+  const peor = gasto.texto.match(/−S\/.\d+/)[0]
+  assert.ok(detalle.texto.includes(peor), 'mismo peor caso que la respuesta anterior')
+  assert.match(charla(['¿hay ofertas para viajes?', '¿por qué?'])[1].texto, /^Viajes Horizonte: .*Tú decides\.$/)
+})
+
+test('«perfecto, ¿y para fin de año?» sigue la meta y no se toma como un gracias', () => {
+  assert.match(charla(['quiero una laptop de 3000', 'perfecto, ¿y para fin de año?'])[1].texto, /^Tu laptop cuesta S\/.3,000\. Para fin de año/)
+})
+
+test('las metas de develop siguen teniendo nombre: vacaciones, ropa, negocio', () => {
+  assert.match(preguntar('quiero juntar para unas vacaciones de 3000').texto, /^Tus vacaciones cuestan S\/.3,000\./)
+})
+
+test('«me suben el sueldo 500» suma al ingreso de hoy', () => {
+  assert.match(preguntar('¿y si me suben el sueldo 500?').texto, /^Si sumas S\/.500 al mes/)
 })

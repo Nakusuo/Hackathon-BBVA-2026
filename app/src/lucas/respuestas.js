@@ -175,7 +175,7 @@ export function esPedidoDeOperacion(pregunta) {
 
 // Lo que la gente suele querer juntar. Nombrarlo ya abre una meta.
 const OBJETOS =
-  'carro|auto|moto|viaje|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|bicicleta|televisor|tele|consola|refri|refrigeradora|lavadora|muebles|zapatillas|curso|maestria|concierto|festival|entradas?'
+  'carro|auto|moto|viaje|vacaciones|laptop|computadora|celular|depa|departamento|casa|terreno|matricula|boda|bicicleta|televisor|tele|consola|refri|refrigeradora|lavadora|muebles|ropa|zapatillas|mascota|negocio|curso|estudios|maestria|concierto|festival|evento|fiesta|entradas?'
 const OBJETO_META = new RegExp(`\\b(${OBJETOS})\\b`)
 const PIDE_META = new RegExp(`\\b(metas?|plan de ahorro|juntar|junto|reunir|quiero comprar\\w*|comprarme|${OBJETOS})\\b`)
 const EN_DOLARES = /(\bdolar|\busd\b|us\$|\$\s*\d)/
@@ -418,11 +418,23 @@ function queEvitar(cliente) {
 }
 
 // «Explícame más» sobre el último tema: cómo sale la cifra, no la misma respuesta otra vez.
-function masDetalle(cliente, contexto) {
+function masDetalle(cliente, persona, contexto) {
   const { apartado, apartadoConTodos, proximoIngreso, finPronostico, hoy, riesgo, gastoDiarioSeguro, categorias } = cliente
   const puedes = apartado?.monto ?? 0
   const base = `Cada vez que cobras miro tus pagos hasta el siguiente cobro y solo aparto lo que no te deja en rojo, ni en un mes malo. Hoy eso es ${enSoles(puedes)} al mes.`
   const evitar = queEvitar(cliente)
+  if (contexto.tema === 'campana' && contexto.campana) {
+    return { ...detalleCampana(campanaPorId(contexto.campana)), pose: 'senala' }
+  }
+  if (contexto.tema === 'gasto' && contexto.monto) {
+    // Se explica el gasto que consultó, no el mes sin ese gasto: las cifras tienen que ser las mismas.
+    const r = gastoExtra(cliente, persona, contexto.monto)
+    return {
+      texto: `Sumo los ${enSoles(contexto.monto)} a tus pagos de aquí a tu cobro del ${fechaDia(cliente.proximoIngreso.fecha)} y lo calculo para un mes malo, en el que gastas un poco más de lo normal. ${r.texto}`,
+      cifras: r.cifras,
+      pose: 'pensando',
+    }
+  }
   if (contexto.tema === 'meta' && contexto.meta.monto && contexto.meta.fecha) {
     const { monto, enDolares, fecha } = contexto.meta
     const objetivo = enDolares ? Math.round(monto * leerTipoCambio(RESPALDO.tipoCambio).tasa) : monto
@@ -468,21 +480,25 @@ const NOMBRE_META = { concierto: 'entrada', festival: 'entrada', entradas: 'entr
 const SIGUE_EL_TEMA = /^(y|e|pero|mejor|entonces|ok|vale|bueno|y si|cambia|cambialo|ahora)\b/
 const PIDE_MAS =
   /(explica|mas sobre|mas detalle|por que|porque|como asi|como es|como lo|que significa|no entiendo|dime mas|cuentame mas)/
-const HABLA_DE_LA_META = /\b(eso|esa|ese|la meta|mi meta|el plan|ahorr|apart|junt|falta|cuanto|llego|llegaria|alcanz|tips?|plazo|fecha|cuota|inicial)/
+const HABLA_DE_LA_META = /\b(eso|esa|ese|la meta|mi meta|el plan|ahorr|apart|junt|falta|cuanto|llego|llegaria|alcanz|tips?|plazo|fecha|cuota|inicial|que sea)/
 
 export const CONTEXTO_VACIO = {
   tema: null,
   monto: null,
   meta: { monto: null, enDolares: false, fecha: null, que: null, ahorrado: null, inicial: null },
   campana: null,
+  // La última respuesta terminó en «¿Quieres más info?»: solo entonces un «sí» es sobre la campaña.
+  ofrecida: false,
 }
 
 const SALUDA = /^(hola|holi|buenas|buen dia|buenos dias|buenas tardes|buenas noches|que tal|hey)\b[\s!.,?]*(lucas)?[\s!.,?]*$/
-const GRACIAS = /^(ok\s+|ya\s+|listo\s+)?(gracias|muchas gracias|mil gracias|genial|perfecto|chevere|bacan)\b/
+// Anclado al final: «perfecto, ¿y para fin de año?» sigue la meta, no es un agradecimiento.
+const GRACIAS =
+  /^((ok|ya|listo|no)[\s,!.]+)?(gracias|muchas gracias|mil gracias|genial|perfecto|chevere|bacan)[\s!.,?]*(lucas)?[\s!.,?]*$/
 const PIDE_INGRESO =
   /\b(ingresos?|sueldo|salario|gano|ganara|ganaria|ganar|ganando|me pagan|me pagaran|me pagarian|me suben)\b/
 // «un trabajo extra de 800 al mes» suma a lo que ya gana; «si gano 6000» es el total.
-const ES_EXTRA = /\b(extra|adicional|aparte|cachuelo|chamba|ademas|mas al mes)\b/
+const ES_EXTRA = /\b(extra|adicional|aparte|cachuelo|chamba|ademas|mas al mes|me suben)\b/
 const PIDE_EXTRA = /\b(trabajo|chamba|cachuelo|ingresos?)\s+(extra|adicional|aparte)\b|\b(cachuelo|chamba)\b/
 // Plata que llega una sola vez: se mide como supuesto sobre la meta, no se guarda.
 const UNICO = /\b(gratificacion|grati|cts|bono|aguinaldo|utilidades|herencia|premio)\b/
@@ -496,9 +512,14 @@ const SI_APARTO = /\bsi\s+(?:aparto|ahorro|guardo|junto|pongo|meto)\s+(?:unos\s+
 const PRECIO = /\b(cuesta|cuestan|vale|valen|precio|sale|esta en|esta a)\b/
 const PIDE_CAMPANA = /\b(campanas?|ofertas?|ofertaq|promos?|promociones?|descuentos?|beneficios?|convenios?)\b/
 // «que sea toyota», «de marca kia»: la persona prefiere una marca y Lucas le cuenta la campaña que sí hay.
+// «que sea nuevo» o «que sea barato» describen el auto, no una marca.
 const PIDE_MARCA = /\b(?:que sea|de (?:la )?marca|marca)\s+(?:un[ao]?\s+)?([a-z]{3,})\b/
-const QUIERE_INFO =
-  /^(si|sip|claro|dale|ya|ok|okey|bueno|por favor|cuentame)\b|\b(mas info\w*|me interesa|como (la )?uso|como funciona|condiciones|detalles?)\b/
+const NO_ES_MARCA =
+  /^(nuev|usad|seminuev|barat|car|economic|automatic|mecanic|electric|hibrid|grande|chic|pequen|bonit|buen|rapid|segur|propi|famil|del|para|con|sin|mas|menos|algo|este|ese|otr)/
+// Solo un «sí» o «más info» a secas responde la oferta: «ok, ¿cuánto me falta?» sigue la meta.
+const AFIRMA = '(si|sip|claro|dale|ya|ok|okey|bueno|por favor|porfa|cuentame|me interesa|mas info\\w*|como funciona|como la uso|condiciones)'
+const QUIERE_INFO = new RegExp(`^${AFIRMA}([\\s,!.?]+${AFIRMA})*[\\s,!.?]*$`)
+const NO_QUIERE = /^(no|nop|nel|paso|ahorita no|despues)\b/
 
 // Une lo nuevo de la meta con lo que ya se sabía. Si nombra otra cosa con su precio, es una meta nueva.
 // Un monto dentro de una meta puede ser el precio, lo que ya tiene o la inicial.
@@ -573,10 +594,21 @@ function gastoEnCategoria(cliente, id) {
 
 // Decide qué responder y cómo queda el contexto. Es puro: el chat entero se vuelve a leer en cada turno.
 export function interpretar(pregunta, contexto, hoy) {
+  const leido = leer(pregunta, contexto, hoy)
+  const c = leido.contexto
+  const conCampana = Boolean(c.campana)
+  const ofrecida =
+    (leido.intencion === 'campana' && conCampana) ||
+    (leido.intencion === 'meta' && conCampana && c.campana !== contexto.campana && campanaPara(c.meta.que)?.id === c.campana)
+  return { ...leido, contexto: { ...c, ofrecida } }
+}
+
+function leer(pregunta, contexto, hoy) {
   const texto = normalizar(pregunta).trim().replace(/^[¿¡\s]+/, '')
   if (esPedidoDeOperacion(pregunta)) return { intencion: 'limites', contexto }
   if (SALUDA.test(texto)) return { intencion: 'saludo', contexto }
-  if (GRACIAS.test(texto) && !/\d/.test(texto)) return { intencion: 'gracias', contexto }
+  if (contexto.ofrecida && NO_QUIERE.test(texto) && !/\d/.test(texto)) return { intencion: 'campana-no', contexto }
+  if (GRACIAS.test(texto)) return { intencion: 'gracias', contexto }
 
   const conNumeros = numerosEnPalabras(texto)
   const monto = montoEn(sinNoMontos(conNumeros))
@@ -616,9 +648,21 @@ export function interpretar(pregunta, contexto, hoy) {
   const pideCobro = /(cobro|fin de mes|rojo)/.test(texto)
   const pideCategorias = /(gasto mas|en que gasto|categoria|donde se va)/.test(texto)
   const otroTema = pideGasto || pideCobro || pideCategorias
+  const tema = (t, m = montoValido) => ({ intencion: t, contexto: { ...contexto, tema: t, monto: m } })
+
+  // «12000» y luego «es una meta» o «para comprar ahora»: el monto de antes es el precio o el gasto.
+  if (contexto.tema === 'monto-suelto' && montoLeido === null) {
+    if (pideMeta || /\b(meta|ahorr|junt)/.test(texto)) {
+      const meta = metaCon({ ...CONTEXTO_VACIO.meta, monto: contexto.monto }, texto, hoy)
+      return { intencion: 'meta', contexto: { ...contexto, tema: 'meta', meta, campana: campanaPara(meta.que)?.id ?? null } }
+    }
+    if (/(compr|gast|pag|ahora|hoy)/.test(texto)) return tema('gasto', contexto.monto)
+  }
+  if (contexto.tema && PIDE_MAS.test(texto) && !conMontoOFecha) return { intencion: 'detalle', contexto }
 
   // Campañas: se preguntan directo o salen al nombrar una marca dentro de una meta.
-  const marca = texto.match(PIDE_MARCA)?.[1] ?? null
+  const pedida = texto.match(PIDE_MARCA)?.[1] ?? null
+  const marca = pedida && !NO_ES_MARCA.test(pedida) ? pedida : null
   const metaAhora = sigueMeta ? metaCon(contexto.meta, texto, hoy) : contexto.meta
   const campana = campanaPara(texto) ?? campanaPara(metaAhora.que)
   const pideCampana = PIDE_CAMPANA.test(texto)
@@ -629,11 +673,9 @@ export function interpretar(pregunta, contexto, hoy) {
       contexto: { ...contexto, tema: sigueMeta ? 'meta' : 'campana', meta: metaAhora, campana: campana?.id ?? null },
     }
   }
-  const ofrecida = contexto.campana && (enMeta || contexto.tema === 'campana')
-  if (ofrecida && !otroTema && !conMontoOFecha && QUIERE_INFO.test(texto)) {
+  if (contexto.ofrecida && contexto.campana && QUIERE_INFO.test(texto)) {
     return { intencion: 'campana-detalle', contexto }
   }
-  if (contexto.tema && PIDE_MAS.test(texto) && !conMontoOFecha) return { intencion: 'detalle', contexto }
 
   const esMeta =
     pideMeta || (enMeta && !otroTema && (conMontoOFecha || SIGUE_EL_TEMA.test(texto) || HABLA_DE_LA_META.test(texto)))
@@ -642,14 +684,13 @@ export function interpretar(pregunta, contexto, hoy) {
     const deLaMeta = campanaPara(meta.que)?.id ?? null
     return { intencion: 'meta', contexto: { ...contexto, tema: 'meta', meta, campana: deLaMeta ?? contexto.campana } }
   }
-  const tema = (t, m = montoValido) => ({ intencion: t, contexto: { ...contexto, tema: t, monto: m } })
   if (/(ahorr|apart|guardar|colchon)/.test(texto)) return tema('ahorro')
   if (montoValido && /(gast|compr|regalo|pag)/.test(texto)) return tema('gasto')
   if (/(llego|alcanza|fin de mes|cobro|rojo)/.test(texto)) return tema('cobro')
   if (pideCategorias) return tema('categorias')
   // «¿y 80?» después de un gasto o de un ahorro: el mismo cálculo con el monto nuevo.
   if (montoValido && (contexto.tema === 'gasto' || contexto.tema === 'ahorro')) return tema(contexto.tema)
-  if (montoValido) return { intencion: 'monto-suelto', contexto: { ...contexto, monto: montoValido } }
+  if (montoValido) return tema('monto-suelto')
   return { intencion: 'no-entiendo', contexto }
 }
 
@@ -664,11 +705,33 @@ export function esPreguntaDeCampana(pregunta, previas, hoy) {
   return intencion === 'campana' || intencion === 'campana-detalle'
 }
 
+// Cuándo se compraría: en la fecha pedida si se llega, si no cuando se junta todo al mejor ritmo sin rojo.
+function fechaDeCompra(cliente, meta) {
+  const { hoy, proximoIngreso, finPronostico } = cliente
+  const { objetivo, ahorrado } = objetivoDe(meta)
+  const apartado = Math.max(cliente.apartado?.monto ?? 0, cliente.apartadoConTodos?.monto ?? 0)
+  const plan = planDeMeta(
+    { objetivo, ahorrado, fecha: meta.fecha ?? proximoIngreso.fecha },
+    { primerApartado: proximoIngreso.fecha, finPronostico, hoy, apartado },
+  )
+  if (meta.fecha && plan.alcanza) return meta.fecha
+  return plan.llegaEl
+}
+
+// Una campaña que vence antes de juntar la plata no ayuda a la meta: no se ofrece (reglas/negocio.md, regla 7).
+function campanaUtil(cliente, contexto) {
+  const campana = campanaPorId(contexto.campana)
+  if (!campana || campanaPara(contexto.meta.que) !== campana) return null
+  if (!contexto.meta.monto && !contexto.meta.inicial) return campana
+  const compra = fechaDeCompra(cliente, contexto.meta)
+  return compra && compra <= campana.hasta ? campana : null
+}
+
 // La meta suma su campaña: el aviso solo la primera vez; el ahorro, en cifras, siempre que haya precio.
 function metaConCampana(cliente, contexto, anterior) {
   const plan = planDeAhorro(cliente, contexto.meta)
-  const campana = campanaPorId(contexto.campana)
-  if (!campana || campanaPara(contexto.meta.que) !== campana) return plan
+  const campana = campanaUtil(cliente, contexto)
+  if (!campana) return plan
   const precio = enSolesDe(contexto.meta)
   const nueva = anterior.campana !== campana.id
   return {
@@ -677,7 +740,6 @@ function metaConCampana(cliente, contexto, anterior) {
   }
 }
 
-// Supuesto visible: si gana más y gasta lo mismo, la diferencia se suma a lo que hoy puede apartar sin rojo.
 // La meta medida con otro ritmo de apartado: cuándo llega, o si llega a la fecha que pidió.
 function metaConRitmo(cliente, meta, apartado) {
   const { hoy, proximoIngreso, finPronostico } = cliente
@@ -748,13 +810,15 @@ export function responder(pregunta, cliente, persona, previas = []) {
     case 'saludo':
       return SALUDO
     case 'detalle':
-      return masDetalle(cliente, contexto)
+      return masDetalle(cliente, persona, contexto)
     case 'monto-suelto':
       return {
         texto: `¿${enSolesRedondo(contexto.monto)} es algo que quieres comprar ahora o una meta para juntar? Dímelo y lo calculo con tus datos.`,
         cifras: [],
         pose: 'pensando',
       }
+    case 'campana-no':
+      return { texto: 'Listo, seguimos con tu plan.', cifras: [], pose: 'neutral' }
     case 'gracias':
       return { texto: '¡De nada! Aquí estoy para lo que necesites.', cifras: [], pose: 'celebra' }
     case 'ingreso':

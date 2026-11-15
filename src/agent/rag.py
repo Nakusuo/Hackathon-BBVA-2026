@@ -1,6 +1,6 @@
 """RAG por módulos (JF-05) sobre el índice que construyó Diego en `docs/rag/indice/`.
 
-Se reutiliza su índice tal cual (3 833 fragmentos, `nomic-embed-text`, 768 dimensiones) y su
+Se reutiliza su índice tal cual (3 761 fragmentos, `nomic-embed-text`, 768 dimensiones) y su
 configuración ganadora en `models/metricas_rag.json`: búsqueda densa con filtro de módulo
 (recall@4 0,94), umbral de relevancia 0,70 y expansión de siglas. Para reconstruir el índice
 se usa `src/rag/indice.py` de su rama; aquí solo se consulta.

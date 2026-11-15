@@ -107,3 +107,18 @@ test('pedir comprar dólares o mover plata no sale al servidor', async () => {
   }
   assert.equal(registro.length, 0)
 })
+
+test('las campañas viven en el front: se responden con plantilla aunque el agente esté activo', async () => {
+  const registro = []
+  const r = await preguntarALucas('¿hay ofertas para viajes?', opciones({ pedir: falsoFetch(RESPUESTA, registro) }))
+  assert.equal(r.origen, 'plantilla')
+  assert.match(r.texto, /Viajes Horizonte/)
+  assert.equal(registro.length, 0)
+})
+
+test('un seguimiento de la meta sí va al agente aunque antes se ofreciera una campaña', async () => {
+  const registro = []
+  const previas = ['quiero ir al concierto, la entrada está 200']
+  await preguntarALucas('ok, ¿cuánto me falta?', opciones({ previas, pedir: falsoFetch(RESPUESTA, registro) }))
+  assert.equal(registro.length, 1)
+})

@@ -20,7 +20,7 @@ export const CAMPANAS = [
     aliado: 'Autos Andinos',
     rubro: 'autos nuevos de sus marcas aliadas',
     fijo: 2000,
-    condicion: 'si pagas la inicial desde tu cuenta',
+    condicion: 'pagando desde tu cuenta, sin crédito',
     hasta: '2027-03-31',
   },
   {
@@ -92,7 +92,7 @@ export function respuestaCampana(c, { precio = 0, marca = null } = {}) {
   }
   const ahorro = ahorroCon(c, precio)
   const inicio = marca
-    ? `Con ${marca[0].toUpperCase()}${marca.slice(1)} no hay campaña, pero con ${c.aliado} tu banco tiene ${beneficio(c)} en ${c.rubro}. Podría salirte mejor.`
+    ? `Para esa marca no hay campaña. Con ${c.aliado} tu banco tiene ${beneficio(c)} en ${c.rubro}, ${c.condicion}.`
     : `Sí: con ${c.aliado} tu banco tiene ${beneficio(c)} en ${c.rubro}, ${c.condicion}.`
   const cierre = ahorro
     ? ` Pagarías ${enSoles(precio - ahorro)} y te ahorras ${enSoles(ahorro)}. ¿Quieres más info?`
