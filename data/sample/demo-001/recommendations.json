@@ -1,0 +1,57 @@
+{
+  "customer_id": "demo-001",
+  "currency": "PEN",
+  "recommendations": [
+    {
+      "id": "delivery",
+      "action": "Pide RapiFood una vez por semana hasta el 30",
+      "estimated_impact": 31,
+      "impact_type": "expense_reduction",
+      "impact_period": "until_next_income",
+      "reason": "Este mes pediste 9 veces, a unos S/ 12.44 por pedido. Bajar a 4 al mes deja más saldo antes de cobrar.",
+      "data_used": [
+        "transactions"
+      ],
+      "assumptions": [
+        "RapiFood: de 9 a 4 veces al mes, a S/ 12.44 cada una",
+        "Mejora el peor caso del domingo, 29 de noviembre: de −S/ 60 a −S/ 29"
+      ],
+      "confidence": "media",
+      "disclaimer": "Esta es una simulación. Tú decides."
+    },
+    {
+      "id": "musika",
+      "action": "Pausa MusiKa Plus hasta tu próximo cobro",
+      "estimated_impact": 22,
+      "impact_type": "expense_reduction",
+      "impact_period": "until_next_income",
+      "reason": "No la usas hace 5 semanas y se cobra el 20, justo antes de tus días más justos.",
+      "data_used": [
+        "recurring_expenses"
+      ],
+      "assumptions": [
+        "Se pausa MusiKa Plus (S/ 21.90) el viernes, 20 de noviembre",
+        "Mejora el peor caso del domingo, 29 de noviembre: de −S/ 60 a −S/ 38"
+      ],
+      "confidence": "media",
+      "disclaimer": "Esta es una simulación. Tú decides."
+    },
+    {
+      "id": "cafe",
+      "action": "Toma café fuera 3 veces por semana",
+      "estimated_impact": 19,
+      "impact_type": "expense_reduction",
+      "impact_period": "until_next_income",
+      "reason": "Este mes fuiste 20 veces a Cafetería La Esquina, a unos S/ 5.30 cada vez.",
+      "data_used": [
+        "transactions"
+      ],
+      "assumptions": [
+        "Cafetería La Esquina: de 20 a 13 veces al mes, a S/ 5.30 cada una",
+        "Mejora el peor caso del domingo, 29 de noviembre: de −S/ 60 a −S/ 41"
+      ],
+      "confidence": "media",
+      "disclaimer": "Esta es una simulación. Tú decides."
+    }
+  ]
+}
