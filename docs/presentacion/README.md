@@ -39,8 +39,8 @@ Esta carpeta reune **todas las graficas, diagramas y artefactos generados** para
 | `diagramas/grafo_agente_unico.md` | El mismo grafo en Mermaid (se ve en GitHub); fuente: app.get_graph().draw_mermaid(). |
 | `diagramas/grafo_multiagente.md` | El mismo grafo del multiagente en Mermaid. |
 | `mlflow_resumen.md` | Seguimiento con MLflow: cada comparacion (baseline frente a elegido) como corrida y cada modelo de produccion registrado con alias produccion. |
-| `final/index.html` | LA PRESENTACION FINAL (7 laminas, interactiva, un solo archivo; abrir en el navegador y avanzar con flechas, F = pantalla completa). Usa los datos reales de models/*.json y del mapa de consultas. |
+| `final/index.html` | LA PRESENTACION FINAL (8 laminas, interactiva, un solo archivo; abrir en el navegador y avanzar con flechas, F = pantalla completa). Usa los datos reales de models/*.json y del mapa de consultas. |
 | `final/plantilla.html` | Fuente de la presentacion final: HTML y JS a mano. Se compila con `python eval/construir_presentacion_final.py` (opciones --demo-url y --equipo). |
-| `final/imagenes/LEEME.txt` | Donde dejar el diagrama de arquitectura del equipo (arquitectura.png): aparece solo como pestana en la lamina 3. |
+| `final/imagenes/LEEME.txt` | Donde dejar el diagrama de arquitectura del equipo (arquitectura.png): aparece solo como pestana en la lamina 4. |
 
 Tablas y explicacion de cada eleccion (con su limite): `docs/comparativa_modelos.md`. Informe completo: `docs/RESUMEN_DIEGO.md`. QA: `docs/QA_ANALITICA.md`.

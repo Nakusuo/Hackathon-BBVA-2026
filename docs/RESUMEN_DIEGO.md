@@ -937,19 +937,19 @@ Lo que esta rama entrega **ya esta validado** y sirve de **piso**: el agente uni
 **Regla para mejorar sin romper:** cada mejora entra con su prueba (la receta de 9.14), se mide contra la linea base de arriba y la puerta de calidad debe seguir en 0 FAIL.
 
 
-### 9.16 Presentacion final (7 laminas, interactiva)
+### 9.16 Presentacion final (8 laminas, interactiva)
 **Donde esta:** `docs/presentacion/final/index.html`. Es un solo archivo: se abre con doble clic en el navegador (Chrome o Edge) y se avanza con las flechas; `F` = pantalla completa; el numero de lamina va en la URL (`#5`). Las imagenes se leen de las carpetas hermanas (`docs/presentacion/diagramas`, `graficas`, `modelos`), asi que **hay que conservar la estructura de carpetas**.
 
 **Como esta hecha:** `docs/presentacion/final/plantilla.html` (HTML, CSS y JS a mano) + `eval/construir_presentacion_final.py`, que mete dentro los datos reales (`models/*.json`, `docs/presentacion/mapa_de_consultas.json`, series publicas del BCRP, QA y puerta de calidad) y las fuentes tipograficas. Nada de cifras escritas a mano en las laminas: si cambian los modelos, se vuelve a compilar y se actualizan.
 
-**Orden:** 1 portada (Conoce a Lucas; la pregunta de apertura se dice en voz alta), 2 problematica y decision, 3 arquitectura y orquestacion (nodos clicables), 4 uso responsable de la IA (modelos y evidencia, perfiles, valor para la persona, como lee la IA, cuanto ahorra y como se integra), 5 eventos (El Nino, mercado y normas, movimientos), 6 demo (solo el enlace), 7 beneficios para la persona y proximos pasos para quien integra.
+**Orden:** 1 portada (Conoce a Lucas y el enfoque general; la pregunta de apertura se dice en voz alta), 2 problematica y decision, 3 propuesta de solucion en lenguaje simple (te ayuda a...), 4 arquitectura y orquestacion (nodos clicables), 5 uso responsable de la IA (modelos y evidencia, perfiles, valor para la persona, como lee la IA, cuanto ahorra y como se integra), 6 eventos (El Nino, mercado y normas, movimientos), 7 Conoce a Lucas en vivo (solo el enlace), 8 beneficios para la persona y proximos pasos para quien integra.
 
 **Lo que falta enchufar (no requiere tocar codigo):**
 - Enlace de la demo en vivo: `python eval/construir_presentacion_final.py --demo-url URL`, o abrir `index.html?demo=URL`.
 - Integrantes en la portada: `--equipo "Nombre 1,Nombre 2"`.
-- Diagrama del equipo: copiar `arquitectura.png` en `docs/presentacion/final/imagenes/`; aparece solo como pestana en la lamina 3.
+- Diagrama del equipo: copiar `arquitectura.png` en `docs/presentacion/final/imagenes/`; aparece solo como pestana en la lamina 4.
 
-**Mejoras que puede anadir quien integre:** conectar el boton de la demo (lamina 6) a la API real y alimentar las laminas 4 y 5 con los datos de la API en lugar de la foto del dia de compilacion. Los perfiles de la lamina 4 salen de `models/metricas.json` (k = 3: Luchador, Constructor y Campeon; la escalera de `data/parametros/niveles.yaml` tiene 5 nombres y se activan mas si los datos reales separan mas grupos).
+**Mejoras que puede anadir quien integre:** conectar el boton de la demo (lamina 7) a la API real y alimentar las laminas 5 y 6 con los datos de la API en lugar de la foto del dia de compilacion. Los perfiles de la lamina 5 salen de `models/metricas.json` (k = 3: Luchador, Constructor y Campeon; la escalera de `data/parametros/niveles.yaml` tiene 5 nombres y se activan mas si los datos reales separan mas grupos).
 
 ## 10. Integracion con el equipo
 Esta rama contiene **solo el trabajo de analitica e IA**: lo de otras personas (agente del producto, API, front) no esta aqui y la integracion final se hace despues. Aqui queda documentado lo que choca, lo que coincide y que tomar de cada lado. *Lo que se dice del PR #5 y de `develop` es observacion por lectura de su codigo y de `docs/api.md`; las pruebas del agente del producto no se ejecutaron en esta rama.* (El 14-nov se trajo `develop` a la copia remota de esta rama; esta version no lo incluye.)

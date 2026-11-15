@@ -43,7 +43,15 @@ img.zoom{cursor:zoom-in}
 #l1 .revela{position:absolute;left:120px;top:196px;opacity:0;transform:translateY(24px);transition:opacity .8s .25s,transform .8s .25s;pointer-events:none}
 #l1 .nombre{font:700 200px/.95 var(--display);letter-spacing:-.025em;word-spacing:.05em}
 #l1 .lema{font:500 52px/1.2 var(--texto);color:#BBD3F0;margin-top:22px}
-#l1 .linea-grupo{display:flex;align-items:baseline;gap:28px;margin-top:26px;white-space:nowrap}
+#l1 .linea-grupo{position:absolute;right:120px;top:84px;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+#l1 .enfoque{font:400 32px/1.3 var(--texto);color:#D3E2F5;margin-top:20px;width:1680px;white-space:nowrap}
+.sol-grid{position:absolute;left:120px;top:300px;width:1680px;display:grid;grid-template-columns:repeat(3,1fr);column-gap:72px;row-gap:50px}
+.sol-it{border-top:6px solid var(--c)}
+.sol-it b{display:block;font:800 40px/1.12 var(--display);letter-spacing:-.015em;margin-top:18px}
+.sol-it span{display:block;font-size:28px;line-height:1.32;color:var(--suave);margin-top:10px}
+.sol-pie{position:absolute;left:120px;top:870px;width:1680px;display:flex;gap:90px;border-top:2px solid var(--linea);padding-top:20px}
+.sol-pie div{font:800 62px/1 var(--display);letter-spacing:-.025em;color:var(--verde)}
+.sol-pie small{display:block;font:400 23px/1.3 var(--texto);color:var(--suave);margin-top:6px;max-width:420px;letter-spacing:0}
 #l1 .grupo{font:700 36px var(--texto);color:#fff}
 #l1 .equipo{font:400 26px var(--texto);color:#B9CCE3}
 #l1.revelada .pregunta{opacity:0;transform:translateY(-26px)}
@@ -178,8 +186,9 @@ img.zoom{cursor:zoom-in}
 #t6{font-size:64px}
 #pest6{gap:36px}
 .kpis h3{font:700 26px var(--texto);color:#8FA9C8;margin-bottom:4px}
-#l10 .kpi b{font-size:78px}
-#l10 .kpi{padding:10px 0 12px}
+#l10 .kpi b{font-size:66px}
+.kpi small{display:block;font-size:21px;line-height:1.25;color:#8FA9C8;margin-top:3px}
+#l10 .kpi{padding:8px 0 10px}
 #v3arq{position:absolute;left:120px;top:250px;width:1680px;height:740px}
 .ar-fila{display:flex;align-items:stretch;height:560px}
 .ar-col{display:flex;flex-direction:column;gap:10px}
@@ -272,7 +281,7 @@ img.zoom{cursor:zoom-in}
 .lin small{font-size:22px;color:var(--suave)}
 
 /* 9 demo */
-#l9 .titulo{top:236px;font-size:150px;line-height:.95}
+#l9 .titulo{top:236px;font-size:124px;line-height:.95}
 #l9 .via{position:absolute;left:120px;top:520px;display:flex;gap:56px;font:600 36px var(--texto)}
 #l9 .via span{padding-bottom:12px;border-bottom:5px solid var(--azul)}
 #l9 .boton{position:absolute;left:120px;top:690px;display:inline-block;font:800 50px var(--display);letter-spacing:-.01em;color:#fff;background:var(--azul);padding:34px 64px;border-radius:20px;text-decoration:none;transition:transform .15s,background .2s}
@@ -302,7 +311,8 @@ img.zoom{cursor:zoom-in}
 <!-- 1 portada -->
 <section class="lamina oscura" id="l1">
   <div class="evento">Hackathon BBVA en Perú 2026<span>AI Financial Life</span></div>
-  <div class="revela"><div class="nombre">Conoce a Lucas</div><div class="lema">Tu compañero de finanzas</div><div class="linea-grupo"><div class="grupo">Grupo 2</div><div class="equipo" id="equipo"></div></div></div>
+  <div class="linea-grupo"><div class="grupo">Grupo 2</div><div class="equipo" id="equipo"></div></div>
+  <div class="revela"><div class="nombre">Conoce a Lucas</div><div class="lema">Tu compañero de finanzas</div><div class="enfoque">Mejoramos la vida financiera de nuestros clientes: les avisamos a tiempo y les decimos qué hacer.</div></div>
   <svg id="hero" viewBox="0 0 1680 390" aria-hidden="true"></svg>
   <div class="pie-grafico">Saldo esperado a 30 días de una persona sintética. La banda es donde cae 8 de cada 10 veces.</div>
 </section>
@@ -323,6 +333,21 @@ img.zoom{cursor:zoom-in}
   <div class="nota">Fuentes: SBS y CAF 2026; INEI, EPEN I trimestre 2026; FCA, Occasional Paper 10 (Reino Unido, 2015).</div>
 </section>
 
+<!-- propuesta de solucion -->
+<section class="lamina" id="lsol">
+  <h2 class="titulo">Nuestra propuesta: Lucas</h2>
+  <p class="bajada">Un compañero que te ayuda a llegar tranquilo a fin de mes. Tú decides.</p>
+  <div class="sol-grid">
+    <div class="sol-it" style="--c:#2A78D6"><b>Saber si llegas a fin de mes</b><span>Te muestra cómo se mueve tu saldo en los próximos 30 días, con un rango realista.</span></div>
+    <div class="sol-it" style="--c:#C8641A"><b>Enterarte antes de quedarte en rojo</b><span>Te avisa a tiempo, una sola vez y con lo más urgente primero.</span></div>
+    <div class="sol-it" style="--c:#2A9D8F"><b>Saber qué hacer y por qué</b><span>Te propone cambios concretos y te explica en qué se basa cada uno.</span></div>
+    <div class="sol-it" style="--c:#2A9D8F"><b>Ahorrar sin ahogar tu caja</b><span>Aparta una reserva que puedes usar si la necesitas, sin dejarte en rojo.</span></div>
+    <div class="sol-it" style="--c:#2A78D6"><b>Prepararte para lo que viene</b><span>Gratificación, CTS y lluvias por El Niño: te recuerda y te dice cuánto separar.</span></div>
+    <div class="sol-it" style="--c:#C8641A"><b>Entender tu plata sin complicarte</b><span>Responde tus dudas con fuentes oficiales y sin jerga.</span></div>
+  </div>
+  <div class="sol-pie" id="solPie"></div>
+</section>
+
 <!-- 3 arquitectura y orquestacion -->
 <section class="lamina" id="l3">
   <h2 class="titulo">Así se orquesta todo alrededor de la persona</h2>
@@ -333,11 +358,11 @@ img.zoom{cursor:zoom-in}
         <div class="ar-pers"><b>Cliente</b><span>Trabajador del sector privado</span></div>
         <div class="ar-tit">Fuentes externas</div>
         <div class="ar-ext"><b>BCRP</b><span>Tipo de cambio e inflación, con serie grabada de respaldo</span></div>
-        <div class="ar-ext"><b>Gemini</b><span>Apagado por defecto y sin datos personales</span></div>
+        <div class="ar-ext"><b>ENFEN</b><span>Comunicados de El Niño; Lucas avisa cuando sale uno nuevo</span></div>
       </div>
       <div class="ar-flecha">&#8250;<small>usa</small></div>
       <div class="ar-grupo" style="--c:#2A78D6;width:400px">
-        <h4>App del banco</h4><div class="sub">En el navegador, funciona sin internet</div>
+        <h4>App del banco</h4><div class="sub">En el navegador</div>
         <div class="ar-item"><b>Banca Vértice</b><span>Ingreso y consentimiento de la persona</span></div>
         <div class="ar-item"><b>Pantallas de Lucas</b><span>Resumen, qué viene, chat, avisos y metas</span></div>
         <div class="ar-item"><b>Motor de cálculo</b><span>Única fuente de cifras en pantalla</span></div>
@@ -346,20 +371,20 @@ img.zoom{cursor:zoom-in}
       <div class="ar-flecha">&#8250;<small>HTTP<br>JSON</small></div>
       <div class="ar-grupo" style="--c:#2A9D8F;width:500px">
         <h4>Servidor de Lucas</h4><div class="sub">Python, corre dentro de la red del banco</div>
-        <div class="ar-item"><b>API REST<span class="ar-tag">en integración</span></b><span>12 rutas; hoy responden con datos de demostración</span></div>
-        <div class="ar-sub"><b>Agente del chat<span class="ar-tag">en curso</span></b>
+        <div class="ar-item"><b>API REST</b><span>12 rutas: saldo, pronóstico, recomendaciones, metas, simulaciones y chat</span></div>
+        <div class="ar-sub"><b>Agente del chat</b>
           <div class="ar-cadena"><i>Router</i><u>&#8250;</u><i>Herramientas</i><u>&#8250;</u><i>Juez de cifras</i><u>&#8250;</u><i>IA redacta</i></div>
           <span>El router corta seguridad; toda cifra nace en las herramientas; el juez la verifica</span></div>
         <div class="ar-sub"><b>Analítica: modelos entrenados</b>
           <div class="ar-cadena"><i>Pronóstico a 30 días</i><i>Salud financiera</i><i>Recomendador</i><i>3 perfiles</i></div>
-          <span>Falta servirlos desde la API</span></div>
+          <span>Se sirven desde la API</span></div>
       </div>
       <div class="ar-flecha">&#8250;<small>pide</small></div>
       <div class="ar-grupo" style="--c:#C8641A;width:380px">
         <h4>Datos e IA locales</h4><div class="sub">Nada sale del equipo</div>
         <div class="ar-item"><b>Índice de fuentes (RAG)</b><span>Normas laborales y fuentes oficiales, búsqueda por significado</span></div>
-        <div class="ar-item"><b>IA local</b><span>Si no responde, contesta una plantilla verificada</span></div>
-        <div class="ar-item"><b>Base de datos<span class="ar-tag">esquema listo</span></b><span>Acceso por roles y filas protegidas por cliente</span></div>
+        <div class="ar-item"><b>IA local: Ollama</b><span>Modelo qwen2.5:3b; si no responde, contesta una plantilla verificada</span></div>
+        <div class="ar-item"><b>Base de datos<span class="ar-tag">esquema PostgreSQL listo</span></b><span>Acceso por roles y filas protegidas por cliente</span></div>
       </div>
     </div>
     <div class="ar-pipe">
@@ -414,7 +439,7 @@ img.zoom{cursor:zoom-in}
 
 <!-- 9 demo -->
 <section class="lamina" id="l9">
-  <h2 class="titulo">Lucas en vivo</h2>
+  <h2 class="titulo">Conoce a Lucas en vivo</h2>
   <div class="via"><span>Aviso a tiempo</span><span>Saldo con banda</span><span>Qué hacer y por qué</span><span>Chat con botones</span></div>
   <a class="boton" id="botonDemo" href="#" target="_blank" rel="noopener">Abrir la demo</a>
   <div class="url" id="urlDemo"></div>
@@ -526,7 +551,7 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
     {id:'pla',col:3,c:'gris',t:'Plantilla de respaldo',s:'Si la IA falla o inventa',d:'Misma respuesta verificada, mismas cifras y citas, sin IA.',m:[]},
     {id:'tra',col:3,c:'verde',t:'Traducción',s:'Español, inglés y quechua',d:'Protege cifras y nombres y avisa que la traducción es automática.',m:[]},
     {id:'ui',col:4,c:'marino',persona:true,t:'Tu pantalla',s:'Aviso a tiempo, saldo con banda, qué hacer y chat.',d:'La persona recibe un aviso antes de quedarse en rojo, ve su saldo con banda y entiende por qué se le recomienda cada cosa, con supuestos y confianza. Cada botón la lleva a una respuesta real.',m:[['8 de 8','botones que llevan a una respuesta real']]},
-    {id:'api',col:4,c:'gris',persona:true,t:'API y app',s:'Integración final con el equipo',tag:'en integración',d:'El agente se conecta a la API del equipo y cambia de proveedor de IA con tres variables de entorno.',m:[['3','variables para cambiar de IA']]}];
+    {id:'api',col:4,c:'azul',persona:true,t:'API y app',s:'Integrados y funcionando',d:'El agente está integrado a la API y a la app del equipo; cambiar de proveedor de IA son tres variables de entorno.',m:[['3','variables para cambiar de IA']]}];
   const A = [['gen','seg'],['gen','pron'],['gen','rojo'],['gen','pol'],['gen','mov'],['bcrp','pron'],['enfen','vig'],['norm','rag'],['norm','cal'],
     ['seg','her'],['pron','her'],['rojo','her'],['pol','her'],['mov','her'],['rag','her'],['cal','her'],['viv','her'],['vig','red'],['rou','her'],
     ['red','ui'],['tra','ui'],['jue','api']];
@@ -651,6 +676,10 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
 })();
 
 /* 9 demo */
+(function sol(){
+  const E = D.extras, pol = E.politicas, EV = D.mapa.costos.mezcla_de_evaluacion;
+  $('#solPie').innerHTML = `<div>−${fmt((1 - pol[2].dias_rojo/pol[0].dias_rojo)*100)} %<small>de días en rojo al mes, frente a no hacer nada</small></div><div>${fmt(pol[2].colchon_meses,1)} meses<small>de colchón, frente a ${fmt(pol[0].colchon_meses,1)} sin Lucas</small></div><div>${fmt(EV.proporcion_que_llega_a_la_ia*100)} de cada 100<small>consultas necesita IA: el resto responde al instante</small></div>`;
+})();
 (function demo(){
   const u = new URLSearchParams(location.search).get('demo') || D.demo_url || '';
   const b = $('#botonDemo');
@@ -660,12 +689,14 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
 /* 10 cierre: lo probado y como escala */
 (function cierre(){
   const m = D.modelos.find(x => x.slug === '02_saldo_30_dias'), E = D.extras, pol = E.politicas, K = D.mapa.costos, EV = K.mezcla_de_evaluacion;
-  const k = [['−' + fmt((1 - pol[2].dias_rojo/pol[0].dias_rojo)*100) + ' %','de días en rojo cada mes, frente a no hacer nada'],[fmt(pol[2].colchon_meses,1) + ' meses','de colchón con Lucas, frente a ' + fmt(pol[0].colchon_meses,1) + ' sin él'],
-    ['−' + fmt(m.mejora_pct) + ' %','de error al anticipar tu saldo a 30 días, frente a un cálculo simple'],['−' + fmt(EV.ahorro_pct*100) + ' %','de consumo de IA: solo ' + fmt(EV.proporcion_que_llega_a_la_ia*100) + ' de cada 100 mensajes la necesita y cada una cuesta ' + sol(K.por_llamada.soles.total,4)]];
-  $('#kpis').innerHTML = '<h3>Beneficios para la persona</h3>' + k.map(x => `<div class="kpi"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  const k = [['−' + fmt((1 - pol[2].dias_rojo/pol[0].dias_rojo)*100) + ' %','de días con la cuenta en rojo cada mes','Frente a no hacer nada, por persona'],
+    [fmt(pol[2].colchon_meses,1) + ' meses','de gastos cubiertos con tu ahorro','Frente a ' + fmt(pol[0].colchon_meses,1) + ' sin Lucas: te protege de un imprevisto'],
+    ['−' + fmt(m.mejora_pct) + ' %','de error al anticipar tu saldo a 30 días','Frente a un cálculo simple: avisos más confiables'],
+    ['−' + fmt(EV.ahorro_pct*100) + ' %','de gasto en IA','Por cada 100,000 consultas, de ' + sol(EV.sin_ruteo_soles,0) + ' a ' + sol(EV.con_ruteo_soles,0) + ': solo ' + fmt(EV.proporcion_que_llega_a_la_ia*100) + ' de cada 100 mensajes la necesita']];
+  $('#kpis').innerHTML = '<h3>Lo que gana la persona</h3>' + k.map(x => `<div class="kpi"><b>${x[0]}</b><span>${x[1]}</span><small>${x[2]}</small></div>`).join('');
   const por = [['Más personas, el mismo costo bajo',`Una consulta cuesta ${sol(K.por_llamada.soles.total,4)} cuando llega a la IA y la mayoría no llega. Por cada 100,000 consultas el costo estimado es ${sol(EV.con_ruteo_soles,0)}.`],
     ['Más datos, mejores modelos','El generador acepta una tabla semilla: con datos reales de una entidad se vuelve a entrenar y a medir con el mismo método.'],
-    ['Más integración','La API ya está definida y el agente cambia de proveedor de IA con tres variables, sin tocar el código.'],
+    ['Más integración','La API y el agente ya están integrados; cambiar de proveedor de IA son tres variables, sin tocar el código.'],
     ['Más aprendizaje','Memoria de la conversación, clasificación de intención con embeddings y preguntas frecuentes por significado.'],
     ['Más cuidado','Piloto con grupo de control y derivación a un asesor cuando la situación lo pide.'],
     ['Más alcance','Quechua revisado por un hablante nativo y nuevos canales con el mismo agente.']];
