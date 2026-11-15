@@ -16,6 +16,7 @@ Lucas expone información financiera derivada de **datos sintéticos** y permite
 - Los datos financieros deben aislarse por cliente mediante autenticación/autorización por definir con Michael. **No asumir que un `customer_id` en la ruta concede acceso**.
 - Los valores `confidence`, `quadrant`, `segment` y probabilidades requieren validación de los modelos de Diego.
 - Los archivos en `data/sample/mocks/` son ejemplos ilustrativos, **no datos reales ni resultados validados de modelos**.
+- `demo-001` es la persona del motor del front: sus respuestas de `health`, `forecast`, `recommendations` y `events` salen de `data/sample/demo-001/`, que genera `frontend/scripts/exportar-persona-demo.mjs`. Si cambia el motor hay que regenerarlas (`node scripts/exportar-persona-demo.mjs` desde `frontend/`); `frontend/pruebas/demo001.test.js` falla si no se hizo. Los ids de la base (`C000xx`) usan el modelo en `forecast` y no tienen las otras tres rutas.
 - El campo `sample_only: true` en pronóstico y simulación significa que la serie está truncada intencionalmente; en producción el horizonte de 30 días deberá contener los días previstos conforme al contrato aprobado.
 
 ## 2. Inventario de endpoints propuestos

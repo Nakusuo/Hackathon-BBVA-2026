@@ -5,13 +5,15 @@ import { leerPronostico, leerSalud, leerTipoCambio, pedidoSimulacion } from '../
 import { ErrorApi, pedirJson } from '../src/api/http.js'
 import { cargarCliente, origenGeneral, simularCambios } from '../src/api/lucas.js'
 
-const mock = (nombre) => JSON.parse(readFileSync(new URL(`../../data/sample/mocks/${nombre}.json`, import.meta.url)))
+const leer = (carpeta, nombre) => JSON.parse(readFileSync(new URL(`../../data/sample/${carpeta}/${nombre}.json`, import.meta.url)))
+const mock = (nombre) => leer('mocks', nombre)
+const demo = (nombre) => leer('demo-001', nombre)
 
 const RESPUESTAS_API = {
-  '/api/v1/customers/demo-001/health': mock('health'),
-  '/api/v1/customers/demo-001/forecast': mock('forecast'),
-  '/api/v1/customers/demo-001/recommendations': mock('recommendations'),
-  '/api/v1/customers/demo-001/events': mock('events'),
+  '/api/v1/customers/demo-001/health': demo('health'),
+  '/api/v1/customers/demo-001/forecast': demo('forecast'),
+  '/api/v1/customers/demo-001/recommendations': demo('recommendations'),
+  '/api/v1/customers/demo-001/events': demo('events'),
   '/api/v1/fx?base=USD&quote=PEN': { ...mock('fx'), rate: '3.75' },
   '/api/v1/simulations': mock('simulation'),
 }
@@ -25,10 +27,15 @@ const apiCaida = async () => {
 test('con la API arriba todo viene de la API y en los nombres del front', async () => {
   const fuentes = await cargarCliente('demo-001', { pedir: apiSana })
   assert.equal(origenGeneral(fuentes), 'api')
-  assert.equal(fuentes.salud.datos.puntaje, 72)
-  assert.deepEqual(fuentes.pronostico.datos.puntos[0], { fecha: '2026-11-15', esperado: 850, banda: [720, 980] })
-  assert.equal(fuentes.recomendaciones.datos.length, 3)
-  assert.equal(fuentes.eventos.datos.avisosRestantesSemana, 2)
+  assert.equal(fuentes.salud.datos.puntaje, demo('health').score)
+  const primero = demo('forecast').forecast[0]
+  assert.deepEqual(fuentes.pronostico.datos.puntos[0], {
+    fecha: primero.date,
+    esperado: primero.predicted_balance,
+    banda: [primero.lower_bound, primero.upper_bound],
+  })
+  assert.equal(fuentes.recomendaciones.datos.length, demo('recommendations').recommendations.length)
+  assert.equal(fuentes.eventos.datos.avisosRestantesSemana, demo('events').weekly_notifications_remaining)
 })
 
 test('si la API no responde, cada lectura usa el JSON de ejemplo y dice por qué', async () => {
@@ -38,7 +45,7 @@ test('si la API no responde, cada lectura usa el JSON de ejemplo y dice por qué
     assert.equal(fuente.origen, 'respaldo')
     assert.equal(fuente.motivo, 'red')
   }
-  assert.equal(fuentes.salud.datos.puntaje, mock('health').score)
+  assert.equal(fuentes.salud.datos.puntaje, demo('health').score)
 })
 
 test('una lectura con respuesta rota pasa sola al respaldo y las demás siguen de la API', async () => {
