@@ -7,12 +7,12 @@ Plan del modelo de datos y su esquema **listo para crear** en PostgreSQL 15 o su
 | [`schema_postgres.sql`](schema_postgres.sql) | El esquema completo (`lucas` y `simulacion`): tablas, claves, restricciones, indices, vista de limpieza y vectores |
 | [`validacion_postgres.json`](validacion_postgres.json) | Evidencia de la prueba contra Postgres real (cargas, cascadas, restricciones, busqueda vectorial) |
 | [`../../analitica/eval/cargar_a_postgres.py`](../../analitica/eval/cargar_a_postgres.py) | Cargador: crea el esquema, carga los Parquet con COPY, carga el RAG con sus vectores y verifica los conteos |
-| Este documento | Plan, diccionario de cada tabla y diagrama entidad-relacion (generado desde el SQL por `eval/generar_modelo_de_datos.py`) |
+| Este documento | Plan, diccionario de cada tabla y diagrama entidad-relacion (generado desde el SQL por `analitica/eval/generar_modelo_de_datos.py`) |
 
 ## 1. Decisiones de diseno
 
-1. **Dos esquemas.** `lucas` es lo que usa el aplicativo y lo que existiria con datos reales de un banco. `simulacion` guarda la **verdad oculta** del generador sintetico (arquetipo, parametros internos, etiquetas de referencia): sirve para evaluar los modelos y **nunca** debe leerlo un modelo ni el aplicativo (es lo que `src/models/columnas.py` ya separa en observable, etiqueta e interna). Con datos reales se borra el esquema entero: `DROP SCHEMA simulacion CASCADE`.
-2. **Los defectos sembrados se conservan a proposito.** Los movimientos traen faltantes (glosa 2 %, categoria 3 %, saldo 1,5 %, monto 0,2 %) y duplicados, para probar la limpieza. Por eso `lucas.transaccion` tiene clave propia (`movimiento_id`, identidad), `transaction_id` no es unico y las columnas son nulas donde corresponde. La vista `lucas.transaccion_limpia` quita los duplicados exactos; los cercanos los quita `src/generador/calidad.py::limpiar`.
+1. **Dos esquemas.** `lucas` es lo que usa el aplicativo y lo que existiria con datos reales de un banco. `simulacion` guarda la **verdad oculta** del generador sintetico (arquetipo, parametros internos, etiquetas de referencia): sirve para evaluar los modelos y **nunca** debe leerlo un modelo ni el aplicativo (es lo que `backend/src/models/columnas.py` ya separa en observable, etiqueta e interna). Con datos reales se borra el esquema entero: `DROP SCHEMA simulacion CASCADE`.
+2. **Los defectos sembrados se conservan a proposito.** Los movimientos traen faltantes (glosa 2 %, categoria 3 %, saldo 1,5 %, monto 0,2 %) y duplicados, para probar la limpieza. Por eso `lucas.transaccion` tiene clave propia (`movimiento_id`, identidad), `transaction_id` no es unico y las columnas son nulas donde corresponde. La vista `lucas.transaccion_limpia` quita los duplicados exactos; los cercanos los quita `backend/src/generador/calidad.py::limpiar`.
 3. **Derecho de supresion.** Todo lo que cuelga de un cliente se borra con el (`ON DELETE CASCADE`), igual que `memoria.olvidar`. Se probo: borrar un cliente borra sus movimientos, saldos, panel, mensajes y su verdad oculta, sin filas huerfanas.
 4. **Dinero en `NUMERIC(14,2)`**, nunca en flotantes; tasas y porcentajes en `NUMERIC`; parametros del simulador en `DOUBLE PRECISION`. Fechas como `DATE`, `TIMESTAMP` o `CHAR(7)` (`AAAA-MM`) segun el dato.
 5. **Vectores en la misma base.** El RAG (3.761 fragmentos tras depurar los repetidos) y las preguntas frecuentes viven con `pgvector`: columnas `vector(768)` (nomic-embed-text, vectores normalizados) con indice HNSW de **producto interno**, que equivale al coseno. Ademas `rag_fragmento.texto_tsv` (texto completo en espanol) reemplaza al BM25 local para una busqueda hibrida dentro de SQL.
@@ -429,10 +429,10 @@ docker run -d --name lucas-pg -e POSTGRES_PASSWORD=<clave> -e POSTGRES_DB=lucas 
 
 # 2. Crear el esquema y cargar la data sintetica y el RAG con sus vectores (~3 minutos)
 export DATABASE_URL=postgresql://postgres:<clave>@localhost:5432/lucas
-python eval/cargar_a_postgres.py --crear --rag
+python analitica/eval/cargar_a_postgres.py --crear --rag
 
 # Solo ver que se cargaria, sin base de datos
-python eval/cargar_a_postgres.py --plan
+python analitica/eval/cargar_a_postgres.py --plan
 ```
 
 El cargador usa `COPY` y al final **verifica que cada tabla tenga las mismas filas que su Parquet**. La clave del usuario va solo en `DATABASE_URL`, nunca en el repositorio. Con datos reales no se carga el esquema `simulacion` y las tablas de la seccion 1 las llena el sistema de la entidad con la misma estructura.

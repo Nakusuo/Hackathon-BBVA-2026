@@ -1,11 +1,11 @@
 -- Modelo de datos de Lucas para PostgreSQL 15 o superior (con la extension pgvector).
--- Probado contra postgres 16 + pgvector con la data sintetica completa (ver docs/modelo_de_datos/README.md y eval/cargar_a_postgres.py).
+-- Probado contra postgres 16 + pgvector con la data sintetica completa (ver docs/modelo_de_datos/README.md y analitica/eval/cargar_a_postgres.py).
 --
 -- Decisiones de diseno:
 --  1. Dos esquemas. `lucas` es lo que usa el aplicativo y lo que existiria con datos reales de un banco. `simulacion` guarda la VERDAD OCULTA del generador sintetico
 --     (arquetipo, parametros internos, etiquetas): sirve para evaluar los modelos y NUNCA debe leerlo un modelo ni el aplicativo. Con datos reales se borra el esquema entero.
 --  2. La tabla de movimientos conserva a proposito los defectos sembrados (faltantes, duplicados): por eso su clave es un numero propio (`movimiento_id`) y `transaction_id`
---     no es unico. La vista `lucas.transaccion_limpia` quita los duplicados exactos; los cercanos los quita `src/generador/calidad.py::limpiar`.
+--     no es unico. La vista `lucas.transaccion_limpia` quita los duplicados exactos; los cercanos los quita `backend/src/generador/calidad.py::limpiar`.
 --  3. Todo lo que cuelga de un cliente se borra con el (ON DELETE CASCADE): es el derecho de supresion (`memoria.olvidar`).
 --  4. El RAG y las preguntas frecuentes viven en la misma base: vectores de 768 dimensiones (nomic-embed-text), normalizados, con indice HNSW de producto interno (= coseno).
 -- Orden de carga: cliente, cliente_verdad, contexto_diario, evento, macro_mensual, saldo_diario, panel_mensual, mensaje, transaccion, transaccion_verdad, calidad_etiqueta.

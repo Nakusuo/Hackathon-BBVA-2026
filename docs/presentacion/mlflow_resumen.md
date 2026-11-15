@@ -1,6 +1,6 @@
 # Seguimiento de modelos con MLflow
 
-Generado por `eval/registrar_en_mlflow.py` (huella de las metricas `89259a180d49264b`). Experimento **lucas-analitica**; base local `data/generado/mlflow/lucas.db` (no se versiona) o el servidor definido en `MLFLOW_TRACKING_URI`. Abrir la interfaz: `mlflow ui --backend-store-uri sqlite:///data/generado/mlflow/lucas.db`.
+Generado por `analitica/eval/registrar_en_mlflow.py` (huella de las metricas `89259a180d49264b`). Experimento **lucas-analitica**; base local `data/generado/mlflow/lucas.db` (no se versiona) o el servidor definido en `MLFLOW_TRACKING_URI`. Abrir la interfaz: `mlflow ui --backend-store-uri sqlite:///data/generado/mlflow/lucas.db`.
 
 ## Comparacion por problema: baseline frente al elegido
 
@@ -36,7 +36,7 @@ Cada fila es una corrida de MLflow con la misma metrica y los mismos numeros de 
 
 ## Como se usa
 
-- **Versionar:** tras entrenar, correr `python eval/comparativa_modelos.py` y luego `python eval/registrar_en_mlflow.py`. Si el contenido de un modelo cambio, se crea una version nueva y el alias `produccion` pasa a ella; si no, no se duplica nada.
+- **Versionar:** tras entrenar, correr `python analitica/eval/comparativa_modelos.py` y luego `python analitica/eval/registrar_en_mlflow.py`. Si el contenido de un modelo cambio, se crea una version nueva y el alias `produccion` pasa a ella; si no, no se duplica nada.
 - **Cargar el modelo en produccion:** `MlflowClient().get_model_version_by_alias('lucas-pronostico-30d', 'produccion')` da el origen del archivo; se carga con `joblib.load`.
 - **Servidor del equipo:** definir `MLFLOW_TRACKING_URI=http://servidor:5000` y volver a correr; las corridas y los modelos van al servidor central.
 - **Alcance:** el entrenamiento no esta instrumentado con autologging (los modelos son clases propias de LightGBM con calibracion conformal); el registro se hace desde las metricas y los archivos guardados, con la version del codigo (`commit`), la huella de los parametros de los datos y la semilla. Todo con datos sinteticos.

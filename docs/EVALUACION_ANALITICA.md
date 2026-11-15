@@ -1,6 +1,6 @@
 # Evaluacion analitica
 
-Generado por `eval/generar_docs.py` desde `models/metricas*.json`. Datos sinteticos con semilla fija; las magnitudes de los eventos son supuestos del equipo (ver `data/parametros/eventos.yaml`).
+Generado por `analitica/eval/generar_docs.py` desde `models/metricas*.json`. Datos sinteticos con semilla fija; las magnitudes de los eventos son supuestos del equipo (ver `data/parametros/eventos.yaml`).
 
 ## 1. Segmentacion
 K elegido: **3** (mayor silueta entre los k con estabilidad de al menos 0,60).
@@ -195,7 +195,7 @@ Cobertura por tipo de trabajo (equidad):
 | mixto | 7,500 | 0.803 | 0.780 | 0.779 |
 | dependiente_con_comision | 7,500 | 0.823 | 0.837 | 0.823 |
 
-Se sirve con `src/agente_analitico/contrato.py` (`pronostico_contrato(repo, customer_id, dias=30)`), con la forma del endpoint `GET /api/v1/customers/{customer_id}/forecast`: `customer_id`, `currency`, `horizon_days`, `confidence_level` (0.8), `forecast[]` (`date`, `predicted_balance`, `lower_bound`, `upper_bound`), `first_risk_date`, `model`, `data_as_of`, `risk_probability` y `synthetic_data`. `first_risk_date` solo aparece si la probabilidad de quedar en rojo es de al menos 15 %.
+Se sirve con `backend/src/agente_analitico/contrato.py` (`pronostico_contrato(repo, customer_id, dias=30)`), con la forma del endpoint `GET /api/v1/customers/{customer_id}/forecast`: `customer_id`, `currency`, `horizon_days`, `confidence_level` (0.8), `forecast[]` (`date`, `predicted_balance`, `lower_bound`, `upper_bound`), `first_risk_date`, `model`, `data_as_of`, `risk_probability` y `synthetic_data`. `first_risk_date` solo aparece si la probabilidad de quedar en rojo es de al menos 15 %.
 
 ### Prueba con otra muestra del generador (semilla 2027, sin reentrenar)
 
@@ -451,7 +451,7 @@ retencion, mora evitada y venta cruzada idonea no se valoran sin un piloto con g
 El primer anio de «solo lo medido» es exactamente la lectura conservadora de arriba (S/ -5.52): la proyeccion arranca donde termina el calculo de un anio. Sin ningun efecto de conducta nunca se paga; para pagarse en el primer anio basta **3.3% mas de ahorro apartado** o 6.9% mas de consumo elegible. Lo que decide el piloto con grupo de control es si el programa de puntos causa ese comportamiento adicional.
 
 ## 8. Calendario laboral, datos vivos y vigilancia
-Las reglas viven en `data/parametros/normas_laborales.yaml` y **cada una lleva su frase literal** de un documento oficial guardado en `docs/rag/`; `tests/test_calendario.py` comprueba que la frase siga en el documento. Se contrastaron el 2026-11-14 y el agente avisa si pasaron mas de 120 dias.
+Las reglas viven en `data/parametros/normas_laborales.yaml` y **cada una lleva su frase literal** de un documento oficial guardado en `docs/rag/`; `backend/tests/test_calendario.py` comprueba que la frase siga en el documento. Se contrastaron el 2026-11-14 y el agente avisa si pasaron mas de 120 dias.
 
 | Regla | Que dice | Evidencia |
 |---|---|---|
@@ -465,7 +465,7 @@ La base de los montos es la ultima gratificacion real del cliente (equivale a un
 **Datos vivos y vigilancia.** El aplicativo envia cada movimiento (`datos_vivos.registrar`): se valida (tipo, monto finito y positivo, fecha que no sea futura), es idempotente ante reintentos, la glosa solo sirve para sugerir la categoria con el clasificador (confianza minima 0.80; si no esta seguro queda en `otros`) y **no se guarda**. El agente suma lo que entro al saldo; el riesgo a 30 dias se reestima con el modelo solo si el cierre de datos no pasa de 45 dias. La vigilancia avisa una sola vez cada hecho y como maximo 3 por semana, de lo mas urgente a lo menos: riesgo de rojo, gratificacion que no llego (solo a quien ya recibio una y con informacion reciente), ingreso extraordinario (>= 50 % de un ingreso mensual), gasto atipico (>= 30% del ingreso y que no sea un pago recurrente), fechas del calendario laboral (a 7 dias o menos), fin cercano del retiro total de la CTS, baja de la tasa del BCRP (solo con el dato al dia) y comunicado nuevo del ENFEN. Los datos publicos dicen de que fecha son y de donde vienen (API, cache o serie grabada); uno desactualizado no se presenta como actual.
 
 ## 9. QA y comparativa de modelos
-La puerta de calidad (`python eval/puerta_de_calidad.py --gemini`) reune pruebas, metricas de los modelos, conexiones en tiempo real, agente, seguridad y frescura, y reporta PASS, WARN (conocido y documentado), FAIL o NOT RUN con el motivo. El detalle completo, incluida la lista de **lo que no se pudo verificar**, esta en [QA_ANALITICA.md](QA_ANALITICA.md).
+La puerta de calidad (`python analitica/eval/puerta_de_calidad.py --gemini`) reune pruebas, metricas de los modelos, conexiones en tiempo real, agente, seguridad y frescura, y reporta PASS, WARN (conocido y documentado), FAIL o NOT RUN con el motivo. El detalle completo, incluida la lista de **lo que no se pudo verificar**, esta en [QA_ANALITICA.md](QA_ANALITICA.md).
 
 Ultima corrida (2026-11-14T23:27:27): **52 PASS, 3 WARN, 0 FAIL, 3 NOT RUN**.
 
@@ -496,7 +496,7 @@ Un chrF por encima del piso de copiar el origen muestra que la salida se parece 
 
 ### Google Cloud Translation (proveedor opcional)
 
-No hay clave propia y la de Gemini no se usa contra otras APIs de Google. Lo que si se verifico: (1) el pedido y la respuesta del proveedor contra la documentacion oficial de la API v2 (`POST https://translation.googleapis.com/language/translate/v2`, cuerpo `q`, `source`, `target`, `format`, respuesta `data.translations[].translatedText`; el quechua `qu` esta en la lista de idiomas; la clave puede ir en la cabecera `X-goog-api-key` y la documentacion desaconseja ponerla en la URL); (2) siete pruebas con respuestas simuladas en `tests/test_traduccion.py` (forma del pedido, clave solo en cabecera, sin clave no hay pedido, marcadores espaciados por Google, marcador perdido se descarta, errores 429 y 5xx se reintentan y 403 y 400 no, respuesta mal formada, caida a Gemini). **No se probo** una llamada real: cuando haya una clave, basta definir `GOOGLE_TRANSLATE_API_KEY` y correr la puerta de calidad.
+No hay clave propia y la de Gemini no se usa contra otras APIs de Google. Lo que si se verifico: (1) el pedido y la respuesta del proveedor contra la documentacion oficial de la API v2 (`POST https://translation.googleapis.com/language/translate/v2`, cuerpo `q`, `source`, `target`, `format`, respuesta `data.translations[].translatedText`; el quechua `qu` esta en la lista de idiomas; la clave puede ir en la cabecera `X-goog-api-key` y la documentacion desaconseja ponerla en la URL); (2) siete pruebas con respuestas simuladas en `backend/tests/test_traduccion.py` (forma del pedido, clave solo en cabecera, sin clave no hay pedido, marcadores espaciados por Google, marcador perdido se descarta, errores 429 y 5xx se reintentan y 403 y 400 no, respuesta mal formada, caida a Gemini). **No se probo** una llamada real: cuando haya una clave, basta definir `GOOGLE_TRANSLATE_API_KEY` y correr la puerta de calidad.
 
 
 <!-- huella_metricas: 89259a180d49264b (la puerta de calidad compara esta huella con la de las metricas actuales) -->

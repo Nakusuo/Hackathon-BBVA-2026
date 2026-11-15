@@ -1,6 +1,6 @@
 # QA de analítica e IA: puerta de calidad
 
-Generado por `eval/puerta_de_calidad.py` el 2026-11-14T23:27:27 (reloj del agente: 2026-11-14). Estados: **PASS** cumple; **WARN** conocido y documentado, no bloquea; **FAIL** hay que corregirlo; **NOT RUN** no se pudo verificar y se dice por qué.
+Generado por `analitica/eval/puerta_de_calidad.py` el 2026-11-14T23:27:27 (reloj del agente: 2026-11-14). Estados: **PASS** cumple; **WARN** conocido y documentado, no bloquea; **FAIL** hay que corregirlo; **NOT RUN** no se pudo verificar y se dice por qué.
 
 **Resultado: 52 PASS · 3 WARN · 0 FAIL · 3 NOT RUN** (de 58 verificaciones, en 122.0 s).
 

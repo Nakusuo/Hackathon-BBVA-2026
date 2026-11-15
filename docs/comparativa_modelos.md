@@ -1,6 +1,6 @@
 # Comparativa de modelos: qué se midió, qué se eligió y por qué
 
-Generado por `eval/comparativa_modelos.py` solo a partir de `models/*.json`. Datos sintéticos con semilla fija. En negrita, el modelo elegido en cada problema. Cada fila trae también el límite de la comparación: lo que no demuestra.
+Generado por `analitica/eval/comparativa_modelos.py` solo a partir de `models/*.json`. Datos sintéticos con semilla fija. En negrita, el modelo elegido en cada problema. Cada fila trae también el límite de la comparación: lo que no demuestra.
 
 ![Comparativa de modelos](presentacion/modelos/comparativa_modelos.png)
 

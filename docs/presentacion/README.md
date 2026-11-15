@@ -1,6 +1,6 @@
 # Presentacion y documentacion: graficas y diagramas
 
-Esta carpeta reune **todas las graficas, diagramas y artefactos generados** para la presentacion final y para la documentacion que pidan los organizadores. Nada esta dibujado a mano: salen de `models/*.json` y de los grafos reales del agente. Se regeneran con `python eval/comparativa_modelos.py` (modelos) y `python eval/construir_presentacion.py` (el resto).
+Esta carpeta reune **todas las graficas, diagramas y artefactos generados** para la presentacion final y para la documentacion que pidan los organizadores. Nada esta dibujado a mano: salen de `models/*.json` y de los grafos reales del agente. Se regeneran con `python analitica/eval/comparativa_modelos.py` (modelos) y `python analitica/eval/construir_presentacion.py` (el resto).
 
 **Como usarlas en la presentacion:** una imagen por diapositiva; el titulo de cada grafica ya dice el mensaje. En las de modelos, azul rayado = el modelo elegido y gris = su baseline o alternativa descartada: es la respuesta a «por que este modelo». Todo es con datos sinteticos y lo dice en el pie de cada imagen.
 
