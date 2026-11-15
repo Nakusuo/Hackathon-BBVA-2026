@@ -6,6 +6,7 @@ from decimal import Decimal
 import pytest
 from fastapi.testclient import TestClient
 from src.agente_analitico import datos_vivos
+from src.api.agente import cliente_de_la_base
 from src.api.main import app
 from src.comun import reloj
 from src.comun.rutas import MODELOS, ruta
@@ -178,16 +179,16 @@ def test_create_expense_not_found(carpeta_temporal):
     reason="faltan los datos generados o el modelo de serie diaria",
 )
 def test_un_gasto_grande_baja_el_saldo_del_pronostico(monkeypatch):
+    # El /forecast de demo-001 sale del motor del front; el gasto se guarda en su cliente de la base, que es el que mueve el modelo.
+    real = cliente_de_la_base("demo-001")
     # Con la fecha real el cierre de datos ya es muy viejo y el pronóstico ignora los movimientos vivos: se fija un "hoy" cercano al cierre.
-    base = date.fromisoformat(
-        client.get(f"{BASE_URL}/demo-001/forecast?days=1").json()["data_as_of"]
-    )
+    base = date.fromisoformat(client.get(f"{BASE_URL}/{real}/forecast?days=1").json()["data_as_of"])
     monkeypatch.setenv("LUCAS_HOY", str(base + timedelta(days=5)))
-    antes = client.get(f"{BASE_URL}/demo-001/forecast?days=30").json()
+    antes = client.get(f"{BASE_URL}/{real}/forecast?days=30").json()
     assert antes["sample_only"] is False
 
     payload = {**valid_expense(), "amount": 800, "date": str(base + timedelta(days=3))}
     assert client.post(f"{BASE_URL}/demo-001/expenses", json=payload).status_code == 201
 
-    despues = client.get(f"{BASE_URL}/demo-001/forecast?days=30").json()
+    despues = client.get(f"{BASE_URL}/{real}/forecast?days=30").json()
     assert despues["forecast"][0]["predicted_balance"] < antes["forecast"][0]["predicted_balance"]
