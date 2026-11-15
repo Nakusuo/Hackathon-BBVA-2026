@@ -235,6 +235,14 @@ def test_el_riesgo_del_simulador_no_contradice_la_banda_ya_restada(agente):
     assert "Aún en un mes bueno quedarías en rojo" in r["respuesta"] and not r["cifras_sin_respaldo"]
 
 
+def test_con_el_riesgo_ya_en_su_tope_no_dice_que_sube():
+    from src.agente_analitico.grafo import _lineas_simulacion
+    s = {"gasto": 500.0, "horizonte_dias": 30, "saldo_esperado_sin_gasto": -900.0, "saldo_esperado_con_gasto": -1400.0, "saldo_bajo_con_gasto": -2000.0,
+         "saldo_alto_con_gasto": -300.0, "prob_rojo_sin_gasto": 1.0, "prob_rojo_con_gasto": 1.0}
+    texto = " ".join(_lineas_simulacion(s))
+    assert "tu riesgo ya es de 100%" in texto and "sube" not in texto
+
+
 def test_un_gasto_mas_grande_nunca_deja_un_saldo_esperado_mayor(agente):
     repo, _, cid = agente
     fila = repo.fila_de(cid)

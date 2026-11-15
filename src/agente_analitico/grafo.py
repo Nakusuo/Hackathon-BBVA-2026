@@ -587,7 +587,8 @@ def _lineas_simulacion(s: dict) -> list[str]:
          f"En un mes malo podría bajar hasta {_soles(s['saldo_bajo_con_gasto'])}."]
     antes, despues = s["prob_rojo_sin_gasto"], s["prob_rojo_con_gasto"]
     if s["saldo_alto_con_gasto"] < 0:
-        L.append(f"Aún en un mes bueno quedarías en rojo: tu riesgo sube de {antes:.0%} a {despues:.0%}. Conviene esperar a tu próximo ingreso o bajar el monto.")
+        cambio = f"tu riesgo sube de {antes:.0%} a {despues:.0%}" if despues > antes else f"tu riesgo ya es de {despues:.0%}"
+        L.append(f"Aún en un mes bueno quedarías en rojo: {cambio}. Conviene esperar a tu próximo ingreso o bajar el monto.")
     elif despues >= 0.15 and despues > antes:
         L.append(f"Con ese gasto tu riesgo de quedar en rojo sube de {antes:.0%} a {despues:.0%}. Conviene esperar a tu próximo ingreso o bajar el monto.")
     elif despues >= 0.15:
