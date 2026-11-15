@@ -1,4 +1,4 @@
-"""Exposicion de un departamento a lluvias por encima de lo normal (El Nino costero), con la fuente oficial que la sustenta."""
+"""Exposicion de un departamento a lluvias por encima de lo normal (El Niño costero), con la fuente oficial que la sustenta."""
 import pandas as pd
 
 from src.generador.contexto import cargar_yaml
@@ -23,7 +23,7 @@ def exposicion_fen(departamento: str) -> dict:
 
 
 def alerta_fen(departamento: str, hoy: str | None = None) -> dict | None:
-    """Alerta solo si hay exposicion y el aviso del ENFEN sigue vigente. Devuelve las acciones de prevencion y la fuente."""
+    """Alerta solo si hay exposición y el aviso del ENFEN sigue vigente. Devuelve las acciones de prevención y la fuente."""
     c = _cfg()
     e = exposicion_fen(departamento)
     fecha = pd.Timestamp(hoy) if hoy else pd.Timestamp.today().normalize()

@@ -1,5 +1,5 @@
 """Salud financiera 0 a 100: puntaje transparente con componentes visibles, especializado por tipo de trabajo.
-Un ingreso irregular no se mide con la vara de uno fijo: al independiente se le pide mas colchon, se le pesa menos la variacion del ingreso (es parte de su trabajo)
+Un ingreso irregular no se mide con la vara de uno fijo: al independiente se le pide más colchón, se le pesa menos la variación del ingreso (es parte de su trabajo)
 y se mide cuantos meses malos aguanta."""
 import numpy as np
 import pandas as pd
@@ -22,9 +22,9 @@ PESOS = {
 COLCHON_BUENO = {"dependiente": 3.0, "independiente": 4.5}
 FAMILIA = {"dependiente": "dependiente", "dependiente_con_comision": "dependiente", "independiente": "independiente", "mixto": "independiente"}
 EXPLICACION = {
-    "colchon": "tu colchon (meses de ingreso disponibles)", "deuda": "el peso de tus cuotas sobre tu ingreso", "gastos_fijos": "la parte de tu ingreso que ya esta comprometida en gastos fijos",
-    "estabilidad_ingreso": "que tan parejo es tu ingreso de un mes a otro", "ahorro": "cuanto apartas de lo que ganas", "tension_de_caja": "los dias en que tu saldo quedo en rojo",
-    "resiliencia": "cuantos meses malos de ingreso podrias aguantar con tu colchon",
+    "colchon": "tu colchón (meses de ingreso disponibles)", "deuda": "el peso de tus cuotas sobre tu ingreso", "gastos_fijos": "la parte de tu ingreso que ya esta comprometida en gastos fijos",
+    "estabilidad_ingreso": "que tan parejo es tu ingreso de un mes a otro", "ahorro": "cuanto apartas de lo que ganas", "tension_de_caja": "los días en que tu saldo quedo en rojo",
+    "resiliencia": "cuantos meses malos de ingreso podrías aguantar con tu colchón",
 }
 
 
@@ -75,7 +75,7 @@ def puntaje_generico(f: pd.DataFrame) -> pd.Series:
 
 
 def explicar(fila: pd.Series, n: int = 2) -> list[dict]:
-    """Los n componentes que mas restan: (peso x lo que falta para 100)."""
+    """Los n componentes qué más restan: (peso x lo que falta para 100)."""
     f1 = fila.to_frame().T
     comp = componentes(f1).iloc[0]
     pesos = pesos_de(f1).iloc[0]

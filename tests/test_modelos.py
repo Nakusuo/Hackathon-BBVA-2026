@@ -104,7 +104,7 @@ def test_nunca_se_ofrece_credito_a_quien_no_pasa_la_idoneidad():
     for r in recs:
         if r.get("familia") in ("credito", "tarjeta") or r["id"] == "oferta_mejora_vivienda":
             assert r.get("idoneo") is False or r["id"] == "ordenar_deuda_cara", r["id"]
-            assert r["accion"].startswith("Aun no") or r["id"] == "ordenar_deuda_cara"
+            assert r["accion"].startswith("Aún no") or r["id"] == "ordenar_deuda_cara"
     assert "oferta_mejora_vivienda" not in {r["id"] for r in R.recomendar(c, 10)}
 
 

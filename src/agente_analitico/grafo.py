@@ -100,7 +100,7 @@ SIN_LLM = ("fuera_de_alcance", "fuera_de_tema", "seguridad", "saludo", "compra")
 # Politica de ahorro de tokens (MVP): el LLM solo redacta lo que una plantilla no cubre bien. LLM_USO=siempre lo usa en todo (pruebas); LLM_USO=ahorro es el defecto.
 INTENCIONES_CON_LLM = ("educacion", "general")
 INTENCIONES_DE_SALDO = ("pronostico", "riesgo_rojo", "general")   # respuestas que hablan del saldo: ahi se aclara la fecha de los datos del cliente
-AYUDO_EN = "Si puedo ver si llegas a fin de mes, simular un gasto, calcular cuánto apartar para una meta, resumir tu ahorro y mostrarte ofertas para tu perfil."
+AYUDO_EN = "Sí puedo ver si llegas a fin de mes, simular un gasto, calcular cuánto apartar para una meta, resumir tu ahorro y mostrarte ofertas para tu perfil."
 MODULOS_RAG = {"fen": ["fenomeno_el_nino"], "tasas": ["deudas", "derechos"], "educacion": None, "ofertas": ["deudas", "salud_financiera"], "calendario": ["laboral"]}
 
 
@@ -139,7 +139,7 @@ FINANZAS = r"plata|dinero|gast|ahorr|cuenta|saldo|sueldo|ingres|deuda|pago|banco
 
 
 def _termina_en_oracion_completa(txt: str) -> bool:
-    """Un texto del LLM debe cerrar con puntuacion final. Un corte por el tope de tokens deja la ultima palabra a medias («...que eleg»)."""
+    """Un texto del LLM debe cerrar con puntuacion final. Un corte por el tope de tokens deja la última palabra a medias («...que eleg»)."""
     return txt.rstrip()[-1:] in tuple(".!?…)»\"”*")
 
 
@@ -185,7 +185,7 @@ NO_ES_MONTO = r"(?!\s*(?:%|por ciento|(?:d[ií]as?|semanas?|mes(?:es)?|a[ñn]os?
 
 
 def monto_de(pregunta: str) -> float | None:
-    """El monto en soles de la frase: el que va con «S/» o «soles» y, si no hay, el primer numero que no sea un plazo («en 2 semanas») ni un porcentaje.
+    """El monto en soles de la frase: el que va con «S/» o «soles» y, si no hay, el primer número que no sea un plazo («en 2 semanas») ni un porcentaje.
     «12mil», «12 mil», «12k» y «12 lucas» son doce mil."""
     hallado = (re.search(rf"s/\.?\s*(\d[\d.,]*){MILES}", pregunta, flags=re.I) or re.search(rf"(\d[\d.,]*){MILES}\s*(?:de )?soles\b", pregunta, flags=re.I)
                or re.search(rf"(\d[\d.,]*)(?![\d.,])(?:\s*(mil|k|lucas?)\b|{NO_ES_MONTO})", pregunta, flags=re.I))
@@ -223,7 +223,7 @@ PALABRAS_DE_UN_DATO = 4
 
 
 def con_contexto(pregunta: str, previa: str | None) -> str:
-    """Si la pregunta es un seguimiento y por si sola no tiene tema, se le pega la anterior DETRAS: asi el monto y el plazo nuevos se leen primero
+    """Si la pregunta es un seguimiento y por si sola no tiene tema, se le pega la anterior DETRAS: así el monto y el plazo nuevos se leen primero
     («¿y si son 8000?» cambia el precio) y el tema sale de la anterior. Una pregunta con tema propio se responde tal cual."""
     if not previa or detectar_intencion(pregunta) not in SIN_TEMA:
         return pregunta
@@ -284,7 +284,7 @@ def _a_clima(est, repo, **_):
 
 
 def _a_tasas(est, repo, **_):
-    """Tasa de referencia del BCRP en vivo (y el tipo de cambio si el cliente paga en dolares). Un dato desactualizado no se presenta como actual."""
+    """Tasa de referencia del BCRP en vivo (y el tipo de cambio si el cliente paga en dólares). Un dato desactualizado no se presenta como actual."""
     pide_dolar = bool(est["ctx"].get("paga_en_usd")) or bool(re.search(r"d[oó]lar|tipo de cambio", est.get("pregunta", ""), flags=re.I))
     try:
         t = ultimo_con_variacion("tasa_referencia")
@@ -302,7 +302,7 @@ def _a_tasas(est, repo, **_):
 
 
 def _a_calendario(est, repo, **_):
-    """Calendario laboral del cliente (gratificacion, CTS y regla de retiro de la CTS). Ya viene calculado en su contexto con la fecha del reloj unico."""
+    """Calendario laboral del cliente (gratificación, CTS y regla de retiro de la CTS). Ya viene calculado en su contexto con la fecha del reloj único."""
     return {"calendario": est["ctx"]["calendario"]}
 
 
@@ -317,7 +317,7 @@ def _a_recomendador(est, repo, **_):
 
 
 def _a_simulador(est, repo, **_):
-    """Vuelve a puntuar el pronostico a 30 dias con el saldo de hoy menos el gasto que la persona consulta. La cuenta la hace el modelo, nunca el redactor."""
+    """Vuelve a puntuar el pronóstico a 30 días con el saldo de hoy menos el gasto que la persona consulta. La cuenta la hace el modelo, nunca el redactor."""
     c = est["ctx"]
     monto = monto_de(est.get("pregunta", ""))
     sin = c["pronostico"]
@@ -358,8 +358,8 @@ RECORTE_HORMIGA = 0.5   # supuesto visible del plan: bajar a la mitad los gastos
 
 
 def _a_meta(est, repo, **_):
-    """Plan para una meta: de donde parte la persona, que ajustes le suman, que convenio del banco aplica y los numeros finales.
-    Todas las cuentas se hacen aqui con sus datos; el redactor solo las cuenta."""
+    """Plan para una meta: de donde parte la persona, que ajustes le suman, que convenio del banco aplica y los números finales.
+    Todas las cuentas se hacen aquí con sus datos; el redactor solo las cuenta."""
     from datetime import date
 
     c, pregunta = est["ctx"], est.get("pregunta", "")
@@ -389,7 +389,7 @@ def _a_meta(est, repo, **_):
 
 
 def _a_ofertas(est, repo, **_):
-    """Ofertas del catalogo de demostracion con su idoneidad. Lo que no es idoneo se muestra con su razon, no se esconde."""
+    """Ofertas del catálogo de demostración con su idoneidad. Lo que no es idoneo se muestra con su razón, no se esconde."""
     c = dict(est["ctx"])
     c["tasa_ref"] = est["datos"].get("tasas", {}).get("valor", 4.5)
     ofertas = [o for o in O.ofertas_por_perfil(c, c.get("top_categorias")) if o["familia"] != "consumir"]
@@ -432,7 +432,7 @@ def _datos_texto(est) -> str:
     for k, v in d.items():
         L.append(f"{k}: {v}")
     for i, r in enumerate(est.get("recos", [])[:3], 1):
-        L.append(f"recomendacion {i}: {r['accion']} Impacto: {r['impacto_soles']}. Por que: {'; '.join(r['por_que'])}. Supuestos: {'; '.join(r['supuestos'])}. Confianza: {r['confianza']}.")
+        L.append(f"recomendación {i}: {r['accion']} Impacto: {r['impacto_soles']}. Por que: {'; '.join(r['por_que'])}. Supuestos: {'; '.join(r['supuestos'])}. Confianza: {r['confianza']}.")
     for r in est.get("rag", [])[:3]:
         L.append(f"fuente [{r['titulo']}, pag. {r['pagina']}]{_aviso_de_origen(r, mayus=True)}: {r['texto'][:600]}")
     return "\n".join(L)
@@ -451,7 +451,7 @@ PALABRAS_VACIAS = {"cual", "cuales", "como", "cuando", "donde", "puedo", "tengo"
 
 
 def extracto(texto: str, pregunta: str, limite: int = 360) -> str:
-    """Frases completas del fragmento, empezando por la que mas se parece a la pregunta (comparte una sigla o una palabra de mas de 3 letras). Nunca empieza a mitad de frase ni corta una cifra."""
+    """Frases completas del fragmento, empezando por la qué más se parece a la pregunta (comparte una sigla o una palabra de más de 3 letras). Nunca empieza a mitad de frase ni corta una cifra."""
     frases = [f.strip(" .;:-") for f in re.split(r"(?<=[.;:])\s+", re.sub(r"\s+", " ", texto))]
     frases = [f for f in frases if len(f) > 25]
     if not frases:
@@ -502,7 +502,7 @@ def _lineas_gastos(g: dict) -> list[str]:
 
 
 def _lineas_meta(m: dict) -> list[str]:
-    """Cuatro bloques separados por una linea en blanco (el chat pinta cada uno en su propio mensaje): punto de partida, que hacer, convenio y numeros."""
+    """Cuatro bloques separados por una línea en blanco (el chat pinta cada uno en su propio mensaje): punto de partida, que hacer, convenio y números."""
     L = ["## Tu punto de partida", f"Ganas unos {_soles(m['ingreso_mensual'])} al mes y gastas {_soles(m['gasto_mensual'])}.",
          f"Hoy apartas {_soles(m['apartas_hoy_por_mes'])} al mes." if m["apartas_hoy_por_mes"] > 0 else "En los últimos meses no apartaste nada."]
     if m["ajustes"]:
@@ -581,29 +581,29 @@ def plantilla(est) -> str:
     if ev.get("tipo") == "ingreso_extra":
         L.append(f"Vemos que recibiste S/ {ev['monto']:,.0f} por {ev['origen']}.")
     elif ev.get("tipo") == "baja_de_tasa":
-        L.append(f"La tasa de referencia del BCRP bajo de {ev['desde']:.2f}% a {ev['hasta']:.2f}%.")
+        L.append(f"La tasa de referencia del BCRP bajó de {ev['desde']:.2f}% a {ev['hasta']:.2f}%.")
     elif ev.get("tipo") == "fen_comunicado":
-        L.append(f"El ENFEN publico el comunicado N.o {ev['numero']}.")
+        L.append(f"El ENFEN público el comunicado N.o {ev['numero']}.")
     elif ev.get("tipo") == "riesgo_rojo":
-        L.append(f"Tu saldo podria quedar en rojo: la probabilidad es {ev['p_rojo']:.0%}.")
+        L.append(f"Tu saldo podría quedar en rojo: la probabilidad es {ev['p_rojo']:.0%}.")
     elif ev.get("tipo") == "calendario_laboral":
         e = ev["evento"]
-        L.append(f"Se acerca una fecha de tu calendario laboral: {e['nombre']} ({'hoy' if e['dias_para'] == 0 else f'en {e['dias_para']} dias'}).")
+        L.append(f"Se acerca una fecha de tu calendario laboral: {e['nombre']} ({'hoy' if e['dias_para'] == 0 else f'en {e['dias_para']} días'}).")
     elif ev.get("tipo") == "libre_disposicion_por_vencer":
-        L.append(f"Te quedan {ev['dias_restantes']} dias para disponer del 100 % de tu CTS.")
+        L.append(f"Te quedan {ev['dias_restantes']} días para disponer del 100 % de tu CTS.")
     elif ev.get("tipo") == "gratificacion_pendiente":
-        L.append(f"Aun no vemos tu {ev['nombre']}, que tu empleador debia pagar hasta el {ev['fecha_limite_texto']}.")
+        L.append(f"Aún no vemos tu {ev['nombre']}, que tu empleador debia pagar hasta el {ev['fecha_limite_texto']}.")
     elif ev.get("tipo") == "gasto_atipico":
         L.append(f"Registramos un gasto de S/ {ev['monto']:,.0f} en {ev['categoria']}: pesa {ev['fraccion_del_ingreso']:.0%} de tu ingreso mensual.")
     if intent in SIN_LLM:
-        motivo = {"fuera_de_alcance": "Eso no lo hago: no muevo dinero, no compro ni vendo dolares y no te digo en que invertir.",
+        motivo = {"fuera_de_alcance": "Eso no lo hago: no muevo dinero, no compro ni vendo dólares y no te digo en que invertir.",
                   "fuera_de_tema": "De eso no puedo ayudarte: no resuelvo problemas de matematica, no escribo codigo ni respondo temas ajenos a tu plata.",
-                  "seguridad": "Eso no lo puedo hacer: no comparto instrucciones internas, claves ni informacion de otras personas, y mis reglas no se pueden saltar."}.get(intent)
-        motivo = {"fuera_de_alcance": "Eso no lo hago: no muevo dinero, no compro ni vendo dolares y no te digo en que invertir.", "fuera_de_tema": "De eso no puedo ayudarte: solo veo temas de tu plata."}.get(intent, motivo)
+                  "seguridad": "Eso no lo puedo hacer: no comparto instrucciones internas, claves ni información de otras personas, y mis reglas no se pueden saltar."}.get(intent)
+        motivo = {"fuera_de_alcance": "Eso no lo hago: no muevo dinero, no compro ni vendo dólares y no te digo en que invertir.", "fuera_de_tema": "De eso no puedo ayudarte: solo veo temas de tu plata."}.get(intent, motivo)
         if intent == "compra":
             return f"{L[0]}\n¿Cuánto cuesta y para cuándo lo quieres?\nCon el precio te digo cómo quedaría tu saldo o cuánto apartar al mes para llegar. Tu decides."
         if intent == "saludo":
-            return f"{L[0]} Soy Lucas.\n{AYUDO_EN.replace('Si puedo', 'Puedo', 1)} Tu decides."
+            return f"{L[0]} Soy Lucas.\n{AYUDO_EN.replace('Sí puedo', 'Puedo', 1)} Tu decides."
         return f"{L[0]} {motivo}\n{AYUDO_EN} Tu decides."
     if intent == "simular":
         return "\n".join([L[0], *_lineas_simulacion(d["simulacion"]), "Es una simulación, no una asesoría. Tu decides."])
@@ -625,9 +625,9 @@ def plantilla(est) -> str:
         mv = d["pronostico"].get("movimientos_recientes")
         if mv:
             L.append(f"Desde el {mv['desde']} entraron S/ {mv['ingresos']:,.0f} y salieron S/ {mv['gastos']:,.0f}; tu saldo de hoy ronda S/ {d['pronostico']['saldo_actual']:,.0f}.")
-        L.append(f"En 30 dias esperamos que tu saldo ronde S/ {p['saldo_esperado']:,.0f}, con un rango entre S/ {p['saldo_bajo']:,.0f} y S/ {p['saldo_alto']:,.0f}.")
+        L.append(f"En 30 días esperamos que tu saldo ronde S/ {p['saldo_esperado']:,.0f}, con un rango entre S/ {p['saldo_bajo']:,.0f} y S/ {p['saldo_alto']:,.0f}.")
         if p["p_rojo"] >= 0.15:
-            L.append(f"Hay una probabilidad de {p['p_rojo']:.0%} de quedar en rojo{f' hacia el dia {int(p['dia_riesgo'])}' if p.get('dia_riesgo') else ''}.")
+            L.append(f"Hay una probabilidad de {p['p_rojo']:.0%} de quedar en rojo{f' hacia el día {int(p['dia_riesgo'])}' if p.get('dia_riesgo') else ''}.")
         m = d["pronostico"].get("proyeccion_mensual")
         if m and (ver is None or re.search(PIDE_PROYECCION, est.get("pregunta", ""), flags=re.I)):
             f0 = m[0]
@@ -642,16 +642,16 @@ def plantilla(est) -> str:
             for e in cal["eventos"][:2]:
                 m = e["monto_estimado"]
                 if e["tipo"] == "gratificacion":
-                    L.append(f"{e['nombre']}: tu empleador la paga hasta el {e['fecha_limite_texto']} (en {e['dias_para']} dias). Estimamos S/ {m['gratificacion']:,.0f} mas S/ {m['bonificacion_extraordinaria']:,.0f} de bonificacion extraordinaria, en total S/ {m['total']:,.0f}.")
+                    L.append(f"{e['nombre']}: tu empleador la paga hasta el {e['fecha_limite_texto']} (en {e['dias_para']} días). Estimamos S/ {m['gratificacion']:,.0f} más S/ {m['bonificacion_extraordinaria']:,.0f} de bonificación extraordinaria, en total S/ {m['total']:,.0f}.")
                 else:
                     L.append(f"{e['nombre']}: tu empleador debe depositarla hasta el {e['fecha_limite_texto']}. Estimamos S/ {m['deposito_semestral']:,.0f}. Llega a tu cuenta de CTS, no a tu cuenta de sueldo.")
-            L.append(f"Son estimaciones con {'tu ultima gratificacion' if cal['base_origen'] == 'historial' else 'tu ingreso medio (supuesto)'}: confirma el monto exacto con tu empleador.")
+            L.append(f"Son estimaciones con {'tu última gratificación' if cal['base_origen'] == 'historial' else 'tu ingreso medio (supuesto)'}: confirma el monto exacto con tu empleador.")
         ld = cal["libre_disposicion_cts"]
         if ld["regimen_transitorio_vigente"]:
-            L.append(f"Sobre retirar tu CTS: hasta el {ld['vigente_hasta_texto']} puedes disponer del 100 % de lo depositado en entidades financieras ({ld['fuente']}); despues, solo hasta el 50 %. "
-                     f"La CTS es una proteccion para cuando termina tu trabajo: retira solo lo que de verdad necesites. {ld['nota_proyectos']}")
+            L.append(f"Sobre retirar tu CTS: hasta el {ld['vigente_hasta_texto']} puedes disponer del 100 % de lo depositado en entidades financieras ({ld['fuente']}); después, solo hasta el 50 %. "
+                     f"La CTS es una protección para cuando termina tu trabajo: retira solo lo que de verdad necesites. {ld['nota_proyectos']}")
         else:
-            L.append(f"Sobre retirar tu CTS: hoy puedes disponer libremente de hasta el 50 % de lo depositado ({ld['fuente']}); con enfermedad terminal o cancer acreditados, del 100 %.")
+            L.append(f"Sobre retirar tu CTS: hoy puedes disponer libremente de hasta el 50 % de lo depositado ({ld['fuente']}); con enfermedad terminal o cáncer acreditados, del 100 %.")
         if cal.get("reglas_por_revisar"):
             L.append(f"Estas reglas se contrastaron con su fuente el {cal['reglas_verificadas_el']}: conviene volver a verificarlas.")
     if "salud" in d and muestra("salud"):
@@ -659,7 +659,7 @@ def plantilla(est) -> str:
         L.append(f"Tu salud financiera es {s['salud_financiera']:.0f} de 100 y tu nivel es {s['nivel']}.")
         if s["lo_que_mas_resta"]:
             r0 = s["lo_que_mas_resta"][0]
-            L.append(f"Lo que mas la baja es {r0['que_mide']}.")
+            L.append(f"Lo que más la baja es {r0['que_mide']}.")
         if s["para_subir"].get("faltantes"):
             fa = s["para_subir"]["faltantes"][0]
             L.append(f"Para subir a {s['para_subir']['siguiente']} te falta mejorar {fa['que']}: hoy tienes {fa['tienes']} y necesitas {fa['necesitas']}.")
@@ -672,17 +672,17 @@ def plantilla(est) -> str:
             L.append("Beneficios de tu nivel: " + "; ".join(pg["beneficios"]) + ".")
     if "clima" in d and d["clima"].get("alerta") and muestra("clima"):
         a = d["clima"]["alerta"]
-        L.append(f"Alerta: tu zona ({a['departamento']}) tiene exposicion {a['nivel']} a lluvias por El Nino segun el ENFEN. Acciones: {' '.join(a['acciones'][:3])}")
+        L.append(f"Alerta: tu zona ({a['departamento']}) tiene exposición {a['nivel']} a lluvias por El Niño según el ENFEN. Acciones: {' '.join(a['acciones'][:3])}")
     if "tasas" in d and muestra("tasas"):
         t = d["tasas"]
         if not t.get("no_disponible") and "valor" in t and intent != "tipo_de_cambio":
-            L.append(f"La tasa de referencia del BCRP esta en {t['valor']:.2f}% ({'bajo' if t['variacion'] < 0 else 'subio' if t['variacion'] > 0 else 'sin cambio'} {abs(t['variacion']):.2f} puntos frente al mes anterior).")
+            L.append(f"La tasa de referencia del BCRP está en {t['valor']:.2f}% ({'bajo' if t['variacion'] < 0 else 'subio' if t['variacion'] > 0 else 'sin cambio'} {abs(t['variacion']):.2f} puntos frente al mes anterior).")
         fx = t.get("tipo_cambio_venta")
         if fx and not fx.get("no_disponible"):
-            L.append(f"El tipo de cambio interbancario (venta) del BCRP es S/ {fx['valor']:.3f} por dolar al {fx['fecha']} ({'bajo' if fx['variacion'] < 0 else 'subio' if fx['variacion'] > 0 else 'sin cambio'} S/ {abs(fx['variacion']):.3f} frente al dia anterior). "
-                     f"Es solo un dato de referencia, no una recomendacion de operar con dolares.")
+            L.append(f"El tipo de cambio interbancario (venta) del BCRP es S/ {fx['valor']:.3f} por dólar al {fx['fecha']} ({'bajo' if fx['variacion'] < 0 else 'subio' if fx['variacion'] > 0 else 'sin cambio'} S/ {abs(fx['variacion']):.3f} frente al día anterior). "
+                     f"Es solo un dato de referencia, no una recomendación de operar con dólares.")
         elif fx:
-            L.append("No pude traer el tipo de cambio actualizado del BCRP, asi que prefiero no darte un dato viejo.")
+            L.append("No pude traer el tipo de cambio actualizado del BCRP, así que prefiero no darte un dato viejo.")
     for r in est.get("recos", [])[:3 if ver is None else RECOS_POR_INTENCION.get(intent, 0)]:
         imp = f" Impacto estimado: S/ {r['impacto_soles']:,.0f}." if r.get("impacto_soles") else ""
         L.append(f"- {r['accion']}{imp} Por que: {r['por_que'][0]}.")
@@ -690,7 +690,7 @@ def plantilla(est) -> str:
         r0 = est["rag"][0]
         L.append(f"Segun {r0['titulo']} (pag. {r0['pagina']}){_aviso_de_origen(r0)}: {extracto(r0['texto'], est.get('pregunta', ''))}")
     elif est.get("rag_estado", "").startswith("sin_evidencia") and muestra("rag"):
-        L.append("Sobre eso no encuentro informacion en las fuentes que tengo, asi que prefiero no inventarla.")
+        L.append("Sobre eso no encuentro información en las fuentes que tengo, así que prefiero no inventarla.")
     L.append("Tu decides.")
     return " ".join(L) if len(L) < 3 else "\n".join(L)
 

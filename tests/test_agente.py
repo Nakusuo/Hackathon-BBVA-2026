@@ -33,14 +33,14 @@ def test_rechaza_pedidos_prohibidos(agente, pedido):
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, pedido)
-    assert r["intencion"] in ("fuera_de_alcance", "seguridad") and "Si puedo ver" in r["respuesta"] and r["llamadas_llm"] == 0
+    assert r["intencion"] in ("fuera_de_alcance", "seguridad") and "Sí puedo ver" in r["respuesta"] and r["llamadas_llm"] == 0
 
 
 def test_el_nino_alerta_solo_en_zona_expuesta(agente):
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, "¿Estoy en riesgo por el Fenómeno El Niño?")
-    assert r["intencion"] == "fen" and "El Nino" in r["respuesta"] and r["citas"]
+    assert r["intencion"] == "fen" and "El Niño" in r["respuesta"] and r["citas"]
     cl = repo.clientes
     cusco = cl[(cl["departamento"] == "Cusco")].index[0]
     r2 = responder(apps["agente_unico"], cusco, "¿Estoy en riesgo por el Fenómeno El Niño?")
@@ -79,7 +79,7 @@ def test_no_hace_tareas_ajenas_ni_filtra_nada(agente, pedido):
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, pedido)
     assert r["intencion"] in ("fuera_de_tema", "seguridad") and r["llamadas_llm"] == 0
-    assert "Si puedo ver" in r["respuesta"] and "```" not in r["respuesta"] and "AIza" not in r["respuesta"] and "C99999" not in r["respuesta"]
+    assert "Sí puedo ver" in r["respuesta"] and "```" not in r["respuesta"] and "AIza" not in r["respuesta"] and "C99999" not in r["respuesta"]
 
 
 def test_el_agente_no_gasta_tokens_en_lo_que_una_plantilla_cubre(agente):
@@ -120,7 +120,7 @@ def test_pregunta_por_la_cts_responde_con_el_calendario_y_la_regla_vigente(agent
     assert r["intencion"] == "calendario" and r["llamadas_llm"] == 0 and not r["cifras_sin_respaldo"]
     assert "lunes 16 de noviembre de 2026" in t and "martes 15 de diciembre de 2026" in t       # el 15 de nov. de 2026 es domingo: pasa al lunes
     assert "100 %" in t and "Ley 32322" in t and "jueves 31 de diciembre de 2026" in t and "50 %" in t
-    assert "proteccion" in t and "todavia no es ley" in t and "cuenta de CTS" in t              # advierte la finalidad y no trata un proyecto como ley
+    assert "protección" in t and "todavia no es ley" in t and "cuenta de CTS" in t              # advierte la finalidad y no trata un proyecto como ley
     assert t.rstrip().endswith("Tu decides.")
 
 
@@ -192,7 +192,7 @@ def test_los_pedidos_de_operar_o_de_saltarse_las_reglas_se_cortan_sin_llm(agente
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, pedido)
-    assert r["intencion"] in ("fuera_de_alcance", "seguridad") and r["llamadas_llm"] == 0 and "Si puedo ver" in r["respuesta"]
+    assert r["intencion"] in ("fuera_de_alcance", "seguridad") and r["llamadas_llm"] == 0 and "Sí puedo ver" in r["respuesta"]
 
 
 def test_el_ciclo_de_vigilancia_avisa_lo_urgente_primero_sin_repetir_y_sin_gastar_tokens(agente, reloj_de_prueba):
