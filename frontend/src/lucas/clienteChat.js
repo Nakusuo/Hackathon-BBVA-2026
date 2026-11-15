@@ -2,7 +2,7 @@
 import { ErrorApi } from '../api/http.js'
 import { preguntarAgente } from '../api/lucas.js'
 import { enSoles } from '../formato.js'
-import { contextoDe, esPedidoDeOperacion, interpretar, responder as responderConPlantilla } from './respuestas.js'
+import { contextoDe, esPedidoDeOperacion, interpretar, propuestaDeMeta, responder as responderConPlantilla } from './respuestas.js'
 
 export const LARGO_MAXIMO = 500
 
@@ -34,6 +34,8 @@ function leerPropuesta(p) {
   const ok = p && typeof p.name === 'string' && p.name.trim() && Number.isFinite(p.target) && p.target > 0 && /^\d{4}-\d{2}-\d{2}$/.test(p.date ?? '')
   return ok ? { nombre: p.name.trim().slice(0, 40), objetivo: p.target, fecha: p.date } : null
 }
+
+const PIDE_CREAR_META = /\b(pon|crea|guard|agreg|anot|registr)\w*\b.*\bmeta\b|\bmeta\b.*\b(cr[eé]al|gu[aá]rdal|ponl)/i
 
 const MAX_OPCIONES = 4
 
@@ -84,10 +86,15 @@ export async function preguntarALucas(texto, { cliente, persona, conversacion, a
     aviso,
     ...responderConPlantilla(texto, cliente, persona, previas),
   })
+  const leido = interpretar(texto, contextoDe(previas, cliente), cliente)
+  const propuesta = propuestaDeMeta(leido.contexto)
+  if (propuesta && PIDE_CREAR_META.test(texto)) {
+    return { origen: 'plantilla', verificado: false, fuentes: [], aviso: null, texto: 'Te dejo la meta lista: revisa el monto y la fecha, y créala aquí abajo.', cifras: [], pose: 'ahorra', propuesta }
+  }
   // Los pedidos de operación o inversión se cortan aquí: no hace falta mandarlos a ningún servidor.
-  if (!activo || esPedidoDeOperacion(texto)) return plantilla()
-  // Las metas las arma el motor de la pantalla (lo que apartas y con qué tips): el agente las calcularía con otra persona.
-  if (['meta', 'aporte'].includes(interpretar(texto, contextoDe(previas, cliente), cliente).intencion)) return plantilla()
+  if (!activo || esPedidoDeOperacion(texto)) return { ...plantilla(), propuesta }
+  // Lo que el front entiende lo responde con las cifras de la pantalla; al agente va lo que no (El Niño, conceptos, el dólar).
+  if (leido.intencion !== 'no-entiendo') return { ...plantilla(), propuesta }
 
   let cuerpo
   try {
