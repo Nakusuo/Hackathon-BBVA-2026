@@ -7,6 +7,8 @@ from functools import cache
 from src.comun.rutas import DATA_SAMPLE, ruta
 
 ID_DEMO = "demo-001"
+# El chat del front pregunta con el id de la persona del motor («independiente»), que es la misma de demo-001.
+IDS_DEL_CHAT = (ID_DEMO, "independiente")
 
 
 @cache
