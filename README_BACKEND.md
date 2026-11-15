@@ -1,12 +1,14 @@
 # Lucas — Backend FastAPI (MG-03)
 
 **Responsable:** Miguel Allca · **Proyecto:** Hackathon BBVA 2026, Equipo 2  
-**Rama de entrega:** `feature/backend-fastapi` · **Estado:** implementación mock entregada en rama, pendiente de revisión/merge  
+**Estado:** unida a `develop` (PR #10 y #24), con datos fijos  
 **Contrato de referencia:** `docs/api.md` (MG-01 versión 1.0, aprobada).
 
 ## Alcance
 
 API REST para el MVP de Lucas. Expone 12 rutas de negocio con datos sintéticos y respuestas provisionales, además de una ruta de salud del servidor. **No utiliza cuentas bancarias reales, no mueve dinero y todavía no integra PostgreSQL, modelos analíticos ni agente IA.** Las operaciones POST de creación de metas y gastos no persisten registros.
+
+**Cómo la usa el MVP.** El front lee esta API y valida cada respuesta, pero no toma de ella ninguna cifra visible: las rutas describen a `demo-001`, que no es la persona del motor del front. Si la API no responde, el front usa `data/sample/mocks/` y avisa «Sin conexión». `/chat` devuelve un mock sin verificar, así que el chat del front responde con sus plantillas. Detalle en `ARCHITECTURE.md`, sección 2.3.
 
 ## Tecnologías
 
@@ -21,19 +23,16 @@ py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Instala las dependencias **con el archivo que realmente exista en el repositorio**:
+No hay un `requirements.txt` propio de la API. Lo mínimo para correrla y probarla:
 
 ```powershell
-# Si el proyecto tiene requirements.txt:
-python -m pip install -r requirements.txt
+python -m pip install fastapi uvicorn pydantic httpx pytest
 ```
-
-Si el repositorio usa `pyproject.toml`, utiliza el gestor de dependencias configurado allí. No instales paquetes a ciegas ni cambies versiones sin revisar el proyecto.
 
 Inicia el servidor:
 
 ```powershell
-python -m uvicorn src.api.main:app --reload
+python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
 ```
 
 Accesos locales:
@@ -56,7 +55,7 @@ El identificador `demo-001` es un cliente ficticio de demostración; no constitu
 python -m pytest tests/api/ -v
 ```
 
-**Último resultado reportado:** 94 pruebas aprobadas, después de corregir la validación de metas. El resultado debe verificarse de nuevo al integrar o modificar código.
+**Último resultado:** 99 pruebas aprobadas en `develop` (2026-11-14).
 
 ## Organización conocida
 
@@ -66,10 +65,9 @@ src/api/routers/             # Endpoints
 src/api/schemas/             # Modelos Pydantic
 tests/api/                   # Pruebas por endpoint
 data/sample/mocks/           # Ejemplos de datos sintéticos del contrato
-docs/api.md                  # Contrato MG-01 (ruta a comprobar en el repo)
+docs/api.md                  # Contrato MG-01
+src/api/loader_pkl.py        # Carga los .pkl de models/; main.py todavía no lo usa
 ```
-
-La estructura representa las rutas utilizadas durante el desarrollo; comprobar los nombres y archivos reales antes de incorporar este documento.
 
 ## Endpoints
 
@@ -138,7 +136,3 @@ Ruta: `POST /api/v1/onboarding`. Mientras no se conecte el modelo de Diego, `pro
 ## Seguridad
 
 No utilizar esta versión con información financiera real. No asumir que conocer `customer_id` permite acceder a un cliente. Autenticación, autorización, secretos, conexión a BD y despliegue seguro están fuera del alcance actual de MG-03.
-
-## Entrega
-
-Código subido a `feature/backend-fastapi`. **No se ha confirmado la apertura, aprobación o fusión del Pull Request.** Consultar `docs/ENTREGA_MG03.md` y `docs/PENDIENTES_CONTRATO.md` (archivos del paquete de documentación).
