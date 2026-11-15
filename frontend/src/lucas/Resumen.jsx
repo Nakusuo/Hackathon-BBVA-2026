@@ -1,24 +1,62 @@
 import {
+  CalendarBlank,
   CheckCircle,
   Barbell,
   Coffee,
   ForkKnife,
   Heartbeat,
+  Hourglass,
   Lightbulb,
   PauseCircle,
   PiggyBank,
   Target,
   Taxi,
+  Wallet,
 } from '@phosphor-icons/react'
 import { motion, useReducedMotion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import CifraVerificada from '../componentes/CifraVerificada.jsx'
 import LucasPose from '../componentes/LucasPose.jsx'
 import NumeroAnimado from '../componentes/NumeroAnimado.jsx'
-import { avanceDelCiclo, diasEntre, enSoles, fechaCorta, fechaDia, nivelDeSalud } from '../formato.js'
+import { diasEntre, enSoles, fechaCorta, fechaDia, llenadoDelGasto, nivelDeSalud } from '../formato.js'
 import { entrada } from '../movimiento.js'
 import ExplicameFacil from './ExplicameFacil.jsx'
 import { explicarResumen } from './explicaciones.js'
+
+// El arco va de izquierda a derecha en SEGMENTOS rayas, de 180° a 0°; solo se dibujan las rayas, sin degradados.
+const SEGMENTOS = 21
+const CENTRO = 120
+const RADIO_INTERIOR = 78
+const RADIO_EXTERIOR = 110
+
+const RAYAS = Array.from({ length: SEGMENTOS }, (_, i) => {
+  const angulo = Math.PI - (i / (SEGMENTOS - 1)) * Math.PI
+  const punto = (radio) => [CENTRO + radio * Math.cos(angulo), CENTRO - radio * Math.sin(angulo)]
+  const [x1, y1] = punto(RADIO_INTERIOR)
+  const [x2, y2] = punto(RADIO_EXTERIOR)
+  return { x1, y1, x2, y2 }
+})
+
+// Al pasarte, el arco queda lleno: en verde lo que alcanza y, al final, en color de riesgo lo que sobra.
+// aria-hidden: lo que dice el medidor ya está en el texto (la cifra, lo que gastas y el «de más»).
+function Medidor({ gastoActual, gastoSeguro, animar }) {
+  const pasado = gastoActual > gastoSeguro
+  const llenado = llenadoDelGasto(gastoActual, gastoSeguro)
+  const alcanzan = pasado ? Math.round((gastoSeguro / gastoActual) * SEGMENTOS) : Math.round(llenado * SEGMENTOS)
+  const verdes = pasado ? Math.min(alcanzan, SEGMENTOS - 1) : Math.max(alcanzan, llenado > 0 ? 1 : 0)
+  return (
+    <svg className="medidor-arco" viewBox="0 0 240 124" aria-hidden="true">
+      {RAYAS.map((raya, i) => (
+        <line
+          key={i}
+          {...raya}
+          className={i < verdes ? 'raya raya-llena' : pasado ? 'raya raya-pasada' : 'raya'}
+          style={animar ? { animationName: 'encender', animationDelay: `${i * 35}ms` } : undefined}
+        />
+      ))}
+    </svg>
+  )
+}
 
 const ICONOS = { musika: PauseCircle, delivery: ForkKnife, cafe: Coffee, fitzona: Barbell, taxi: Taxi }
 
@@ -129,62 +167,76 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
   return (
     <>
       <motion.section {...entra(0)} className="hero" data-guia="cobro" aria-label="Cuánto puedes gastar">
-        <span className="hero-etiqueta">Puedes gastar al día</span>
-        <strong className="hero-cifra">
-          <CifraVerificada>
-            <NumeroAnimado valor={cliente.gastoDiarioSeguro} formato={enSoles} />
-          </CifraVerificada>
-        </strong>
-        <span className={`hero-actual ${exceso > 0 ? 'hero-actual-alto' : ''}`}>
-          Gastas <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} /> al día
-          {exceso > 0 ? `, ${enSoles(exceso)} de más` : ''}
-        </span>
-        <div className="hero-cobro">
-          <span>
-            Cobras {enSoles(proximoIngreso.monto)} el {fechaCorta(proximoIngreso.fecha)}
+        <div className="hero-datos">
+          <span className="hero-dato">
+            <Wallet size={20} aria-hidden="true" />
+            <span className="hero-actual">
+              Gastas <NumeroAnimado valor={cliente.gastoDiarioActual} formato={enSoles} retraso={0.1} /> al día
+            </span>
           </span>
-          <span>{faltan} días</span>
+          <span className="hero-dato">
+            <CalendarBlank size={20} aria-hidden="true" />
+            Cobras {enSoles(proximoIngreso.monto)} · {fechaCorta(proximoIngreso.fecha)}
+          </span>
+          <span className="hero-dato">
+            <Hourglass size={20} aria-hidden="true" />
+            {faltan} días
+          </span>
         </div>
-        <span className="hero-barra" aria-hidden="true">
-          <motion.span
-            initial={reducido ? false : { scaleX: 0 }}
-            animate={{ scaleX: avanceDelCiclo(faltan) }}
-            transition={{ duration: 0.8, delay: 0.2 }}
+        <div className="hero-medidor">
+          <Medidor
+            gastoActual={cliente.gastoDiarioActual}
+            gastoSeguro={cliente.gastoDiarioSeguro}
+            animar={animarEntrada && !reducido}
           />
-        </span>
+          <strong className="hero-cifra">
+            <CifraVerificada>
+              <NumeroAnimado valor={cliente.gastoDiarioSeguro} formato={enSoles} />
+            </CifraVerificada>
+          </strong>
+        </div>
+        <div className="hero-pie">
+          <span className="hero-etiqueta">Puedes gastar al día</span>
+          {exceso > 0 && <span className="hero-exceso">{enSoles(exceso)} de más</span>}
+        </div>
       </motion.section>
 
       <motion.div {...entra(1)}>
         {riesgo ? (
           <section className="aviso aviso-corto" role="status" aria-label="Aviso de Lucas">
-            <LucasPose pose="alerta" tamano={56} />
-            <p>
-              <strong>Lucas te avisa:</strong> en el peor caso, el {fechaDia(riesgo.desde)}
-              {riesgo.hasta !== riesgo.desde && ` y el ${fechaDia(riesgo.hasta)}`} quedarías en rojo (
-              <span className="cifra">{enSoles(riesgo.peorMonto)}</span>).{' '}
-              {/* Enlace en la frase, como «Ver tips» en Qué viene: un botón aparte ocupaba una fila entera. */}
-              <a className="enlace" href="#tips">
+            <div className="aviso-texto">
+              <p>
+                <strong>Lucas te avisa:</strong> en el peor caso, el {fechaDia(riesgo.desde)}
+                {riesgo.hasta !== riesgo.desde && ` y el ${fechaDia(riesgo.hasta)}`} quedarías en rojo (
+                <span className="cifra">{enSoles(riesgo.peorMonto)}</span>).
+              </p>
+              <a className="boton boton-chico" href="#tips">
                 Cómo evitarlo
               </a>
-            </p>
+            </div>
+            <LucasPose pose="alerta" tamano={88} />
           </section>
         ) : mes.diasEnRojo ? (
           <section className="aviso aviso-corto" role="status" aria-label="Aviso de Lucas">
-            <LucasPose pose="alerta" tamano={56} />
-            <p>
-              <strong>Lucas te avisa:</strong> llegas a tu cobro, pero con lo que planificaste el{' '}
-              {fechaDia(mes.primerRojo)} quedarías en rojo (<span className="cifra">{enSoles(mes.peorMonto)}</span>).
-            </p>
-            <Link className="boton boton-chico" to="/lucas/que-viene">
-              Ver en Qué viene
-            </Link>
+            <div className="aviso-texto">
+              <p>
+                <strong>Lucas te avisa:</strong> llegas a tu cobro, pero con lo que planificaste el{' '}
+                {fechaDia(mes.primerRojo)} quedarías en rojo (<span className="cifra">{enSoles(mes.peorMonto)}</span>).
+              </p>
+              <Link className="boton boton-chico" to="/lucas/que-viene">
+                Ver en Qué viene
+              </Link>
+            </div>
+            <LucasPose pose="alerta" tamano={88} />
           </section>
         ) : (
           <section className="aviso aviso-corto aviso-bien" role="status" aria-label="Aviso de Lucas">
-            <LucasPose pose="celebra" tamano={56} />
-            <p>
-              <strong>Vas bien:</strong> llegas a tu cobro sin quedar en rojo, incluso si gastas un poco más.
-            </p>
+            <div className="aviso-texto">
+              <p>
+                <strong>Vas bien:</strong> llegas a tu cobro sin quedar en rojo, incluso si gastas un poco más.
+              </p>
+            </div>
+            <LucasPose pose="celebra" tamano={88} />
           </section>
         )}
         <ExplicameFacil puntos={explicarResumen(cliente)} />

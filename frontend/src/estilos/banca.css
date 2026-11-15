@@ -1,5 +1,5 @@
 .banca-cabecera {
-  padding: 12px 16px 96px;
+  padding: 12px 16px 8px;
   background: var(--azul-profundo);
   color: var(--sobre-azul);
 }
@@ -19,17 +19,8 @@
   font-size: 1.375rem;
 }
 
-.banca-saludo p,
-.saldo-total p {
+.banca-saludo p {
   color: var(--sobre-azul-suave);
-}
-
-.saldo-total {
-  display: grid;
-  justify-items: center;
-  gap: 2px;
-  margin-top: 20px;
-  text-align: center;
 }
 
 .saldo-fila {
@@ -38,13 +29,9 @@
   gap: 8px;
 }
 
-.saldo-total .saldo {
-  color: var(--sobre-azul);
-}
-
 .saldo {
   font-family: var(--titulos);
-  font-size: 2.5rem;
+  font-size: 2.25rem;
   font-weight: 800;
   line-height: 1.15;
 }
@@ -52,8 +39,7 @@
 .banca-contenido {
   display: grid;
   gap: 16px;
-  margin-top: -80px;
-  padding: 0 16px 24px;
+  padding: 12px 16px 24px;
 }
 
 .tarjeta-lucas {

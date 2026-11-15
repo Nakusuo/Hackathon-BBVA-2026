@@ -1,86 +1,110 @@
-/* La tarjeta tiene volumen con sombra en capas y una segunda tarjeta asomando detrás, sin degradados. */
-.tarjeta-pila {
+/* Billetera: la tarjeta asoma por arriba y el bolsillo oscuro la tapa salvo por el corte curvo. Todo en colores sólidos. */
+.billetera {
   position: relative;
-  padding-bottom: 10px;
-}
-
-.tarjeta-pila::before {
-  content: '';
-  position: absolute;
-  inset: 24px 16px 0;
-  border-radius: var(--radio);
-  background: var(--azul-claro);
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+  padding-top: 72px;
 }
 
 .tarjeta-credito {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radio);
-  box-shadow:
-    0 1px 2px var(--sombra),
-    0 16px 32px -12px var(--sombra-alta);
-}
-
-.tarjeta-credito-frente {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 12px;
+  left: 12px;
+  height: 150px;
   display: grid;
-  gap: 14px;
-  padding: 18px;
+  align-content: start;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: var(--radio) var(--radio) 0 0;
   background: var(--azul);
   color: var(--sobre-azul);
 }
 
-.tarjeta-credito-arcos {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 200px;
-  height: 200px;
-  fill: none;
-  stroke: rgb(255 255 255 / 0.16);
-  stroke-width: 18;
-}
-
 .tarjeta-credito-fila {
-  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.tarjeta-credito-frente .logotipo {
+.tarjeta-credito .logotipo {
   font-size: 1.125rem;
 }
 
 .tarjeta-credito-tipo {
   font-weight: 600;
-  color: var(--sobre-azul);
 }
 
 .tarjeta-credito-numero {
-  position: relative;
   font-size: 1.125rem;
   letter-spacing: 0.12em;
 }
 
-.tarjeta-credito-pie {
+.bolsillo {
+  display: flow-root;
+  position: relative;
+  color: var(--sobre-bolsillo);
+  filter: drop-shadow(0 14px 14px var(--sombra));
+}
+
+.bolsillo-forma {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bolsillo-cuerpo {
+  fill: var(--bolsillo);
+}
+
+.bolsillo-costura {
+  fill: none;
+  stroke: var(--bolsillo-costura);
+  stroke-width: 2;
+  stroke-dasharray: 7 5;
+  vector-effect: non-scaling-stroke;
+}
+
+.bolsillo-contenido {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  margin: 36px 3px 3px;
+  padding: 6px 21px 16px;
+  border-radius: 0 0 24px 24px;
+  background: var(--bolsillo);
+}
+
+.bolsillo-cuenta {
+  color: var(--sobre-bolsillo-suave);
+}
+
+.bolsillo .saldo-fila {
+  gap: 10px;
+}
+
+.bolsillo-pago {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 18px;
-  background: var(--superficie);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 2px dashed var(--bolsillo-costura);
 }
 
-.tarjeta-credito-pie div {
+.bolsillo-pago div {
   display: grid;
 }
 
-.tarjeta-credito-pie div:last-child {
+.bolsillo-pago div:last-child {
   text-align: right;
 }
 
-.tarjeta-credito-pie span {
-  color: var(--tinta-suave);
+.bolsillo-pago span {
+  color: var(--sobre-bolsillo-suave);
 }
 
 /* Accesos en bento: la operación más usada ocupa el bloque grande; QR va a lo ancho abajo. */
