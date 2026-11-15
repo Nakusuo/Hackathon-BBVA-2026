@@ -14,7 +14,14 @@ from src.models import calendario_laboral as CL
 from src.models import clasificacion as KL
 from src.models import datos, niveles as N, ofertas as O, pronostico as P, pronostico_mensual as PM, salud as SA, segmentacion as S
 
-VENTANA_RECALCULO_DIAS = 45   # el riesgo a 30 dias solo se reestima con los movimientos vivos si el cierre de datos no es muy viejo
+VENTANA_RECALCULO_DIAS = 45
+# Mover plata a un ahorro sale de la cuenta pero no es un gasto: se cuenta aparte
+NO_ES_GASTO = {"ahorro_programado", "traspaso_ahorro"}
+# Categoria del movimiento -> rubro que entiende la persona. Lo que no esta aqui (o vino sin categoria) es «Otros».
+RUBROS = {"alquiler": "Vivienda", "luz": "Servicios", "agua": "Servicios", "internet": "Servicios", "celular": "Servicios", "alimentos": "Alimentos",
+          "delivery": "Delivery y antojos", "snacks": "Delivery y antojos", "restaurantes": "Salidas y ocio", "ocio": "Salidas y ocio", "transporte": "Transporte",
+          "colegio": "Educación", "educacion": "Educación", "salud": "Salud", "seguro": "Seguros", "cuota_prestamo": "Deudas", "pago_credito_informal": "Deudas",
+          "transferencias_familiares": "Ayuda a la familia", "suscripcion": "Suscripciones", "compras": "Compras", "retiro_efectivo": "Retiros en efectivo"}   # el riesgo a 30 dias solo se reestima con los movimientos vivos si el cierre de datos no es muy viejo
 
 
 class Repositorio:
@@ -31,6 +38,10 @@ class Repositorio:
         self.salud = SA.puntaje_salud(self.features)
         tx = datos.cargar_transacciones(carpeta, ["customer_id", "fecha_hora", "comercio", "monto_pen", "categoria", "tipo"], desde=self.fecha - pd.Timedelta(days=180), hasta=hasta)
         tx["comercio"] = tx["comercio"].astype(str)
+        self._inicio_mes = self.fecha.replace(day=1)
+        self._fin_mes_anterior = hasta - pd.DateOffset(months=1)   # mismo tramo del mes anterior: del 1 al mismo dia
+        g_rec = tx[(tx["tipo"].astype(str) == "gasto") & (tx["fecha_hora"] >= self._inicio_mes - pd.DateOffset(months=1))]
+        self._gastos_recientes = g_rec[["customer_id", "fecha_hora", "monto_pen", "categoria"]].assign(categoria=g_rec["categoria"].astype(str))
         self.duplicadas = KL.detectar_suscripciones_duplicadas(tx.assign(tipo="gasto"))
         g = tx[tx["tipo"].astype(str) == "gasto"].copy()
         g["categoria"] = g["categoria"].astype(str).replace({"delivery": "hormiga", "snacks": "hormiga"})
@@ -53,6 +64,18 @@ class Repositorio:
         ruta_s = os.path.join(MODELOS, "serie_diaria.pkl")
         self.serie = joblib.load(ruta_s) if os.path.isfile(ruta_s) else None
         self._panel = None
+
+    def gastos_del_mes(self, cid: str) -> dict:
+        """Lo gastado desde el 1 del mes de los datos hasta su ultimo dia, por rubro, y lo que llevaba gastado en el mismo tramo del mes anterior."""
+        x = self._gastos_recientes[self._gastos_recientes["customer_id"] == cid]
+        es_gasto = ~x["categoria"].isin(NO_ES_GASTO)
+        este = x[x["fecha_hora"] >= self._inicio_mes]
+        antes = x[(x["fecha_hora"] < self._fin_mes_anterior) & es_gasto]
+        gasto = este[~este["categoria"].isin(NO_ES_GASTO)]
+        rubros = gasto.groupby(gasto["categoria"].map(lambda c: RUBROS.get(c, "Otros")))["monto_pen"].sum().sort_values(ascending=False)
+        return {"desde": self._inicio_mes.date(), "hasta": self.fecha.date(), "total": round(float(gasto["monto_pen"].sum()), 0), "movimientos": int(len(gasto)),
+                "por_rubro": [{"rubro": r, "soles": round(float(v), 0)} for r, v in rubros.items()], "mismo_tramo_mes_anterior": round(float(antes["monto_pen"].sum()), 0),
+                "apartado": round(float(este[~este.index.isin(gasto.index)]["monto_pen"].sum()), 0)}
 
     def fila_de(self, cid: str) -> int:
         return self.origen[self.origen["cliente_idx"] == self.pos[cid]].index[0]

@@ -15,6 +15,7 @@ from src.agente_analitico import faq as FAQ
 from src.agente_analitico import proveedores as PV
 from src.agente_analitico import traduccion as TR
 from src.agente_analitico.juez_llm import juzgar
+from src.agente_analitico.repositorio import VENTANA_RECALCULO_DIAS as VENTANA_DATOS_DIAS
 from src.agente_analitico.verificador import aplanar, numeros_de, verificar
 from src.bcrp.cliente import ultimo_con_variacion
 from src.comun.rutas import cargar_env, ruta
@@ -51,6 +52,9 @@ META = (r"cu[aá]nto (?:debo|deber[ií]a|tengo que|necesito|me falta|hay que) (?
         r"para poder (?:comprar|irme|viajar|pagar)|plan (?:de|para) (?:ahorr|junt)\w*|(?:convenio|descuento)s? (?:con|del|de) (?:el |mi |nuestro )?banco")
 # Quiere comprar algo y no dijo cuanto cuesta: se le pide el precio en vez de tratarlo como un tema ajeno
 COMPRA = r"(?:quiero|quisiera|voy a|pienso|planeo|me gustar[ií]a) comprar(?:me)?\b"
+# Lo que ya se gasto: «¿cuanto gaste este mes?», «¿en que se me va la plata?». «¿En que estoy gastando de mas?» sigue siendo una recomendacion
+GASTOS = (r"cu[aá]nto (?:gast[eé]|he gastado|llevo gastado|gastamos)|en qu[eé] (?:gast[eé]|se me (?:va|fue|van))|(?:resumen|detalle|total) de (?:mis |los )?gastos|"
+          r"mis gastos (?:de|del) (?:este |el )?mes|gastos? (?:de|del) (?:este )?mes\b")
 # Balance de lo que la persona ya aparto; «como ahorro mas» sigue siendo una recomendacion
 AHORRO = r"(?:resum\w+|estad[ií]stic\w+|c[oó]mo va[n]?|cu[aá]nto (?:he|llevo|tengo)).{0,40}ahorr|cu[aá]nto ahorro\b"
 # Productos que el catalogo de demostracion no tiene: se dice, en vez de ofrecer otra cosa como si respondiera
@@ -68,6 +72,7 @@ REGLAS_INTENCION = [
     ("meta", META),
     ("simular", SIMULAR),
     ("ahorro", AHORRO),
+    ("gastos", GASTOS),
     ("fen", r"ni[ñn]o|lluvia|llov|huaico|inundaci|zona de riesgo|desastre|fen\b|fen[oó]meno|prevenci"),
     ("calendario", r"\bcts\b|gratificaci[oó]n|compensaci[oó]n por tiempo|libre (disponibilidad|disposici[oó]n)|aguinaldo|cu[aá]ndo (me )?(cae|llega|llegan|depositan|pagan)"),
     # una pregunta de concepto ("que es la TCEA", "como funciona el credito") se explica con las fuentes: va antes de tasas y ofertas, que serian para pedir un producto o ver la tasa
@@ -83,7 +88,7 @@ REGLAS_INTENCION = [
 ]
 PLAN = {
     "pronostico": ["pronostico", "salud"], "recomendaciones": ["pronostico", "salud", "clima", "recomendador"], "salud_nivel": ["salud"], "fen": ["clima", "recomendador", "educador"],
-    "tasas": ["tasas", "salud", "educador"], "ofertas": ["tasas", "ofertas"], "simular": ["simulador"], "ahorro": ["ahorro"], "meta": ["meta"], "compra": [], "educacion": ["educador"], "ingreso_extra": ["salud", "recomendador"],
+    "tasas": ["tasas", "salud", "educador"], "ofertas": ["tasas", "ofertas"], "simular": ["simulador"], "ahorro": ["ahorro"], "meta": ["meta"], "compra": [], "gastos": ["gastos"], "educacion": ["educador"], "ingreso_extra": ["salud", "recomendador"],
     "baja_de_tasa": ["tasas", "salud", "recomendador"], "riesgo_rojo": ["pronostico", "salud", "recomendador"], "general": ["pronostico", "salud", "recomendador"], "fuera_de_alcance": [],
     "fuera_de_tema": [], "seguridad": [], "saludo": [], "calendario": ["calendario", "salud", "recomendador", "educador"], "gasto_atipico": ["pronostico", "salud", "recomendador"], "tipo_de_cambio": ["tasas"],
 }
@@ -315,6 +320,20 @@ def _a_ahorro(est, repo, **_):
     return {"ahorro": d}
 
 
+RUBROS_A_LA_VISTA = 4
+
+
+def _a_gastos(est, repo, **_):
+    c = est["ctx"]
+    g = repo.gastos_del_mes(c["customer_id"])
+    d, h = g["desde"], g["hasta"]
+    rubros = g["por_rubro"][:RUBROS_A_LA_VISTA]
+    resto = round(sum(r["soles"] for r in g["por_rubro"][RUBROS_A_LA_VISTA:]), 0)
+    return {"gastos": {"periodo": f"del {d.day} al {h.day} de {MESES_DEL_ANO[h.month - 1]} de {h.year}", "total": g["total"], "movimientos": g["movimientos"], "rubros": rubros,
+                       "resto": resto, "mismo_tramo_mes_anterior": g["mismo_tramo_mes_anterior"], "diferencia": round(g["total"] - g["mismo_tramo_mes_anterior"], 0),
+                       "apartado": g["apartado"], "datos_de_otra_fecha": c["desfase_datos_dias"] > VENTANA_DATOS_DIAS}}
+
+
 RECORTE_HORMIGA = 0.5   # supuesto visible del plan: bajar a la mitad los gastos pequenos (delivery, antojos)
 
 
@@ -371,7 +390,7 @@ def _a_educador(est, repo, buscador=None, **_):
     return {"rag": r, "rag_estado": "correcto"}
 
 
-AGENTES = {"pronostico": _a_pronostico, "salud": _a_salud, "clima": _a_clima, "tasas": _a_tasas, "calendario": _a_calendario, "recomendador": _a_recomendador, "educador": _a_educador, "simulador": _a_simulador, "ahorro": _a_ahorro, "ofertas": _a_ofertas, "meta": _a_meta}
+AGENTES = {"pronostico": _a_pronostico, "salud": _a_salud, "clima": _a_clima, "tasas": _a_tasas, "calendario": _a_calendario, "recomendador": _a_recomendador, "educador": _a_educador, "simulador": _a_simulador, "ahorro": _a_ahorro, "ofertas": _a_ofertas, "meta": _a_meta, "gastos": _a_gastos}
 DEPENDENCIAS = {"recomendador": ["pronostico", "salud", "clima", "tasas"], "ofertas": ["tasas"]}
 
 
@@ -443,6 +462,22 @@ def _lineas_simulacion(s: dict) -> list[str]:
         L.append("El riesgo de quedar en rojo es bajo, pero en un mes malo sí quedarías en negativo.")
     else:
         L.append("El pronóstico no marca riesgo de quedar en rojo.")
+    return L
+
+
+def _lineas_gastos(g: dict) -> list[str]:
+    periodo = g["periodo"][0].upper() + g["periodo"][1:]
+    L = ["## Este mes", f"{periodo} gastaste {_soles(g['total'])} en {g['movimientos']} movimientos."]
+    if g["mismo_tramo_mes_anterior"] and abs(g["diferencia"]) >= 1:
+        L.append(f"Son {_soles(abs(g['diferencia']))} {'más' if g['diferencia'] > 0 else 'menos'} que a esta altura del mes pasado ({_soles(g['mismo_tramo_mes_anterior'])}).")
+    if g["apartado"]:
+        L.append(f"Además apartaste {_soles(g['apartado'])} para ahorrar, que no cuenta como gasto.")
+    if g["datos_de_otra_fecha"]:
+        L.append("Tus movimientos de demostración llegan hasta esa fecha.")
+    if g["rubros"]:
+        L += ["", "## En qué se fue", *[f"- {r['rubro']}: {_soles(r['soles'])}" for r in g["rubros"]]]
+        if g["resto"]:
+            L.append(f"- Lo demás: {_soles(g['resto'])}")
     return L
 
 
@@ -552,6 +587,8 @@ def plantilla(est) -> str:
         return f"{L[0]} {motivo}\n{AYUDO_EN} Tu decides."
     if intent == "simular":
         return "\n".join([L[0], *_lineas_simulacion(d["simulacion"]), "Es una simulación, no una asesoría. Tu decides."])
+    if intent == "gastos":
+        return "\n".join([L[0], *_lineas_gastos(d["gastos"]), "Tu decides."])
     if intent == "meta":
         return "\n".join([L[0], *_lineas_meta(d["meta"]), "Tu decides."])
     if intent == "ahorro":

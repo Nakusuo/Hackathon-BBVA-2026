@@ -53,6 +53,9 @@ CASOS = [
     ("Quiero ahorrar para una laptop de S/ 3,500", {"meta"}), ("quiero comprar un carro", {"compra"}), ("Me gustaría comprarme una moto", {"compra"}),
     ("propon un plan de ahorro para poder irme de viaje a Brasil y que aerolineas tienen descuento con el banco", {"meta"}), ("Quiero juntar plata para un viaje", {"meta"}),
     ("¿Qué convenios con el banco hay para comprar una laptop?", {"meta"}),
+    # lo que ya se gasto
+    ("perdon me refeia a gastos, cuanto gaste este mes?", {"gastos"}), ("¿Cuánto he gastado este mes?", {"gastos"}), ("¿En qué se me va la plata?", {"gastos"}),
+    ("Dame un resumen de mis gastos", {"gastos"}), ("¿Cuánto llevo gastado?", {"gastos"}),
     # resumen de lo ahorrado
     ("Haz un resumen de mis estadísticas de ahorro", {"ahorro"}), ("¿Cuánto llevo ahorrado?", {"ahorro"}), ("¿Cómo va mi ahorro?", {"ahorro"}), ("¿Cuánto he ahorrado este año?", {"ahorro"}),
 ]

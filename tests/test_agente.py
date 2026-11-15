@@ -325,3 +325,21 @@ def test_la_respuesta_cuenta_solo_lo_que_se_pregunto(agente, pregunta, ausente):
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, pregunta)
     assert not [frase for frase in ausente if frase in r["respuesta"]] and not r["cifras_sin_respaldo"]
+
+
+def test_cuanto_gaste_este_mes_suma_los_movimientos_por_rubro_y_no_da_recomendaciones(agente):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "perdon me refeia a gastos, cuanto gaste este mes?")
+    g = repo.gastos_del_mes(cid)
+    assert r["intencion"] == "gastos" and r["proveedor"] == "plantilla" and not r["cifras_sin_respaldo"]
+    assert g["total"] > 0 and abs(sum(x["soles"] for x in g["por_rubro"]) - g["total"]) <= len(g["por_rubro"])
+    assert f"gastaste S/ {g['total']:,.0f}" in r["respuesta"] and "## En qué se fue" in r["respuesta"] and f"- {g['por_rubro'][0]['rubro']}:" in r["respuesta"]
+    assert "Del 1 al 29 de noviembre de 2025" in r["respuesta"] and "Impacto estimado" not in r["respuesta"]
+
+
+def test_el_ahorro_programado_no_se_cuenta_como_gasto(agente):
+    repo, _, cid = agente
+    g = repo.gastos_del_mes(cid)
+    assert all(x["rubro"] not in ("ahorro_programado", "traspaso_ahorro") for x in g["por_rubro"])
+    assert g["mismo_tramo_mes_anterior"] >= 0 and g["apartado"] >= 0
