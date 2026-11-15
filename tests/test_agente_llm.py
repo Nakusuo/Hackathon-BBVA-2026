@@ -81,7 +81,7 @@ def test_si_la_api_se_cae_el_agente_sigue_respondiendo_con_plantillas(agente):
 def test_una_api_externa_no_recibe_el_id_ni_la_zona_de_la_persona(agente):
     api = ApiFalsa(["Hola, te ayudo con tu plata. Tu decides."], externa=True)
     app, cid, responder = agente(api)
-    responder(app, cid, "Hola")   # intencion general: va al LLM con lo que sabe de la persona (vive en Piura, zona expuesta al Nino)
+    responder(app, cid, "Necesito organizarme con mi plata")   # intencion general: va al LLM con lo que sabe de la persona (vive en Piura, zona expuesta al Nino)
     enviado = api.recibido[0]["datos"]
     assert "Piura" not in enviado and cid not in enviado and "tu zona" in enviado
 
@@ -89,7 +89,7 @@ def test_una_api_externa_no_recibe_el_id_ni_la_zona_de_la_persona(agente):
 def test_un_modelo_local_si_recibe_los_datos_completos_porque_no_salen_de_la_maquina(agente):
     api = ApiFalsa(["Hola, te ayudo con tu plata. Tu decides."], externa=False)
     app, cid, responder = agente(api)
-    responder(app, cid, "Hola")
+    responder(app, cid, "Necesito organizarme con mi plata")
     assert "Piura" in api.recibido[0]["datos"]
 
 

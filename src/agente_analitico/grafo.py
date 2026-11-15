@@ -20,6 +20,7 @@ from src.bcrp.cliente import ultimo_con_variacion
 from src.comun.rutas import cargar_env, ruta
 from src.generador.contexto import cargar_yaml
 from src.models import niveles as N
+from src.models import ofertas as O
 from src.models import programa_puntos as PP
 from src.models import recomendador as REC
 from src.models import riesgo_clima as RC
@@ -41,15 +42,24 @@ OPERACION = (r"transfier|transferir|p[aá]sa(?:le|me|selo)\b|yapea|plinea|c[aá]
 # Mora y reclamos: es una pregunta de derechos, aunque nombre una tarjeta, un cobro o un prestamo
 MORA_Y_RECLAMOS = r"derechos?|reclam|atras[eéo]|\bmora\b|no pago|dej[eé] de pagar|me cobran de m[aá]s|no reconozco|datos personales"
 
+# «¿Y si gasto S/ 450?»: solo es una simulacion si la frase trae un monto (lo comprueba detectar_intencion); sin monto sigue su camino normal
+SIMULAR = r"\bsi (?:me )?(?:gasto|compro|pago)\b|(?:puedo|podr[ií]a|quiero|quisiera|voy a|pienso|planeo) (?:gastar|comprar(?:me)?|pagar)|\bsimula|qu[eé] pasa(?:r[ií]a)? si"
+# Balance de lo que la persona ya aparto; «como ahorro mas» sigue siendo una recomendacion
+AHORRO = r"(?:resum\w+|estad[ií]stic\w+|c[oó]mo va[n]?|cu[aá]nto (?:he|llevo|tengo)).{0,40}ahorr|cu[aá]nto ahorro\b"
+# Productos que el catalogo de demostracion no tiene: se dice, en vez de ofrecer otra cosa como si respondiera
+SIN_PRODUCTO = {"un credito vehicular": r"camioneta|\bauto\b|autom[oó]vil|carro|veh[ií]cul|\bmoto\b", "un credito hipotecario": r"hipotec|\bcasa\b|departamento|\bdepa\b|terreno"}
+
 REGLAS_INTENCION = [
     # seguridad: intentos de sacar instrucciones internas, claves o datos de otras personas, o de saltarse las reglas
     ("seguridad", r"system prompt|prompt del sistema|tu prompt|tus instrucciones|instrucciones (previas|anteriores|internas)|revela|ignora (tus|las|todas|todo)|olvida (tus|las|todas|todo)|jailbreak|\bDAN\b|contrase[ñn]a|api[ _-]?key|clave de (api|acceso)|\btoken\b|hackea|inyecci[oó]n|exploit|vulnerabilidad|"
                   r"datos de (otro|otra|otros)|de otro cliente|de otra persona|de otra gente|de terceros|cuentas? de (otro|otra|otros|otras)|act[uú]a como|ahora eres|modo (desarrollador|dios|admin)|sin (reglas|filtros|restricciones|l[ií]mites)"),
-    # saludos y ayuda: se contestan con lo que si hace Lucas, no como un tema ajeno
-    ("general", r"^\W*(hola|buenas|buenos d[ií]as|buenas tardes|buenas noches|hey|gracias|ok|listo|ayuda|qu[eé] puedes hacer|en qu[eé] me ayudas|qu[eé] haces)\W*$"),
+    # saludos y ayuda: se contestan al instante con lo que si hace Lucas; no hay nada que redactar ni que calcular
+    ("saludo", r"^\W*(hola|buenas|buenos d[ií]as|buenas tardes|buenas noches|hey|gracias|ok|listo|ayuda|qu[eé] puedes hacer|en qu[eé] me ayudas|qu[eé] haces)\W*$"),
     # fuera de tema: codigo, matematica y cultura general, que no son de este asistente
     ("fuera_de_tema", r"c[oó]digo|\bscript\b|python|javascript|typescript|\bsql\b|\bjava\b|algoritmo|ecuaci[oó]n|integral|derivada|teorema|demuestra|problema (de )?matem|resuelve (esta|este|el|la)|tarea de|compila|\bhtml\b|\bcss\b|\bbash\b|\bregex\b|receta|capital de|qui[eé]n gan[oó]|poema|chiste"),
     ("fuera_de_alcance", OPERACION),
+    ("simular", SIMULAR),
+    ("ahorro", AHORRO),
     ("fen", r"ni[ñn]o|lluvia|llov|huaico|inundaci|zona de riesgo|desastre|fen\b|fen[oó]meno|prevenci"),
     ("calendario", r"\bcts\b|gratificaci[oó]n|compensaci[oó]n por tiempo|libre (disponibilidad|disposici[oó]n)|aguinaldo|cu[aá]ndo (me )?(cae|llega|llegan|depositan|pagan)"),
     # una pregunta de concepto ("que es la TCEA", "como funciona el credito") se explica con las fuentes: va antes de tasas y ofertas, que serian para pedir un producto o ver la tasa
@@ -65,19 +75,19 @@ REGLAS_INTENCION = [
 ]
 PLAN = {
     "pronostico": ["pronostico", "salud"], "recomendaciones": ["pronostico", "salud", "clima", "recomendador"], "salud_nivel": ["salud"], "fen": ["clima", "recomendador", "educador"],
-    "tasas": ["tasas", "salud", "educador"], "ofertas": ["pronostico", "salud", "tasas", "recomendador"], "educacion": ["educador"], "ingreso_extra": ["salud", "recomendador"],
+    "tasas": ["tasas", "salud", "educador"], "ofertas": ["tasas", "ofertas"], "simular": ["simulador"], "ahorro": ["ahorro"], "educacion": ["educador"], "ingreso_extra": ["salud", "recomendador"],
     "baja_de_tasa": ["tasas", "salud", "recomendador"], "riesgo_rojo": ["pronostico", "salud", "recomendador"], "general": ["pronostico", "salud", "recomendador"], "fuera_de_alcance": [],
-    "fuera_de_tema": [], "seguridad": [], "calendario": ["calendario", "salud", "recomendador", "educador"], "gasto_atipico": ["pronostico", "salud", "recomendador"], "tipo_de_cambio": ["tasas"],
+    "fuera_de_tema": [], "seguridad": [], "saludo": [], "calendario": ["calendario", "salud", "recomendador", "educador"], "gasto_atipico": ["pronostico", "salud", "recomendador"], "tipo_de_cambio": ["tasas"],
 }
 # Evento proactivo -> intencion. Un evento desconocido cae a 'general' (nunca rompe el agente).
 EVENTO_A_INTENCION = {"ingreso_extra": "ingreso_extra", "baja_de_tasa": "baja_de_tasa", "fen_comunicado": "fen", "riesgo_rojo": "riesgo_rojo", "calendario_laboral": "calendario",
                       "libre_disposicion_por_vencer": "calendario", "gratificacion_pendiente": "calendario", "gasto_atipico": "gasto_atipico"}
-SIN_LLM = ("fuera_de_alcance", "fuera_de_tema", "seguridad")   # se responden con plantilla: no gastan tokens ni dan pie a que el modelo se desvie
+SIN_LLM = ("fuera_de_alcance", "fuera_de_tema", "seguridad", "saludo")   # se responden con plantilla: no gastan tokens ni dan pie a que el modelo se desvie
 # Politica de ahorro de tokens (MVP): el LLM solo redacta lo que una plantilla no cubre bien. LLM_USO=siempre lo usa en todo (pruebas); LLM_USO=ahorro es el defecto.
 INTENCIONES_CON_LLM = ("educacion", "general")
 INTENCIONES_DE_SALDO = ("pronostico", "riesgo_rojo", "general")   # respuestas que hablan del saldo: ahi se aclara la fecha de los datos del cliente
-AYUDO_EN = ("Si puedo ver si llegas a fin de mes y cuanto ingresaras y gastaras en los proximos meses, revisar tu salud financiera y tu nivel, darte recomendaciones para ahorrar o "
-            "gastar mejor, avisarte de El Nino en tu zona y explicarte conceptos como la TCEA o tus derechos.")
+AYUDO_EN = ("Si puedo ver si llegas a fin de mes y cuanto ingresaras y gastaras en los proximos meses, simular que pasa con tu saldo si haces un gasto, resumir cuanto vienes ahorrando, "
+            "revisar tu salud financiera y tu nivel, darte recomendaciones para ahorrar o gastar mejor, mostrarte las ofertas que calzan con tu perfil, avisarte de El Nino en tu zona y explicarte conceptos como la TCEA o tus derechos.")
 MODULOS_RAG = {"fen": ["fenomeno_el_nino"], "tasas": ["deudas", "derechos"], "educacion": None, "ofertas": ["deudas", "salud_financiera"], "calendario": ["laboral"]}
 
 
@@ -122,7 +132,16 @@ def _termina_en_oracion_completa(txt: str) -> bool:
 
 def _filtra_el_prompt(txt: str) -> bool:
     """El LLM nunca debe nombrar la seccion interna del prompt (en mayusculas, como la recibe): «lo que dicen los DATOS» revela como esta armado el agente."""
-    return re.search(r"\bDATOS\b", txt) is not None
+    # «Tono: practico; propone metas medibles» es la ficha interna del nivel, que el modelo local a veces copia tal cual
+    return re.search(r"\bDATOS\b|\bTono:", txt) is not None
+
+
+# Palabras que existen en portugues y no en espanol: el modelo local a veces se pasa de idioma a mitad de la respuesta
+OTRO_IDIOMA = re.compile(r"\b(?:voc[eê]s?|n[aã]o|tamb[eé]m|ent[aã]o|ainda|al[eé]m|voc[eê]|seus?|suas?|uma|pelo|pela|isso|est[aá] sendo|the|and|your)\b", flags=re.I)
+
+
+def _mezcla_otro_idioma(txt: str) -> bool:
+    return len(OTRO_IDIOMA.findall(txt)) >= 3
 
 
 def _ruta_cache() -> str:
@@ -145,6 +164,20 @@ def _cache_guardar(clave: str, texto: str) -> None:
         json.dump(c, f, ensure_ascii=False)
 
 
+def monto_de(pregunta: str) -> float | None:
+    """El monto en soles de la frase: el que va con «S/» o «soles» y, si no hay, el primer numero que no sea un plazo («en 2 semanas») ni un porcentaje."""
+    con_moneda = re.search(r"s/\.?\s*(\d[\d.,]*)|(\d[\d.,]*)\s*(?:soles|lucas|mangos)\b", pregunta, flags=re.I)
+    if con_moneda:
+        candidatos = [con_moneda.group(1) or con_moneda.group(2)]
+    else:
+        candidatos = re.findall(r"(\d[\d.,]*)(?![\d.,])(?!\s*(?:%|por ciento|(?:d[ií]as?|semanas?|mes(?:es)?|a[ñn]os?|cuotas?|horas?)\b))", pregunta, flags=re.I)
+    for c in candidatos:
+        n = next(iter(numeros_de(c.rstrip(".,"))), None)
+        if n and n > 0:
+            return n
+    return None
+
+
 def detectar_intencion(pregunta: str, evento: dict | None = None) -> str:
     if evento:
         return EVENTO_A_INTENCION.get(evento.get("tipo"), "general")
@@ -153,6 +186,8 @@ def detectar_intencion(pregunta: str, evento: dict | None = None) -> str:
             continue   # «para que sirve la CTS»: se explica con las fuentes, no con fechas y montos
         if patron == CONCEPTO and re.search(PROGRAMA, pregunta, flags=re.I):
             continue   # «como funciona el programa de puntos»: lo responden los datos del cliente (salud_nivel)
+        if nombre == "simular" and monto_de(pregunta) is None:
+            continue
         if re.search(patron, pregunta, flags=re.I):
             return nombre
     return "general" if re.search(FINANZAS, pregunta, flags=re.I) else "fuera_de_tema"
@@ -222,6 +257,40 @@ def _a_recomendador(est, repo, **_):
     return {"recos": recs}
 
 
+def _a_simulador(est, repo, **_):
+    """Vuelve a puntuar el pronostico a 30 dias con el saldo de hoy menos el gasto que la persona consulta. La cuenta la hace el modelo, nunca el redactor."""
+    c = est["ctx"]
+    monto = monto_de(est.get("pregunta", ""))
+    sin = c["pronostico"]
+    vivo = c["movimientos_vivos"]["neto"] if c["pronostico_reestimado"] else 0.0
+    con = repo._pronostico(repo.fila_de(c["customer_id"]), vivo - monto)
+    return {"simulacion": {"gasto": round(monto, 2), "saldo_esperado_sin_gasto": round(sin["saldo_esperado"], 0), "saldo_esperado_con_gasto": round(con["saldo_esperado"], 0),
+                           "saldo_bajo_con_gasto": round(con["saldo_bajo"], 0), "prob_rojo_sin_gasto": round(sin["p_rojo"], 2), "prob_rojo_con_gasto": round(con["p_rojo"], 2),
+                           "porcentaje_del_ingreso_mensual": round(100 * monto / max(c["features"]["ingreso_medio"], 1.0), 0), "horizonte_dias": 30}}
+
+
+def _a_ahorro(est, repo, **_):
+    c = est["ctx"]
+    f = c["features"]
+    meta_colchon = 4.5 if c["tipo_trabajo"] in ("independiente", "mixto") else 3.0
+    d = {**repo.ahorro_reciente(c["customer_id"]), "porcentaje_del_ingreso_que_ahorras": round(100 * f["ahorro_pct"], 0), "colchon_en_meses_de_ingreso": round(f["colchon_observado"], 1),
+         "colchon_recomendado_en_meses": meta_colchon, "ahorro_por_redondeo_mensual": c["ahorro_redondeo_mensual"]}
+    meta = float(repo.clientes.loc[c["customer_id"], "meta_ahorro"])
+    if meta > 0:
+        d["meta_de_ahorro"] = round(meta, 0)
+    return {"ahorro": d}
+
+
+def _a_ofertas(est, repo, **_):
+    """Ofertas del catalogo de demostracion con su idoneidad. Lo que no es idoneo se muestra con su razon, no se esconde."""
+    c = dict(est["ctx"])
+    c["tasa_ref"] = est["datos"].get("tasas", {}).get("valor", 4.5)
+    ofertas = [o for o in O.ofertas_por_perfil(c, c.get("top_categorias")) if o["familia"] != "consumir"]
+    sin = next((nombre for nombre, patron in SIN_PRODUCTO.items() if re.search(patron, est.get("pregunta", ""), flags=re.I)), None)
+    return {"ofertas": {"no_hay_en_el_catalogo": sin, "idoneas": [{"producto": o.get("tipo_producto", o["familia"]), "accion": o["accion"], "por_que": o["por_que"][0]} for o in ofertas if o["idoneo"]],
+                        "todavia_no": [{"producto": o.get("tipo_producto", o["familia"]), "accion": o["accion"], "por_que": o["razones_no_idoneo"][0]} for o in ofertas if not o["idoneo"]]}}
+
+
 def _a_educador(est, repo, buscador=None, **_):
     if buscador is None:
         return {"rag": [], "rag_estado": "sin_indice"}
@@ -234,8 +303,8 @@ def _a_educador(est, repo, buscador=None, **_):
     return {"rag": r, "rag_estado": "correcto"}
 
 
-AGENTES = {"pronostico": _a_pronostico, "salud": _a_salud, "clima": _a_clima, "tasas": _a_tasas, "calendario": _a_calendario, "recomendador": _a_recomendador, "educador": _a_educador}
-DEPENDENCIAS = {"recomendador": ["pronostico", "salud", "clima", "tasas"]}
+AGENTES = {"pronostico": _a_pronostico, "salud": _a_salud, "clima": _a_clima, "tasas": _a_tasas, "calendario": _a_calendario, "recomendador": _a_recomendador, "educador": _a_educador, "simulador": _a_simulador, "ahorro": _a_ahorro, "ofertas": _a_ofertas}
+DEPENDENCIAS = {"recomendador": ["pronostico", "salud", "clima", "tasas"], "ofertas": ["tasas"]}
 
 
 # ------------------------------------------------------------------ redaccion y juez
@@ -293,6 +362,59 @@ def extracto(texto: str, pregunta: str, limite: int = 360) -> str:
     return salida if salida.endswith("...") else salida + "."
 
 
+def _soles(v: float) -> str:
+    return f"{'-' if v < 0 else ''}S/ {abs(v):,.0f}"
+
+
+def _lineas_simulacion(s: dict) -> list[str]:
+    L = [f"Si gastas {_soles(s['gasto'])}, en {s['horizonte_dias']} dias tu saldo rondaria {_soles(s['saldo_esperado_con_gasto'])} en vez de {_soles(s['saldo_esperado_sin_gasto'])}; "
+         f"en un mes malo podria bajar hasta {_soles(s['saldo_bajo_con_gasto'])}.",
+         f"Ese gasto equivale al {s['porcentaje_del_ingreso_mensual']:.0f} % de tu ingreso de un mes."]
+    antes, despues = s["prob_rojo_sin_gasto"], s["prob_rojo_con_gasto"]
+    if despues >= 0.15:
+        cambio = f"sube de {antes:.0%} a {despues:.0%}" if despues > antes else f"es de {despues:.0%}"
+        L.append(f"Con ese gasto la probabilidad de quedar en rojo {cambio}: conviene esperar a tu proximo ingreso o bajar el monto.")
+    elif s["saldo_bajo_con_gasto"] < 0:
+        L.append("El pronostico no marca riesgo alto de quedar en rojo, pero en un mes malo si quedarias en negativo.")
+    else:
+        L.append("Con ese gasto el pronostico no marca riesgo de quedar en rojo.")
+    return L
+
+
+def _lineas_ahorro(a: dict) -> list[str]:
+    if not a["meses"]:
+        return ["Todavia no tengo meses completos de tus movimientos para resumir tu ahorro."]
+    if a["apartado_total"] > 0:
+        L = [f"En los ultimos {a['meses']} meses apartaste S/ {a['apartado_total']:,.0f}: unos S/ {a['apartado_promedio_mensual']:,.0f} al mes, y lo hiciste en {a['meses_con_ahorro']} de esos {a['meses']} meses."]
+        if a["mejor_mes"] and a["mejor_mes"]["apartado"] > a["apartado_promedio_mensual"]:
+            L.append(f"Tu mejor mes fue {a['mejor_mes']['mes']}, con S/ {a['mejor_mes']['apartado']:,.0f}.")
+    else:
+        L = [f"En los ultimos {a['meses']} meses no apartaste nada."]
+    L.append(f"Ahorras cerca del {a['porcentaje_del_ingreso_que_ahorras']:.0f} % de lo que ganas.")
+    falta = a["colchon_en_meses_de_ingreso"] < a["colchon_recomendado_en_meses"]
+    L.append(f"Tu colchon cubre {a['colchon_en_meses_de_ingreso']:.1f} meses de ingreso; para tu tipo de ingreso se recomiendan {a['colchon_recomendado_en_meses']:.1f}{', asi que todavia te falta' if falta else ', ya lo alcanzaste'}.")
+    if a.get("meta_de_ahorro"):
+        L.append(f"Tu meta de ahorro registrada es de S/ {a['meta_de_ahorro']:,.0f}.")
+    if a["ahorro_por_redondeo_mensual"]:
+        L.append(f"Si activas el redondeo de tus gastos sumarias unos S/ {a['ahorro_por_redondeo_mensual']:,.0f} mas al mes.")
+    return L
+
+
+def _lineas_ofertas(o: dict) -> list[str]:
+    L = []
+    if o["no_hay_en_el_catalogo"]:
+        L.append(f"En el catalogo de demostracion no hay {o['no_hay_en_el_catalogo']}, asi que no puedo darte una oferta para eso.")
+    if o["idoneas"]:
+        L.append("Lo que hoy si calza con tu perfil:")
+        L += [f"- {x['accion']} Por que: {x['por_que']}." for x in o["idoneas"]]
+    if o["todavia_no"]:
+        L.append("Lo que todavia no te conviene:")
+        L += [f"- {x['accion']} Por que: {x['por_que']}." for x in o["todavia_no"]]
+    if not o["idoneas"] and not o["todavia_no"]:
+        L.append("Hoy no tengo una oferta del catalogo que calce con tu perfil.")
+    return L
+
+
 def plantilla(est) -> str:
     c, d, intent = est["ctx"], est["datos"], est["intencion"]
     ficha = N.ficha(c["nivel"])
@@ -318,8 +440,16 @@ def plantilla(est) -> str:
     if intent in SIN_LLM:
         motivo = {"fuera_de_alcance": "Eso no lo hago: no muevo dinero, no compro ni vendo dolares y no te digo en que invertir.",
                   "fuera_de_tema": "De eso no puedo ayudarte: no resuelvo problemas de matematica, no escribo codigo ni respondo temas ajenos a tu plata.",
-                  "seguridad": "Eso no lo puedo hacer: no comparto instrucciones internas, claves ni informacion de otras personas, y mis reglas no se pueden saltar."}[intent]
+                  "seguridad": "Eso no lo puedo hacer: no comparto instrucciones internas, claves ni informacion de otras personas, y mis reglas no se pueden saltar."}.get(intent)
+        if motivo is None:
+            return f"{L[0]} Soy Lucas. {AYUDO_EN.replace('Si puedo', 'Puedo', 1)} Tu decides."
         return f"{L[0]} {motivo} {AYUDO_EN} Tu decides."
+    if intent == "simular":
+        return "\n".join([L[0], *_lineas_simulacion(d["simulacion"]), "Es una simulacion con tu pronostico, no una asesoria. Tu decides."])
+    if intent == "ahorro":
+        return "\n".join([L[0], *_lineas_ahorro(d["ahorro"]), "Tu decides."])
+    if intent == "ofertas":
+        return "\n".join([L[0], *_lineas_ofertas(d["ofertas"]), "Son productos de un catalogo de demostracion, no una oferta real. Tu decides."])
     if "pronostico" in d:
         p = d["pronostico"]["pronostico_30_dias"]
         mv = d["pronostico"].get("movimientos_recientes")
@@ -480,6 +610,9 @@ def construir_grafo(repo, buscador=None, modo: str = "agente_unico", usar_juez_l
             return {"usar_plantilla": True, "trazas": est["trazas"] + ["redactar:plantilla_por_alcance"]}
         if os.environ.get("LLM_USO", "ahorro") == "ahorro" and est["intencion"] not in INTENCIONES_CON_LLM:
             return {"usar_plantilla": True, "trazas": est["trazas"] + ["redactar:plantilla_por_ahorro"]}
+        if any(r.get("contexto", "Peru") != "Peru" for r in est.get("rag", [])[:1]):
+            # la mejor fuente es una guia de otro pais: la plantilla la cita con su aviso «no es norma peruana», que el redactor suele omitir
+            return {"usar_plantilla": True, "trazas": est["trazas"] + ["redactar:plantilla_por_fuente_extranjera"]}
         cadena = PV.cadena()
         datos_txt = _datos_texto(est)
         tono = N.ficha(est["ctx"]["nivel"])["tono"]
@@ -513,6 +646,8 @@ def construir_grafo(repo, buscador=None, modo: str = "agente_unico", usar_juez_l
         v = verificar(txt, _permitidos(est))
         if v["ok"] and not _termina_en_oracion_completa(txt):   # un borrador cortado a la mitad se rechaza igual que uno con una cifra inventada
             v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["respuesta cortada: no termina en una oracion completa"]}
+        if v["ok"] and _mezcla_otro_idioma(txt):
+            v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["no esta escrita en espanol"]}
         if v["ok"] and _filtra_el_prompt(txt):
             v = {**v, "ok": False, "prohibidos": v["prohibidos"] + ["filtra el nombre interno de la seccion de datos del prompt"]}
         jl = {}

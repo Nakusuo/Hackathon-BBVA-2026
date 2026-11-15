@@ -199,7 +199,15 @@ def test_texto_de_gemini_con_una_sola_parte_no_cambia_nada():
     assert PV.texto_de_gemini({"candidates": [{"content": {"parts": [{"text": "  Hola.  "}]}}]}) == "Hola."
 
 
-@pytest.mark.parametrize("texto,filtra", [("por ahora solo rige lo que dicen los DATOS.", True), ("DATOS:\nsaldo: 100", True), ("Tus datos estan protegidos.", False), ("Los datos del cliente llegan hasta noviembre.", False)])
+@pytest.mark.parametrize("texto,filtra", [("por ahora solo rige lo que dicen los DATOS.", True), ("DATOS:\nsaldo: 100", True), ("Nivel: Constructor. Tono: practico; propone metas medibles.", True), ("Tus datos estan protegidos.", False), ("Los datos del cliente llegan hasta noviembre.", False)])
 def test_el_juez_rechaza_un_borrador_que_nombra_la_seccion_interna_del_prompt(texto, filtra):
     from src.agente_analitico.grafo import _filtra_el_prompt
     assert _filtra_el_prompt(texto) is filtra
+
+
+@pytest.mark.parametrize("texto,esperado", [("Se voce ja escolheu essa cobertura, voce pode sair dela; ainda podem cobrar uma taxa. Tu decides.", True),
+                                            ("Si te cobran de mas, puedes reclamar ante la entidad y luego ante Indecopi. Tu decides.", False),
+                                            ("Tu colchon cubre una parte de tus gastos; no tienes deuda cara. Tu decides.", False)])
+def test_el_juez_rechaza_un_borrador_que_se_pasa_a_otro_idioma(texto, esperado):
+    from src.agente_analitico.grafo import _mezcla_otro_idioma
+    assert _mezcla_otro_idioma(texto) is esperado

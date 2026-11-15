@@ -38,6 +38,8 @@ def aplanar(obj, salida: set | None = None) -> set:
     if isinstance(obj, (int, float)):
         v = float(obj)
         salida.add(v)
+        if v < 0:   # el texto escribe un saldo negativo como «-S/ 290» y el patron lee 290, sin el signo
+            salida.add(-v)
         if 0 < abs(v) <= 1:
             salida.add(round(v * 100, 4))
         return salida

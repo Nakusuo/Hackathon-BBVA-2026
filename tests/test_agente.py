@@ -208,3 +208,51 @@ def test_el_ciclo_de_vigilancia_avisa_lo_urgente_primero_sin_repetir_y_sin_gasta
     assert 1 <= len(avisos) <= 3 and tipos.index("ingreso_extra") < tipos.index("gasto_atipico")
     assert all(a["llamadas_llm"] == 0 and a["mensaje"].rstrip().endswith("Tu decides.") for a in avisos)
     assert V.ciclo(apps["agente_unico"], repo, [cid], consultar_red=False) == []   # mismo hecho, mismo tope semanal: no se repite nada
+
+
+@pytest.mark.parametrize("modo", ["agente_unico", "multiagente"])
+def test_simular_un_gasto_vuelve_a_puntuar_el_pronostico_y_no_lo_calcula_el_redactor(agente, modo):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps[modo], cid, "Quiero comprar una entrada a un concierto por 450 soles, la preventa es en 2 semanas, ¿afecta mis ahorros?")
+    sin = repo.contexto(cid)["pronostico"]["saldo_esperado"]
+    con = repo._pronostico(repo.fila_de(cid), -450.0)["saldo_esperado"]
+    assert r["intencion"] == "simular" and r["proveedor"] == "plantilla" and r["llamadas_llm"] == 0 and not r["cifras_sin_respaldo"]
+    assert con < sin and f"S/ {con:,.0f}" in r["respuesta"] and f"S/ {sin:,.0f}" in r["respuesta"] and "S/ 450" in r["respuesta"]
+    assert "2 semanas" not in r["respuesta"] and r["respuesta"].rstrip().endswith("Tu decides.")
+
+
+def test_un_gasto_mas_grande_nunca_deja_un_saldo_esperado_mayor(agente):
+    repo, _, cid = agente
+    fila = repo.fila_de(cid)
+    saldos = [repo._pronostico(fila, -monto)["saldo_esperado"] for monto in (0.0, 100.0, 450.0, 2000.0)]
+    assert saldos == sorted(saldos, reverse=True)
+
+
+def test_el_resumen_de_ahorro_sale_del_panel_mensual_del_cliente(agente):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "haz un resumne de mis estadisticas de ahorro")
+    a = repo.ahorro_reciente(cid)
+    assert r["intencion"] == "ahorro" and not r["cifras_sin_respaldo"] and r["cifras_verificadas"] > 0
+    assert a["meses"] == 6 and (f"S/ {a['apartado_total']:,.0f}" in r["respuesta"] or "no apartaste nada" in r["respuesta"])
+    assert "colchon cubre" in r["respuesta"] and "En 30 dias" not in r["respuesta"]
+
+
+def test_un_producto_que_no_esta_en_el_catalogo_se_dice_y_no_se_ofrece_otro_como_si_respondiera(agente):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "estoy pensando comprar una camioneta, hay alguna oferta con el banco?")
+    assert r["intencion"] == "ofertas" and not r["cifras_sin_respaldo"]
+    assert "no hay un credito vehicular" in r["respuesta"] and "catalogo de demostracion" in r["respuesta"]
+    sin_vehiculo = responder(apps["agente_unico"], cid, "¿Hay alguna oferta para mí?")
+    assert "no hay un credito" not in sin_vehiculo["respuesta"]
+
+
+@pytest.mark.parametrize("saludo", ["hola", "Buenas tardes", "¿Qué puedes hacer?", "gracias"])
+def test_un_saludo_se_responde_al_instante_sin_modelo_ni_cifras_del_cliente(agente, saludo):
+    from src.agente_analitico.grafo import responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, saludo)
+    assert r["intencion"] == "saludo" and r["proveedor"] == "plantilla" and r["llamadas_llm"] == 0
+    assert "Puedo ver si llegas a fin de mes" in r["respuesta"] and "S/" not in r["respuesta"]

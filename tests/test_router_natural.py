@@ -43,7 +43,13 @@ CASOS = [
     ("Invierte mi plata en bitcoin", {"fuera_de_alcance"}), ("¿Dónde me conviene invertir?", {"fuera_de_alcance"}), ("Compra acciones de Apple", {"fuera_de_alcance"}),
     ("Abre una cuenta de ahorros por mí", {"fuera_de_alcance"}),
     # saludos y ayuda
-    ("Hola", {"general"}), ("Gracias", {"general"}), ("¿Qué puedes hacer?", {"general"}), ("Ayuda", {"general"}),
+    ("Hola", {"saludo"}), ("Gracias", {"saludo"}), ("¿Qué puedes hacer?", {"saludo"}), ("Ayuda", {"saludo"}),
+    # simular un gasto: solo con un monto en la frase
+    ("Quiero comprar una entrada a un concierto por 450 soles, la preventa es en 2 semanas, ¿afecta mis ahorros?", {"simular"}), ("¿Qué pasa si gasto S/ 1,200 en una laptop?", {"simular"}),
+    ("¿Puedo pagar 300 de matrícula este mes?", {"simular"}), ("Si me compro un celular de 899 soles, ¿llego a fin de mes?", {"simular"}), ("Pienso gastar 80 en una cena", {"simular"}),
+    ("¿Puedo comprar dólares con 500 soles?", {"fuera_de_alcance"}), ("¿Qué pasa si no pago mi tarjeta a tiempo?", {"educacion"}), ("Quiero comprar un auto, ¿hay alguna oferta?", {"ofertas"}),
+    # resumen de lo ahorrado
+    ("Haz un resumen de mis estadísticas de ahorro", {"ahorro"}), ("¿Cuánto llevo ahorrado?", {"ahorro"}), ("¿Cómo va mi ahorro?", {"ahorro"}), ("¿Cuánto he ahorrado este año?", {"ahorro"}),
 ]
 
 
@@ -51,3 +57,10 @@ CASOS = [
 def test_la_pregunta_no_se_desvia_a_otro_tema(pregunta, aceptables):
     obtenida = detectar_intencion(pregunta)
     assert obtenida in aceptables, f"{pregunta!r} -> {obtenida} (se esperaba {sorted(aceptables)})"
+
+
+@pytest.mark.parametrize("pregunta,monto", [("quiero comprar una entrada por 450 soles, la preventa es en 2 semanas", 450.0), ("¿y si gasto S/ 1,200.50?", 1200.5), ("si pago 3 cuotas de 250", 250.0),
+                                            ("puedo gastar 80 en una cena", 80.0), ("gasto el 20 % en 2 semanas", None), ("quiero comprar una casa", None)])
+def test_el_monto_de_la_frase_no_se_confunde_con_un_plazo_ni_un_porcentaje(pregunta, monto):
+    from src.agente_analitico.grafo import monto_de
+    assert monto_de(pregunta) == monto

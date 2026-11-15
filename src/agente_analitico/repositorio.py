@@ -52,6 +52,21 @@ class Repositorio:
         self._filas_mensual = None
         ruta_s = os.path.join(MODELOS, "serie_diaria.pkl")
         self.serie = joblib.load(ruta_s) if os.path.isfile(ruta_s) else None
+        self._panel = None
+
+    def fila_de(self, cid: str) -> int:
+        return self.origen[self.origen["cliente_idx"] == self.pos[cid]].index[0]
+
+    def ahorro_reciente(self, cid: str, meses: int = 6) -> dict:
+        """Lo que el cliente aparto en los ultimos meses completos anteriores a la fecha de los datos (columna ahorro_movido del panel mensual)."""
+        if self._panel is None:
+            p = datos.cargar_panel(self.carpeta)
+            self._panel = p[p["mes"] < str(self.fecha.to_period("M"))][["customer_id", "mes", "ahorro_movido"]]
+        x = self._panel[self._panel["customer_id"] == cid].sort_values("mes").tail(meses)
+        montos = [round(float(v), 0) for v in x["ahorro_movido"]]
+        mejor = int(x["ahorro_movido"].to_numpy().argmax()) if len(x) else None
+        return {"meses": len(montos), "apartado_total": round(sum(montos), 0), "apartado_promedio_mensual": round(sum(montos) / len(montos), 0) if montos else 0.0, "meses_con_ahorro": sum(m > 0 for m in montos),
+                "mejor_mes": {"mes": str(x["mes"].iloc[mejor]), "apartado": montos[mejor]} if montos and montos[mejor] > 0 else None}
 
     def serie_diaria(self, cid: str, neto_vivo: float = 0.0, dias: int = 30) -> dict | None:
         """Saldo esperado y banda al 80 % de cada uno de los proximos dias (1 a 30), en soles, desde la fecha de los datos.
