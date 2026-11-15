@@ -226,3 +226,6 @@ models/*.tmp
 .ipynb_checkpoints/
 models/*.log
 models/fig_*.png
+
+# Cache del tipo de cambio que escribe la API al consultar al BCRP
+data/bcrp/cache.json

@@ -1,15 +1,16 @@
-
-from datetime import date
-
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from src.api.schemas.fx import FXResponse
-
+from src.bcrp.servicio import SerieNoDisponible, ServicioBCRP, fx_contrato
 
 router = APIRouter(
     prefix="/api/v1",
     tags=["Exchange Rate"]
 )
+
+
+def obtener_servicio() -> ServicioBCRP:
+    return ServicioBCRP()
 
 
 @router.get(
@@ -18,7 +19,8 @@ router = APIRouter(
 )
 def get_exchange_rate(
     base: str = "USD",
-    quote: str = "PEN"
+    quote: str = "PEN",
+    servicio: ServicioBCRP = Depends(obtener_servicio)
 ):
     if base != "USD" or quote != "PEN":
         raise HTTPException(
@@ -26,14 +28,10 @@ def get_exchange_rate(
             detail="Solo se admite USD/PEN en el MVP"
         )
 
-    # Valor exclusivamente sintético para MG-03.
-    # No representa una cotización actual del BCRP.
-    return {
-        "base": "USD",
-        "quote": "PEN",
-        "rate": "3.75",
-        "date": date(2026, 1, 1),
-        "source": "synthetic_demo",
-        "is_fallback": True,
-        "is_stale": True
-    }
+    try:
+        return fx_contrato(servicio.obtener("tipo_cambio"))
+    except SerieNoDisponible:
+        raise HTTPException(
+            status_code=503,
+            detail="Tipo de cambio no disponible"
+        ) from None
