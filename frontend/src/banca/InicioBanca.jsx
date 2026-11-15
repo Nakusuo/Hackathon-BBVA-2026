@@ -55,53 +55,65 @@ export default function InicioBanca() {
             )}
           </Link>
         </div>
-
-        <div className="saldo-total">
-          <p>
-            {cuenta.nombre} ••• {cuenta.terminacion}
-          </p>
-          <div className="saldo-fila">
-            <p className="saldo">{monto(cliente.saldoHoy)}</p>
-            <button
-              type="button"
-              className="icono-boton"
-              aria-pressed={!montosVisibles}
-              aria-label="Ocultar montos"
-              onClick={() => setMontosVisibles(!montosVisibles)}
-            >
-              {montosVisibles ? <EyeSlash size={22} aria-hidden="true" /> : <Eye size={22} aria-hidden="true" />}
-            </button>
-          </div>
-          <p>Saldo disponible</p>
-        </div>
       </header>
 
       <main className="banca-contenido">
-        <div className="tarjeta-pila">
+        <div className="billetera">
           <section className="tarjeta-credito" aria-label={`${tarjeta.nombre} terminada en ${tarjeta.terminacion}`}>
-            <div className="tarjeta-credito-frente">
-              <svg className="tarjeta-credito-arcos" viewBox="0 0 200 200" aria-hidden="true">
-                <circle cx="200" cy="0" r="96" />
-              </svg>
-              <div className="tarjeta-credito-fila">
-                <span className="logotipo logotipo-claro">Vértice</span>
-                <span className="tarjeta-credito-tipo">Crédito</span>
-              </div>
-              <span className="tarjeta-credito-numero" aria-hidden="true">
-                •••• •••• •••• {tarjeta.terminacion}
-              </span>
+            <div className="tarjeta-credito-fila">
+              <span className="logotipo logotipo-claro">Vértice</span>
+              <span className="tarjeta-credito-tipo">Crédito</span>
             </div>
-            <div className="tarjeta-credito-pie">
-              <div>
-                <span>Pago del mes</span>
-                <strong>{monto(tarjeta.pagoMes)}</strong>
-              </div>
-              <div>
-                <span>Vence</span>
-                <strong>{fechaDia(tarjeta.vence)}</strong>
-              </div>
-            </div>
+            <span className="tarjeta-credito-numero" aria-hidden="true">
+              •••• •••• •••• {tarjeta.terminacion}
+            </span>
           </section>
+
+          <div className="bolsillo">
+            {/* Forma y costura son dos capas: el contenido lleva su propio fondo del mismo color (así el contraste se mide contra
+                lo que de verdad hay detrás) y la costura se dibuja encima. Estirado a propósito (preserveAspectRatio none):
+                el corte y la costura siguen al bolsillo sea cual sea su ancho. */}
+            <svg className="bolsillo-forma" viewBox="0 0 360 200" preserveAspectRatio="none" aria-hidden="true">
+              <path
+                className="bolsillo-cuerpo"
+                d="M0,28 Q0,0 28,0 H118 C146,0 150,24 180,24 C210,24 214,0 242,0 H332 Q360,0 360,28 V172 Q360,200 332,200 H28 Q0,200 0,172 Z"
+              />
+            </svg>
+            <div className="bolsillo-contenido">
+              <p className="bolsillo-cuenta">
+                {cuenta.nombre} ••• {cuenta.terminacion}
+              </p>
+              <div className="saldo-fila">
+                <p className="saldo">{monto(cliente.saldoHoy)}</p>
+                <button
+                  type="button"
+                  className="icono-boton"
+                  aria-pressed={!montosVisibles}
+                  aria-label="Ocultar montos"
+                  onClick={() => setMontosVisibles(!montosVisibles)}
+                >
+                  {montosVisibles ? <EyeSlash size={22} aria-hidden="true" /> : <Eye size={22} aria-hidden="true" />}
+                </button>
+              </div>
+              <p className="bolsillo-cuenta">Saldo disponible</p>
+              <div className="bolsillo-pago">
+                <div>
+                  <span>Pago del mes</span>
+                  <strong>{monto(tarjeta.pagoMes)}</strong>
+                </div>
+                <div>
+                  <span>Vence</span>
+                  <strong>{fechaDia(tarjeta.vence)}</strong>
+                </div>
+              </div>
+            </div>
+            <svg className="bolsillo-forma" viewBox="0 0 360 200" preserveAspectRatio="none" aria-hidden="true">
+              <path
+                className="bolsillo-costura"
+                d="M9,30 Q9,9 30,9 H121 C148,9 152,33 180,33 C208,33 212,9 239,9 H330 Q351,9 351,30 V170 Q351,191 330,191 H30 Q9,191 9,170 Z"
+              />
+            </svg>
+          </div>
         </div>
 
         {!permiso ? (
