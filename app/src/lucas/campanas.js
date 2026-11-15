@@ -92,7 +92,7 @@ export function respuestaCampana(c, { precio = 0, marca = null } = {}) {
   }
   const ahorro = ahorroCon(c, precio)
   const inicio = marca
-    ? `Para esa marca no hay campaña. Con ${c.aliado} tu banco tiene ${beneficio(c)} en ${c.rubro}, ${c.condicion}.`
+    ? `Para eso no hay campaña. La que hay es con ${c.aliado}: ${beneficio(c)} en ${c.rubro}, ${c.condicion}.`
     : `Sí: con ${c.aliado} tu banco tiene ${beneficio(c)} en ${c.rubro}, ${c.condicion}.`
   const cierre = ahorro
     ? ` Pagarías ${enSoles(precio - ahorro)} y te ahorras ${enSoles(ahorro)}. ¿Quieres más info?`
