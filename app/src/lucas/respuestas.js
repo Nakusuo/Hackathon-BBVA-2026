@@ -527,7 +527,7 @@ const NO_ES_MARCA =
 const AFIRMA = '(si|sip|claro|dale|ya|ok|okey|bueno|pues|quiero|por favor|porfa|cuentame|me interesa|mas info\\w*|como funciona|como la uso|condiciones)'
 const QUIERE_INFO = new RegExp(`^${AFIRMA}([\\s,!.?]+${AFIRMA})*[\\s,!.?]*$`)
 // «no, pero ¿llego a mi cobro?» es otra pregunta: el rechazo va a secas, igual que el «sí».
-const NO_QUIERE = /^(no|nop|nel|nah|paso|ahorita no|despues)([\s,!.]+(gracias|me interesa|no me interesa|quiero|por ahora|esta vez|lucas))*[\s!.,?]*$/
+const NO_QUIERE = /^(no|nop|nel|nah|paso|ahorita no|despues)([\s,!.]+(gracias|me interesa|no me interesa|quiero|nada mas|por ahora|esta vez|lucas))*[\s!.,?]*$/
 
 // Une lo nuevo de la meta con lo que ya se sabía. Si nombra otra cosa con su precio, es una meta nueva.
 // Un monto dentro de una meta puede ser el precio, lo que ya tiene o la inicial.
@@ -659,7 +659,8 @@ function leer(pregunta, contexto, cliente) {
 
   const conMontoOFecha = montoLeido !== null || fechaDeMeta(texto, hoy) !== null
   const pideGasto = montoValido && /(gast|regalo|pag)/.test(texto)
-  const pideCobro = /(cobro|fin de mes|rojo)/.test(texto)
+  // «¿cuánto puedo gastar hoy?» es la pregunta de Lucas: se responde con el gasto seguro hasta el cobro.
+  const pideCobro = /(cobro|fin de mes|rojo|cuanto puedo gastar)/.test(texto)
   const pideCategorias = /(gasto mas|en que gasto|categoria|donde se va)/.test(texto)
   const otroTema = pideGasto || pideCobro || pideCategorias
   const tema = (t, m = montoValido) => ({ intencion: t, contexto: { ...contexto, tema: t, monto: m } })
@@ -695,7 +696,9 @@ function leer(pregunta, contexto, cliente) {
     return { intencion: 'campana-detalle', contexto }
   }
   // Un «sí» o «no» suelto después de la meta contesta a «¿Para cuándo lo quieres?»: falta la fecha.
-  if (hayMeta(contexto) && (QUIERE_INFO.test(texto) || NO_QUIERE.test(texto))) return { intencion: 'sigue-meta', contexto }
+  if (hayMeta(contexto) && (QUIERE_INFO.test(texto) || NO_QUIERE.test(texto))) {
+    return { intencion: 'sigue-meta', rechaza: NO_QUIERE.test(texto), contexto }
+  }
 
   const esMeta =
     pideMeta || (enMeta && !otroTema && (conMontoOFecha || SIGUE_EL_TEMA.test(texto) || HABLA_DE_LA_META.test(texto)))
@@ -706,7 +709,7 @@ function leer(pregunta, contexto, cliente) {
   }
   if (/(ahorr|apart|guardar|colchon)/.test(texto)) return tema('ahorro')
   if (montoValido && /(gast|compr|regalo|pag)/.test(texto)) return tema('gasto')
-  if (/(llego|alcanza|fin de mes|cobro|rojo)/.test(texto)) return tema('cobro')
+  if (pideCobro || /(llego|alcanza)/.test(texto)) return tema('cobro')
   if (pideCategorias) return tema('categorias')
   // «¿y 80?» después de un gasto o de un ahorro: el mismo cálculo con el monto nuevo.
   if (montoValido && (contexto.tema === 'gasto' || contexto.tema === 'ahorro')) return tema(contexto.tema)
@@ -756,8 +759,8 @@ function campanaPedida(cliente, contexto, marca) {
   }
   const r = respuestaCampana(campana, { marca })
   return {
-    texto: `${r.texto.replace(/ ¿Cuánto cuesta\? Te digo cuánto ahorras\.$/, '')} Vale hasta el ${fechaCorta(campana.hasta)} de ${campana.hasta.slice(0, 4)}, antes de que juntes la plata a tu ritmo de hoy.`,
-    cifras: [],
+    texto: `${r.texto.replace(/ ¿Cuánto cuesta\? Te digo cuánto ahorras\.$/, '')} Vence el ${fechaCorta(campana.hasta)} de ${campana.hasta.slice(0, 4)}; a tu ritmo de hoy juntas la plata después.`,
+    cifras: [...r.cifras, { etiqueta: 'Vigente hasta', valor: `${fechaCorta(campana.hasta)} ${campana.hasta.slice(0, 4)}` }],
   }
 }
 
@@ -835,7 +838,7 @@ function conAporte(cliente, persona, contexto, aporte) {
 
 export function responder(pregunta, cliente, persona, previas = []) {
   const anterior = contextoDe(previas, cliente)
-  const { intencion, contexto, marca, ingreso, aporte, unico, categoria } = interpretar(pregunta, anterior, cliente)
+  const { intencion, contexto, marca, ingreso, aporte, unico, categoria, rechaza } = interpretar(pregunta, anterior, cliente)
   switch (intencion) {
     case 'categoria':
       return gastoEnCategoria(cliente, categoria)
@@ -853,9 +856,10 @@ export function responder(pregunta, cliente, persona, previas = []) {
       }
     case 'sigue-meta':
       return {
-        texto: contexto.meta.fecha
-          ? 'Listo. Pregúntame cuánto te falta o qué tip te ayuda más.'
-          : 'Dime para cuándo lo quieres, por ejemplo «para marzo» o «en 6 meses», y te digo si llegas.',
+        texto:
+          contexto.meta.fecha || rechaza
+            ? 'Listo. Si me dices una fecha, te digo si llegas; también puedo decirte qué tip te ayuda más.'
+            : 'Dime para cuándo lo quieres, por ejemplo «para marzo» o «en 6 meses», y te digo si llegas.',
         cifras: [],
         pose: 'ahorra',
       }
