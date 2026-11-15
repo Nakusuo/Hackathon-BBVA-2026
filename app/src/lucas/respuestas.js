@@ -527,7 +527,7 @@ const NO_ES_MARCA =
 const AFIRMA = '(si|sip|claro|dale|ya|ok|okey|bueno|pues|quiero|por favor|porfa|cuentame|me interesa|mas info\\w*|como funciona|como la uso|condiciones)'
 const QUIERE_INFO = new RegExp(`^${AFIRMA}([\\s,!.?]+${AFIRMA})*[\\s,!.?]*$`)
 // «no, pero ¿llego a mi cobro?» es otra pregunta: el rechazo va a secas, igual que el «sí».
-const NO_QUIERE = /^(no|nop|nel|nah|paso|ahorita no|despues)([\s,!.]+(gracias|me interesa|por ahora|esta vez|lucas))*[\s!.,?]*$/
+const NO_QUIERE = /^(no|nop|nel|nah|paso|ahorita no|despues)([\s,!.]+(gracias|me interesa|no me interesa|quiero|por ahora|esta vez|lucas))*[\s!.,?]*$/
 
 // Une lo nuevo de la meta con lo que ya se sabía. Si nombra otra cosa con su precio, es una meta nueva.
 // Un monto dentro de una meta puede ser el precio, lo que ya tiene o la inicial.
@@ -605,7 +605,8 @@ export function interpretar(pregunta, contexto, cliente) {
   const leido = leer(pregunta, contexto, cliente)
   let c = leido.contexto
   // Una campaña que no sirve a la meta no se muestra ni se guarda: así un «sí» no la trae de vuelta.
-  if (leido.intencion === 'meta' && c.campana && !campanaUtil(cliente, c)) c = { ...c, campana: null }
+  const conMeta = leido.intencion === 'meta' || leido.intencion === 'aporte'
+  if (conMeta && c.campana && !campanaUtil(cliente, c)) c = { ...c, campana: null }
   const conPrecio = Boolean(c.meta.monto || c.meta.inicial)
   const ofrecida =
     (leido.intencion === 'campana' && Boolean(c.campana) && conPrecio && Boolean(campanaUtil(cliente, c))) ||
@@ -666,8 +667,9 @@ function leer(pregunta, contexto, cliente) {
   // «12000» y luego «es una meta» o «para comprar ahora»: el monto de antes es el precio o el gasto.
   if (contexto.tema === 'monto-suelto' && montoLeido === null) {
     // «quiero comprarlo ahora» responde a la pregunta de Lucas: es un gasto, aunque diga «comprar».
-    if (/\b(ahora|hoy|ya mismo|al toque)\b/.test(texto)) return tema('gasto', contexto.monto)
-    if (pideMeta || /\b(meta|ahorr|junt)/.test(texto)) {
+    const hablaDeMeta = /\b(meta|ahorr|junt)/.test(texto)
+    if (!hablaDeMeta && /\b(ahora|hoy|ya mismo|al toque)\b/.test(texto)) return tema('gasto', contexto.monto)
+    if (pideMeta || hablaDeMeta) {
       const meta = metaCon({ ...CONTEXTO_VACIO.meta, monto: contexto.monto }, texto, hoy)
       return { intencion: 'meta', contexto: { ...contexto, tema: 'meta', meta, campana: campanaPara(meta.que)?.id ?? null } }
     }

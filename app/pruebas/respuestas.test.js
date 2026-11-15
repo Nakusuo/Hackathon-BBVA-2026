@@ -360,3 +360,19 @@ test('«quiero comprarlo ahora» tras un monto suelto es un gasto; un saludo cie
 test('«4x4» describe el carro, no su precio', () => {
   assert.match(charla(['quiero un carro de 40 mil a fin de 2027', 'que sea 4x4'])[1].texto, /^Tu carro cuesta S\/.40,000\./)
 })
+
+test('tras un monto suelto, «desde hoy» con «meta» o «juntar» sigue siendo meta', () => {
+  assert.match(charla(['500', 'es una meta para juntar desde hoy'])[1].texto, /^Tu meta es de S\/.500\./)
+  assert.match(charla(['12000', 'es una meta, empiezo a juntar desde hoy'])[1].texto, /^Tu meta es de S\/.12,000\./)
+})
+
+test('«no quiero» y «no, no me interesa» cierran la oferta', () => {
+  for (const no of ['no quiero', 'no, no me interesa']) {
+    assert.match(charla(['quiero ir al concierto, la entrada está 200', no])[1].texto, /^Listo, seguimos con tu plan\.$/, no)
+  }
+})
+
+test('un ritmo propuesto no guarda una campaña que no sirve: si luego sirve, se avisa', () => {
+  const r = charla(['quiero ir al concierto, la entrada está 450', 'si aparto 20 al mes', 'mejor cuesta 200'])
+  assert.match(r[2].texto, /Ticketera Sol\. Te ahorras S\/.40\. ¿Quieres más info\?$/)
+})
