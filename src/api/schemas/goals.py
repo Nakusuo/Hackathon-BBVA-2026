@@ -6,21 +6,32 @@ from typing import Literal
 from pydantic import BaseModel, Field, model_validator
 
 
+
 class SavingsGoal(BaseModel):
     id: str = Field(min_length=1)
     name: str = Field(min_length=1)
+
     target_amount: Decimal = Field(gt=0)
-    current_amount: Decimal = Field(ge=0)
+    current_amount: Decimal | None = Field(default=None, ge=0)
+
     currency: Literal["PEN"] = "PEN"
-    target_date: date
-    progress_percentage: float = Field(ge=0)
+    target_date: date | None = None
+
+    progress_percentage: float | None = Field(
+        default=None,
+        ge=0,
+        le=100
+    )
+
     suggested_biweekly_saving: Decimal | None = None
-projected_year_end_savings: Decimal | None = None
-completion_probability: float | None = Field(
-    default=None,
-    ge=0,
-    le=1
-)
+    projected_year_end_savings: Decimal | None = None
+
+    completion_probability: float | None = Field(
+        default=None,
+        ge=0,
+        le=1
+    )
+
 
 
 class GoalsResponse(BaseModel):

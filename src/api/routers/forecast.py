@@ -1,48 +1,16 @@
-
-from datetime import date, timedelta
-
-from fastapi import APIRouter, HTTPException
-
+from datetime import date,timedelta
+from fastapi import APIRouter,Depends
+from sqlalchemy.orm import Session
+from src.api.database import get_db
+from src.api.financial_data import financial_snapshot,balance_projection
 from src.api.schemas.forecast import ForecastResponse
+router=APIRouter(prefix='/api/v1/customers',tags=['Forecast'])
 
-
-router = APIRouter(
-    prefix="/api/v1/customers",
-    tags=["Forecast"]
-)
-
-
-@router.get(
-    "/{customer_id}/forecast",
-    response_model=ForecastResponse
-)
-def get_forecast(customer_id: str):
-    if customer_id != "demo-001":
-        raise HTTPException(
-            status_code=404,
-            detail="Cliente no encontrado"
-        )
-
-    # Datos sintéticos para probar el endpoint.
-    # Todavía no existe un modelo predictivo conectado.
-    start_date = date.today()
-
-    forecast_points = []
-
-    for day in range(1, 31):
-        predicted_balance = 1500 - (day * 10)
-
-        forecast_points.append({
-            "date": start_date + timedelta(days=day),
-            "predicted_balance": predicted_balance,
-            "lower_bound": predicted_balance - 100,
-            "upper_bound": predicted_balance + 100
-        })
-
-    return {
-        "customer_id": customer_id,
-        "currency": "PEN",
-        "horizon_days": 30,
-        "confidence_level": 0.80,
-        "forecast": forecast_points
-    }
+@router.get('/{customer_id}/forecast',response_model=ForecastResponse)
+def get_forecast(customer_id:str,db:Session=Depends(get_db)):
+    s=financial_snapshot(db,customer_id)
+    values=balance_projection(s,30)
+    # Banda de incertidumbre ilustrativa, no intervalo estadístico calibrado.
+    points=[{'date':date.today()+timedelta(days=i+1),'predicted_balance':v,
+        'lower_bound':round(v-abs(v)*0.10,2),'upper_bound':round(v+abs(v)*0.10,2)} for i,v in enumerate(values)]
+    return {'customer_id':customer_id,'currency':'PEN','horizon_days':30,'confidence_level':0.5,'forecast':points}
