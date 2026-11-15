@@ -19,13 +19,13 @@ Controles que aplicamos, cómo y dónde está la evidencia. Lo que no aplica se 
 | 5.15 | Control de acceso | Un rol de Postgres por componente; mínimo privilegio | `db/init.sql` | MI-03 |
 | 5.34 | Privacidad y protección de datos personales | Datos 100 % sintéticos, consentimiento, borrar memoria; alineado con Ley 29733 | Pantalla de consentimiento, endpoint «olvidar» | MC-01, JF-09 |
 | 8.2 | Derechos de acceso privilegiado | `lucas_admin` solo para migraciones; la app y el agente nunca lo usan | `db/init.sql`, `.env.example` | MI-03 |
-| 8.3 | Restricción de acceso a la información | RLS por `customer_id`; el agente no ve columnas sensibles | Test «cliente no ve datos de otro» | MI-03 |
-| 8.4 | Acceso al código fuente | Repo privado del equipo; ramas protegidas `main` y `develop` | Configuración de GitHub | MI-10 |
-| 8.8 | Gestión de vulnerabilidades técnicas | `pip-audit` sobre dependencias con versión fija | Salida en `make check` | MI-11 |
+| 8.3 | Restricción de acceso a la información | RLS por `customer_id`; el agente no ve columnas sensibles | Planificado: test «cliente no ve datos de otro»; hoy ningún componente se conecta a la base | MI-03 |
+| 8.4 | Acceso al código fuente | Repo privado del equipo; ramas protegidas `main` y `develop` | Planificado: configuración de GitHub | MI-10 |
+| 8.8 | Gestión de vulnerabilidades técnicas | `pip-audit` sobre dependencias con versión fija | Planificado: `make check` lo corre si está instalado, sin salida archivada | MI-11 |
 | 8.9 | Gestión de la configuración | Todo por código: `docker-compose.yml`, `Makefile`, `backend/requirements.txt` | Repo | MI-01, MI-02 |
 | 8.10 | Eliminación de información | «Olvidar lo que sabes de mí» borra memoria y respuestas | Test de borrado | JF-09 |
-| 8.11 | Enmascaramiento de datos | Logs y respuestas del agente sin montos de deuda exactos ni IDs completos | Test de logs | MI-11 |
-| 8.12 | Prevención de fuga de datos | Ollama local por defecto. Gemini (nivel gratuito, apagado por defecto) solo recibe salidas de tools sobre datos sintéticos, nunca identificadores ni texto libre del usuario | `PROMPTS.md`, test que revisa el contenido enviado al proveedor | JF-01, JF-11 |
+| 8.11 | Enmascaramiento de datos | Logs y respuestas del agente sin montos de deuda exactos ni IDs completos | Planificado: hoy solo se prueba que los logs del chat no traen el mensaje (`backend/tests/seguridad/`) | MI-11 |
+| 8.12 | Prevención de fuga de datos | Con Ollama o con plantillas nada sale de la máquina. Si se activa Gemini (nivel gratuito, apagado por defecto) o la API compatible, el texto libre de la pregunta sí viaja a ese proveedor junto con las salidas de las tools sobre datos sintéticos; el `customer_id`, el nombre, el documento y el contacto nunca se envían. Quitar la pregunta del envío es una decisión pendiente | `PROMPTS.md` (sección «Qué recibe el LLM»), `backend/tests/agent/test_grafo.py::test_iso_8_12_el_texto_del_usuario_nunca_llega_al_llm` | JF-01, JF-11 |
 | 8.13 | Copias de respaldo | Los datos se regeneran con `make data` (semilla fija); el RAG desde `docs/rag/` | README | DX-02 |
 | 8.15 | Registro de eventos (logging) | Log de accesos a la API y de cada llamada a tools del agente, sin datos sensibles | `backend/src/api` middleware | MI-05 |
 | 8.16 | Monitoreo | Latencia y errores por endpoint en el panel Evidencia | Panel | MI-05, MC-07 |
@@ -34,11 +34,11 @@ Controles que aplicamos, cómo y dónde está la evidencia. Lo que no aplica se 
 | 8.26 | Requisitos de seguridad de la aplicación | Validación Pydantic, tools de solo lectura, sin operaciones con dinero | `backend/src/api`, `backend/src/agent` | MG-03, JF-03 |
 | 8.28 | Codificación segura | `ruff`, sin secretos en el código, consultas parametrizadas, sin `eval` | `make check`, `juez-tecnico` | Todos |
 | 8.29 | Pruebas de seguridad en desarrollo y aceptación | Casos adversos (inyección de prompt, SQL, acceso indebido) en el ciclo de pruebas | `backend/tests/seguridad/`, [pruebas-istqb.md](pruebas-istqb.md) | MI-11, JF-06 |
-| 8.31 | Separación de entornos | `.env` de desarrollo distinto del de demo; la base de demo se crea desde cero | README | MI-07 |
+| 8.31 | Separación de entornos | `.env` de desarrollo distinto del de demo; la base de demo se crea desde cero | Planificado: sin evidencia en el repo | MI-07 |
 | 8.32 | Gestión de cambios | Todo cambio entra por PR a `develop` con revisión | GitHub | Todos |
 | 8.33 | Información de prueba | Solo datos sintéticos; nunca datos reales en pruebas | `data/QUALITY.md` | DX-02 |
 
-**No aplican en el hackathon** (se dice en `ARCHITECTURE.md`): controles físicos (tema 7), gestión de proveedores y nube (5.19 a 5.23; el único servicio en la nube es Gemini, opcional y sin datos personales), continuidad del negocio (5.29, 5.30), gestión de personal (tema 6). Con datos reales serían obligatorios.
+**No aplican en el hackathon** (el motivo de cada uno está en `ARCHITECTURE.md`, sección «Controles que no aplican»): controles físicos (tema 7), gestión de proveedores y nube (5.19 a 5.23; el único servicio en la nube es Gemini, opcional y sin datos personales), continuidad del negocio (5.29, 5.30), gestión de personal (tema 6). Con datos reales serían obligatorios.
 
 ## Para la demo y el pitch
 
