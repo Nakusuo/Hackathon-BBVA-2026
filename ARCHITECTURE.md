@@ -99,6 +99,10 @@ Grafo LangGraph: router por reglas → tools de solo lectura → redacción → 
 
 `src/agente_analitico/` es un segundo agente, de la parte de analítica, que usan `eval/qa_agente.py` y `eval/evaluar_agente.py`. Sus resultados son los que muestra la sección «Agente y RAG» de Evidencia.
 
+Clases del dominio del front y del agente ([fuente](docs/diagramas/clases.puml)):
+
+![Diagrama de clases de Lucas](docs/diagramas/clases.svg)
+
 ### 2.5 Analítica y evaluación (`src/generador/`, `src/models/`, `eval/`)
 
 ```
@@ -123,6 +127,10 @@ data/generator.py --perfil muestra|completo  →  src/generador/  →  Parquet (
 4. Cada pantalla pinta su parte de la vista. Avisos aplica su regla sobre esa misma vista.
 5. Al pulsar «Lo hago», agregar un gasto planificado o crear una meta, se guarda en el navegador y se vuelve al paso 3: todas las pantallas cambian juntas.
 
+![Diagrama de actividad del uso de Lucas](docs/diagramas/procesos.svg)
+
+Fuente: [docs/diagramas/procesos.puml](docs/diagramas/procesos.puml).
+
 ### 3.2 Lectura de la API
 
 `useDatosApi` llama a `cargarCliente` al entrar. `app/src/api/http.js` pide cada ruta con una espera de 4 s y `contrato.js` valida la forma de cada respuesta. Si una lectura falla (red, 404, 500, espera o formato), esa lectura usa su JSON de `data/sample/mocks/` y Lucas muestra «Sin conexión: te muestro tus últimos datos.». Las cifras de pantalla no cambian, porque salen del motor.
@@ -132,6 +140,10 @@ data/generator.py --perfil muestra|completo  →  src/generador/  →  Parquet (
 1. `clienteChat.js` corta primero los pedidos de operación, de compra de dólares o de inversión: no salen a la red.
 2. Sin `VITE_CHAT_AGENTE=si`, responde `respuestas.js`: plantillas que leen la pregunta con toda la conversación y calculan con el motor. Sus cifras van en un bloque «Calculado con tus datos».
 3. Con `VITE_CHAT_AGENTE=si`, llama a `POST /api/v1/chat` con una espera de 12 s. Solo muestra el texto del agente si viene con sus cifras verificadas, y en ese caso les pone ✓. Si no, lo dice y responde la plantilla. Hoy la API devuelve un mock sin verificar, así que siempre responde la plantilla.
+
+El diagrama muestra el flujo con `POST /api/v1/chat` ya conectado a `agent.chat.responder`, que es la conexión en curso ([fuente](docs/diagramas/secuencia-chat.puml)):
+
+![Diagrama de secuencia del chat](docs/diagramas/secuencia-chat.svg)
 
 ### 3.4 Evidencia
 
