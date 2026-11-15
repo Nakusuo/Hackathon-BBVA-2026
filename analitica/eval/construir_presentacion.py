@@ -103,7 +103,7 @@ def serie_diaria_ejemplo(repo) -> str:
     f = c["forecast"]
     x = list(range(1, len(f) + 1))
     fig, (ax,) = base("Asi ve el cliente su saldo de los proximos 30 dias",
-                      "Linea = saldo esperado; banda = rango en el que cae el saldo 8 de cada 10 veces. Cliente sintetico; el pronostico no es un saldo garantizado",
+                      "Linea: saldo esperado. Banda: donde cae el saldo 8 de cada 10 veces. Cliente sintetico; no es un saldo garantizado",
                       "backend/src/agente_analitico/contrato.py (respuesta del endpoint /forecast)")
     ax.fill_between(x, [v["lower_bound"] for v in f], [v["upper_bound"] for v in f], color=AZUL, alpha=0.18, linewidth=0, zorder=2)
     ax.plot(x, [v["predicted_balance"] for v in f], color=AZUL, linewidth=2.4, zorder=4)
@@ -247,35 +247,35 @@ def arquitectura() -> str:
     ax.set_ylim(0, 1)
     ax.axis("off")
     ax.set_position([0, 0, 1, 1])   # los ejes ocupan toda la figura: las coordenadas de cajas y textos coinciden
-    fig.text(0.015, 0.975, "Arquitectura de Lucas: de los datos a una respuesta verificada", fontsize=15, fontweight="bold", color=TINTA, va="top")
-    fig.text(0.015, 0.935, "Los modelos calculan; el LLM solo redacta; un verificador determinista rechaza cualquier cifra que no venga de una herramienta", fontsize=10, color=TINTA_2, va="top")
+    fig.text(0.015, 0.975, "Arquitectura de Lucas: de los datos a una respuesta verificada", fontsize=19, fontweight="bold", color=TINTA, va="top")
+    fig.text(0.015, 0.935, "Los modelos calculan; el LLM solo redacta; un verificador determinista rechaza cualquier cifra que no venga de una herramienta", fontsize=12.5, color=TINTA_2, va="top")
     capas = [("DATOS", 0.80, [("Generador sintetico\n500 clientes, 3.3 M movimientos", AZUL), ("BCRP: IPC y tipo de cambio\n(tiempo real)", VERDE), ("ENFEN: El Nino\n(tiempo real)", VERDE), ("Normas laborales y fuentes oficiales\n(RAG nivel A)", VERDE)]),
              ("MODELOS", 0.62, [("Segmentacion\nK-Prototypes", AZUL), ("Pronostico 30 dias y serie diaria\nLightGBM + conformal", AZUL), ("Alerta de rojo y dia de riesgo\nclasificador calibrado", AZUL), ("Politica de ahorro y puntos\nreproduccion contrafactual", AZUL)]),
              ("CONOCIMIENTO", 0.44, [("RAG\nFAISS + BM25 + CRAG", NARANJA), ("Calendario laboral\ngratificacion, CTS", NARANJA), ("Datos vivos\nmovimientos nuevos", NARANJA), ("Vigilancia\nmax. 3 avisos por semana", NARANJA)])]
     xs = [0.05, 0.285, 0.52, 0.755]
     for nombre, y, cajas in capas:
-        fig.text(0.015, y + 0.062, nombre, fontsize=9, color=TINTA_2, fontweight="bold")
+        fig.text(0.015, y + 0.066, nombre, fontsize=11.5, color=TINTA_2, fontweight="bold")
         for x, (t, col) in zip(xs, cajas):
-            caja(ax, x, y - 0.03, 0.21, 0.115, t, col, tam=8.6)
+            caja(ax, x, y - 0.03, 0.21, 0.115, t, col, tam=11.5, envolver=24)
     for y0, y1 in ((0.77, 0.715), (0.59, 0.535)):
         for x in xs:
             flecha(ax, (x + 0.105, y0), (x + 0.105, y1))
     # agente
-    fig.text(0.015, 0.317, "AGENTE (LangGraph)", fontsize=9, color=TINTA_2, fontweight="bold")
+    fig.text(0.015, 0.337, "AGENTE (LangGraph)", fontsize=11.5, color=TINTA_2, fontweight="bold")
     pasos = [("Router\nreglas + seguridad", 0.05), ("Herramientas\ncifras con respaldo", 0.235), ("Verificador\nnumeros y prohibiciones", 0.42), ("LLM redacta\nGemini u otra API", 0.605), ("Verificador\nde nuevo", 0.79)]
     for t, x in pasos:
-        caja(ax, x, 0.215, 0.16, 0.115, t, VERDE, tam=8.6, relleno="#f3faf8")
+        caja(ax, x, 0.215, 0.16, 0.115, t, VERDE, tam=11, relleno="#f3faf8", envolver=17)
     for (_, a), (_, b) in zip(pasos, pasos[1:]):
         flecha(ax, (a + 0.16, 0.2725), (b, 0.2725))
     for x in (0.285, 0.52, 0.755):
         flecha(ax, (x + 0.105, 0.41), (min(max(x, 0.235), 0.74) + 0.08, 0.335), color=NARANJA, rad=0.0)
-    caja(ax, 0.20, 0.07, 0.27, 0.095, "Si el LLM falla o inventa una cifra: plantilla determinista", GRIS, tam=8.6)
-    caja(ax, 0.52, 0.07, 0.27, 0.095, "Traduccion es / en / qu con cifras y nombres protegidos", GRIS, tam=8.6)
+    caja(ax, 0.20, 0.07, 0.27, 0.095, "Si el LLM falla o inventa una cifra: plantilla determinista", GRIS, tam=11, envolver=30)
+    caja(ax, 0.52, 0.07, 0.27, 0.095, "Traduccion es / en / qu con cifras y nombres protegidos", GRIS, tam=11, envolver=30)
     flecha(ax, (0.68, 0.213), (0.35, 0.168), color=GRIS, estilo=(0, (4, 3)))
     flecha(ax, (0.87, 0.213), (0.70, 0.168), color=GRIS)
-    caja(ax, 0.82, 0.07, 0.15, 0.095, "API REST y app\n(integracion final)", AZUL, tam=8.6, relleno="#eef4fc")
+    caja(ax, 0.82, 0.07, 0.15, 0.095, "API REST y app (integracion final)", AZUL, tam=11, relleno="#eef4fc", envolver=16)
     flecha(ax, (0.79, 0.1175), (0.82, 0.1175))
-    fig.text(0.015, 0.012, "Datos sinteticos. Azul = modelos propios · verde = fuentes oficiales y agente · naranja = conocimiento del dominio · gris = salvaguardas", fontsize=8, color=TINTA_2)
+    fig.text(0.015, 0.012, "Datos sinteticos. Azul = modelos propios · verde = fuentes oficiales y agente · naranja = conocimiento del dominio · gris = salvaguardas", fontsize=10, color=TINTA_2)
     return guardar(fig, D, "arquitectura_del_sistema.png")
 
 
@@ -297,30 +297,39 @@ def grafo_agente(repo, buscador, modo: str) -> str:
     capas = {}
     for n in nodos:
         capas.setdefault(prof[n], []).append(n)
-    fig, ax = plt.subplots(figsize=(13.5, 2.0 + 1.25 * max(len(v) for v in capas.values())), dpi=200, facecolor=SUPERFICIE)
+    nl = max(capas) + 1
+    cols = (nl + 1) // 2   # el recorrido se parte en dos filas (de ida y de vuelta): cajas mas anchas y letra legible
+    fig, ax = plt.subplots(figsize=(13.5, 6.6), dpi=200, facecolor=SUPERFICIE)
     ax.axis("off")
     ax.set_position([0, 0, 1, 1])   # los ejes ocupan toda la figura: las coordenadas de cajas y textos coinciden
-    fig.text(0.012, 0.975, f"Grafo del agente ({modo.replace('_', ' ')}): {len(nodos)} nodos, {len(aristas)} conexiones", fontsize=14, fontweight="bold", color=TINTA, va="top")
-    fig.text(0.012, 0.925, "Generado desde app.get_graph() de LangGraph, el mismo grafo que se ejecuta. Linea continua = paso fijo; discontinua = decision segun el estado", fontsize=9.5, color=TINTA_2, va="top")
-    W, H = 0.082, 0.085
+    fig.text(0.012, 0.965, f"Grafo del agente ({modo.replace('_', ' ')}): {len(nodos)} nodos, {len(aristas)} conexiones", fontsize=17, fontweight="bold", color=TINTA, va="top")
+    fig.text(0.012, 0.905, "Generado desde app.get_graph() de LangGraph, el mismo grafo que se ejecuta. Linea continua = paso fijo; discontinua = decision segun el estado", fontsize=11.5, color=TINTA_2, va="top")
+    W, H = 0.145, 0.105
+    paso = (0.97 - 0.03 - W) / max(cols - 1, 1)
     xy = {}
-    nmax = max(len(v) for v in capas.values())
     for d, lst in capas.items():
-        x = 0.03 + d * (0.94 - W) / max(capas)
+        col, fila = (d, 0) if d < cols else (2 * cols - 1 - d, 1)
+        x = 0.03 + col * paso
+        banda_sup = 0.80 - fila * 0.42   # parte alta de cada fila
         for i, n in enumerate(lst):
-            xy[n] = (x, 0.82 - (i + 0.5) * (0.74 / nmax) - H / 2 + (nmax - len(lst)) * (0.74 / nmax) / 2)
+            xy[n] = (x, banda_sup - H - i * (H + 0.09))
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
-    for a, b, cond in aristas:
+
+    def anclas(a, b):
         (xa, ya), (xb, yb) = xy[a], xy[b]
+        dx, dy = xb - xa, yb - ya
+        if abs(dx) >= abs(dy) * 0.6 and abs(dx) > 1e-6:
+            return ((xa + W, ya + H / 2), (xb, yb + H / 2)) if dx > 0 else ((xa, ya + H / 2), (xb + W, yb + H / 2))
+        return ((xa + W / 2, ya), (xb + W / 2, yb + H)) if dy < 0 else ((xa + W / 2, ya + H), (xb + W / 2, yb))
+    for a, b, cond in aristas:
+        p, q = anclas(a, b)
         retorno = prof[b] <= prof[a]
-        p = (xa + W if not retorno else xa + W / 2, ya + H / 2 if not retorno else ya + (H if yb >= ya else 0))
-        q = (xb if not retorno else xb + W / 2, yb + H / 2 if not retorno else yb + (0 if yb >= ya else H))
-        flecha(ax, p, q, color=NARANJA if cond else TINTA_2, estilo=(0, (4, 3)) if cond else "-", rad=0.25 if retorno else (0.08 if cond else 0.0))
+        flecha(ax, p, q, color=NARANJA if cond else TINTA_2, estilo=(0, (4, 3)) if cond else "-", rad=0.3 if retorno else (0.12 if cond else 0.0))
     for n, (x, y) in xy.items():
         especial = n in ("__start__", "__end__")
-        caja(ax, x, y, W, H, n.strip("_") if especial else n, GRIS if especial else VERDE, tam=8.2, relleno="#eeeeea" if especial else "#f3faf8", negrita=especial)
-    fig.text(0.012, 0.012, "Naranja discontinuo = salto condicional (por ejemplo, el verificador decide si reintenta, usa la plantilla o termina)", fontsize=8, color=TINTA_2)
+        caja(ax, x, y, W, H, n.strip("_") if especial else n, GRIS if especial else VERDE, tam=12.5, relleno="#eeeeea" if especial else "#f3faf8", negrita=especial, envolver=16)
+    fig.text(0.012, 0.012, "Naranja discontinuo = salto condicional (por ejemplo, el verificador decide si reintenta, usa la plantilla o termina)", fontsize=10.5, color=TINTA_2)
     return guardar(fig, D, f"grafo_{modo}.png")
 
 
@@ -657,6 +666,9 @@ ARCHIVOS = [  # (ruta relativa a docs/presentacion, que mensaje defiende)
     ("diagramas/grafo_agente_unico.md", "El mismo grafo en Mermaid (se ve en GitHub); fuente: app.get_graph().draw_mermaid()."),
     ("diagramas/grafo_multiagente.md", "El mismo grafo del multiagente en Mermaid."),
     ("mlflow_resumen.md", "Seguimiento con MLflow: cada comparacion (baseline frente a elegido) como corrida y cada modelo de produccion registrado con alias produccion."),
+    ("final/index.html", "LA PRESENTACION FINAL (10 laminas, interactiva, un solo archivo; abrir en el navegador y avanzar con flechas, F = pantalla completa). Usa los datos reales de models/*.json y del mapa de consultas."),
+    ("final/plantilla.html", "Fuente de la presentacion final: HTML y JS a mano. Se compila con `python analitica/eval/construir_presentacion_final.py` (opciones --demo-url y --equipo)."),
+    ("final/imagenes/LEEME.txt", "Donde dejar los diagramas de arquitectura y seguridad del equipo (arquitectura.png, seguridad.png): aparecen solos como pestana en las laminas 3 y 5."),
 ]
 
 
