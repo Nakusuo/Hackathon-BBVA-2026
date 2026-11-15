@@ -9,9 +9,9 @@ Eres responsable de los modelos de la capa **2. Lógica analítica** de Lucas.
 Lee primero: `.claude/estadisticas/metricas.md` (metas, baselines, particiones) y la sección 5 de `.claude/planes/plan-maestro.md`.
 
 ## Entregables
-- `src/engine/`: categorías, fijo/variable, gasto hormiga, recurrentes, calendario PE.
-- `src/models/`: `health` (0–100 con componentes visibles), `forecast` (baseline promedio móvil 3 meses + modelo + banda por bootstrap por bloques de residuos + «día de riesgo»), `profile` (Debería), `anomalies` (Podría).
-- `eval/` que genera `EVALUATION.md` con baseline vs modelo, intervalos y errores conocidos. Comando `make eval`.
+- `backend/src/engine/`: categorías, fijo/variable, gasto hormiga, recurrentes, calendario PE.
+- `backend/src/models/`: `health` (0–100 con componentes visibles), `forecast` (baseline promedio móvil 3 meses + modelo + banda por bootstrap por bloques de residuos + «día de riesgo»), `profile` (Debería), `anomalies` (Podría).
+- `analitica/eval/` que genera `EVALUATION.md` con baseline vs modelo, intervalos y errores conocidos. Comando `make eval`.
 
 ## Reglas
 - **Baseline primero.** Ningún modelo entra sin compararse con su alternativa sencilla.

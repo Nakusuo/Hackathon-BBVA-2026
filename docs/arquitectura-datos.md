@@ -8,7 +8,7 @@ El MVP tiene dos caminos que no se cruzan:
 
 | Camino | Para qué | Datos | Dónde se ven |
 |---|---|---|---|
-| **Demo del cliente** | Las pantallas de Lucas | Dos personas sintéticas escritas en `app/src/motor/personas.js` y lo que cada persona elige, guardado en el navegador | Banca, Resumen, Gastos, Qué viene, Avisos, Metas, Salud y Chat |
+| **Demo del cliente** | Las pantallas de Lucas | Dos personas sintéticas escritas en `frontend/src/motor/personas.js` y lo que cada persona elige, guardado en el navegador | Banca, Resumen, Gastos, Qué viene, Avisos, Metas, Salud y Chat |
 | **Analítica** | Entrenar y medir cada técnica contra su baseline | 500 clientes sintéticos del generador, en Parquet | Panel Evidencia, vía `models/metricas*.json` |
 
 ## 2. Camino de la demo
@@ -23,7 +23,7 @@ graph LR
     F["data/sample/mocks/*.json"] -. "respaldo si la API falla" .-> D
 ```
 
-Lo que el navegador guarda (claves de `app/src/sesion.js` y `app/src/lucas/avisosGuardados.js`):
+Lo que el navegador guarda (claves de `frontend/src/sesion.js` y `frontend/src/lucas/avisosGuardados.js`):
 
 | Qué | Cuándo se borra |
 |---|---|
@@ -43,7 +43,7 @@ graph TD
     C --> D["Glosas y mensajes con sentimiento"]
     D --> E["Problemas de calidad sembrados y limpiado"]
     E --> F["Parquet en data/sample/ (versionado)<br/>o data/generado/ (no versionado), con meta.json"]
-    F --> G["src/models/ + eval/*.py"]
+    F --> G["backend/src/models/ + analitica/eval/*.py"]
     G --> H["models/*.pkl y models/metricas*.json"]
     H --> I["Panel Evidencia y docs/EVALUACION_ANALITICA.md"]
 ```
@@ -61,11 +61,11 @@ Tablas que produce el generador:
 | `mensajes` | Mensajes del usuario con su sentimiento |
 | `etiquetas_calidad` | Qué atípicos, duplicados y faltantes se sembraron |
 
-`meta.json` guarda la semilla, el número de clientes, las versiones de Python, numpy y pandas y la huella de los parámetros. `data/QUALITY.md` es el informe de calidad generado por `src/generador/reporte.py`.
+`meta.json` guarda la semilla, el número de clientes, las versiones de Python, numpy y pandas y la huella de los parámetros. `data/QUALITY.md` es el informe de calidad generado por `backend/src/generador/reporte.py`.
 
 ### Sin fuga en la evaluación
 
-`src/models/columnas.py` dice qué columnas puede ver un modelo. Las columnas de uso `etiqueta` (verdad de referencia) e `interna` (cómo se generó el dato) nunca entran a un modelo. El impacto en S/ (`src/models/impacto.py`) se mide repitiendo las decisiones sobre los flujos reales del periodo de prueba, no con el pronóstico que las eligió.
+`backend/src/models/columnas.py` dice qué columnas puede ver un modelo. Las columnas de uso `etiqueta` (verdad de referencia) e `interna` (cómo se generó el dato) nunca entran a un modelo. El impacto en S/ (`backend/src/models/impacto.py`) se mide repitiendo las decisiones sobre los flujos reales del periodo de prueba, no con el pronóstico que las eligió.
 
 ## 4. Clasificación (ISO/IEC 27001, control 5.12)
 

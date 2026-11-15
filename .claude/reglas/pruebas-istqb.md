@@ -7,9 +7,9 @@ Usamos los conceptos del programa ISTQB Certified Tester Foundation Level v4.0. 
 
 | Nivel | Qué prueba en Lucas | Quién | Dónde | Herramienta |
 |---|---|---|---|---|
-| **Componente** | Una función o clase: pronóstico, regla de seguridad, verificador de cifras | Autor del módulo | `tests/unit/` | pytest |
-| **Integración de componentes** | Módulos juntos: ingesta → Postgres → modelos; agente → tools → juez | Autor + su revisor | `tests/integracion/` | pytest + Postgres en Docker |
-| **Sistema** | El producto completo por la API y la UI, como lo usaría una persona | Dixon + todos | `tests/sistema/` y [../planes/pruebas.md](../planes/pruebas.md) | `make e2e` + pruebas manuales guiadas |
+| **Componente** | Una función o clase: pronóstico, regla de seguridad, verificador de cifras | Autor del módulo | `backend/tests/unit/` | pytest |
+| **Integración de componentes** | Módulos juntos: ingesta → Postgres → modelos; agente → tools → juez | Autor + su revisor | `backend/tests/integracion/` | pytest + Postgres en Docker |
+| **Sistema** | El producto completo por la API y la UI, como lo usaría una persona | Dixon + todos | `backend/tests/sistema/` y [../planes/pruebas.md](../planes/pruebas.md) | `make e2e` + pruebas manuales guiadas |
 | **Aceptación** | ¿Cumple los criterios de éxito y el flujo de la demo? | Todo el equipo + `juez-producto` | Checklist de la demo | Ensayo cronometrado |
 
 ## Tipos de prueba
@@ -18,7 +18,7 @@ Usamos los conceptos del programa ISTQB Certified Tester Foundation Level v4.0. 
 |---|---|
 | **Funcional** | Al agregar una gratificación aparece el aviso con su reparto |
 | **No funcional** | Rendimiento (< 2 s sin LLM), seguridad (ISO 27001, ver [seguridad-iso27001.md](seguridad-iso27001.md)), usabilidad (día de riesgo en < 60 s), accesibilidad AA |
-| **Caja blanca** | Cobertura de sentencias y ramas en `src/models` y `src/recommender` (meta ≥ 70 %) |
+| **Caja blanca** | Cobertura de sentencias y ramas en `backend/src/models` y `backend/src/recommender` (meta ≥ 70 %) |
 | **De confirmación** | Volver a correr el caso que falló, después del arreglo |
 | **De regresión** | `make test` y `make e2e` en cada PR; la suite de regresión no se salta |
 
@@ -56,7 +56,7 @@ Prioridad de los casos según el impacto de una falla:
 
 1. **Planificación:** alcance del ciclo y casos a ejecutar (Dixon).
 2. **Análisis y diseño:** de cada requisito salen sus casos con las técnicas de arriba.
-3. **Implementación:** casos automatizados en `tests/` y manuales en [../planes/pruebas.md](../planes/pruebas.md).
+3. **Implementación:** casos automatizados en `backend/tests/` y manuales en [../planes/pruebas.md](../planes/pruebas.md).
 4. **Ejecución:** se corre y se registra el resultado.
 5. **Monitoreo y control:** en cada checkpoint, Dixon reporta casos pasados, fallados y defectos abiertos.
 6. **Cierre:** al congelamiento, informe final en `EVALUATION.md` (sección Pruebas).
@@ -72,7 +72,7 @@ Prioridad de los casos según el impacto de una falla:
 - ≥ 90 % de los casos **altos** pasan.
 - 0 defectos críticos o altos abiertos.
 - 100 % de los requisitos DEBE con al menos un caso (matriz de trazabilidad).
-- Cobertura ≥ 70 % en `src/models` y `src/recommender`.
+- Cobertura ≥ 70 % en `backend/src/models` y `backend/src/recommender`.
 
 ## Reporte de defectos
 

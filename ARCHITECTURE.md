@@ -6,9 +6,9 @@ Responsable: Michael (arquitectura de sistema y seguridad). Describe lo que corr
 
 Lucas responde una pregunta: «¿cuánto puedo gastar o ahorrar este mes sin quedarme en rojo antes de mi próximo ingreso, y qué cambio me conviene más?». La arquitectura del MVP existe para que:
 
-1. **Cada cifra de cliente salga de un solo camino de cálculo.** Banca, Resumen, Qué viene, avisos, metas y chat llaman al mismo motor (`app/src/motor/`). Si dieran números distintos, la demo se contradiría.
+1. **Cada cifra de cliente salga de un solo camino de cálculo.** Banca, Resumen, Qué viene, avisos, metas y chat llaman al mismo motor (`frontend/src/motor/`). Si dieran números distintos, la demo se contradiría.
 2. **La demo funcione sin internet ni servidor.** El motor corre en el navegador; si la API no responde, Lucas lo dice y sigue con las mismas cifras.
-3. **Toda cifra de evidencia salga de una medición.** El panel Evidencia lee los `models/metricas*.json` que generan los scripts de `eval/`; ninguna cifra se escribe a mano.
+3. **Toda cifra de evidencia salga de una medición.** El panel Evidencia lee los `models/metricas*.json` que generan los scripts de `analitica/eval/`; ninguna cifra se escribe a mano.
 
 ### Objetivos y no objetivos del MVP
 
@@ -21,29 +21,29 @@ Lucas responde una pregunta: «¿cuánto puedo gastar o ahorrar este mes sin que
 ## 2. Componentes
 
 ```
-┌──────────────────────────── NAVEGADOR (app/, React + Vite) ────────────────────────────┐
+┌──────────────────────────── NAVEGADOR (frontend/, React + Vite) ────────────────────────────┐
 │  Banco Vértice: /ingresar → /consentimiento → /banca → /lucas/:seccion   ·  /evidencia  │
 │                                    │                                         │          │
-│                       app/src/motor/ (motor de cálculo)        models/metricas*.json    │
+│                       frontend/src/motor/ (motor de cálculo)        models/metricas*.json    │
 │                       personas.js · motor.js · cliente.js      (importados en la build) │
 │                                    │                                                    │
 │                       localStorage: persona, permiso, tips, planificados, metas, avisos │
 │                                    │                                                    │
-│                       app/src/api/ (lee y valida; respaldo en data/sample/mocks/)       │
+│                       frontend/src/api/ (lee y valida; respaldo en data/sample/mocks/)       │
 └────────────────────────────────────┼───────────────────────────────────────────────────┘
                                      │ HTTP /api/v1 (Vite lo pasa al puerto 8000)
 ┌────────────────────────────────────┼─────────────── PYTHON ────────────────────────────┐
-│  src/api/  FastAPI: 12 rutas con datos fijos de `demo-001`                              │
+│  backend/src/api/  FastAPI: 12 rutas con datos fijos de `demo-001`                              │
 │                                                                                         │
 │  Por separado, sin conexión a la API en el MVP:                                          │
-│  src/agent/            agente del chat (LangGraph: router → tools → redacción → juez)    │
-│  src/agente_analitico/ agente de la evaluación (memoria, vigilancia, traducción)         │
-│  src/generador/ → data/ → src/models/ → eval/ → models/*.pkl y models/metricas*.json     │
-│  src/rag/ (índice FAISS en docs/rag/indice/)   ·   src/bcrp/ (tipo de cambio con caché)  │
+│  backend/src/agent/            agente del chat (LangGraph: router → tools → redacción → juez)    │
+│  backend/src/agente_analitico/ agente de la evaluación (memoria, vigilancia, traducción)         │
+│  backend/src/generador/ → data/ → backend/src/models/ → analitica/eval/ → models/*.pkl y models/metricas*.json     │
+│  backend/src/rag/ (índice FAISS en docs/rag/indice/)   ·   backend/src/bcrp/ (tipo de cambio con caché)  │
 └─────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 2.1 Front (`app/`)
+### 2.1 Front (`frontend/`)
 
 React 19 con Vite, Recharts para los gráficos, Phosphor para los íconos y Manrope instalada como paquete, así no depende de internet.
 
@@ -56,21 +56,21 @@ React 19 con Vite, Recharts para los gráficos, Phosphor para los íconos y Manr
 | `src/evidencia/` | Panel para el jurado, armado con los `models/metricas*.json` |
 | `src/componentes/`, `src/estilos/` | Piezas comunes, tokens de diseño y temas claro y oscuro |
 
-### 2.2 Motor de cálculo (`app/src/motor/`)
+### 2.2 Motor de cálculo (`frontend/src/motor/`)
 
-Es el único que produce cifras de cliente. Es un sustituto simple del pronóstico y del recomendador de `src/models/`, hecho para que las pantallas nunca se contradigan mientras la API no devuelva datos de la misma persona.
+Es el único que produce cifras de cliente. Es un sustituto simple del pronóstico y del recomendador de `backend/src/models/`, hecho para que las pantallas nunca se contradigan mientras la API no devuelva datos de la misma persona.
 
 - `personas.js`: las dos personas sintéticas, independiente y formal, con sus cobros, pagos programados, gastos frecuentes, suscripciones, categorías, movimientos y tips. El arquetipo solo sirve para elegir a quién mostrar; nunca entra al cálculo.
 - `motor.js`: funciones puras. Saldo diario con banda (se abre con los días y se ensancha en cada cobro variable), peor día antes del cobro, días en rojo, gasto diario seguro, efecto de cada tip, apartado sin rojo y cuánto cabe en una fecha.
 - `cliente.js`: `vistaCon(elegidos, persona, pagosExtra, planificados)` arma la vista completa de la persona con sus tips, sus gastos planificados y la salud. **Todo lo que cambia con «Lo hago», con lo planificado o con la persona pasa por aquí.**
 
-Reglas que vigilan las pruebas (`app/pruebas/motor.test.js`, `personas.test.js`):
+Reglas que vigilan las pruebas (`frontend/pruebas/motor.test.js`, `personas.test.js`):
 
 1. Ninguna pantalla calcula una cifra por su cuenta: todas leen la vista de `vistaCon`.
 2. Las dos personas usan las mismas fórmulas; solo cambian sus datos.
 3. Cada tip se mide sobre los otros ya elegidos, así sus efectos se pueden sumar.
 
-### 2.3 API (`src/api/`)
+### 2.3 API (`backend/src/api/`)
 
 FastAPI con esquemas Pydantic. Expone 12 rutas bajo `/api/v1` más `/api/v1/health`, según el contrato de [docs/api.md](docs/api.md):
 
@@ -83,9 +83,9 @@ FastAPI con esquemas Pydantic. Expone 12 rutas bajo `/api/v1` más `/api/v1/heal
 | POST | `/chat` | Respuesta mock (`provider: "mock"`, sin verificar) |
 | POST | `/onboarding` | Valida cinco respuestas; sin clasificación |
 
-Las respuestas son de otra persona que la del motor (`demo-001`: saldo S/ 1,500, nunca en rojo, salud 72). Por eso el front las valida y muestra si llegaron, pero **ninguna cifra visible sale de la API**. `src/api/loader_pkl.py` sabe cargar los `.pkl` de `models/`, pero `main.py` todavía no lo usa.
+Las respuestas son de otra persona que la del motor (`demo-001`: saldo S/ 1,500, nunca en rojo, salud 72). Por eso el front las valida y muestra si llegaron, pero **ninguna cifra visible sale de la API**. `backend/src/api/loader_pkl.py` sabe cargar los `.pkl` de `models/`, pero `main.py` todavía no lo usa.
 
-### 2.4 Agente del chat (`src/agent/`)
+### 2.4 Agente del chat (`backend/src/agent/`)
 
 Grafo LangGraph: router por reglas → tools de solo lectura → redacción → juez → respuesta.
 
@@ -95,26 +95,26 @@ Grafo LangGraph: router por reglas → tools de solo lectura → redacción → 
 - **Juez** (`juez.py`): cada número de la respuesta tiene que salir de una tool, con el signo correcto, y cada cita tiene que existir. Si falla, reintenta una vez y luego responde la plantilla.
 - **RAG** (`rag.py`): busca en el índice de `docs/rag/indice/`, filtrado por módulo.
 
-`agent.chat.responder` tiene la forma de `POST /api/v1/chat`, pero la API todavía no lo llama. Por eso en el MVP el chat del front responde con sus plantillas (sección 3.3). El agente se prueba por consola y con `tests/agent/`. Modelos, prompts y medición: [PROMPTS.md](PROMPTS.md).
+`agent.chat.responder` tiene la forma de `POST /api/v1/chat`, pero la API todavía no lo llama. Por eso en el MVP el chat del front responde con sus plantillas (sección 3.3). El agente se prueba por consola y con `backend/tests/agent/`. Modelos, prompts y medición: [PROMPTS.md](PROMPTS.md).
 
-`src/agente_analitico/` es un segundo agente, de la parte de analítica, que usan `eval/qa_agente.py` y `eval/evaluar_agente.py`. Sus resultados son los que muestra la sección «Agente y RAG» de Evidencia.
+`backend/src/agente_analitico/` es un segundo agente, de la parte de analítica, que usan `analitica/eval/qa_agente.py` y `analitica/eval/evaluar_agente.py`. Sus resultados son los que muestra la sección «Agente y RAG» de Evidencia.
 
 Clases del dominio del front y del agente ([fuente](docs/diagramas/clases.puml)):
 
 ![Diagrama de clases de Lucas](docs/diagramas/clases.svg)
 
-### 2.5 Analítica y evaluación (`src/generador/`, `src/models/`, `eval/`)
+### 2.5 Analítica y evaluación (`backend/src/generador/`, `backend/src/models/`, `analitica/eval/`)
 
 ```
-data/generator.py --perfil muestra|completo  →  src/generador/  →  Parquet (data/sample/ o data/generado/)
-        →  src/models/ (pronóstico, salud, segmentación, clasificación, recomendador, ofertas, impacto…)
-        →  eval/*.py  →  models/*.pkl  +  models/metricas*.json  +  docs/EVALUACION_ANALITICA.md
-        →  app/src/evidencia/ (importa los JSON en la build)
+data/generator.py --perfil muestra|completo  →  backend/src/generador/  →  Parquet (data/sample/ o data/generado/)
+        →  backend/src/models/ (pronóstico, salud, segmentación, clasificación, recomendador, ofertas, impacto…)
+        →  analitica/eval/*.py  →  models/*.pkl  +  models/metricas*.json  +  docs/EVALUACION_ANALITICA.md
+        →  frontend/src/evidencia/ (importa los JSON en la build)
 ```
 
 - El generador usa semilla fija, catálogo de comercios ficticios, calendario peruano y series grabadas del BCRP (`data/raw/bcrp/`). `data/sample/` se versiona; `data/generado/` no.
-- Cada técnica de `src/models/` se mide contra su baseline en `eval/` y el resultado queda en `models/metricas*.json`.
-- `eval/puerta_de_calidad.py` revisa que las métricas estén al día con el código del que dependen (huella en `src/comun/huella.py`).
+- Cada técnica de `backend/src/models/` se mide contra su baseline en `analitica/eval/` y el resultado queda en `models/metricas*.json`.
+- `analitica/eval/puerta_de_calidad.py` revisa que las métricas estén al día con el código del que dependen (huella en `backend/src/comun/huella.py`).
 - El detalle de los datos está en [docs/arquitectura-datos.md](docs/arquitectura-datos.md) y las cifras, en [docs/EVALUACION_ANALITICA.md](docs/EVALUACION_ANALITICA.md).
 
 ## 3. Flujos
@@ -133,7 +133,7 @@ Fuente: [docs/diagramas/procesos.puml](docs/diagramas/procesos.puml).
 
 ### 3.2 Lectura de la API
 
-`useDatosApi` llama a `cargarCliente` al entrar. `app/src/api/http.js` pide cada ruta con una espera de 4 s y `contrato.js` valida la forma de cada respuesta. Si una lectura falla (red, 404, 500, espera o formato), esa lectura usa su JSON de `data/sample/mocks/` y Lucas muestra «Sin conexión: te muestro tus últimos datos.». Las cifras de pantalla no cambian, porque salen del motor.
+`useDatosApi` llama a `cargarCliente` al entrar. `frontend/src/api/http.js` pide cada ruta con una espera de 4 s y `contrato.js` valida la forma de cada respuesta. Si una lectura falla (red, 404, 500, espera o formato), esa lectura usa su JSON de `data/sample/mocks/` y Lucas muestra «Sin conexión: te muestro tus últimos datos.». Las cifras de pantalla no cambian, porque salen del motor.
 
 ### 3.3 Chat
 
@@ -147,13 +147,13 @@ El diagrama muestra el flujo con `POST /api/v1/chat` ya conectado a `agent.chat.
 
 ### 3.4 Evidencia
 
-`app/src/evidencia/cifras.js` importa los `models/metricas*.json` al construir la app. Cada cifra se pide por su clave; si la clave no existe, la build falla en vez de mostrar un número inventado. El panel muestra el archivo de origen de cada cifra.
+`frontend/src/evidencia/cifras.js` importa los `models/metricas*.json` al construir la app. Cada cifra se pide por su clave; si la clave no existe, la build falla en vez de mostrar un número inventado. El panel muestra el archivo de origen de cada cifra.
 
 ## 4. Datos y privacidad en el MVP
 
 | Dato | Dónde vive | Quién lo ve |
 |---|---|---|
-| Personas de la demo | `app/src/motor/personas.js` | Todo el que abre la app; son sintéticas |
+| Personas de la demo | `frontend/src/motor/personas.js` | Todo el que abre la app; son sintéticas |
 | Persona elegida, permiso, tips, planificados, metas, avisos vistos y respuestas «útil / no me sirve» | `localStorage` del navegador | Solo ese navegador. Retirar el permiso borra lo de esa persona; cambiar de persona descarta lo de la anterior |
 | Respuestas de ejemplo del contrato | `data/sample/mocks/` | Público en el repo |
 | Datos sintéticos de la analítica | `data/sample/` (versionado) y `data/generado/` (no versionado) | Equipo |
@@ -169,55 +169,61 @@ El diagrama muestra el flujo con `POST /api/v1/chat` ya conectado a `agent.chat.
 
 ```bash
 # Front (Node 20+)
-cd app && npm install
+cd frontend && npm install
 npm run dev        # http://localhost:5173; pasa /api al puerto 8000 (otra dirección con LUCAS_API)
-npm test           # pruebas de funciones (app/pruebas/)
-npm run e2e        # Playwright en 1366×768 y 390 px (app/e2e/)
+npm test           # pruebas de funciones (frontend/pruebas/)
+npm run e2e        # Playwright en 1366×768 y 390 px (frontend/e2e/)
 
 # API (desde la raíz; sin --reload en Windows, se cuelga al recargar)
-python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
-python -m pytest tests/api
+python -m uvicorn --app-dir backend src.api.main:app --host 127.0.0.1 --port 8000
+python -m pytest backend/tests/api
 
 # Agente por consola (sin LLM: --plantilla)
-cd src && python -m agent --plantilla
+cd backend/src && python -m agent --plantilla
 
 # Analítica
 python data/generator.py --perfil muestra
-python eval/entrenar_modelos.py
+python analitica/eval/entrenar_modelos.py
 ```
 
-Python usa dos archivos de dependencias que chocan en `langgraph` y `pypdf`: `requirements-ia.txt` (agente) y `requirements-analitica.txt` (analítica). Las pruebas de todo pasan instalando primero la analítica y luego `ollama`, `google-genai`, `langchain-google-genai`, `httpx` y `fastapi`. Variables de ejemplo en `.env.example`.
+Python usa dos archivos de dependencias que chocan en `langgraph` y `pypdf`: `backend/requirements-ia.txt` (agente) y `analitica/requirements-analitica.txt` (analítica). Las pruebas de todo pasan instalando primero la analítica y luego `ollama`, `google-genai`, `langchain-google-genai`, `httpx` y `fastapi`. Variables de ejemplo en `.env.example`.
 
 ## 6. Estructura de carpetas
 
 ```
-├── ARCHITECTURE.md  README.md  README_BACKEND.md  PROMPTS.md  pyproject.toml
-├── requirements-ia.txt  requirements-analitica.txt  .env.example
-├── app/            front: src/{banca,lucas,motor,api,evidencia,componentes,estilos}, pruebas/, e2e/
-├── src/
-│   ├── api/        FastAPI: main.py, routers/, schemas/, loader_pkl.py
-│   ├── agent/      agente del chat
-│   ├── agente_analitico/   agente de la evaluación
-│   ├── generador/  datos sintéticos
-│   ├── models/     pronóstico, salud, segmentación, clasificación, recomendador, ofertas, impacto…
-│   ├── rag/  bcrp/  comun/  datos_publicos/
+├── README.md  ARCHITECTURE.md  PROMPTS.md  pyproject.toml  docker-compose.yml  .env.example
+├── frontend/       React + Vite: src/{banca,lucas,motor,api,evidencia,componentes,estilos}, pruebas/, e2e/
+├── backend/
+│   ├── src/
+│   │   ├── api/        FastAPI: main.py, routers/, schemas/, loader_pkl.py
+│   │   ├── agent/      agente del chat
+│   │   ├── agente_analitico/   agente de la evaluación
+│   │   ├── generador/  datos sintéticos
+│   │   ├── models/     pronóstico, salud, segmentación, clasificación, recomendador, ofertas, impacto…
+│   │   └── rag/  bcrp/  comun/  datos_publicos/
+│   ├── tests/      api/, agent/, bcrp/ y pruebas de analítica
+│   └── requirements.txt  requirements-ia.txt
+├── analitica/
+│   ├── eval/       entrenamiento, evaluación y generación de documentos
+│   ├── notebooks/
+│   └── requirements-analitica.txt
 ├── data/           generator.py, parametros/, sample/ (con mocks/), raw/bcrp/, dictionary.md, QUALITY.md
-├── models/         *.pkl y metricas*.json
-├── eval/           entrenamiento, evaluación y generación de documentos
-├── docs/           api.md, casos-uso.md, arquitectura-datos.md, EVALUACION_ANALITICA.md, rag/, diagramas/
+├── models/         *.pkl y metricas*.json (los leen el backend, la analítica y el panel Evidencia)
 ├── db/init.sql     esquema de PostgreSQL (sin uso en el MVP)
-├── demo/           GUION.md y capturas
-└── tests/          api/, agent/, bcrp/ y pruebas de analítica
+├── docs/           api.md, README_BACKEND.md, casos-uso.md, arquitectura-datos.md, rag/, diagramas/, demo/ (guion y capturas)
+└── .claude/        instrucciones del proyecto, planes, reglas, agentes y registro del equipo
 ```
+
+Todos los comandos se corren desde la raíz: `data/` y `models/` se leen con rutas relativas a ella, y `pyproject.toml` apunta pytest a `backend/`.
 
 ## 7. Dueños
 
 | Pieza | Dueño |
 |---|---|
-| `app/` (front, motor, Evidencia), `demo/` | Marcela |
-| `src/api/`, `docs/api.md` | Miguel |
-| `src/agent/`, `src/bcrp/`, `PROMPTS.md` | Jeffrey |
-| `src/generador/`, `src/models/`, `src/agente_analitico/`, `src/rag/`, `eval/` | Diego |
+| `frontend/` (front, motor, Evidencia), `docs/demo/` | Marcela |
+| `backend/src/api/`, `docs/api.md` | Miguel |
+| `backend/src/agent/`, `backend/src/bcrp/`, `PROMPTS.md` | Jeffrey |
+| `backend/src/generador/`, `backend/src/models/`, `backend/src/agente_analitico/`, `backend/src/rag/`, `analitica/eval/` | Diego |
 | `db/init.sql`, `data/dictionary.md`, `docs/arquitectura-datos.md`, pruebas ISTQB | Dixon |
 | Arquitectura, seguridad, `docs/casos-uso.md` | Michael |
 
@@ -225,7 +231,7 @@ Python usa dos archivos de dependencias que chocan en `langgraph` y `pypdf`: `re
 
 | Riesgo | Mitigación |
 |---|---|
-| El motor del front y los modelos de `src/models/` dan cifras distintas para un cliente | En el MVP no se muestran juntos: las pantallas usan el motor y Evidencia usa las métricas de los modelos. La salud dice «Cálculo provisional» |
-| Alguien presenta la API, el agente o la ✓ como conectados | La demo de 60 s (`demo/GUION.md`) no depende de la API ni del LLM, y el plan B lo dice |
-| Se cae la API o el navegador en la demo | Lucas sigue sin la API; hay capturas en `demo/capturas/` y otra laptop |
+| El motor del front y los modelos de `backend/src/models/` dan cifras distintas para un cliente | En el MVP no se muestran juntos: las pantallas usan el motor y Evidencia usa las métricas de los modelos. La salud dice «Cálculo provisional» |
+| Alguien presenta la API, el agente o la ✓ como conectados | La demo de 60 s (`docs/demo/GUION.md`) no depende de la API ni del LLM, y el plan B lo dice |
+| Se cae la API o el navegador en la demo | Lucas sigue sin la API; hay capturas en `docs/demo/capturas/` y otra laptop |
 | Lo guardado en el navegador queda roto entre versiones | Cada lectura valida la forma y descarta lo roto (pruebas «datos rotos guardados en el navegador no tumban la app») |

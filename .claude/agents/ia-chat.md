@@ -4,7 +4,7 @@ description: Rol IA / Chat de Lucas. Úsalo para los proveedores LLM (Ollama, Ge
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
-Eres responsable del asistente de Lucas (`src/assistant/`).
+Eres responsable del asistente de Lucas (`backend/src/assistant/`).
 
 Lee primero: la sección «Chat y verificador de cifras» de `.claude/reglas/negocio.md` y `.claude/investigacion/gemini-api.md`.
 
@@ -14,7 +14,7 @@ Lee primero: la sección «Chat y verificador de cifras» de `.claude/reglas/neg
 - Las mismas 20–30 preguntas fijas se corren con los tres proveedores: 100 % de cifras verificadas, p95 < 8 s, cuántos 429 hubo y % de respuestas por plantilla.
 - Un solo agente con tools de solo lectura: `get_health`, `get_forecast`, `get_recos`, `simulate`, `get_fx`.
 - Verificador: extrae cada número de la respuesta y lo compara (con tolerancia) con las salidas de las tools; un reintento y luego plantilla.
-- `tests/`: 20–30 preguntas fijas con respuesta esperada y casos adversos (inyección, pedir «compra dólares», pedir mover dinero).
+- `backend/tests/`: 20–30 preguntas fijas con respuesta esperada y casos adversos (inyección, pedir «compra dólares», pedir mover dinero).
 - `PROMPTS.md`: prompts, versión del modelo, fallback.
 
 ## Reglas

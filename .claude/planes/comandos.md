@@ -12,7 +12,7 @@ git switch develop
 gh auth login                      # para abrir PR desde la terminal
 python -m venv .venv
 source .venv/bin/activate          # Windows Git Bash: source .venv/Scripts/activate
-pip install -r requirements.txt    # analítica, agente y API
+pip install -r backend/requirements.txt    # analítica, agente y API
 cp .env.example .env               # y completar valores locales
 ```
 
@@ -122,13 +122,13 @@ Mientras no exista el Makefile, la demo completa se levanta así (cada bloque en
 # Una sola vez: base de datos con los datos sintéticos y el RAG (unos 3 minutos)
 docker compose up -d
 source .venv/Scripts/activate && set -a && . ./.env && set +a
-python eval/cargar_a_postgres.py --crear --rag
+python analitica/eval/cargar_a_postgres.py --crear --rag
 
 # Terminal 1: API con el agente (carga modelos y datos de Postgres al arrancar)
-python -m uvicorn src.api.main:app --port 8000
+python -m uvicorn --app-dir backend src.api.main:app --port 8000
 
-# Terminal 2: front; con VITE_CHAT_AGENTE=si en app/.env el chat pregunta al agente
-cd app && npm run dev
+# Terminal 2: front; con VITE_CHAT_AGENTE=si en frontend/.env el chat pregunta al agente
+cd frontend && npm run dev
 ```
 
 Ollama debe estar abierto con `qwen2.5:3b` y `nomic-embed-text`. La app queda en `http://127.0.0.1:5173`.

@@ -6,7 +6,7 @@ skinparam packageStyle rectangle
 
 title Lucas: diagrama de clases del dominio y del agente
 
-package "Dominio del front (app/src)" {
+package "Dominio del front (frontend/src)" {
   class Persona <<personas.js>> {
     id
     saldoHoy
@@ -82,7 +82,7 @@ package "Dominio del front (app/src)" {
   RespuestaChat ..> Vista : plantilla calcula con
 }
 
-package "Agente del chat (src/agent, src/api)" {
+package "Agente del chat (backend/src/agent, backend/src/api)" {
   class ChatRequest <<Pydantic>> {
     customer_id
     message

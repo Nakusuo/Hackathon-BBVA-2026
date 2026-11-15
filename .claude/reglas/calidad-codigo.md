@@ -11,7 +11,7 @@ Si algo rompe una regla, se quita. Lo revisa el juez técnico antes de cada merg
 5. Sin `TODO` huérfanos: o se hace, o va a [../planes/estado.md](../planes/estado.md) con dueño.
 6. Sin `try/except` que se trague errores. Capturar lo concreto y decidir qué pasa (fallback, mensaje claro).
 7. Sin abstracciones por si acaso: nada de fábricas, clases base ni capas que hoy tienen un solo uso. Excepción acordada: `LLMProvider`.
-8. Sin dependencias nuevas sin motivo. Si se agrega una, va con versión fija en `requirements.txt`.
+8. Sin dependencias nuevas sin motivo. Si se agrega una, va con versión fija en `backend/requirements.txt`.
 9. Nombres claros. Términos del dominio en español y consistentes con el esquema (`fecha_hora`, `monto`, `colchon_meses`).
 10. Funciones cortas. Si un archivo pasa de ~300 líneas, partirlo.
 11. Cada cambio de lógica trae su test. Cada modelo trae su baseline.
@@ -37,5 +37,5 @@ Si algo rompe una regla, se quita. Lo revisa el juez técnico antes de cada merg
 ## Limpieza del repo
 
 - Sin archivos sueltos de prueba (`test2.py`, `nuevo.ipynb`, `copia_final.py`).
-- Notebooks solo en `eval/` o `notebooks/`, sin salidas pesadas.
+- Notebooks solo en `analitica/eval/` o `analitica/notebooks/`, sin salidas pesadas.
 - `.gitignore` al día: entornos, cachés, `.env`, volcados de la base, datos generados grandes.

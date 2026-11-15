@@ -9,10 +9,10 @@ Eres responsable de la API y del recomendador de Lucas.
 Lee primero: `.claude/reglas/negocio.md` (reglas de seguridad y pipeline del recomendador) y la sección 3 de `.claude/planes/plan-maestro.md`.
 
 ## Entregables
-- `src/api/`: FastAPI con endpoints para salud, pronóstico, recomendaciones, simulación, FX, chat y alta de gastos/metas.
-- `src/recommender/`: reglas candidatas → impacto (S/) × facilidad → ajuste por perfil → filtros de seguridad → top 3. Cada reco trae acción, impacto, por qué, supuestos, confianza y «tú decides»; se registra qué datos usó.
+- `backend/src/api/`: FastAPI con endpoints para salud, pronóstico, recomendaciones, simulación, FX, chat y alta de gastos/metas.
+- `backend/src/recommender/`: reglas candidatas → impacto (S/) × facilidad → ajuste por perfil → filtros de seguridad → top 3. Cada reco trae acción, impacto, por qué, supuestos, confianza y «tú decides»; se registra qué datos usó.
 - Simulador que reutiliza el pronóstico.
-- `src/fx/`: BCRP → caché → último valor → serie grabada.
+- `backend/src/fx/`: BCRP → caché → último valor → serie grabada.
 - Tests de las reglas de seguridad y de validaciones.
 
 ## Reglas
