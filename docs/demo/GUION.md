@@ -7,7 +7,7 @@ Las cifras de este guion son las que da el motor del front (`frontend/src/motor/
 
 ## Antes de empezar (no cuenta en los 60 s)
 
-1. Desde la raíz del repo, levantar la API: `uvicorn --app-dir backend src.api.main:app --host 127.0.0.1 --port 8000`. En otra terminal, `cd frontend` y `npm run dev`. Abrir `http://localhost:5173` en el navegador, a pantalla completa. Si al pie de Lucas aparece «No llegaron tus datos del servidor», la API no está levantada (ver plan B).
+1. Desde la raíz del repo, levantar la API: `uvicorn --app-dir backend src.api.main:app --host 127.0.0.1 --port 8000`. En otra terminal, `cd frontend` y `npm run dev`, con `VITE_CHAT_AGENTE=si` en `frontend/.env` (copiar `frontend/.env.example`) para que el chat pregunte al agente: medido en esta laptop, las preguntas del chat responden en menos de 1 s con cifras verificadas. Abrir `http://localhost:5173` en el navegador, a pantalla completa. Si al pie de Lucas aparece «No llegaron tus datos del servidor», la API no está levantada (ver plan B).
 2. Ingresar una vez con la persona independiente (la que viene elegida), aceptar el permiso con «Acepto, activar Lucas», entrar a Lucas, pulsar «Saltar» en la guía y volver a la banca. Así ni el permiso ni la guía aparecen durante la demo.
 3. Si en un ensayo quedaron tips activos, quitarlos con «Lo hago» otra vez (se recuerdan entre visitas). El aviso de Lucas tiene que decir −S/ 60 y los tips, «Días en rojo 2 → 0».
 4. Dejar la pantalla en la banca, con los montos visibles.
