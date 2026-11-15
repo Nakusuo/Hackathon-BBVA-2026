@@ -2,7 +2,7 @@
 import { ErrorApi } from '../api/http.js'
 import { preguntarAgente } from '../api/lucas.js'
 import { enSoles } from '../formato.js'
-import { esPedidoDeOperacion, responder as responderConPlantilla } from './respuestas.js'
+import { contextoDe, esPedidoDeOperacion, interpretar, responder as responderConPlantilla } from './respuestas.js'
 
 export const LARGO_MAXIMO = 500
 
@@ -86,6 +86,8 @@ export async function preguntarALucas(texto, { cliente, persona, conversacion, a
   })
   // Los pedidos de operación o inversión se cortan aquí: no hace falta mandarlos a ningún servidor.
   if (!activo || esPedidoDeOperacion(texto)) return plantilla()
+  // Las metas las arma el motor de la pantalla (lo que apartas y con qué tips): el agente las calcularía con otra persona.
+  if (['meta', 'aporte'].includes(interpretar(texto, contextoDe(previas, cliente), cliente).intencion)) return plantilla()
 
   let cuerpo
   try {
