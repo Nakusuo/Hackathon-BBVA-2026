@@ -31,7 +31,7 @@ Al pulsar «Lo hago» en un tip, se recalculan juntos el aviso, el gráfico, la 
 
 - **Las cifras de las pantallas** salen del motor del front (`frontend/src/motor/`), en el navegador. Funcionan sin internet y sin servidor.
 - **La API** (`backend/src/api/`, FastAPI) responde las 12 rutas del contrato con datos fijos de otra persona. El front la lee y la valida, pero no toma de ella ninguna cifra visible. Si se cae, Lucas lo dice y sigue igual.
-- **El agente del chat** (`backend/src/agent/`, LangGraph con juez de cifras) funciona por consola y con sus pruebas, pero la API todavía no lo llama. En la app, el chat responde con plantillas.
+- **El agente del chat** (`backend/src/agente_analitico/`, LangGraph con supervisor, 12 agentes especializados y juez de cifras) responde en `/chat`. La app lo usa con `VITE_CHAT_AGENTE=si`; sin esa variable, el chat responde con plantillas.
 - **La analítica** (`backend/src/models/`, `analitica/eval/`) entrena y mide los modelos sobre 500 clientes sintéticos. Sus resultados llegan a la app solo por el panel Evidencia.
 - **PostgreSQL**: el esquema está en `db/init.sql`, pero nada se conecta a la base en el MVP.
 
@@ -70,6 +70,31 @@ Agente y analítica: ver la sección 5 de [ARCHITECTURE.md](ARCHITECTURE.md). Su
 | [PROMPTS.md](PROMPTS.md) | Modelos, prompts y medición del agente |
 | [docs/EVALUACION_ANALITICA.md](docs/EVALUACION_ANALITICA.md) | Cifras de cada modelo frente a su baseline |
 | [frontend/README.md](frontend/README.md) | Detalle del front y sus pruebas |
+
+## Uso de IA
+
+**Borrador: falta la confirmación del equipo. Las marcas [pendiente] se resuelven antes de entregar.**
+
+**Herramientas.** Claude Code, con los modelos `claude-opus-5-5`, `claude-fable-5-2`, `claude-sonnet-5-5` y `claude-haiku-5-5` [medido: inventario de 20 sesiones de esta máquina, 75 pedidos humanos]. Los subagentes de `.claude/agents/` (investigador, codificador, uno por área, tester y tres jueces) se usaron para investigar, programar, probar y revisar. Las sesiones de los demás integrantes no están contadas [pendiente].
+
+**Cronología** (14–15 nov, hora de Perú): planificación y primer chat por plantillas; integración del front con la API y 6 rondas de jueces sobre el chat; agente único; escritorio web y registro de movimientos.
+
+**Qué hizo la IA y qué el equipo.** La IA escribió la mayor parte del código, las pruebas y la documentación a pedido de cada persona. El equipo definió problema, arquitectura y alcance, y decidió qué se unía (`.claude/planes/estado.md`, «Decisiones»).
+
+**Cómo se verificó.** Cada revisión del juez técnico corre pruebas, lint, build y Gitflow. Si la pantalla se ve en la demo, también pasa por el juez de producto y el de cumplimiento. Hay 69 veredictos en `.claude/planes/verificaciones.md`. Última medición de pytest: 1116 aprobadas y 1 omitida [medido].
+
+**Errores de la IA y correcciones** (de `verificaciones.md`):
+- El verificador de cifras aceptaba «S/ 290» con un saldo de -290. El juez técnico lo bloqueó y se corrigió.
+- Con gasto seguro 0, el front decía «puedes gastar hasta S/ 0 al día sin quedar en rojo». Se corrigió en la ronda siguiente.
+- Algunas recomendaciones del mock tenían cifras falsas. Se corrigieron antes de unir.
+- Un commit llevaba una línea de coautoría de IA. El juez técnico pidió quitarla.
+- Con el modelo de 1.500 millones de parámetros, el LLM inventó cifras en 2 de 5 preguntas. Por eso se usa el de 3.000 millones (`PROMPTS.md`).
+
+**IA dentro del producto.** El chat usa `qwen2.5:3b` con Ollama, en local. Solo redacta con los datos que le pasan las herramientas. Gemini está apagado por defecto. Hoy el código envía al proveedor el texto que escribe la persona, y eso no debe pasar con un proveedor externo: queda pendiente y no se activa hasta resolverlo. Detalle en [PROMPTS.md](PROMPTS.md).
+
+**Medido en el chat** [medido, `models/metricas_chat_ollama.json`, 46 preguntas]: cifras verificadas 96,7 %, adversas bloqueadas 100 %, 73,9 % por plantilla. Latencia p95 17,4 s frente al objetivo de 8 s [pendiente de resolver]. Las plantillas dan 100 % de cifras verificadas sin llamar al LLM.
+
+**Código y fuentes reutilizados.** Dependencias de `backend/requirements*.txt` y `analitica/requirements-analitica.txt`, con licencias [pendiente]. Ningún fragmento copiado confirmado [pendiente]. El RAG cita normas públicas (SBS, ENFEN, guías del Estado). Los datos son sintéticos.
 
 ## Límites
 
