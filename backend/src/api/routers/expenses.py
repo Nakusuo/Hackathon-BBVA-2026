@@ -1,47 +1,45 @@
+from datetime import datetime
 
-from datetime import datetime, timezone
-from uuid import uuid4
+from fastapi import APIRouter, HTTPException, Response
 
-from fastapi import APIRouter, HTTPException
-
+from src.agente_analitico import datos_vivos
+from src.api.agente import cliente_de_la_base
 from src.api.schemas.expenses import (
     ExpenseCreateRequest,
     ExpenseCreateResponse,
 )
 
-
-router = APIRouter(
-    prefix="/api/v1/customers",
-    tags=["Expenses"]
-)
+router = APIRouter(prefix="/api/v1/customers", tags=["Expenses"])
 
 
-@router.post(
-    "/{customer_id}/expenses",
-    response_model=ExpenseCreateResponse,
-    status_code=201
-)
-def create_expense(
-    customer_id: str,
-    request: ExpenseCreateRequest
-):
-    if customer_id != "demo-001":
-        raise HTTPException(
-            status_code=404,
-            detail="Cliente no encontrado"
+@router.post("/{customer_id}/expenses", response_model=ExpenseCreateResponse, status_code=201)
+def create_expense(customer_id: str, request: ExpenseCreateRequest, response: Response):
+    cliente = cliente_de_la_base(customer_id)
+    if cliente is None:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+
+    try:
+        registro = datos_vivos.registrar(
+            cliente,
+            "gasto",
+            float(request.amount),
+            categoria=request.category,
+            fecha=request.date,
+            id_mov=request.id,
         )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from None
 
-    # Registro simulado para MG-03.
-    # No se almacena en PostgreSQL.
-    expense_id = f"expense-{uuid4().hex[:8]}"
+    if registro["duplicado"]:
+        response.status_code = 200
 
     return {
-        "id": expense_id,
+        "id": registro["id"],
         "customer_id": customer_id,
-        "amount": request.amount,
+        "amount": registro["monto"],
         "currency": request.currency,
-        "category": request.category,
-        "description": request.description,
-        "date": request.date,
-        "created_at": datetime.now(timezone.utc)
+        "category": registro["categoria"],
+        "date": datetime.fromisoformat(registro["fecha"]).date(),
+        "created_at": datetime.fromisoformat(registro["registrado_en"]).astimezone(),
+        "duplicate": registro["duplicado"],
     }

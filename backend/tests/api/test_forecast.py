@@ -147,7 +147,7 @@ def test_forecast_cliente_desconocido_del_agente(monkeypatch):
 @pytest.mark.modelo_real
 @pytest.mark.skipif(
     not (
-        os.path.isdir(ruta("data", "generado"))
+        os.path.isdir(ruta("data", "generado", "saldo_diario"))
         and os.path.exists(os.path.join(MODELOS, "serie_diaria.pkl"))
     ),
     reason="faltan los datos generados o el modelo de serie diaria",
