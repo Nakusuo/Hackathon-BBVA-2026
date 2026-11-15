@@ -611,7 +611,7 @@ def seccion_presentacion() -> str:
 
 **Como esta hecha:** `docs/presentacion/final/plantilla.html` (HTML, CSS y JS a mano) + `eval/construir_presentacion_final.py`, que mete dentro los datos reales (`models/*.json`, `docs/presentacion/mapa_de_consultas.json`, series publicas del BCRP, QA y puerta de calidad) y las fuentes tipograficas. Nada de cifras escritas a mano en las laminas: si cambian los modelos, se vuelve a compilar y se actualizan.
 
-**Orden:** 1 portada (Conoce a Lucas y el enfoque general; la pregunta de apertura se dice en voz alta), 2 problematica y decision, 3 propuesta de solucion en lenguaje simple (te ayuda a...), 4 arquitectura y orquestacion (nodos clicables), 5 uso responsable de la IA (modelos y evidencia, perfiles, valor para la persona, como lee la IA, cuanto ahorra y como se integra), 6 eventos (El Nino, mercado y normas, movimientos), 7 Conoce a Lucas en vivo (solo el enlace), 8 beneficios para la persona y proximos pasos para quien integra.
+**Orden:** 1 portada (titulo del reto, Lucas y el enfoque general; la pregunta de apertura se dice en voz alta), 2 problematica y decision, 3 propuesta de solucion en lenguaje simple (te ayuda a...), 4 arquitectura y orquestacion (nodos clicables), 5 uso responsable de la IA (modelos y evidencia, perfiles, valor para la persona, como lee la IA, cuanto ahorra y como se integra), 6 eventos (El Nino, mercado y normas, movimientos), 7 Conoce a Lucas en vivo (solo el enlace), 8 beneficios para la persona y proximos pasos para quien integra.
 
 **Lo que falta enchufar (no requiere tocar codigo):**
 - Enlace de la demo en vivo: `python eval/construir_presentacion_final.py --demo-url URL`, o abrir `index.html?demo=URL`.
