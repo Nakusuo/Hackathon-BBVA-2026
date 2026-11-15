@@ -1,7 +1,7 @@
 # Comandos del equipo
 
 Copiar y pegar. Funcionan en Linux, macOS y en Windows con **Git Bash** o **WSL**.
-Requisitos: Git, Python 3.11, Docker, Make, GitHub CLI (`gh`) y Ollama.
+Requisitos: Git, Python 3.12 o más, Docker, Make, GitHub CLI (`gh`) y Ollama.
 
 ## 1. Solo la primera vez
 
@@ -62,7 +62,7 @@ Tipos de commit: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`. En español
 ## 5. Terminar la tarea y pedir revisión
 
 ```bash
-make check                              # ruff + tests, tiene que salir verde
+make check                              # ruff y pip-audit; luego make test
 git pull --rebase origin develop
 git push
 gh pr create --base develop --fill      # abre el PR
@@ -76,7 +76,7 @@ Luego manda el aviso `[LISTO]` al grupo (formato en [tareas.md](tareas.md)).
 gh pr list                              # ver PR abiertos
 gh pr checkout <número>                 # bajar su rama
 make check
-make e2e                                # si el cambio se ve en la demo
+(cd frontend && PW_PUERTO=5200 npm run e2e)   # si el cambio se ve en la demo
 gh pr review <número> --approve         # o: --request-changes -b "qué falta"
 git switch develop                      # volver a lo tuyo
 ```
@@ -106,17 +106,16 @@ git rebase --continue
 ## 9. Proyecto
 
 ```bash
-make db          # levanta Postgres con Docker
-make psql        # consola de Postgres
-make data        # genera datos sintéticos y los carga
-make test        # tests (< 1 min)
-make check       # ruff + tests
-make eval        # genera EVALUATION.md
-make run         # API + UI
-make e2e         # prueba del flujo completo
+make data        # genera los datos sintéticos de muestra (data/generator.py --perfil muestra)
+make test        # pytest -q y npm test en frontend
+make eval        # entrena y evalúa los modelos (analitica/eval/entrenar_modelos.py)
+make run         # API en el puerto 8000 y front con npm run dev
+make check       # ruff sobre backend/src y analitica/eval, y pip-audit si está instalado
 ```
 
-Mientras no exista el Makefile, la demo completa se levanta así (cada bloque en su terminal, desde la raíz):
+`PY` es el Python del Makefile: `.venv/Scripts/python.exe` si existe y, si no, `python`. Se cambia con `make test PY=python3`. No existen `make db`, `make psql` ni `make e2e`: la base se levanta con `docker compose` y el e2e con `PW_PUERTO=5200 npm run e2e` dentro de `frontend/`.
+
+Para levantar la demo completa con la base de datos y el RAG, a mano (cada bloque en su terminal, desde la raíz):
 
 ```bash
 # Una sola vez: base de datos con los datos sintéticos y el RAG (unos 3 minutos)

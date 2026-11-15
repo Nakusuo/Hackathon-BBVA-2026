@@ -1,6 +1,6 @@
 # Preguntas frecuentes
 
-Contenido reutilizable para una pantalla de preguntas frecuentes de la app. Cada respuesta se arma **sin LLM** (cero tokens) con un extracto de una fuente oficial o de libre uso del RAG, con su cita, y es la misma que da el agente. Generado por `eval/generar_faq.py` desde `data/faq/faq_semilla.json`; no es asesoria legal ni financiera.
+Contenido reutilizable para una pantalla de preguntas frecuentes de la app. Cada respuesta se arma **sin LLM** (cero tokens) con un extracto de una fuente oficial o de libre uso del RAG, con su cita, y es la misma que da el agente. Generado por `analitica/eval/generar_faq.py` desde `data/faq/faq_semilla.json`; no es asesoria legal ni financiera.
 
 ## ¿Que hago si me atrase en el pago de mis cuentas?
 

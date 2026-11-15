@@ -306,8 +306,9 @@ def seccion_rag_agente():
     if QA:
         r = QA["resumen"]
         lat = [x["segundos"] for x in QA["perfil"]]
+        idiomas = ", ".join(f"{k} {'OK' if v else 'con fallas'}" for k, v in r["idiomas"].items())
         txt += (f"**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo {r['reloj_fijo']})**: preguntas de perfil {r['perfil_ok']}, pedidos adversarios {r['adversas_ok']}, datos vivos y vigilancia {'OK' if r['datos_vivos_ok'] else 'con fallas'}, "
-                f"traduccion {', '.join(f'{k} {"OK" if v else "con fallas"}' for k, v in r['idiomas'].items())}; {r['tokens_gemini']['llamadas']} llamadas y {r['tokens_gemini']['entrada']:,} tokens de entrada con `{r['modelo']}`; "
+                f"traduccion {idiomas}; {r['tokens_gemini']['llamadas']} llamadas y {r['tokens_gemini']['entrada']:,} tokens de entrada con `{r['modelo']}`; "
                 f"latencia media por respuesta {sum(lat) / len(lat):.1f} s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.\n\n")
         if "apertura" in QA:
             txt += (f"**QA conversacional con Gemini real**: conversaciones de varias preguntas seguidas {r['conversacion_ok']} (sin cortarse ni repetirse), preguntas-trampa con datos que no existen {r['trampas_ok']} (sin inventar ni prometer), "
@@ -1085,6 +1086,8 @@ Generado por `analitica/eval/generar_docs.py` desde `models/metricas*.json`. Dat
 {seccion_qa()}
 ## 10. Idiomas: quechua y Google Cloud Translation
 {seccion_traduccion()}
+## 11. Modulos de reglas
+Ofertas (`backend/src/models/ofertas.py`), recomendador (`recomendador.py`), programa de puntos (`programa_puntos.py`), riesgo por clima (`riesgo_clima.py`), campanas (`campanas.py`) y calendario laboral (`calendario_laboral.py`) son reglas o catalogos, no modelos entrenados: no tienen baseline porque no hay nada que aprender. Se comprueban con pruebas de reglas en `backend/tests`: `test_modelos.py` (recomendador, idoneidad del credito, puntos y su tope, aviso de El Nino), `api/test_offers.py` (ofertas) y `test_calendario.py` (calendario laboral, con la frase literal de la norma). `campanas.py` no tiene prueba propia hoy.
 """
 
 

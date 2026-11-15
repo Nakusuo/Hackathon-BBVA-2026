@@ -5,4 +5,4 @@ markers = ["modelo_real: usa los datos y modelos generados en la maquina, sin re
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"

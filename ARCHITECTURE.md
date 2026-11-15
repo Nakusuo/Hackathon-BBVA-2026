@@ -162,8 +162,29 @@ El diagrama muestra el flujo con `POST /api/v1/chat` ya conectado a `agent.chat.
 
 - Todos los datos son sintéticos; Banco Vértice es ficticio y los comercios no son marcas reales.
 - El ingreso es solo visual: sus campos vienen llenos y bloqueados, para que nadie escriba datos reales.
-- El texto del usuario nunca llega al LLM del agente; Gemini está apagado por defecto (ISO 27001 8.12, ver [seguridad-iso27001.md](.claude/reglas/seguridad-iso27001.md)).
+- Con Ollama o plantillas, lo que escribe la persona no sale de la máquina. Gemini y la API compatible están apagados por defecto; si se activan, el texto de la pregunta viaja a ese proveedor (ISO 27001 8.12, ver [seguridad-iso27001.md](.claude/reglas/seguridad-iso27001.md) y [PROMPTS.md](PROMPTS.md)).
 - `db/init.sql` tiene listo el esquema de PostgreSQL con roles, RLS y pgcrypto, pero ningún componente del MVP se conecta a la base.
+
+### Activos
+
+| Activo | Dónde está | Nota |
+|---|---|---|
+| Datos sintéticos | `data/sample/` (versionado) y `data/generado/` (local) | Sin personas ni marcas reales; semilla fija |
+| Modelos entrenados | `models/*.pkl` y `models/metricas*.json` | Los `.pkl` se abren solo desde este repositorio |
+| Índice RAG | `docs/rag/` | Fuentes públicas con su hash |
+| Claves | `.env`, fuera del repo | `.env.example` lleva valores ficticios |
+| Base local | PostgreSQL en Docker (`db/init.sql`) | El MVP no se conecta a ella |
+
+### Controles que no aplican
+
+| Control | Motivo |
+|---|---|
+| Controles físicos (tema 7) | No hay oficinas ni equipos propios que proteger en el hackathon |
+| 5.19 a 5.23, proveedores y nube | El único servicio externo es Gemini, opcional y apagado por defecto |
+| 5.29 y 5.30, continuidad del negocio | Es un prototipo sin operación continua |
+| Gestión de personal (tema 6) | Equipo de hackathon, sin contratación ni cese |
+
+Con datos reales de un banco, todos serían obligatorios.
 
 ## 5. Cómo se corre
 
@@ -186,7 +207,7 @@ python data/generator.py --perfil muestra
 python analitica/eval/entrenar_modelos.py
 ```
 
-Python usa dos archivos de dependencias que chocan en `langgraph` y `pypdf`: `backend/requirements-ia.txt` (agente) y `analitica/requirements-analitica.txt` (analítica). Las pruebas de todo pasan instalando primero la analítica y luego `ollama`, `google-genai`, `langchain-google-genai`, `httpx` y `fastapi`. Variables de ejemplo en `.env.example`.
+Python 3.12 o más. Usa dos archivos de dependencias que chocan en `langgraph` y `pypdf`: `backend/requirements-ia.txt` (agente) y `analitica/requirements-analitica.txt` (analítica). Las pruebas de todo pasan instalando primero la analítica y luego `ollama`, `google-genai`, `langchain-google-genai`, `httpx` y `fastapi`. Variables de ejemplo en `.env.example`.
 
 ## 6. Estructura de carpetas
 

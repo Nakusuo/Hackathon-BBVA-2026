@@ -47,7 +47,7 @@ npm test           # pruebas de funciones
 npm run e2e        # Playwright (la primera vez: npx playwright install chromium)
 ```
 
-API, en otra terminal y desde la raíz (Python 3.11 o más, con `fastapi`, `uvicorn` y `pydantic`):
+API, en otra terminal y desde la raíz (Python 3.12 o más, con `fastapi`, `uvicorn` y `pydantic`):
 
 ```bash
 python -m uvicorn --app-dir backend src.api.main:app --host 127.0.0.1 --port 8000

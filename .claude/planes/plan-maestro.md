@@ -163,7 +163,7 @@ NoSQL aparte, GraphRAG, deep learning desde cero, multimodal, varios agentes, ub
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Stack:** Python 3.11, pandas, scikit-learn, `kmodes`, statsmodels, SciPy, `holidays`, PostgreSQL 16 + pgvector (Docker), SQLAlchemy/psycopg, FastAPI + Pydantic, LangGraph + Ollama, pytest, ruff.
+**Stack:** Python 3.12, pandas, scikit-learn, `kmodes`, statsmodels, SciPy, `holidays`, PostgreSQL 16 + pgvector (Docker), SQLAlchemy/psycopg, FastAPI + Pydantic, LangGraph + Ollama, pytest, ruff.
 **UI:** React + Recharts si Marcela lo domina; si no, Streamlit. Se decide a las 11:30 y no se cambia.
 **LLM** (detalle en [gemini-api.md](../investigacion/gemini-api.md)):
 1. **Ollama local**, por defecto en la demo.
