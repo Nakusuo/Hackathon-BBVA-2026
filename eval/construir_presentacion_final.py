@@ -125,7 +125,7 @@ def datos_publicos():
 
 
 TILDES = {"informacion": "información", "Si puedo": "Sí puedo", "matematica": "matemática", "codigo": "código", "proximos": "próximos", "dolares": "dólares", "cuanto": "cuánto", "ingresaras": "ingresarás", "gastaras": "gastarás",
-          "salud financiera": "salud financiera", "dias": "días", " tu salud": " tu salud", "decides": "decides", "Que ": "Qué ", "evacuacion": "evacuación", "Codigo": "Código", "Proteccion": "Protección", "Gestion": "Gestión"}
+          "salud financiera": "salud financiera", "dias": "días", " tu salud": " tu salud", "decides": "decides", "Que ": "Qué ", "evacuacion": "evacuación", "Codigo": "Código", "El Nino": "El Niño", "en que invertir": "en qué invertir", "Proteccion": "Protección", "Gestion": "Gestión"}
 
 
 def ortografia(texto: str) -> str:

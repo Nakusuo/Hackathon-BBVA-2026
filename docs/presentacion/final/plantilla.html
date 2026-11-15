@@ -64,7 +64,7 @@ img.zoom{cursor:zoom-in}
 .tres .decision{font:700 36px/1.25 var(--display);letter-spacing:-.01em}
 
 /* 3 orquestacion */
-#arq{position:absolute;left:0;top:0;width:1920px;height:1080px}
+#arq{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none}
 .colh{position:absolute;top:258px;font:700 26px var(--texto);color:var(--suave)}
 .nodo{position:absolute;width:296px;height:78px;border-radius:12px;border:2.5px solid var(--c);background:#fff;padding:10px 16px;transition:all .2s;overflow:hidden}
 .nodo b{display:block;font:700 25px/1.15 var(--texto)}
@@ -80,8 +80,8 @@ img.zoom{cursor:zoom-in}
 .nodo.persona.on{background:#143762}
 .tag{display:inline-block;font:700 18px var(--texto);border:2px solid currentColor;border-radius:14px;padding:0 10px;margin-left:8px;vertical-align:2px;opacity:.85}
 #arqPanel{position:absolute;left:120px;top:868px;width:1680px;height:130px;border-top:2px solid var(--linea);padding-top:14px}
-#arqPanel h4{font:800 38px/1.1 var(--display);letter-spacing:-.01em;display:inline-block;margin-right:20px}
-#arqPanel p{font-size:27px;line-height:1.3;margin-top:6px;max-width:1160px;display:inline-block;vertical-align:top}
+#arqPanel h4{font:800 38px/1.1 var(--display);letter-spacing:-.01em;display:block}
+#arqPanel p{font-size:27px;line-height:1.3;margin-top:6px;max-width:1120px}
 #arqPanel .ind{position:absolute;right:0;top:16px;text-align:right}
 #arqPanel .ind div{font:800 34px/1.1 var(--display)}#arqPanel .ind small{display:block;font-size:20px;color:var(--suave);font-weight:400}
 .vista{position:absolute;left:120px;top:256px;width:1680px;height:720px;display:flex;align-items:center;justify-content:center}
@@ -91,7 +91,7 @@ img.zoom{cursor:zoom-in}
 #cons{position:absolute;left:120px;top:262px;width:610px}
 #cons button{display:block;width:610px;height:78px;margin-bottom:12px;padding:0 22px;font-size:27px;line-height:78px;border-radius:12px;border:2px solid var(--linea);background:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .2s}
 #cons button.on{border-color:var(--c);background:var(--cl);font-weight:700}
-#grafo{position:absolute;left:0;top:0;width:1920px;height:1080px}
+#grafo{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none}
 .gn{position:absolute;width:150px;height:76px;border-radius:12px;border:2.5px solid var(--linea);background:#fff;padding:10px;text-align:center;font:600 22px/1.15 var(--texto);display:flex;align-items:center;justify-content:center;transition:all .3s}
 .gn.circ{width:64px;height:64px;border-radius:32px;font-size:18px;padding:0}
 .gn.paso{border-color:var(--c);background:var(--cl);font-weight:700}
@@ -111,20 +111,21 @@ img.zoom{cursor:zoom-in}
 .verif b{color:var(--verde)}
 
 /* 5 seguridad */
-#capas{position:absolute;left:120px;top:290px;width:840px}
-.capa{display:grid;grid-template-columns:62px 1fr;gap:20px;padding:14px 0;border-bottom:2px solid var(--linea)}
-.capa em{font:normal 800 40px/1 var(--display);color:var(--verde)}
-.capa b{display:block;font:700 30px var(--texto)}
-.capa span{display:block;font-size:25px;line-height:1.28;color:var(--suave);margin-top:3px}
+#capas{position:absolute;left:120px;top:248px;width:860px}
+.capa{display:grid;grid-template-columns:56px 1fr;gap:18px;padding:11px 0;border-bottom:2px solid var(--linea)}
+.capa em{font:normal 800 38px/1 var(--display);color:var(--verde)}
+.capa b{display:block;font:700 29px/1.15 var(--texto)}
+.capa span{display:block;font-size:23px;line-height:1.28;color:var(--suave);margin-top:3px}
 .capa.pend em{color:var(--gris)}
-.etiqueta{display:inline-block;font:700 20px var(--texto);color:var(--suave);border:2px solid var(--linea);border-radius:20px;padding:2px 12px;margin-left:10px;vertical-align:3px}
-#prueba{position:absolute;left:1060px;top:290px;width:740px}
-#ataques button{display:block;width:740px;padding:15px 22px;margin-bottom:12px;font-size:27px;border-radius:12px;border:2px solid var(--linea);background:#fff;transition:all .2s}
+.capa b .etiqueta{display:inline-block;font:700 19px var(--texto);color:var(--suave);border:2px solid var(--linea);border-radius:20px;padding:1px 12px;margin-left:12px;vertical-align:2px}
+#prueba{position:absolute;left:1060px;top:248px;width:740px}
+#ataques h3{font:800 38px/1.1 var(--display);letter-spacing:-.02em;margin-bottom:14px}
+#ataques button{display:block;width:740px;padding:11px 22px;margin-bottom:9px;font-size:25px;line-height:1.25;border-radius:12px;border:2px solid var(--linea);background:#fff;transition:all .2s}
 #ataques button.on{border-color:var(--naranja);background:#FBEFE5;font-weight:700}
-#resultado{margin-top:18px;min-height:280px}
-#resultado .capa-det{font:800 40px var(--display);color:var(--verde)}
-#resultado .meta{font-size:26px;color:var(--suave);margin:4px 0 14px}
-#resultado q{display:block;font-size:26px;line-height:1.38;quotes:none;border-left:6px solid var(--verde);padding-left:20px}
+#resultado{margin-top:14px;max-height:330px;overflow:hidden}
+#resultado .capa-det{font:800 36px/1.1 var(--display);color:var(--verde)}
+#resultado .meta{font-size:22px;line-height:1.3;color:var(--suave);margin:4px 0 12px}
+#resultado q{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;font-size:24px;line-height:1.36;quotes:none;border-left:6px solid var(--verde);padding-left:20px}
 
 /* 6 modelos y valor */
 #lista{position:absolute;left:120px;top:262px;width:900px}
@@ -301,7 +302,7 @@ img.zoom{cursor:zoom-in}
 <!-- 5 seguridad -->
 <section class="lamina" id="l5">
   <h2 class="titulo">Cada capa corta un riesgo distinto</h2>
-  <div class="pestanas" id="pest5"><button data-v="dia" class="oculto">Diagrama</button><button data-v="pru" class="on">Pon a prueba a Lucas</button></div>
+  <div class="pestanas oculto" id="pest5"><button data-v="dia" class="oculto">Diagrama</button><button data-v="pru" class="on">Pon a prueba a Lucas</button></div>
   <div id="v5pru">
     <div id="capas"></div>
     <div id="prueba"><div id="ataques"></div><div id="resultado"></div></div>
@@ -445,22 +446,22 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
   const M = id => D.modelos.find(x => x.slug === id), E = D.extras, K = D.mapa.costos;
   const C = {azul:['#2A78D6','#E8F0FB'], verde:['#2A9D8F','#E5F4F2'], naranja:['#C8641A','#FBEFE5'], gris:['#8C8B86','#F0EFED'], marino:['#0C2340','#143762']};
   const N = [
-    {id:'gen',col:0,c:'azul',t:'Generador sintético',s:'500 clientes, 3.3 M movimientos',d:'Datos 100 % sintéticos de 2019 a 2025 con ingresos irregulares, suscripciones duplicadas, datos incompletos y movimientos atípicos sembrados, y una verdad oculta para medir.',m:[['3.3 M','movimientos'],['500','clientes']]},
-    {id:'bcrp',col:0,c:'verde',t:'BCRP',s:'Tipo de cambio, inflación y tasa',d:'Series oficiales en vivo, con caché y serie grabada de respaldo. Cada dato dice su fecha y su origen.',m:[[D.publicos.tipo_de_cambio ? sol(D.publicos.tipo_de_cambio.valor,3) : '', 'por dólar']]},
+    {id:'gen',col:0,c:'azul',t:'Generador sintético',s:'500 clientes sintéticos',d:'Datos 100 % sintéticos de 2019 a 2025 con ingresos irregulares, suscripciones duplicadas, datos incompletos y movimientos atípicos sembrados, y una verdad oculta para medir.',m:[['3.3 M','movimientos'],['500','clientes']]},
+    {id:'bcrp',col:0,c:'verde',t:'BCRP',s:'Cambio, inflación, tasa',d:'Series oficiales en vivo, con caché y serie grabada de respaldo. Cada dato dice su fecha y su origen.',m:[[D.publicos.tipo_de_cambio ? sol(D.publicos.tipo_de_cambio.valor,3) : '', 'por dólar']]},
     {id:'enfen',col:0,c:'verde',t:'ENFEN',s:'Comunicados de El Niño',d:'Alerta por zona con la fuente oficial. La vigilancia avisa cuando sale un comunicado nuevo.',m:[['17 a 20','comunicados de 2026']]},
-    {id:'norm',col:0,c:'verde',t:'Normas y fuentes oficiales',s:'Código del Consumidor, SBS, CTS',d:'Documentos oficiales troceados y vectorizados, siempre con cita y enlace.',m:[['3,761','fragmentos']]},
+    {id:'norm',col:0,c:'verde',t:'Normas y fuentes oficiales',s:'Consumidor, SBS, CTS',d:'Documentos oficiales troceados y vectorizados, siempre con cita y enlace.',m:[['3,761','fragmentos']]},
     {id:'seg',col:1,c:'azul',t:'Segmentos',s:'K-Prototypes, 5 perfiles',d:'Agrupa clientes mezclando variables numéricas y categóricas. De ahí salen los niveles de Luchador a Campeón y el tono de cada respuesta.',m:[[fmt(M('01_segmentacion').elegido.valor,2),'concordancia con arquetipos']]},
-    {id:'pron',col:1,c:'azul',t:'Pronóstico de saldo',s:'30 días y serie diaria con banda',d:'LightGBM con bandas conformales: un saldo esperado por cada día y el rango donde cae 8 de cada 10 veces.',m:[['−' + fmt(M('02_saldo_30_dias').mejora_pct) + ' %','error vs promedio móvil'],[fmt(E.cobertura.saldo_30d,2),'cobertura de la banda']]},
+    {id:'pron',col:1,c:'azul',t:'Pronóstico de saldo',s:'30 días, serie con banda',d:'LightGBM con bandas conformales: un saldo esperado por cada día y el rango donde cae 8 de cada 10 veces.',m:[['−' + fmt(M('02_saldo_30_dias').mejora_pct) + ' %','error vs promedio móvil'],[fmt(E.cobertura.saldo_30d,2),'cobertura de la banda']]},
     {id:'rojo',col:1,c:'azul',t:'Alerta de saldo en rojo',s:'Probabilidad y día de riesgo',d:'Un clasificador calibrado: el porcentaje de riesgo se puede leer como probabilidad. Lucas dice «hacia el día X», no una fecha exacta.',m:[[fmt(E.calibracion.lightgbm,3),'error de calibración'],[fmt(M('04_dia_de_riesgo').elegido.valor,1) + ' días','error del día de riesgo']]},
     {id:'pol',col:1,c:'azul',t:'Política de ahorro',s:'Lucas y ahorro automático',d:'Reproducción contrafactual: evita días en rojo y forma colchón con una reserva que se puede usar.',m:[['−' + fmt((1 - E.politicas[2].dias_rojo/E.politicas[0].dias_rojo)*100) + ' %','días en rojo'],[fmt(E.politicas[2].colchon_meses,1) + ' meses','de colchón']]},
     {id:'mov',col:1,c:'azul',t:'Movimientos y hábitos',s:'Categorías, fijos y atípicos',d:'Clasifica cada movimiento, detecta gastos fijos, suscripciones duplicadas y movimientos raros.',m:[[fmt(M('07_glosas').elegido.valor,2),'F1 de categorías'],[fmt(M('08_gastos_recurrentes').elegido.valor,2),'F1 de gastos fijos']]},
-    {id:'rag',col:2,c:'naranja',t:'RAG',s:'FAISS, BM25 y filtro de relevancia',d:'Busca los 3 fragmentos más parecidos a la pregunta. Bajo 0.70 de similitud no se contesta.',m:[[fmt(M('13_rag').elegido.valor,2),'recall@4']]},
+    {id:'rag',col:2,c:'naranja',t:'RAG',s:'FAISS, BM25, relevancia',d:'Busca los 3 fragmentos más parecidos a la pregunta. Bajo 0.70 de similitud no se contesta.',m:[[fmt(M('13_rag').elegido.valor,2),'recall@4']]},
     {id:'cal',col:2,c:'naranja',t:'Calendario laboral',s:'Gratificación, CTS, retiro',d:'Reglas con la frase literal de la norma. La libre disposición del 100 % de la CTS vence el 31 de diciembre de 2026.',m:[['Ley 32322','vigente']]},
-    {id:'viv',col:2,c:'naranja',t:'Datos vivos',s:'Tus ingresos y gastos nuevos',d:'Lo que la persona registra actualiza el saldo y el riesgo al instante, sin duplicados y sin guardar el texto del movimiento.',m:[['0','duplicados']]},
-    {id:'vig',col:2,c:'naranja',t:'Vigilancia',s:'Avisos únicos, máximo 3 por semana',d:'Lo más urgente primero y una sola vez: riesgo de rojo, gratificación pendiente, gasto atípico, comunicado del ENFEN.',m:[['3','avisos por semana como máximo']]},
+    {id:'viv',col:2,c:'naranja',t:'Datos vivos',s:'Tus movimientos nuevos',d:'Lo que la persona registra actualiza el saldo y el riesgo al instante, sin duplicados y sin guardar el texto del movimiento.',m:[['0','duplicados']]},
+    {id:'vig',col:2,c:'naranja',t:'Vigilancia',s:'3 avisos por semana',d:'Lo más urgente primero y una sola vez: riesgo de rojo, gratificación pendiente, gasto atípico, comunicado del ENFEN.',m:[['3','avisos por semana como máximo']]},
     {id:'rou',col:3,c:'verde',t:'Router y seguridad',s:'Reglas, 0 tokens',d:'Reconoce el tema y corta seguridad y operaciones antes de cualquier modelo.',m:[['0','tokens']]},
     {id:'her',col:3,c:'verde',t:'Herramientas',s:'Toda cifra nace aquí',d:'Los modelos y el RAG responden con datos. El LLM nunca calcula.',m:[]},
-    {id:'red',col:3,c:'verde',t:'Redactar',s:'Plantilla o IA, nunca las dos a la vez',d:'Una plantilla redacta lo conocido; la IA solo lo nuevo, con 3 fragmentos y sin el id ni la zona de la persona.',m:[[pct(K.mezcla_de_evaluacion.proporcion_que_llega_a_la_ia), 'de los mensajes llega a la IA']]},
+    {id:'red',col:3,c:'verde',t:'Redactar',s:'Plantilla o IA, no ambas',d:'Una plantilla redacta lo conocido; la IA solo lo nuevo, con 3 fragmentos y sin el id ni la zona de la persona.',m:[[pct(K.mezcla_de_evaluacion.proporcion_que_llega_a_la_ia), 'de los mensajes llega a la IA']]},
     {id:'jue',col:3,c:'verde',t:'Verificador y juez',s:'Cifras con respaldo',d:'Rechaza cifras sin respaldo y respuestas cortadas, vacías, evasivas, con código o con promesas.',m:[['0','cifras sin respaldo en ' + D.calidad.agente_plantillas.n + ' preguntas']]},
     {id:'pla',col:3,c:'gris',t:'Plantilla de respaldo',s:'Si la IA falla o inventa',d:'Misma respuesta verificada, mismas cifras y citas, sin IA.',m:[]},
     {id:'tra',col:3,c:'verde',t:'Traducción',s:'Español, inglés y quechua',d:'Protege cifras y nombres y avisa que la traducción es automática.',m:[]},
@@ -543,11 +544,11 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
 
 /* 5 seguridad */
 (function seg(){
-  const capas = [['Entrada','El router corta la seguridad y las operaciones antes de cualquier modelo.'],['Datos mínimos','El LLM no recibe el id ni la zona de la persona.'],['Calcular y redactar por separado','Los modelos calculan, la IA solo redacta.'],
-    ['Verificador de cifras','Toda cifra debe venir de una herramienta.'],['Juez de la respuesta','Rechaza respuestas cortadas, vacías, evasivas, con código o con promesas.'],['Plantilla de respaldo','Si la IA falla o inventa, responde la plantilla verificada.']];
+  const capas = [['Entrada','Corta seguridad y operaciones antes de cualquier modelo.'],['Datos mínimos','El LLM no recibe tu id ni tu zona.'],['Calcular y redactar por separado','Los modelos calculan; la IA solo redacta.'],
+    ['Verificador de cifras','Toda cifra debe venir de una herramienta.'],['Juez de la respuesta','Rechaza respuestas cortadas, vacías, evasivas o con promesas.'],['Plantilla de respaldo','Si la IA falla o inventa, responde una plantilla verificada.']];
   $('#capas').innerHTML = capas.map((c,i) => `<div class="capa"><em>${i+1}</em><div><b>${c[0]}</b><span>${c[1]}</span></div></div>`).join('') + `<div class="capa pend"><em>7</em><div><b>Base de datos<span class="etiqueta">en integración</span></b><span>Acceso por roles y filas protegidas por cliente.</span></div></div>`;
   const A = D.ataques;
-  $('#ataques').innerHTML = `<h3 style="font:800 44px/1.1 var(--display);letter-spacing:-.02em;margin-bottom:18px">Pon a prueba a Lucas</h3>` + A.map((a,i) => `<button data-i="${i}">${a.pedido}</button>`).join('');
+  $('#ataques').innerHTML = `<h3>Pon a prueba a Lucas</h3>` + A.map((a,i) => `<button data-i="${i}">${a.pedido}</button>`).join('');
   function ver(i){
     $$('#ataques button').forEach((b,j) => b.classList.toggle('on', j === i));
     const a = A[i], r = a.respuesta.replace(/^Hola, [^.]*\.\s*/, '');
@@ -555,7 +556,7 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
   }
   $('#ataques').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) ver(+b.dataset.i); });
   ver(0);
-  existe('imagenes/seguridad.png', ok => { if (ok) { $('#pest5 [data-v="dia"]').classList.remove('oculto'); $('#img5').src = 'imagenes/seguridad.png'; $$('#pest5 button').forEach(b => b.classList.toggle('on', b.dataset.v === 'dia')); $('#v5pru').classList.add('oculto'); $('#v5dia').classList.remove('oculto'); } });
+  existe('imagenes/seguridad.png', ok => { if (ok) { $('#pest5').classList.remove('oculto'); $('#pest5 [data-v="dia"]').classList.remove('oculto'); $('#img5').src = 'imagenes/seguridad.png'; $$('#pest5 button').forEach(b => b.classList.toggle('on', b.dataset.v === 'dia')); $('#v5pru').classList.add('oculto'); $('#v5dia').classList.remove('oculto'); } });
   pestanas('#pest5', v => { $('#v5pru').classList.toggle('oculto', v !== 'pru'); $('#v5dia').classList.toggle('oculto', v !== 'dia'); });
 })();
 
