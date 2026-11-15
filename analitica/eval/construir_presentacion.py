@@ -254,14 +254,14 @@ def arquitectura() -> str:
              ("CONOCIMIENTO", 0.44, [("RAG\nFAISS + BM25 + CRAG", NARANJA), ("Calendario laboral\ngratificacion, CTS", NARANJA), ("Datos vivos\nmovimientos nuevos", NARANJA), ("Vigilancia\nmax. 3 avisos por semana", NARANJA)])]
     xs = [0.05, 0.285, 0.52, 0.755]
     for nombre, y, cajas in capas:
-        fig.text(0.015, y + 0.066, nombre, fontsize=11.5, color=TINTA_2, fontweight="bold")
+        fig.text(0.027, y + 0.0275, nombre, fontsize=9.5, color=TINTA_2, fontweight="bold", rotation=90, ha="center", va="center")   # rotulo vertical en el margen: no toca ni cajas ni flechas
         for x, (t, col) in zip(xs, cajas):
             caja(ax, x, y - 0.03, 0.21, 0.115, t, col, tam=11.5, envolver=24)
     for y0, y1 in ((0.77, 0.715), (0.59, 0.535)):
         for x in xs:
             flecha(ax, (x + 0.105, y0), (x + 0.105, y1))
     # agente
-    fig.text(0.015, 0.337, "AGENTE (LangGraph)", fontsize=11.5, color=TINTA_2, fontweight="bold")
+    fig.text(0.027, 0.2725, "AGENTE", fontsize=9.5, color=TINTA_2, fontweight="bold", rotation=90, ha="center", va="center")
     pasos = [("Router\nreglas + seguridad", 0.05), ("Herramientas\ncifras con respaldo", 0.235), ("Verificador\nnumeros y prohibiciones", 0.42), ("LLM redacta\nGemini u otra API", 0.605), ("Verificador\nde nuevo", 0.79)]
     for t, x in pasos:
         caja(ax, x, 0.215, 0.16, 0.115, t, VERDE, tam=11, relleno="#f3faf8", envolver=17)
@@ -666,9 +666,9 @@ ARCHIVOS = [  # (ruta relativa a docs/presentacion, que mensaje defiende)
     ("diagramas/grafo_agente_unico.md", "El mismo grafo en Mermaid (se ve en GitHub); fuente: app.get_graph().draw_mermaid()."),
     ("diagramas/grafo_multiagente.md", "El mismo grafo del multiagente en Mermaid."),
     ("mlflow_resumen.md", "Seguimiento con MLflow: cada comparacion (baseline frente a elegido) como corrida y cada modelo de produccion registrado con alias produccion."),
-    ("final/index.html", "LA PRESENTACION FINAL (10 laminas, interactiva, un solo archivo; abrir en el navegador y avanzar con flechas, F = pantalla completa). Usa los datos reales de models/*.json y del mapa de consultas."),
+    ("final/index.html", "LA PRESENTACION FINAL (8 laminas, interactiva, un solo archivo; abrir en el navegador y avanzar con flechas, F = pantalla completa). Usa los datos reales de models/*.json y del mapa de consultas."),
     ("final/plantilla.html", "Fuente de la presentacion final: HTML y JS a mano. Se compila con `python analitica/eval/construir_presentacion_final.py` (opciones --demo-url y --equipo)."),
-    ("final/imagenes/LEEME.txt", "Donde dejar los diagramas de arquitectura y seguridad del equipo (arquitectura.png, seguridad.png): aparecen solos como pestana en las laminas 3 y 5."),
+    ("final/imagenes/LEEME.txt", "Donde dejar el diagrama de arquitectura del equipo (arquitectura.png): aparece solo como pestana en la lamina 4."),
 ]
 
 

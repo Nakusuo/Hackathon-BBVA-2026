@@ -1,13 +1,12 @@
-Diagramas del equipo para la presentacion final
+Diagrama del equipo para la presentacion final
 
-Deja aqui, con estos nombres exactos:
-  arquitectura.png   aparece como pestana "Arquitectura" en la lamina 3
-  seguridad.png      aparece como pestana "Diagrama" en la lamina 5
+Deja aqui, con este nombre exacto:
+  arquitectura.png   aparece como pestana "Diagrama del equipo" en la lamina 4 (Arquitectura)
 
-No hay que tocar codigo ni recompilar: la presentacion detecta los archivos al abrirse.
-Si no existen, esas pestanas no se muestran y la lamina funciona igual con su version interactiva.
+No hay que tocar codigo ni recompilar: la presentacion detecta el archivo al abrirse.
+Si no existe, esa pestana no se muestra y la lamina usa la arquitectura dibujada en HTML.
 Fondo recomendado: #FCFCFB, ancho 1680 px o mas.
 
-Otros ajustes (se hacen al compilar con eval/construir_presentacion_final.py):
-  --demo-url URL        enlace de la demo en vivo (lamina 9); tambien funciona abrir index.html?demo=URL
+Otros ajustes (se hacen al compilar con analitica/eval/construir_presentacion_final.py):
+  --demo-url URL        enlace de la demo en vivo (lamina 7); tambien funciona abrir index.html?demo=URL
   --equipo "A,B,C"      integrantes en la portada, junto a "Grupo 2"

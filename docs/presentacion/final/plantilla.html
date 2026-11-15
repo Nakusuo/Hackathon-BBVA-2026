@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Conoce a Lucas</title>
+<title>Lucas, tu compañero de finanzas</title>
 <link rel="icon" href="data:,">
 <style>
 /*FUENTES*/
@@ -40,10 +40,18 @@ img.zoom{cursor:zoom-in}
 #l1 .evento{position:absolute;left:120px;top:82px;font:600 30px/1.25 var(--texto);color:#B9CCE3}
 #l1 .evento span{display:block;font-weight:400;font-size:26px;color:#8FA9C8}
 #l1 .pregunta{position:absolute;left:120px;top:190px;width:1560px;font:700 92px/1.05 var(--display);letter-spacing:-.018em;word-spacing:.04em;text-wrap:balance;transition:opacity .6s,transform .6s}
-#l1 .revela{position:absolute;left:120px;top:196px;opacity:0;transform:translateY(24px);transition:opacity .8s .25s,transform .8s .25s;pointer-events:none}
-#l1 .nombre{font:700 200px/.95 var(--display);letter-spacing:-.025em;word-spacing:.05em}
+#l1 .revela{position:absolute;left:120px;top:236px;opacity:0;transform:translateY(24px);transition:opacity .8s .25s,transform .8s .25s;pointer-events:none}
+#l1 .nombre{font:700 128px/.98 var(--display);letter-spacing:-.025em;word-spacing:.05em}
 #l1 .lema{font:500 52px/1.2 var(--texto);color:#BBD3F0;margin-top:22px}
-#l1 .linea-grupo{display:flex;align-items:baseline;gap:28px;margin-top:26px;white-space:nowrap}
+#l1 .linea-grupo{position:absolute;right:120px;top:84px;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+#l1 .enfoque{font:400 32px/1.3 var(--texto);color:#D3E2F5;margin-top:20px;width:1680px;white-space:nowrap}
+.sol-grid{position:absolute;left:120px;top:300px;width:1680px;display:grid;grid-template-columns:repeat(3,1fr);column-gap:72px;row-gap:50px}
+.sol-it{border-top:6px solid var(--c)}
+.sol-it b{display:block;font:800 40px/1.12 var(--display);letter-spacing:-.015em;margin-top:18px}
+.sol-it span{display:block;font-size:28px;line-height:1.32;color:var(--suave);margin-top:10px}
+.sol-pie{position:absolute;left:120px;top:870px;width:1680px;display:flex;gap:90px;border-top:2px solid var(--linea);padding-top:20px}
+.sol-pie div{font:800 62px/1 var(--display);letter-spacing:-.025em;color:var(--verde)}
+.sol-pie small{display:block;font:400 23px/1.3 var(--texto);color:var(--suave);margin-top:6px;max-width:420px;letter-spacing:0}
 #l1 .grupo{font:700 36px var(--texto);color:#fff}
 #l1 .equipo{font:400 26px var(--texto);color:#B9CCE3}
 #l1.revelada .pregunta{opacity:0;transform:translateY(-26px)}
@@ -64,7 +72,7 @@ img.zoom{cursor:zoom-in}
 .tres .decision{font:700 36px/1.25 var(--display);letter-spacing:-.01em}
 
 /* 3 orquestacion */
-#arq{position:absolute;left:0;top:0;width:1920px;height:1080px}
+#arq{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none}
 .colh{position:absolute;top:258px;font:700 26px var(--texto);color:var(--suave)}
 .nodo{position:absolute;width:296px;height:78px;border-radius:12px;border:2.5px solid var(--c);background:#fff;padding:10px 16px;transition:all .2s;overflow:hidden}
 .nodo b{display:block;font:700 25px/1.15 var(--texto)}
@@ -80,8 +88,8 @@ img.zoom{cursor:zoom-in}
 .nodo.persona.on{background:#143762}
 .tag{display:inline-block;font:700 18px var(--texto);border:2px solid currentColor;border-radius:14px;padding:0 10px;margin-left:8px;vertical-align:2px;opacity:.85}
 #arqPanel{position:absolute;left:120px;top:868px;width:1680px;height:130px;border-top:2px solid var(--linea);padding-top:14px}
-#arqPanel h4{font:800 38px/1.1 var(--display);letter-spacing:-.01em;display:inline-block;margin-right:20px}
-#arqPanel p{font-size:27px;line-height:1.3;margin-top:6px;max-width:1160px;display:inline-block;vertical-align:top}
+#arqPanel h4{font:800 38px/1.1 var(--display);letter-spacing:-.01em;display:block}
+#arqPanel p{font-size:27px;line-height:1.3;margin-top:6px;max-width:1120px}
 #arqPanel .ind{position:absolute;right:0;top:16px;text-align:right}
 #arqPanel .ind div{font:800 34px/1.1 var(--display)}#arqPanel .ind small{display:block;font-size:20px;color:var(--suave);font-weight:400}
 .vista{position:absolute;left:120px;top:256px;width:1680px;height:720px;display:flex;align-items:center;justify-content:center}
@@ -91,7 +99,7 @@ img.zoom{cursor:zoom-in}
 #cons{position:absolute;left:120px;top:262px;width:610px}
 #cons button{display:block;width:610px;height:78px;margin-bottom:12px;padding:0 22px;font-size:27px;line-height:78px;border-radius:12px;border:2px solid var(--linea);background:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .2s}
 #cons button.on{border-color:var(--c);background:var(--cl);font-weight:700}
-#grafo{position:absolute;left:0;top:0;width:1920px;height:1080px}
+#grafo{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none}
 .gn{position:absolute;width:150px;height:76px;border-radius:12px;border:2.5px solid var(--linea);background:#fff;padding:10px;text-align:center;font:600 22px/1.15 var(--texto);display:flex;align-items:center;justify-content:center;transition:all .3s}
 .gn.circ{width:64px;height:64px;border-radius:32px;font-size:18px;padding:0}
 .gn.paso{border-color:var(--c);background:var(--cl);font-weight:700}
@@ -111,20 +119,21 @@ img.zoom{cursor:zoom-in}
 .verif b{color:var(--verde)}
 
 /* 5 seguridad */
-#capas{position:absolute;left:120px;top:290px;width:840px}
-.capa{display:grid;grid-template-columns:62px 1fr;gap:20px;padding:14px 0;border-bottom:2px solid var(--linea)}
-.capa em{font:normal 800 40px/1 var(--display);color:var(--verde)}
-.capa b{display:block;font:700 30px var(--texto)}
-.capa span{display:block;font-size:25px;line-height:1.28;color:var(--suave);margin-top:3px}
+#capas{position:absolute;left:120px;top:248px;width:860px}
+.capa{display:grid;grid-template-columns:56px 1fr;gap:18px;padding:11px 0;border-bottom:2px solid var(--linea)}
+.capa em{font:normal 800 38px/1 var(--display);color:var(--verde)}
+.capa b{display:block;font:700 29px/1.15 var(--texto)}
+.capa span{display:block;font-size:23px;line-height:1.28;color:var(--suave);margin-top:3px}
 .capa.pend em{color:var(--gris)}
-.etiqueta{display:inline-block;font:700 20px var(--texto);color:var(--suave);border:2px solid var(--linea);border-radius:20px;padding:2px 12px;margin-left:10px;vertical-align:3px}
-#prueba{position:absolute;left:1060px;top:290px;width:740px}
-#ataques button{display:block;width:740px;padding:15px 22px;margin-bottom:12px;font-size:27px;border-radius:12px;border:2px solid var(--linea);background:#fff;transition:all .2s}
+.capa b .etiqueta{display:inline-block;font:700 19px var(--texto);color:var(--suave);border:2px solid var(--linea);border-radius:20px;padding:1px 12px;margin-left:12px;vertical-align:2px}
+#prueba{position:absolute;left:1060px;top:248px;width:740px}
+#ataques h3{font:800 38px/1.1 var(--display);letter-spacing:-.02em;margin-bottom:14px}
+#ataques button{display:block;width:740px;padding:11px 22px;margin-bottom:9px;font-size:25px;line-height:1.25;border-radius:12px;border:2px solid var(--linea);background:#fff;transition:all .2s}
 #ataques button.on{border-color:var(--naranja);background:#FBEFE5;font-weight:700}
-#resultado{margin-top:18px;min-height:280px}
-#resultado .capa-det{font:800 40px var(--display);color:var(--verde)}
-#resultado .meta{font-size:26px;color:var(--suave);margin:4px 0 14px}
-#resultado q{display:block;font-size:26px;line-height:1.38;quotes:none;border-left:6px solid var(--verde);padding-left:20px}
+#resultado{margin-top:14px;max-height:330px;overflow:hidden}
+#resultado .capa-det{font:800 36px/1.1 var(--display);color:var(--verde)}
+#resultado .meta{font-size:22px;line-height:1.3;color:var(--suave);margin:4px 0 12px}
+#resultado q{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;font-size:24px;line-height:1.36;quotes:none;border-left:6px solid var(--verde);padding-left:20px}
 
 /* 6 modelos y valor */
 #lista{position:absolute;left:120px;top:262px;width:900px}
@@ -160,6 +169,55 @@ img.zoom{cursor:zoom-in}
 #efecto span{display:block;font-size:29px;line-height:1.3;margin:6px 0 28px}
 #efecto small{display:block;font-size:22px;color:var(--suave);line-height:1.35}
 
+.perfiles-cols{position:absolute;left:120px;top:262px;width:1680px;display:grid;grid-template-columns:repeat(3,1fr);gap:64px}
+.perfil{border-top:6px solid var(--c)}
+.perfil h3{font:800 60px/1 var(--display);letter-spacing:-.025em;margin-top:18px;color:var(--c)}
+.perfil .quien{font-size:25px;color:var(--suave);margin:6px 0 12px}
+.perfil .frase{font-size:29px;line-height:1.3;min-height:76px}
+.perfil .nums{display:flex;gap:30px;margin:16px 0 14px;padding:12px 0;border-top:2px solid var(--linea);border-bottom:2px solid var(--linea)}
+.perfil .nums div{font:800 38px/1 var(--display)}
+.perfil .nums small{display:block;font:400 19px/1.25 var(--texto);color:var(--suave);margin-top:5px}
+.perfil h4{font:700 24px var(--texto);color:var(--suave);margin-bottom:6px}
+.perfil li{list-style:none;font-size:26px;line-height:1.3;padding:6px 0 6px 28px;position:relative}
+.perfil li::before{content:"";position:absolute;left:0;top:17px;width:12px;height:12px;border-radius:6px;background:var(--c)}
+#perfilesNota{position:absolute;left:120px;top:915px;width:1560px;font-size:23px;line-height:1.32;color:var(--suave)}
+#perfilesNota b{color:var(--tinta)}
+
+#t6{font-size:64px}
+#pest6{gap:36px}
+.kpis h3{font:700 26px var(--texto);color:#8FA9C8;margin-bottom:4px}
+#l10 .kpi b{font-size:66px}
+.kpi small{display:block;font-size:21px;line-height:1.25;color:#8FA9C8;margin-top:3px}
+#l10 .kpi{padding:8px 0 10px}
+#v3arq{position:absolute;left:120px;top:250px;width:1680px;height:740px}
+.ar-fila{display:flex;align-items:stretch;height:560px}
+.ar-col{display:flex;flex-direction:column;gap:10px}
+.ar-item b .ar-tag,.ar-sub b .ar-tag{display:inline-block;margin:0 0 0 10px;font-size:15px;color:var(--gris)}
+.ar-flecha{width:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gris);font:400 52px/1 var(--texto)}
+.ar-flecha small{font:600 15px/1.1 var(--texto);color:var(--suave);text-align:center;margin-top:2px}
+.ar-pers{background:var(--marino);color:#fff;border-radius:16px;padding:14px 18px}
+.ar-pers b{display:block;font:800 30px/1.1 var(--display)}
+.ar-pers span{display:block;font-size:21px;color:#BBD3F0;margin-top:3px}
+.ar-tit{font:700 20px var(--texto);color:var(--suave);margin-top:10px}
+.ar-ext{border:2.5px dashed var(--gris);border-radius:14px;padding:10px 16px;background:#fff}
+.ar-ext b{display:block;font:700 24px/1.15 var(--texto)}
+.ar-ext span{display:block;font-size:19px;line-height:1.25;color:var(--suave)}
+.ar-grupo{border:2.5px solid var(--c);border-radius:16px;padding:14px 18px 10px;background:#fff}
+.ar-grupo h4{font:800 29px/1.1 var(--display);color:var(--c)}
+.ar-grupo .sub{font-size:19px;color:var(--suave);margin:2px 0 8px}
+.ar-item{padding:8px 0;border-top:2px solid var(--linea)}
+.ar-item b,.ar-sub b{display:block;font:700 23px/1.15 var(--texto)}
+.ar-item span,.ar-sub span{display:block;font-size:20px;line-height:1.25;color:var(--suave);margin-top:2px}
+.ar-tag{display:inline-block;font:700 15px var(--texto);color:var(--gris);border:2px solid var(--gris);border-radius:12px;padding:0 8px;margin-left:10px;vertical-align:2px}
+.ar-sub{background:#F3F9F8;border-radius:12px;padding:9px 12px;margin-top:8px}
+.ar-sub span.ar-tag{display:inline-block;margin-top:0}
+.ar-cadena{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0 4px}
+.ar-cadena i{font:600 19px/1.2 var(--texto);font-style:normal;background:#fff;border:2px solid var(--linea);border-radius:10px;padding:4px 10px}
+.ar-cadena u{text-decoration:none;color:var(--gris);font-size:26px;line-height:1}
+.ar-pipe{margin-top:14px;border:2.5px solid var(--verde);border-radius:16px;padding:10px 18px 12px;background:#fff}
+.ar-pipe h4{font:800 24px var(--display);color:var(--verde)}
+.ar-pipe .ar-cadena i{font-size:21px;padding:6px 14px}
+
 /* 7 eventos */
 #zonas{position:absolute;left:120px;top:262px;width:470px}
 #zonas button{display:flex;align-items:center;width:470px;height:50px;font-size:27px;padding:0 14px;border-radius:8px;transition:background .2s}
@@ -172,8 +230,8 @@ img.zoom{cursor:zoom-in}
 #zonaDet .nivel{font:700 36px var(--texto);margin:12px 0 18px;color:var(--c)}
 #zonaDet .texto{font-size:32px;line-height:1.32;max-width:1050px}
 #zonaDet ul{list-style:none;margin-top:22px}
-#zonaDet li{font-size:29px;line-height:1.3;padding:11px 0 11px 34px;border-bottom:2px solid var(--linea);position:relative;max-width:1050px}
-#zonaDet li::before{content:"";position:absolute;left:0;top:23px;width:14px;height:14px;border-radius:7px;background:var(--verde)}
+#zonaDet li{font-size:26px;line-height:1.28;padding:7px 0 7px 34px;border-bottom:2px solid var(--linea);position:relative;max-width:1050px}
+#zonaDet li::before{content:"";position:absolute;left:0;top:17px;width:14px;height:14px;border-radius:7px;background:var(--verde)}
 #zonaDet h4{font:700 26px var(--texto);color:var(--suave);margin-top:26px}
 .dato2{position:absolute;left:120px;top:290px;width:760px}
 .dato2 b{display:block;font:800 150px/1 var(--display);letter-spacing:-.03em;color:var(--azul)}
@@ -223,7 +281,7 @@ img.zoom{cursor:zoom-in}
 .lin small{font-size:22px;color:var(--suave)}
 
 /* 9 demo */
-#l9 .titulo{top:236px;font-size:150px;line-height:.95}
+#l9 .titulo{top:236px;font-size:124px;line-height:.95}
 #l9 .via{position:absolute;left:120px;top:520px;display:flex;gap:56px;font:600 36px var(--texto)}
 #l9 .via span{padding-bottom:12px;border-bottom:5px solid var(--azul)}
 #l9 .boton{position:absolute;left:120px;top:690px;display:inline-block;font:800 50px var(--display);letter-spacing:-.01em;color:#fff;background:var(--azul);padding:34px 64px;border-radius:20px;text-decoration:none;transition:transform .15s,background .2s}
@@ -253,8 +311,8 @@ img.zoom{cursor:zoom-in}
 <!-- 1 portada -->
 <section class="lamina oscura" id="l1">
   <div class="evento">Hackathon BBVA en Perú 2026<span>AI Financial Life</span></div>
-  <h1 class="pregunta">¿Qué pasa cuando no sabes si te alcanzará la plata hasta tu próximo ingreso?</h1>
-  <div class="revela"><div class="nombre">Conoce a Lucas</div><div class="lema">Tu compañero de finanzas</div><div class="linea-grupo"><div class="grupo">Grupo 2</div><div class="equipo" id="equipo"></div></div></div>
+  <div class="linea-grupo"><div class="grupo">Grupo 2</div><div class="equipo" id="equipo"></div></div>
+  <div class="revela"><div class="nombre">Tu vida financiera, con IA</div><div class="lema">Lucas, tu compañero de finanzas</div><div class="enfoque">Mejoramos la vida financiera de nuestros clientes: les avisamos a tiempo y les decimos qué hacer.</div></div>
   <svg id="hero" viewBox="0 0 1680 390" aria-hidden="true"></svg>
   <div class="pie-grafico">Saldo esperado a 30 días de una persona sintética. La banda es donde cae 8 de cada 10 veces.</div>
 </section>
@@ -263,58 +321,94 @@ img.zoom{cursor:zoom-in}
 <section class="lamina" id="l2">
   <h2 class="titulo">Tener cuenta no es saber si llegas a fin de mes</h2>
   <div class="cifras">
-    <div class="cifra" style="--c:var(--azul)"><b>61 %</b><span>de los adultos no cubriría un imprevisto equivalente a un mes de ingresos</span></div>
+    <div class="cifra" style="--c:var(--azul)"><b>61 %</b><span>de los consultados no cubriría un imprevisto equivalente a un mes de ingresos</span></div>
     <div class="cifra" style="--c:var(--naranja)"><b>69.8 %</b><span>del empleo en el país es informal</span></div>
     <div class="cifra" style="--c:var(--verde)"><b>24 %</b><span>menos cargos por sobregiro cuando el cliente recibe alertas a tiempo</span></div>
   </div>
   <div class="tres">
     <div><h3>El problema</h3><p>Nadie les avisa a tiempo si el saldo alcanza hasta el próximo ingreso, ni qué cambio concreto los saca del rojo.</p></div>
     <div><h3>La decisión que mejoramos</h3><p class="decision">¿Cuánto puedo gastar o ahorrar este mes sin quedarme en rojo antes de mi próximo ingreso?</p></div>
-    <div><h3>Para quién</h3><p>Trabajadores dependientes e independientes del sector privado en Perú.</p></div>
+    <div><h3>Para quién</h3><p>Trabajadores dependientes e independientes en Perú.</p></div>
   </div>
   <div class="nota">Fuentes: SBS y CAF 2026; INEI, EPEN I trimestre 2026; FCA, Occasional Paper 10 (Reino Unido, 2015).</div>
 </section>
 
-<!-- 3 orquestacion -->
+<!-- propuesta de solucion -->
+<section class="lamina" id="lsol">
+  <h2 class="titulo">Nuestra propuesta: Lucas</h2>
+  <p class="bajada">Un compañero que te ayuda a llegar tranquilo a fin de mes. Tú decides.</p>
+  <div class="sol-grid">
+    <div class="sol-it" style="--c:#2A78D6"><b>Saber si llegas a fin de mes</b><span>Te muestra cómo se mueve tu saldo en los próximos 30 días, con un rango realista.</span></div>
+    <div class="sol-it" style="--c:#C8641A"><b>Enterarte antes de quedarte en rojo</b><span>Te avisa a tiempo, una sola vez y con lo más urgente primero.</span></div>
+    <div class="sol-it" style="--c:#2A9D8F"><b>Saber qué hacer y por qué</b><span>Te propone cambios concretos y te explica en qué se basa cada uno.</span></div>
+    <div class="sol-it" style="--c:#2A9D8F"><b>Ahorrar sin ahogar tu caja</b><span>Aparta una reserva que puedes usar si la necesitas, sin dejarte en rojo.</span></div>
+    <div class="sol-it" style="--c:#2A78D6"><b>Prepararte para lo que viene</b><span>Gratificación, CTS y lluvias por El Niño: te recuerda y te dice cuánto separar.</span></div>
+    <div class="sol-it" style="--c:#C8641A"><b>Entender tu plata sin complicarte</b><span>Responde tus dudas con fuentes oficiales y sin jerga.</span></div>
+  </div>
+  <div class="sol-pie" id="solPie"></div>
+</section>
+
+<!-- 3 arquitectura y orquestacion -->
 <section class="lamina" id="l3">
   <h2 class="titulo">Así se orquesta todo alrededor de la persona</h2>
-  <div class="pestanas" id="pest3"><button data-v="orq" class="on">Orquestación</button><button data-v="arq" class="oculto">Arquitectura</button><button data-v="sis">Analítica e IA</button><button data-v="dat">Datos</button></div>
-  <div id="v3orq">
+  <div class="pestanas" id="pest3"><button data-v="arq" class="on">Arquitectura</button><button data-v="orq">Orquestación</button><button data-v="img" class="oculto">Diagrama del equipo</button></div>
+  <div id="v3arq">
+    <div class="ar-fila">
+      <div class="ar-col" style="width:250px">
+        <div class="ar-pers"><b>Cliente</b><span>Trabajador independiente o dependiente</span></div>
+        <div class="ar-tit">Fuentes externas</div>
+        <div class="ar-ext"><b>BCRP</b><span>Tipo de cambio e inflación, con serie grabada de respaldo</span></div>
+        <div class="ar-ext"><b>ENFEN</b><span>Comunicados de El Niño; Lucas avisa cuando sale uno nuevo</span></div>
+      </div>
+      <div class="ar-flecha">&#8250;<small>usa</small></div>
+      <div class="ar-grupo" style="--c:#2A78D6;width:400px">
+        <h4>App del banco</h4><div class="sub">En el navegador</div>
+        <div class="ar-item"><b>Banca Vértice</b><span>Ingreso y consentimiento de la persona</span></div>
+        <div class="ar-item"><b>Pantallas de Lucas</b><span>Resumen, qué viene, chat, avisos y metas</span></div>
+        <div class="ar-item"><b>Motor de cálculo</b><span>Única fuente de cifras en pantalla</span></div>
+        <div class="ar-item"><b>Respaldo sin conexión</b><span>Mismas cifras si la API no responde</span></div>
+      </div>
+      <div class="ar-flecha">&#8250;<small>HTTP<br>JSON</small></div>
+      <div class="ar-grupo" style="--c:#2A9D8F;width:500px">
+        <h4>Servidor de Lucas</h4><div class="sub">Python, corre dentro de la red del banco</div>
+        <div class="ar-item"><b>API REST</b><span>12 rutas: saldo, pronóstico, recomendaciones, metas, simulaciones y chat</span></div>
+        <div class="ar-sub"><b>Agente del chat</b>
+          <div class="ar-cadena"><i>Router</i><u>&#8250;</u><i>Herramientas</i><u>&#8250;</u><i>Juez de cifras</i><u>&#8250;</u><i>IA redacta</i></div>
+          <span>El router corta seguridad; toda cifra nace en las herramientas; el juez la verifica</span></div>
+        <div class="ar-sub"><b>Analítica: modelos entrenados</b>
+          <div class="ar-cadena"><i>Pronóstico a 30 días</i><i>Salud financiera</i><i>Recomendador</i><i>3 perfiles</i></div>
+          <span>Se sirven desde la API</span></div>
+      </div>
+      <div class="ar-flecha">&#8250;<small>pide</small></div>
+      <div class="ar-grupo" style="--c:#C8641A;width:380px">
+        <h4>Datos e IA locales</h4><div class="sub">Nada sale del equipo</div>
+        <div class="ar-item"><b>Índice de fuentes (RAG)</b><span>Normas laborales y fuentes oficiales, búsqueda por significado</span></div>
+        <div class="ar-item"><b>IA local: Ollama</b><span>Modelo qwen2.5:3b; si no responde, contesta una plantilla verificada</span></div>
+        <div class="ar-item"><b>Base de datos<span class="ar-tag">esquema PostgreSQL listo</span></b><span>Acceso por roles y filas protegidas por cliente</span></div>
+      </div>
+    </div>
+    <div class="ar-pipe">
+      <h4>Cómo se construye</h4>
+      <div class="ar-cadena"><i>Generador sintético</i><u>&#8250;</u><i>Datos sintéticos</i><u>&#8250;</u><i>Entrenamiento</i><u>&#8250;</u><i>Evaluación contra una alternativa simple</i><u>&#8250;</u><i>Modelos entrenados</i></div>
+    </div>
+  </div>
+  <div id="v3orq" class="oculto">
     <svg id="arq" viewBox="0 0 1920 1080"></svg>
     <div id="arqNodos"></div>
     <div id="arqPanel"></div>
   </div>
-  <div id="v3img" class="oculto"><div class="vista"><img class="zoom" id="img3" alt="Diagrama"></div></div>
-</section>
-
-<!-- 4 agente -->
-<section class="lamina" id="l4">
-  <h2 class="titulo">Cada mensaje toma un solo camino</h2>
-  <p class="bajada">Elige un mensaje y mira por qué nodos del agente pasa. Toca un nodo para ver qué hace.</p>
-  <div id="cons"></div>
-  <svg id="grafo" viewBox="0 0 1920 1080"></svg>
-  <div id="grafoNodos"></div>
-  <div id="camino"></div>
-  <div class="verif"><b>Verificador:</b> una cifra sin respaldo se rechaza antes de llegar a la persona.</div>
-</section>
-
-<!-- 5 seguridad -->
-<section class="lamina" id="l5">
-  <h2 class="titulo">Cada capa corta un riesgo distinto</h2>
-  <div class="pestanas" id="pest5"><button data-v="dia" class="oculto">Diagrama</button><button data-v="pru" class="on">Pon a prueba a Lucas</button></div>
-  <div id="v5pru">
-    <div id="capas"></div>
-    <div id="prueba"><div id="ataques"></div><div id="resultado"></div></div>
-  </div>
-  <div id="v5dia" class="oculto"><div class="vista"><img class="zoom" id="img5" alt="Diagrama de seguridad"></div></div>
+  <div id="v3img" class="oculto"><div class="vista"><img class="zoom" id="img3" alt="Diagrama de arquitectura del equipo"></div></div>
 </section>
 
 <!-- 6 modelos y valor -->
 <section class="lamina" id="l6">
-  <h2 class="titulo">Cada modelo le gana a una alternativa sencilla</h2>
-  <div class="pestanas" id="pest6"><button data-v="mod" class="on">Modelos y evidencia</button><button data-v="val">Valor para la persona</button></div>
+  <h2 class="titulo" id="t6">Uso responsable de la IA: ahorro y optimización</h2>
+  <div class="pestanas" id="pest6"><button data-v="mod" class="on">Modelos y evidencia</button><button data-v="seg">Perfiles</button><button data-v="val">Valor para la persona</button><button data-v="ia">Cómo lee la IA</button><button data-v="ah">Cuánto ahorra</button><button data-v="int">Cómo se integra</button></div>
   <div id="v6mod"><div id="lista"></div><div id="detalle"></div></div>
   <div id="v6val" class="oculto"><div id="grafValor"></div><div id="efecto"></div></div>
+  <div id="v6seg" class="oculto"><div id="perfiles"></div><div id="perfilesNota"></div></div>
+  <div id="v8a" class="oculto"><div id="pipe"></div><div id="ejemplo"></div></div>
+  <div id="v8b" class="oculto"><div id="ahorroG"></div><div id="calc"></div></div>
 </section>
 
 <!-- 7 eventos -->
@@ -343,17 +437,9 @@ img.zoom{cursor:zoom-in}
   </div>
 </section>
 
-<!-- 8 rag y ahorro -->
-<section class="lamina" id="l8">
-  <h2 class="titulo">La IA lee tres fragmentos, no una biblioteca</h2>
-  <div class="pestanas" id="pest8"><button data-i="0" class="on">Cómo lee</button><button data-i="1">Cuánto ahorra</button></div>
-  <div id="v8a"><div id="pipe"></div><div id="ejemplo"></div></div>
-  <div id="v8b" class="oculto"><div id="ahorroG"></div><div id="calc"></div></div>
-</section>
-
 <!-- 9 demo -->
 <section class="lamina" id="l9">
-  <h2 class="titulo">Lucas en vivo</h2>
+  <h2 class="titulo">Conoce a Lucas en acción</h2>
   <div class="via"><span>Aviso a tiempo</span><span>Saldo con banda</span><span>Qué hacer y por qué</span><span>Chat con botones</span></div>
   <a class="boton" id="botonDemo" href="#" target="_blank" rel="noopener">Abrir la demo</a>
   <div class="url" id="urlDemo"></div>
@@ -361,9 +447,9 @@ img.zoom{cursor:zoom-in}
 
 <!-- 10 cierre -->
 <section class="lamina oscura" id="l10">
-  <h2 class="titulo">Lucas funciona y está listo para escalar</h2>
+  <h2 class="titulo">Lo que gana la persona y lo que sigue</h2>
   <div class="kpis" id="kpis"></div>
-  <div class="escala" id="escala"><h3>Cómo crece desde aquí</h3></div>
+  <div class="escala" id="escala"><h3>Próximos pasos para quien integra</h3></div>
   <div class="nota">Datos sintéticos. Lucas orienta decisiones: no reemplaza a un asesor ni promete resultados.</div>
 </section>
 
@@ -398,7 +484,7 @@ function ir(n){
   actual = n; if (n === 0) animarHero(); history.replaceState(null, '', '#' + (n+1));
 }
 function siguiente(){ if (actual === 0 && !revelada){ revelar(); return; } ir(actual+1); }
-function anterior(){ if (actual === 0 && revelada){ revelada = false; $('#l1').classList.remove('revelada'); return; } ir(actual-1); }
+function anterior(){ ir(actual-1); }
 function revelar(){ revelada = true; $('#l1').classList.add('revelada'); }
 $('#sig').onclick = siguiente; $('#ant').onclick = anterior;
 addEventListener('keydown', e => {
@@ -445,27 +531,27 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
   const M = id => D.modelos.find(x => x.slug === id), E = D.extras, K = D.mapa.costos;
   const C = {azul:['#2A78D6','#E8F0FB'], verde:['#2A9D8F','#E5F4F2'], naranja:['#C8641A','#FBEFE5'], gris:['#8C8B86','#F0EFED'], marino:['#0C2340','#143762']};
   const N = [
-    {id:'gen',col:0,c:'azul',t:'Generador sintético',s:'500 clientes, 3.3 M movimientos',d:'Datos 100 % sintéticos de 2019 a 2025 con ingresos irregulares, suscripciones duplicadas, datos incompletos y movimientos atípicos sembrados, y una verdad oculta para medir.',m:[['3.3 M','movimientos'],['500','clientes']]},
-    {id:'bcrp',col:0,c:'verde',t:'BCRP',s:'Tipo de cambio, inflación y tasa',d:'Series oficiales en vivo, con caché y serie grabada de respaldo. Cada dato dice su fecha y su origen.',m:[[D.publicos.tipo_de_cambio ? sol(D.publicos.tipo_de_cambio.valor,3) : '', 'por dólar']]},
+    {id:'gen',col:0,c:'azul',t:'Generador sintético',s:'500 clientes sintéticos',d:'Datos 100 % sintéticos de 2019 a 2025 con ingresos irregulares, suscripciones duplicadas, datos incompletos y movimientos atípicos sembrados, y una verdad oculta para medir.',m:[['3.3 M','movimientos'],['500','clientes']]},
+    {id:'bcrp',col:0,c:'verde',t:'BCRP',s:'Cambio, inflación, tasa',d:'Series oficiales en vivo, con caché y serie grabada de respaldo. Cada dato dice su fecha y su origen.',m:[[D.publicos.tipo_de_cambio ? sol(D.publicos.tipo_de_cambio.valor,3) : '', 'por dólar']]},
     {id:'enfen',col:0,c:'verde',t:'ENFEN',s:'Comunicados de El Niño',d:'Alerta por zona con la fuente oficial. La vigilancia avisa cuando sale un comunicado nuevo.',m:[['17 a 20','comunicados de 2026']]},
-    {id:'norm',col:0,c:'verde',t:'Normas y fuentes oficiales',s:'Código del Consumidor, SBS, CTS',d:'Documentos oficiales troceados y vectorizados, siempre con cita y enlace.',m:[['3,761','fragmentos']]},
-    {id:'seg',col:1,c:'azul',t:'Segmentos',s:'K-Prototypes, 5 perfiles',d:'Agrupa clientes mezclando variables numéricas y categóricas. De ahí salen los niveles de Luchador a Campeón y el tono de cada respuesta.',m:[[fmt(M('01_segmentacion').elegido.valor,2),'concordancia con arquetipos']]},
-    {id:'pron',col:1,c:'azul',t:'Pronóstico de saldo',s:'30 días y serie diaria con banda',d:'LightGBM con bandas conformales: un saldo esperado por cada día y el rango donde cae 8 de cada 10 veces.',m:[['−' + fmt(M('02_saldo_30_dias').mejora_pct) + ' %','error vs promedio móvil'],[fmt(E.cobertura.saldo_30d,2),'cobertura de la banda']]},
+    {id:'norm',col:0,c:'verde',t:'Normas y fuentes oficiales',s:'Consumidor, SBS, CTS',d:'Documentos oficiales troceados y vectorizados, siempre con cita y enlace.',m:[['3,761','fragmentos']]},
+    {id:'seg',col:1,c:'azul',t:'Segmentos',s:'K-Prototypes, 3 perfiles',d:'Agrupa clientes mezclando variables numéricas y categóricas. Salen 3 perfiles: Luchador, Constructor y Campeón. El perfil ordena las recomendaciones, el tono y los puntos; el modelo de pronóstico es el mismo para todos.',m:[[fmt(M('01_segmentacion').elegido.valor,2),'concordancia con arquetipos']]},
+    {id:'pron',col:1,c:'azul',t:'Pronóstico de saldo',s:'30 días, serie con banda',d:'LightGBM con bandas conformales: un saldo esperado por cada día y el rango donde cae 8 de cada 10 veces.',m:[['−' + fmt(M('02_saldo_30_dias').mejora_pct) + ' %','error vs promedio móvil'],[fmt(E.cobertura.saldo_30d,2),'cobertura de la banda']]},
     {id:'rojo',col:1,c:'azul',t:'Alerta de saldo en rojo',s:'Probabilidad y día de riesgo',d:'Un clasificador calibrado: el porcentaje de riesgo se puede leer como probabilidad. Lucas dice «hacia el día X», no una fecha exacta.',m:[[fmt(E.calibracion.lightgbm,3),'error de calibración'],[fmt(M('04_dia_de_riesgo').elegido.valor,1) + ' días','error del día de riesgo']]},
     {id:'pol',col:1,c:'azul',t:'Política de ahorro',s:'Lucas y ahorro automático',d:'Reproducción contrafactual: evita días en rojo y forma colchón con una reserva que se puede usar.',m:[['−' + fmt((1 - E.politicas[2].dias_rojo/E.politicas[0].dias_rojo)*100) + ' %','días en rojo'],[fmt(E.politicas[2].colchon_meses,1) + ' meses','de colchón']]},
     {id:'mov',col:1,c:'azul',t:'Movimientos y hábitos',s:'Categorías, fijos y atípicos',d:'Clasifica cada movimiento, detecta gastos fijos, suscripciones duplicadas y movimientos raros.',m:[[fmt(M('07_glosas').elegido.valor,2),'F1 de categorías'],[fmt(M('08_gastos_recurrentes').elegido.valor,2),'F1 de gastos fijos']]},
-    {id:'rag',col:2,c:'naranja',t:'RAG',s:'FAISS, BM25 y filtro de relevancia',d:'Busca los 3 fragmentos más parecidos a la pregunta. Bajo 0.70 de similitud no se contesta.',m:[[fmt(M('13_rag').elegido.valor,2),'recall@4']]},
+    {id:'rag',col:2,c:'naranja',t:'RAG',s:'FAISS, BM25, relevancia',d:'Busca los 3 fragmentos más parecidos a la pregunta. Bajo 0.70 de similitud no se contesta.',m:[[fmt(M('13_rag').elegido.valor,2),'recall@4']]},
     {id:'cal',col:2,c:'naranja',t:'Calendario laboral',s:'Gratificación, CTS, retiro',d:'Reglas con la frase literal de la norma. La libre disposición del 100 % de la CTS vence el 31 de diciembre de 2026.',m:[['Ley 32322','vigente']]},
-    {id:'viv',col:2,c:'naranja',t:'Datos vivos',s:'Tus ingresos y gastos nuevos',d:'Lo que la persona registra actualiza el saldo y el riesgo al instante, sin duplicados y sin guardar el texto del movimiento.',m:[['0','duplicados']]},
-    {id:'vig',col:2,c:'naranja',t:'Vigilancia',s:'Avisos únicos, máximo 3 por semana',d:'Lo más urgente primero y una sola vez: riesgo de rojo, gratificación pendiente, gasto atípico, comunicado del ENFEN.',m:[['3','avisos por semana como máximo']]},
+    {id:'viv',col:2,c:'naranja',t:'Datos vivos',s:'Tus movimientos nuevos',d:'Lo que la persona registra actualiza el saldo y el riesgo al instante, sin duplicados y sin guardar el texto del movimiento.',m:[['0','duplicados']]},
+    {id:'vig',col:2,c:'naranja',t:'Vigilancia',s:'3 avisos por semana',d:'Lo más urgente primero y una sola vez: riesgo de rojo, gratificación pendiente, gasto atípico, comunicado del ENFEN.',m:[['3','avisos por semana como máximo']]},
     {id:'rou',col:3,c:'verde',t:'Router y seguridad',s:'Reglas, 0 tokens',d:'Reconoce el tema y corta seguridad y operaciones antes de cualquier modelo.',m:[['0','tokens']]},
     {id:'her',col:3,c:'verde',t:'Herramientas',s:'Toda cifra nace aquí',d:'Los modelos y el RAG responden con datos. El LLM nunca calcula.',m:[]},
-    {id:'red',col:3,c:'verde',t:'Redactar',s:'Plantilla o IA, nunca las dos a la vez',d:'Una plantilla redacta lo conocido; la IA solo lo nuevo, con 3 fragmentos y sin el id ni la zona de la persona.',m:[[pct(K.mezcla_de_evaluacion.proporcion_que_llega_a_la_ia), 'de los mensajes llega a la IA']]},
+    {id:'red',col:3,c:'verde',t:'Redactar',s:'Plantilla o IA, no ambas',d:'Una plantilla redacta lo conocido; la IA solo lo nuevo, con 3 fragmentos y sin el id ni la zona de la persona.',m:[[pct(K.mezcla_de_evaluacion.proporcion_que_llega_a_la_ia), 'de los mensajes llega a la IA']]},
     {id:'jue',col:3,c:'verde',t:'Verificador y juez',s:'Cifras con respaldo',d:'Rechaza cifras sin respaldo y respuestas cortadas, vacías, evasivas, con código o con promesas.',m:[['0','cifras sin respaldo en ' + D.calidad.agente_plantillas.n + ' preguntas']]},
     {id:'pla',col:3,c:'gris',t:'Plantilla de respaldo',s:'Si la IA falla o inventa',d:'Misma respuesta verificada, mismas cifras y citas, sin IA.',m:[]},
     {id:'tra',col:3,c:'verde',t:'Traducción',s:'Español, inglés y quechua',d:'Protege cifras y nombres y avisa que la traducción es automática.',m:[]},
     {id:'ui',col:4,c:'marino',persona:true,t:'Tu pantalla',s:'Aviso a tiempo, saldo con banda, qué hacer y chat.',d:'La persona recibe un aviso antes de quedarse en rojo, ve su saldo con banda y entiende por qué se le recomienda cada cosa, con supuestos y confianza. Cada botón la lleva a una respuesta real.',m:[['8 de 8','botones que llevan a una respuesta real']]},
-    {id:'api',col:4,c:'gris',persona:true,t:'API y app',s:'Integración final con el equipo',tag:'en integración',d:'El agente se conecta a la API del equipo y cambia de proveedor de IA con tres variables de entorno.',m:[['3','variables para cambiar de IA']]}];
+    {id:'api',col:4,c:'azul',persona:true,t:'API y app',s:'Integrados y funcionando',d:'El agente está integrado a la API y a la app del equipo; cambiar de proveedor de IA son tres variables de entorno.',m:[['3','variables para cambiar de IA']]}];
   const A = [['gen','seg'],['gen','pron'],['gen','rojo'],['gen','pol'],['gen','mov'],['bcrp','pron'],['enfen','vig'],['norm','rag'],['norm','cal'],
     ['seg','her'],['pron','her'],['rojo','her'],['pol','her'],['mov','her'],['rag','her'],['cal','her'],['viv','her'],['vig','red'],['rou','her'],
     ['red','ui'],['tra','ui'],['jue','api']];
@@ -485,78 +571,9 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
   }
   $('#arqNodos').addEventListener('click', e => { const b = e.target.closest('.nodo'); if (b) elegir(b.dataset.id); });
   elegir('pron');
-  const imgs = {arq:'imagenes/arquitectura.png', sis:'../diagramas/arquitectura_del_sistema.png', dat:'../diagramas/modelo_de_datos.png'};
-  existe(imgs.arq, ok => { if (ok) $('#pest3 [data-v="arq"]').classList.remove('oculto'); });
-  pestanas('#pest3', v => { const o = v === 'orq'; $('#v3orq').classList.toggle('oculto', !o); $('#v3img').classList.toggle('oculto', o); if (!o) $('#img3').src = imgs[v]; });
-})();
-
-/* 4 agente: grafo real y camino de cada mensaje */
-(function agente(){
-  const MP = D.mapa, K = MP.costos;
-  const carr = {herramientas_y_plantilla:{t:'Tema conocido',d:'Los modelos calculan y una plantilla redacta, sin IA.',c:'#2A78D6',cl:'#E8F0FB'}, plantilla_fija:{t:'Seguridad o fuera de alcance',d:'Una plantilla fija responde, sin IA y sin datos de nadie.',c:'#8C8B86',cl:'#F0EFED'},
-    preguntas_frecuentes:{t:'Pregunta ya respondida',d:'Sale de las preguntas frecuentes, con sus citas, sin llamar a la IA.',c:'#2A9D8F',cl:'#E5F4F2'}, rag_y_ia:{t:'Pregunta nueva de concepto',d:'La IA redacta con 3 fragmentos del RAG y el verificador la revisa.',c:'#C8641A',cl:'#FBEFE5'}};
-  const nodos = [
-    {id:'ini',t:'Inicio',circ:true,x:780,y:290,d:'Entra el mensaje de la persona.'},
-    {id:'car',t:'Cargar contexto',x:937,y:284,d:'Reúne lo que se sabe de la persona: saldo, pronóstico, nivel, calendario laboral y movimientos vivos.'},
-    {id:'tre',t:'Traducir entrada',x:1174,y:284,d:'Detecta el idioma (español, inglés o quechua) y traduce la pregunta protegiendo cifras y nombres.'},
-    {id:'rou',t:'Router',x:1411,y:284,d:'Reglas que reconocen el tema sin gastar tokens y cortan seguridad y operaciones.'},
-    {id:'her',t:'Herramientas',x:1650,y:284,d:'Los modelos calculan y el RAG busca fuentes. Toda cifra nace aquí; el LLM nunca calcula.'},
-    {id:'red',t:'Redactar',x:1650,y:470,d:'Una plantilla redacta lo conocido y las preguntas frecuentes se reutilizan; solo lo nuevo llega a la IA, sin el id ni la zona de la persona.'},
-    {id:'jue',t:'Juez',x:1460,y:470,d:'Verifica cada cifra y rechaza respuestas cortadas, vacías, evasivas, con código o con promesas. Si rechaza, reintenta una vez.'},
-    {id:'pla',t:'Plantilla',x:1270,y:470,d:'Respuesta determinista con las mismas cifras y citas. Es el respaldo si la IA falla o inventa.'},
-    {id:'fin',t:'Finalizar',x:1080,y:470,d:'Cierra con «Tu decides.», agrega las opciones (botones) y guarda lo aprendido en las preguntas frecuentes.'},
-    {id:'trs',t:'Traducir salida',x:890,y:470,d:'Devuelve la respuesta en el idioma de la persona, con las cifras protegidas y un aviso de traducción.'},
-    {id:'end',t:'Fin',circ:true,x:780,y:476,d:'La persona recibe la respuesta y sus botones.'}];
-  const cx = n => n.x + (n.circ ? 32 : 75), W = 150, byId = Object.fromEntries(nodos.map(n => [n.id, n]));
-  const aristas = [['ini','car','h'],['car','tre','h'],['tre','rou','h'],['rou','her','h'],['her','red','v'],['red','jue','hl'],['jue','pla','hl',1],['pla','fin','hl'],['jue','fin','arco',1],['jue','red','retorno',1],['fin','trs','hl'],['trs','end','hl']];
-  const svg = $('#grafo');
-  svg.innerHTML = `<defs><marker id="pt" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="15" markerHeight="15" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>`;
-  function ruta(a,b,tipo){
-    const A = byId[a], B = byId[b], ya = A.y + (A.circ ? 32 : 38), yb = B.y + (B.circ ? 32 : 38);
-    if (tipo === 'h') return `M${A.x + (A.circ?64:W)},${ya} L${B.x - 4},${yb}`;
-    if (tipo === 'hl') return `M${A.x},${ya} L${B.x + (B.circ?64:W) + 4},${yb}`;
-    if (tipo === 'v') return `M${cx(A)},${A.y+76} L${cx(B)},${B.y-4}`;
-    if (tipo === 'arco') return `M${cx(A)},${A.y+80} C${cx(A)},${A.y+170} ${cx(B)},${B.y+170} ${cx(B)},${B.y+80}`;
-    return `M${cx(A)+30},${A.y+80} C${cx(A)+30},${A.y+125} ${cx(B)-30},${B.y+125} ${cx(B)-30},${B.y+80}`;
-  }
-  aristas.forEach(([a,b,t,c],i) => { svg.appendChild(el('path', {d:ruta(a,b,t), class:'ge' + (c ? ' cond' : ''), 'marker-end':'url(#pt)', id:'e'+i})); });
-  svg.appendChild(el('text', {x:1313, y:458, class:'gl'}, 'si falla o inventa')); svg.appendChild(el('text', {x:1236, y:640, class:'gl'}, 'si la aprueba')); svg.appendChild(el('text', {x:1580, y:600, class:'gl'}, 'reintento'));
-  const cont = $('#grafoNodos');
-  nodos.forEach(n => { const b = document.createElement('button'); b.className = 'gn' + (n.circ ? ' circ' : ''); b.dataset.id = n.id; b.style.left = n.x + 'px'; b.style.top = n.y + 'px'; b.textContent = n.t; cont.appendChild(b); });
-  $('#cons').innerHTML = MP.consultas.map((q,i) => { const c = carr[q.camino]; return `<button data-i="${i}" style="--c:${c.c};--cl:${c.cl}">${q.consulta}</button>`; }).join('');
-  const recorrido = {herramientas_y_plantilla:['ini','car','tre','rou','her','red','jue','pla','fin','trs','end'], plantilla_fija:['ini','car','tre','rou','her','red','jue','pla','fin','trs','end'],
-    preguntas_frecuentes:['ini','car','tre','rou','her','red','jue','fin','trs','end'], rag_y_ia:['ini','car','tre','rou','her','red','jue','fin','trs','end']};
-  const quien = {herramientas_y_plantilla:'Redactar usa una plantilla.', plantilla_fija:'Redactar usa una plantilla fija.', preguntas_frecuentes:'Redactar reutiliza una respuesta verificada.', rag_y_ia:'Redactar llama a la IA con 3 fragmentos y el Juez la revisa.'};
-  let msg = 0, sel = null;
-  function pintar(){
-    const q = MP.consultas[msg], c = carr[q.camino], vis = recorrido[q.camino];
-    $$('#cons button').forEach((b,j) => b.classList.toggle('on', j === msg));
-    $$('.gn').forEach(b => { const i = vis.indexOf(b.dataset.id); b.style.setProperty('--c', c.c); b.style.setProperty('--cl', c.cl); b.style.transitionDelay = (i >= 0 ? i*70 : 0) + 'ms'; b.classList.toggle('paso', i >= 0); b.classList.toggle('sinuso', i < 0); b.classList.toggle('sel', b.dataset.id === sel); });
-    aristas.forEach(([a,b],i) => { const ia = vis.indexOf(a), ib = vis.indexOf(b); const uso = ia >= 0 && ib >= 0 && (ib === ia+1); const p = $('#e'+i); p.classList.toggle('paso', uso); p.style.setProperty('--c', c.c); p.style.transitionDelay = (uso ? ia*70 : 0) + 'ms'; });
-    const nodo = sel ? byId[sel] : null, tokens = q.usa_llm ? (q.tokens_de_entrada + q.tokens_de_salida) : 0;
-    $('#camino').innerHTML = (nodo ? `<h4>${nodo.t}</h4><p>${nodo.d}</p>` : `<h4>${c.t}</h4><p>${c.d} ${quien[q.camino]}</p>`) + `<div class="cos"><div>${fmt(tokens)}<small>tokens</small></div><div>${q.usa_llm ? sol(K.por_llamada.soles.total,4) : 'S/ 0'}<small>costo estimado</small></div><div>${q.usa_llm ? '1' : '0'}<small>llamadas a la IA</small></div></div>`;
-  }
-  $('#cons').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { msg = +b.dataset.i; sel = null; pintar(); } });
-  cont.addEventListener('click', e => { const b = e.target.closest('.gn'); if (b) { sel = sel === b.dataset.id ? null : b.dataset.id; pintar(); } });
-  pintar();
-})();
-
-/* 5 seguridad */
-(function seg(){
-  const capas = [['Entrada','El router corta la seguridad y las operaciones antes de cualquier modelo.'],['Datos mínimos','El LLM no recibe el id ni la zona de la persona.'],['Calcular y redactar por separado','Los modelos calculan, la IA solo redacta.'],
-    ['Verificador de cifras','Toda cifra debe venir de una herramienta.'],['Juez de la respuesta','Rechaza respuestas cortadas, vacías, evasivas, con código o con promesas.'],['Plantilla de respaldo','Si la IA falla o inventa, responde la plantilla verificada.']];
-  $('#capas').innerHTML = capas.map((c,i) => `<div class="capa"><em>${i+1}</em><div><b>${c[0]}</b><span>${c[1]}</span></div></div>`).join('') + `<div class="capa pend"><em>7</em><div><b>Base de datos<span class="etiqueta">en integración</span></b><span>Acceso por roles y filas protegidas por cliente.</span></div></div>`;
-  const A = D.ataques;
-  $('#ataques').innerHTML = `<h3 style="font:800 44px/1.1 var(--display);letter-spacing:-.02em;margin-bottom:18px">Pon a prueba a Lucas</h3>` + A.map((a,i) => `<button data-i="${i}">${a.pedido}</button>`).join('');
-  function ver(i){
-    $$('#ataques button').forEach((b,j) => b.classList.toggle('on', j === i));
-    const a = A[i], r = a.respuesta.replace(/^Hola, [^.]*\.\s*/, '');
-    $('#resultado').innerHTML = `<div class="capa-det">${a.capa}</div><div class="meta">Llamadas a la IA: ${a.llamadas_llm}. Rechazado antes de calcular nada. ${D.calidad.qa.adversas_ok.replace('/',' de ')} pedidos de ataque rechazados en la QA real.</div><q>${r}</q>`;
-  }
-  $('#ataques').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) ver(+b.dataset.i); });
-  ver(0);
-  existe('imagenes/seguridad.png', ok => { if (ok) { $('#pest5 [data-v="dia"]').classList.remove('oculto'); $('#img5').src = 'imagenes/seguridad.png'; $$('#pest5 button').forEach(b => b.classList.toggle('on', b.dataset.v === 'dia')); $('#v5pru').classList.add('oculto'); $('#v5dia').classList.remove('oculto'); } });
-  pestanas('#pest5', v => { $('#v5pru').classList.toggle('oculto', v !== 'pru'); $('#v5dia').classList.toggle('oculto', v !== 'dia'); });
+  existe('imagenes/arquitectura.png', ok => { if (ok) { $('#pest3 [data-v="img"]').classList.remove('oculto'); $('#img3').src = 'imagenes/arquitectura.png'; } });
+  pestanas('#pest3', v => { const w = $('#v3orq'); $('#v3arq').classList.toggle('oculto', v !== 'arq'); $('#v3img').classList.toggle('oculto', v !== 'img');
+    if (v === 'orq') { $('#l3').appendChild(w); w.classList.remove('oculto'); } else if (w.parentElement === $('#l3')) w.classList.add('oculto'); });
 })();
 
 /* 6 modelos y valor */
@@ -597,8 +614,23 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
   }
   $('#grafValor').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (!b) return; metrica = b.dataset.m; $$('#grafValor .metricas button').forEach(x => x.classList.toggle('on', x === b)); pintar(); });
   pintar();
-  $('#efecto').innerHTML = `<div class="gran">${fmt(E.efecto.dias_evitados,2)}</div><span>días en rojo evitados por cliente al mes (IC95 ${fmt(E.efecto.dias_ic95[0],2)} a ${fmt(E.efecto.dias_ic95[1],2)})</span><div class="gran n2">+${sol(E.efecto.colchon_adicional_soles,0)}</div><span>de colchón por cliente frente a no hacer nada</span><small>Apartar a ciegas deja ${fmt(pol[4].dias_rojo,0)} días en rojo al mes: por eso Lucas usa una reserva que se puede usar. Los valores con ahorro suponen que el gasto baja en lo que se aparta. Reproducción sobre ${Math.round(E.meses_simulados)} meses con 500 clientes sintéticos.</small>`;
-  pestanas('#pest6', v => { $('#v6mod').classList.toggle('oculto', v !== 'mod'); $('#v6val').classList.toggle('oculto', v !== 'val'); });
+  $('#efecto').innerHTML = `<div class="gran">${fmt(E.efecto.dias_evitados,2)}</div><span>días en rojo evitados por cliente al mes (IC95 ${fmt(E.efecto.dias_ic95[0],2)} a ${fmt(E.efecto.dias_ic95[1],2)})</span><div class="gran n2">+${sol(E.efecto.colchon_adicional_soles,0)}</div><span>de colchón por cliente frente a no hacer nada</span><small>En 100 personas, son unos ${fmt(E.efecto.dias_evitados*100,0)} días en rojo menos cada mes. Apartar a ciegas deja ${fmt(pol[4].dias_rojo,0)} días en rojo al mes: por eso Lucas usa una reserva que se puede usar. Los valores con ahorro suponen que el gasto baja en lo que se aparta. Reproducción sobre ${Math.round(E.meses_simulados)} meses con 500 clientes sintéticos.</small>`;
+  const S = D.segmentos, colP = ['#C8641A','#2A78D6','#2A9D8F'];
+  const textoP = {
+    luchador:{n:'Luchador', f:'Tu caja se aprieta antes de cobrar. Vamos paso a paso y sin presión.', l:['Aviso anticipado antes de un día en rojo','Una sola acción a la vez, en tono cercano','Plan para ordenar un ingreso irregular']},
+    aprendiz:{n:'Aprendiz', f:'Estás armando tus hábitos.', l:[]},
+    constructor:{n:'Constructor', f:'Tienes base. Estás construyendo colchón y orden.', l:['Metas de ahorro medibles','Simulador de escenarios y tasas','Consejos con el porqué de cada uno']},
+    maestro:{n:'Maestro', f:'Manejas bien tu plata.', l:[]},
+    campeon:{n:'Campeón', f:'Vas adelante: colchón, ahorro y orden. Ahora cuidamos lo que lograste.', l:['Reconoce tu logro y protege lo ganado','Prioridad en mejores condiciones','Invitación a guiar a otras personas']}};
+  $('#perfiles').className = 'perfiles-cols';
+  $('#perfiles').innerHTML = S.perfiles.map((p,i) => { const x = textoP[p.nivel];
+    return `<div class="perfil" style="--c:${colP[i % 3]}"><h3>${x.n}</h3><div class="quien">${fmt(p.n)} de ${fmt(S.total)} clientes (${Math.round(p.n/S.total*100)} %)</div><div class="frase">${x.f}</div>
+    <div class="nums"><div>${fmt(p.dias_rojo_3m,1)}<small>días en rojo<br>en 3 meses</small></div><div>${Math.round(p.gasto_sobre_ingreso*100)} %<small>del ingreso<br>se va en gastos</small></div><div>${Math.round(p.ahorro_pct*100)} %<small>del ingreso<br>se ahorra</small></div></div>
+    <h4>Lo que hace Lucas</h4><ul>${x.l.map(t => `<li>${t}</li>`).join('')}<li>Puntos por cada logro: x${fmt(p.puntos_x,1)}</li></ul></div>`; }).join('');
+  $('#perfilesNota').innerHTML = `<b>Un solo modelo para todos.</b> El perfil ajusta la banda del pronóstico, el orden de las recomendaciones, el tono y los puntos. Un cliente nuevo cae en su perfil con ${Math.round(S.acierto_cliente_nuevo*100)} % de acierto, frente a ${Math.round(S.referencia_acierto*100)} % de adivinar el más grande. La escalera tiene ${S.escalera.length} niveles y hoy salen ${S.k} perfiles: con más datos se activan los demás.`;
+  const vistas6 = {mod:'#v6mod', seg:'#v6seg', val:'#v6val', ia:'#v8a', ah:'#v8b'};
+  pestanas('#pest6', v => { const w = $('#v3orq'); Object.keys(vistas6).forEach(k => $(vistas6[k]).classList.toggle('oculto', v !== k));
+    if (v === 'int') { $('#l6').appendChild(w); w.classList.remove('oculto'); } else if (w.parentElement === $('#l6')) w.classList.add('oculto'); });
 })();
 
 /* 7 eventos */
@@ -626,7 +658,7 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
 /* 8 rag y ahorro */
 (function rag(){
   const M = D.mapa, K = M.costos, EV = K.mezcla_de_evaluacion, P1 = K.por_llamada.soles.total, LL = K.lectura_del_corpus, PL = K.por_llamada;
-  const pasos = [['Chunks','El corpus se trocea una vez: 900 caracteres con solape de 120.','#2A78D6'],['Embeddings','La pregunta se vectoriza en 768 dimensiones con un modelo local.','#2A9D8F'],['Los 3 mejores','Se buscan los 3 fragmentos más parecidos. Bajo 0.70 de similitud, no se contesta.','#C8641A'],['La IA redacta','Solo con esos fragmentos y los datos de la persona, sin su id ni su zona.','#2A9D8F'],['Verificador','Cada cifra con respaldo. Si pasa, se guarda en preguntas frecuentes.','#C8641A']];
+  const pasos = [['Chunks','Trozos de las fuentes oficiales: 900 caracteres con solape de 120, cortados una sola vez.','#2A78D6'],['Embeddings','La huella numérica de un texto (768 números): dos textos con el mismo sentido tienen huellas parecidas.','#2A9D8F'],['RAG','Buscar primero en las fuentes y recién después redactar: se leen los 3 trozos más parecidos; bajo 0.70, no se contesta.','#C8641A'],['La IA redacta','Solo con esos fragmentos y los datos de la persona, sin su id ni su zona.','#2A9D8F'],['Verificador','Cada cifra con respaldo. Si pasa, se guarda en preguntas frecuentes.','#C8641A']];
   $('#pipe').innerHTML = pasos.map((p,i) => `<div style="--c:${p[2]}"><em>${i+1}</em><b>${p[0]}</b><span>${p[1]}</span></div>`).join('');
   $('#ejemplo').innerHTML = `<h3>Lo que el RAG devolvió de verdad para «${M.rag.pregunta}»</h3>` + M.rag.fragmentos.map(f => `<div class="frag"><span>${f.titulo}, pág. ${f.pagina}</span><span class="bar"><i style="width:${f.similitud*100}%"></i></span><span class="sim">${fmt(f.similitud,2)}</span></div>`).join('') +
     `<div class="tokens">La IA recibe <span>${fmt(M.tokens_de_los_3_fragmentos)} tokens</span>, no los ${fmt(M.tokens_del_corpus_completo)} del corpus completo: <span>${pct(LL.reduccion_pct,2)} menos</span> de lectura.</div>`;
@@ -641,10 +673,13 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
   function calc(){ const N = Math.round(Math.pow(10, 3 + 3*$('#rC').value/100)/1000)*1000; $('#nC').textContent = fmt(N); const a = N*P1, b = N*EV.proporcion_que_llega_a_la_ia*P1; $('#cA').textContent = sol(a,0); $('#cB').textContent = sol(b,0); $('#cC').textContent = sol(a-b,0); }
   $('#rC').addEventListener('input', calc); $('#rC').addEventListener('change', e => e.target.blur()); calc();
   $('#verDiagrama').onclick = () => lupa('../diagramas/agente_ahorro_de_tokens.png');
-  pestanas('#pest8', i => { $('#v8a').classList.toggle('oculto', i !== 0); $('#v8b').classList.toggle('oculto', i !== 1); });
 })();
 
 /* 9 demo */
+(function sol(){
+  const E = D.extras, pol = E.politicas, EV = D.mapa.costos.mezcla_de_evaluacion;
+  $('#solPie').innerHTML = `<div>−${fmt((1 - pol[2].dias_rojo/pol[0].dias_rojo)*100)} %<small>de días en rojo al mes, frente a no hacer nada</small></div><div>${fmt(pol[2].colchon_meses,1)} meses<small>de colchón, frente a ${fmt(pol[0].colchon_meses,1)} sin Lucas</small></div><div>${fmt(EV.proporcion_que_llega_a_la_ia*100)} de cada 100<small>consultas necesita IA: el resto responde al instante</small></div>`;
+})();
 (function demo(){
   const u = new URLSearchParams(location.search).get('demo') || D.demo_url || '';
   const b = $('#botonDemo');
@@ -654,11 +689,14 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
 /* 10 cierre: lo probado y como escala */
 (function cierre(){
   const m = D.modelos.find(x => x.slug === '02_saldo_30_dias'), E = D.extras, pol = E.politicas, K = D.mapa.costos, EV = K.mezcla_de_evaluacion;
-  const k = [['−' + fmt(m.mejora_pct) + ' %','error del saldo a 30 días frente al promedio móvil'],['−' + fmt((1 - pol[2].dias_rojo/pol[0].dias_rojo)*100) + ' %','días en rojo por cliente al mes frente a no hacer nada'],[fmt(pol[2].colchon_meses,1) + ' meses','de colchón con Lucas, frente a ' + fmt(pol[0].colchon_meses,1) + ' sin él'],['−' + fmt(EV.ahorro_pct*100) + ' %','de tokens: solo ' + fmt(EV.proporcion_que_llega_a_la_ia*100) + ' de cada 100 mensajes llega a la IA']];
-  $('#kpis').innerHTML = k.map(x => `<div class="kpi"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  const k = [['−' + fmt((1 - pol[2].dias_rojo/pol[0].dias_rojo)*100) + ' %','de días con la cuenta en rojo cada mes','Frente a no hacer nada, por persona'],
+    [fmt(pol[2].colchon_meses,1) + ' meses','de gastos cubiertos con tu ahorro','Frente a ' + fmt(pol[0].colchon_meses,1) + ' sin Lucas: te protege de un imprevisto'],
+    ['−' + fmt(m.mejora_pct) + ' %','de error al anticipar tu saldo a 30 días','Frente a un cálculo simple: avisos más confiables'],
+    ['−' + fmt(EV.ahorro_pct*100) + ' %','de gasto en IA','Por cada 100,000 consultas, de ' + sol(EV.sin_ruteo_soles,0) + ' a ' + sol(EV.con_ruteo_soles,0) + ': solo ' + fmt(EV.proporcion_que_llega_a_la_ia*100) + ' de cada 100 mensajes la necesita']];
+  $('#kpis').innerHTML = '<h3>Lo que gana la persona</h3>' + k.map(x => `<div class="kpi"><b>${x[0]}</b><span>${x[1]}</span><small>${x[2]}</small></div>`).join('');
   const por = [['Más personas, el mismo costo bajo',`Una consulta cuesta ${sol(K.por_llamada.soles.total,4)} cuando llega a la IA y la mayoría no llega. Por cada 100,000 consultas el costo estimado es ${sol(EV.con_ruteo_soles,0)}.`],
     ['Más datos, mejores modelos','El generador acepta una tabla semilla: con datos reales de una entidad se vuelve a entrenar y a medir con el mismo método.'],
-    ['Más integración','La API ya está definida y el agente cambia de proveedor de IA con tres variables, sin tocar el código.'],
+    ['Más integración','La API y el agente ya están integrados; cambiar de proveedor de IA son tres variables, sin tocar el código.'],
     ['Más aprendizaje','Memoria de la conversación, clasificación de intención con embeddings y preguntas frecuentes por significado.'],
     ['Más cuidado','Piloto con grupo de control y derivación a un asesor cuando la situación lo pide.'],
     ['Más alcance','Quechua revisado por un hablante nativo y nuevos canales con el mismo agente.']];
@@ -668,7 +706,7 @@ if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  · 
 
 addEventListener('hashchange', () => { const n = parseInt(location.hash.slice(1), 10); if (!isNaN(n) && n-1 !== actual) ir(n-1); });
 const inicial = parseInt((location.hash || '').slice(1), 10); ir(isNaN(inicial) ? 0 : inicial-1);
-if (inicial > 1) { revelada = true; $('#l1').classList.add('revelada'); }
+revelada = true; $('#l1').classList.add('revelada');
 })();
 </script>
 </body>
