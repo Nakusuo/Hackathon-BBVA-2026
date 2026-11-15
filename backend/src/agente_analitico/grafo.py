@@ -275,7 +275,26 @@ def con_contexto(pregunta: str, previa: str | None) -> str:
     return pregunta
 
 
+DESEO = r"\b(quiero|quisiera|me gustar[ií]a|planeo|pienso|juntar)\b"
+OBJETO_DE_META = r"\b(viaj\w*|pasaje\w*|vacaciones|carro|auto|moto|laptop|celular|casa|depa\w*|curso|concierto|entrada|boda|estudios)\b"
+
+
 def detectar_intencion(pregunta: str, evento: dict | None = None) -> str:
+    intencion = _detectar_por_reglas(pregunta, evento)
+    # «quiero un viaje a Brasil de 200 dólares en 3 meses» es una meta aunque diga «dólares»: solo corrige lo que las reglas
+    # mandan al tipo de cambio o dejan en general, para no pisar «comprar X en 2 semanas» (simulación).
+    if (
+        not evento
+        and intencion in ("tipo_de_cambio", "general")
+        and re.search(DESEO, pregunta, flags=re.I)
+        and re.search(OBJETO_DE_META, pregunta, flags=re.I)
+        and (monto_de(pregunta) is not None or plazo_de(pregunta, reloj.hoy()) is not None)
+    ):
+        return "meta"
+    return intencion
+
+
+def _detectar_por_reglas(pregunta: str, evento: dict | None = None) -> str:
     if evento:
         return EVENTO_A_INTENCION.get(evento.get("tipo"), "general")
     for nombre, patron in REGLAS_INTENCION:

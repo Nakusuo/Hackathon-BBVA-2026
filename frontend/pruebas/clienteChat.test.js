@@ -120,11 +120,15 @@ test('con el agente apagado las campañas siguen saliendo de la plantilla', asyn
   assert.match(r.texto, /Viajes Horizonte/)
 })
 
-test('un seguimiento de la meta sí va al agente aunque antes se ofreciera una campaña', async () => {
+test('una meta y su seguimiento los responde el motor de la pantalla, no el agente', async () => {
   const registro = []
   const previas = ['quiero ir al concierto, la entrada está 200']
-  await preguntarALucas('ok, ¿cuánto me falta?', opciones({ previas, pedir: falsoFetch(RESPUESTA, registro) }))
-  assert.equal(registro.length, 1)
+  const r = await preguntarALucas('ok, ¿cuánto me falta?', opciones({ previas, pedir: falsoFetch(RESPUESTA, registro) }))
+  assert.equal(registro.length, 0)
+  assert.equal(r.origen, 'plantilla')
+  const viaje = await preguntarALucas('quiero ir de viaje a brasil, el pasaje está 200 dólares', opciones({ pedir: falsoFetch(RESPUESTA, registro) }))
+  assert.equal(registro.length, 0)
+  assert.match(viaje.texto, /US\$\s?200/)
 })
 
 test('un «sí» tras una campaña que no se ofreció va al agente', async () => {
