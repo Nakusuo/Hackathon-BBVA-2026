@@ -192,6 +192,7 @@ export default function Avisos({ cliente, metas = [] }) {
             cliente.personaId,
             [{ id: 'prueba', fecha: sumarDias(diaDemo, 1), monto: GASTO_DE_PRUEBA }],
             cliente.planificados,
+            cliente.registrados,
           )
         : cliente,
     [cliente, conGasto, diaDemo],
