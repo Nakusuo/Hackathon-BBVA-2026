@@ -47,7 +47,7 @@ Valor anual ≈ clientes que usan Lucas
 
 - **S/ apartados por cliente** sale de `make eval` (simulado), no de una suposición.
 - Los márgenes y tasas son supuestos visibles que el banco reemplaza con sus números.
-- Lo calcula `eval/valor_banco.py` y lo deja en `EVALUATION.md` (tarea MG-13).
+- Lo calcula `analitica/eval/valor_banco.py` y lo deja en `EVALUATION.md` (tarea MG-13).
 
 ### Modelo de ingreso de Lucas
 

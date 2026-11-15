@@ -60,7 +60,7 @@ verificable.
    - Toda cifra de rendimiento (MAE, cobertura de la banda, F1, % de cifras verificadas, latencia)
      debe estar en `EVALUATION.md` o salir de un comando que se pueda repetir. Si no se encuentra,
      se omite o se marca como `[hipótesis]`.
-   - Cada «se verificó» debe apuntar a algo concreto: un test de `tests/`, un veredicto de
+   - Cada «se verificó» debe apuntar a algo concreto: un test de `backend/tests/`, un veredicto de
      `verificaciones.md` o un comando con su resultado.
 
 4. **Redactar la sección «Uso de IA» de `README.md`.** Se reemplaza la que haya; no se duplica.
@@ -79,7 +79,7 @@ verificable.
      rechazada). Es la evidencia más valiosa; no se oculta.
    - **Código y fuentes reutilizados:** librerías con su licencia, fuentes de datos públicos
      (BCRP, cifras de `estadisticas/cifras-publicas.md`) y cualquier fragmento copiado. Si no hay
-     nada copiado, se dice: «ninguno, solo dependencias de `requirements.txt`».
+     nada copiado, se dice: «ninguno, solo dependencias de `backend/requirements.txt`».
 
    Etiquetar con `[medido]`, `[hipótesis]` o `[pendiente]` lo que no sea obvio. Máximo
    ~400 palabras: el detalle está en `planes/` y en el historial de git.

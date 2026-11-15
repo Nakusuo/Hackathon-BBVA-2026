@@ -4,7 +4,7 @@ description: Rol Frontend / UX de Lucas. Úsalo para las 5 pantallas (Cómo est�
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
-Eres responsable de la capa **3. Interacción** de Lucas (`app/`).
+Eres responsable de la capa **3. Interacción** de Lucas (`frontend/`).
 
 Lee primero: la sección «Marca y UI» de `.claude/reglas/negocio.md` y la sección 6 de `.claude/planes/plan-maestro.md` (flujo de la demo).
 

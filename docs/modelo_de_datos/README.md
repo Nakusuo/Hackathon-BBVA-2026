@@ -6,7 +6,7 @@ Plan del modelo de datos y su esquema **listo para crear** en PostgreSQL 15 o su
 |---|---|
 | [`schema_postgres.sql`](schema_postgres.sql) | El esquema completo (`lucas` y `simulacion`): tablas, claves, restricciones, indices, vista de limpieza y vectores |
 | [`validacion_postgres.json`](validacion_postgres.json) | Evidencia de la prueba contra Postgres real (cargas, cascadas, restricciones, busqueda vectorial) |
-| [`../../eval/cargar_a_postgres.py`](../../eval/cargar_a_postgres.py) | Cargador: crea el esquema, carga los Parquet con COPY, carga el RAG con sus vectores y verifica los conteos |
+| [`../../analitica/eval/cargar_a_postgres.py`](../../analitica/eval/cargar_a_postgres.py) | Cargador: crea el esquema, carga los Parquet con COPY, carga el RAG con sus vectores y verifica los conteos |
 | Este documento | Plan, diccionario de cada tabla y diagrama entidad-relacion (generado desde el SQL por `eval/generar_modelo_de_datos.py`) |
 
 ## 1. Decisiones de diseno

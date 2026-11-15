@@ -1,8 +1,8 @@
 # Diccionario de datos
 
-Tablas que produce `python data/generator.py`. Cada tabla es una carpeta o un archivo Parquet en `data/generado/` (o `data/sample/`). Un test (`tests/test_generador.py`) comprueba que las columnas de este documento coinciden con las reales.
+Tablas que produce `python data/generator.py`. Cada tabla es una carpeta o un archivo Parquet en `data/generado/` (o `data/sample/`). Un test (`backend/tests/test_generador.py`) comprueba que las columnas de este documento coinciden con las reales.
 
-**Columna Uso:** `observable` lo ve un modelo; `etiqueta` es verdad de referencia solo para evaluar; `interna` describe como se genero el dato y nunca entra a un modelo (`src/models/columnas.py`). **Clasificacion** (ISO 27001, control 5.12): todo es dato sintetico, nivel interno; en un banco real `clientes` seria sensible.
+**Columna Uso:** `observable` lo ve un modelo; `etiqueta` es verdad de referencia solo para evaluar; `interna` describe como se genero el dato y nunca entra a un modelo (`backend/src/models/columnas.py`). **Clasificacion** (ISO 27001, control 5.12): todo es dato sintetico, nivel interno; en un banco real `clientes` seria sensible.
 
 ## clientes
 Un cliente por fila. Contrato de datos del plan (seguro.clientes) mas los parametros del simulador.
@@ -152,7 +152,7 @@ Calendario y fuerza de cada evento por dia (0 a 1).
 | `fuerza_nino_costero_2023` | decimal | observable | Intensidad del evento |
 
 ## macro_mensual
-Series reales del BCRP (descargadas con `src/datos_publicos/descargar.py`, ver `docs/fuentes/bcrp_series.csv`).
+Series reales del BCRP (descargadas con `backend/src/datos_publicos/descargar.py`, ver `docs/fuentes/bcrp_series.csv`).
 
 | Columna | Tipo | Uso | Descripcion |
 |---|---|---|---|

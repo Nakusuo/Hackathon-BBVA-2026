@@ -12,7 +12,7 @@ Lee primero: `.claude/reglas/negocio.md` (arquetipos, calendario, privacidad), `
 - `data/generator.py` con `--seed` (semilla fija por defecto); ~500 clientes × 12 meses.
 - Carga a PostgreSQL: `seguro.clientes`, `app.transacciones` (con `glosa`), `app.mensajes`. Esquema completo en la sección 4 de `.claude/planes/plan-maestro.md`.
 - `data/dictionary.md` y `data/QUALITY.md` (generado por script): volumen, cobertura temporal, distribución de montos, % faltantes, duplicados, extremos, proporción por arquetipo, contraste con cifras públicas.
-- `src/ingest/`: validación Pydantic, limpieza, deduplicación (con test).
+- `backend/src/ingest/`: validación Pydantic, limpieza, deduplicación (con test).
 - Comando `make data`.
 
 ## Reglas

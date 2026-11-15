@@ -3,7 +3,7 @@
 Coordina: Dixon. Método: [../reglas/pruebas-istqb.md](../reglas/pruebas-istqb.md). Solo casos de lo que hace el MVP; las historias están en [historias.md](historias.md).
 Estado: `—` sin ejecutar · `OK` pasa · `FALLA` (con enlace al defecto) · `BLOQ` no se puede ejecutar.
 
-Los números se conservan de la versión anterior porque el código los cita; por eso faltan algunos. La columna «Automatizado en» dice qué prueba lo cubre: `*.test.js` está en `app/pruebas/` (`npm test`) y `*.spec.js` en `app/e2e/` (`npm run e2e`). Los manuales se recorren en la app con `npm run dev`.
+Los números se conservan de la versión anterior porque el código los cita; por eso faltan algunos. La columna «Automatizado en» dice qué prueba lo cubre: `*.test.js` está en `frontend/pruebas/` (`npm test`) y `*.spec.js` en `frontend/e2e/` (`npm run e2e`). Los manuales se recorren en la app con `npm run dev`.
 
 ## Casos de sistema
 
@@ -38,17 +38,17 @@ Los números se conservan de la versión anterior porque el código los cita; po
 | CP-SIS-56 | No funcional | Falla controlada | Alta | Abrir Lucas con la API caída y con la API que tarda más de 4 s | «Sin conexión: te muestro tus últimos datos.»; las cifras y «Lo hago» siguen iguales | `api.test.js`, `pantallas.spec.js` | — | — | — |
 | CP-SIS-25 | No funcional | Rendimiento | Media | Medir 20 llamadas a cada ruta de la API | p95 < 2 s | Manual | — | — | — |
 | CP-SIS-26 | No funcional | Accesibilidad | Media | Revisar cada pantalla en claro y oscuro, a 1366×768 y 390 px | Contraste AA, texto ≥ 16 px, sin scroll horizontal, nada solo por color, guía navegable con teclado | `pantallas.spec.js`, `marca.test.js` | — | — | — |
-| CP-SIS-27 | Aceptación | Ensayo | Crítica | Recorrer el guion de `demo/GUION.md` | Cada cifra dicha está a la vista y sale del motor; termina en unos 60 s sin errores | `guion-demo.spec.js` | — | — | — |
+| CP-SIS-27 | Aceptación | Ensayo | Crítica | Recorrer el guion de `docs/demo/GUION.md` | Cada cifra dicha está a la vista y sale del motor; termina en unos 60 s sin errores | `guion-demo.spec.js` | — | — | — |
 
 Cada persona agrega casos de su módulo con el mismo formato (prefijo `CP-<código>-NN`).
 
-### Componente: agente del chat (Jeffrey, `src/agent`)
+### Componente: agente del chat (Jeffrey, `backend/src/agent`)
 
-El agente no está en el flujo de la app del MVP: la API todavía no lo llama (ver [ARCHITECTURE.md](../../ARCHITECTURE.md), sección 2.4). Se prueba como componente con pytest: `python -m pytest -q tests/agent` (el nombre de cada test va en «Pasos»). Sus métricas llegan a la app por el panel Evidencia (HU-20). Entre paréntesis, el número del caso de sistema que cita el código del agente.
+El agente no está en el flujo de la app del MVP: la API todavía no lo llama (ver [ARCHITECTURE.md](../../ARCHITECTURE.md), sección 2.4). Se prueba como componente con pytest: `python -m pytest -q backend/tests/agent` (el nombre de cada test va en «Pasos»). Sus métricas llegan a la app por el panel Evidencia (HU-20). Entre paréntesis, el número del caso de sistema que cita el código del agente.
 
 | ID | Requisito | Técnica | Prioridad | Pasos | Resultado esperado | Ciclo 1 (sáb 23:00) | Ciclo 2 (dom 10:00) | Aceptación (dom 12:00) |
 |---|---|---|---|---|---|---|---|---|
-| CP-JF-01 | HU-10 | Partición de equivalencia (una clase por intención) | Alta | Las 30 preguntas fijas de `tests/agent/preguntas.json` (`test_preguntas_fijas.py::test_pregunta_fija`) | Cada pregunta va a su intención y sus cifras esperadas salen verificadas | — | — | — |
+| CP-JF-01 | HU-10 | Partición de equivalencia (una clase por intención) | Alta | Las 30 preguntas fijas de `backend/tests/agent/preguntas.json` (`test_preguntas_fijas.py::test_pregunta_fija`) | Cada pregunta va a su intención y sus cifras esperadas salen verificadas | — | — | — |
 | CP-JF-02 | HU-10 | Valores límite | Crítica | Redondeos en el borde: `420.70` frente a `420`, `S/ 1 680` frente a `1 683.20`, decena frente a centena (`test_juez.py::test_rechaza_decimal_falso`, `test_redondeo_a_decena_o_centena_en_montos_grandes`, `test_no_redondea_a_la_centena_un_monto_chico`) | Solo pasa la cifra exacta o redondeada a la decena (≥ 100) o centena (≥ 1 000); un decimal falso se rechaza | — | — | — |
 | CP-JF-03 | HU-10 (CP-SIS-10) | Predicción de errores (respuestas trampa del LLM) | Crítica | El LLM inventa una cifra, la calcula, mezcla días de la serie o no da ninguna (`test_rechaza_cifra_inventada`, `test_rechaza_cifra_calculada_por_el_llm`, `test_grafo.py::test_llm_que_mezcla_cifras_de_otros_dias_termina_en_plantilla`, `test_llm_que_inventa_reintenta_una_vez_y_luego_plantilla`) | El juez rechaza, se redacta una vez más y luego responde la plantilla; ninguna cifra sin respaldo llega al usuario | — | — | — |
 | CP-JF-04 | HU-10 (CP-SIS-10) | Tabla de decisión (signo × palabra que describe la cifra) | Crítica | «Te sobraron S/ 50» con saldo −50, «en rojo por S/ 200», «tu saldo actual» con el saldo final, «S/ 72» con el puntaje (`test_rechaza_saldo_negativo_escrito_como_si_sobrara`, `test_acepta_saldo_negativo_bien_dicho`, `test_rechaza_saldo_final_presentado_como_actual`, `test_rechaza_puntaje_presentado_como_soles`, `test_rechaza_impacto_presentado_como_saldo`) | Solo pasa la combinación correcta de signo, unidad y nombre de la cifra | — | — | — |
@@ -60,7 +60,7 @@ El agente no está en el flujo de la app del MVP: la API todavía no lo llama (v
 | CP-JF-10 | HU-20 | Partición de equivalencia (con y sin evidencia) | Alta | Pregunta fuera de tema, sin índice y sin Ollama para el embedding (`test_bajo_el_umbral_no_devuelve_nada`, `test_sin_buscador_ni_evidencia_no_inventa`, `test_sin_ollama_para_embeddings_no_inventa`) | Responde «no encontré una fuente oficial» y no inventa | — | — | — |
 | CP-JF-11 | HU-10 | Funcional (contrato `docs/api.md` §12) | Alta | Respuesta de `agent.chat.responder` (`test_chat.py::test_respuesta_tiene_los_campos_del_contrato_y_respeta_conversation_id`, `test_figures_trae_etiqueta_y_signo_real_para_la_ui`, `test_el_mock_del_contrato_es_la_respuesta_real_del_agente`) | `figures` con `label`, `value`, `text` y `unit`; `sources` con `id`, `title`, `url`; `provider` = `plantilla`, `ollama` o `gemini`; el mock `chat.json` es la salida real | — | — | — |
 | CP-JF-12 | HU-10 | Predicción de errores | Media | «Jueves 18» cuando el 18 cae miércoles (`test_rechaza_dia_de_la_semana_equivocado`, `test_acepta_dia_de_la_semana_correcto`) | Se rechaza el día de la semana equivocado | — | — | — |
-| CP-JF-13 | HU-20 | Revisión con métricas frente al baseline | Alta | `python eval/evaluar_chat.py --llm plantilla` y `--llm ollama` (resultado en `docs/evaluacion-chat.md`) | El LLM se compara con las plantillas en intención, cifras verificadas, bloqueo de adversas, citas y latencia; ninguna cifra inventada llega al usuario | — | — | — |
+| CP-JF-13 | HU-20 | Revisión con métricas frente al baseline | Alta | `python analitica/eval/evaluar_chat.py --llm plantilla` y `--llm ollama` (resultado en `docs/evaluacion-chat.md`) | El LLM se compara con las plantillas en intención, cifras verificadas, bloqueo de adversas, citas y latencia; ninguna cifra inventada llega al usuario | — | — | — |
 
 ## Matriz de trazabilidad
 

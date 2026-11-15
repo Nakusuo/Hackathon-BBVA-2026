@@ -369,11 +369,11 @@ Protocolo: leer el cambio → escenario en el generador → test que falla → a
 
 ```
 ├── README.md  ARCHITECTURE.md  EVALUATION.md  PROMPTS.md
-├── .env.example  Makefile  requirements.txt  docker-compose.yml
+├── .env.example  Makefile  pyproject.toml  docker-compose.yml
 ├── db/              # init.sql: esquemas, roles, RLS, pgcrypto, pgvector
 ├── data/            # generator.py, dictionary.md, QUALITY.md, sample/
 ├── docs/rag/        # <modulo>/*.pdf + fuentes.csv (fuente, licencia, nivel)
-├── src/
+├── backend/src/     # paquete Python; al lado, backend/tests/ y backend/requirements*.txt
 │   ├── ingest/      # validación, dedup, carga a Postgres
 │   ├── engine/      # categorías, glosa, recurrentes, calendario
 │   ├── models/      # segment, health, forecast, sentiment
@@ -382,10 +382,9 @@ Protocolo: leer el cambio → escenario en el generador → test que falla → a
 │   ├── agent/       # LangGraph: nodos, tools, rag, memoria, juez, providers
 │   ├── bcrp/
 │   └── api/         # FastAPI
-├── app/             # UI
-├── eval/            # genera EVALUATION.md
-├── tests/
-└── demo/            # guion, video de respaldo, capturas
+├── frontend/        # UI (React + Vite)
+├── analitica/       # eval/ (genera EVALUATION.md) y notebooks/
+└── docs/demo/       # guion, video de respaldo, capturas
 ```
 
 ---

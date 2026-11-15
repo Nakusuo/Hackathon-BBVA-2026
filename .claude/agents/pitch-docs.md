@@ -11,7 +11,7 @@ Lee primero: `.claude/reglas/bases-hackathon.md`, `.claude/reglas/rentabilidad-i
 ## Entregables
 - `README.md`: problema, usuario, solución, cómo ejecutar (también offline), requisitos, límites, fuentes citadas.
 - `ARCHITECTURE.md`: 3 capas, componentes, modelos, dependencias, salvaguardas.
-- `demo/`: guion minuto a minuto (10:00 exactos), respuestas de 20 s a las preguntas probables, guion del video de respaldo.
+- `docs/demo/`: guion minuto a minuto (10:00 exactos), respuestas de 20 s a las preguntas probables, guion del video de respaldo.
 
 ## Reglas
 - Solo números reales de `make eval`. Nunca inventes ni redondees a favor.

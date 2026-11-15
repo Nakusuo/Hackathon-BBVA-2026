@@ -1,0 +1,16 @@
+{
+  "customer_id": "demo-001",
+  "events": [
+    {
+      "id": "evt-001",
+      "type": "recurring_expense",
+      "title": "Pago que puedes pausar",
+      "message": "MusiKa Plus se cobra el viernes, 20 de noviembre (S/ 21.90) y un tip puede pausarlo.",
+      "event_date": "2026-11-20",
+      "priority": "medium",
+      "estimated_impact": -21.9,
+      "notified": false
+    }
+  ],
+  "weekly_notifications_remaining": 2
+}
