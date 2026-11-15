@@ -157,34 +157,39 @@ export default function Resumen({ cliente, metas, alternarTip, animarEntrada = t
       <motion.div {...entra(1)}>
         {riesgo ? (
           <section className="aviso aviso-corto" role="status" aria-label="Aviso de Lucas">
-            <LucasPose pose="alerta" tamano={56} />
-            <p>
-              <strong>Lucas te avisa:</strong> en el peor caso, el {fechaDia(riesgo.desde)}
-              {riesgo.hasta !== riesgo.desde && ` y el ${fechaDia(riesgo.hasta)}`} quedarías en rojo (
-              <span className="cifra">{enSoles(riesgo.peorMonto)}</span>).{' '}
-              {/* Enlace en la frase, como «Ver tips» en Qué viene: un botón aparte ocupaba una fila entera. */}
-              <a className="enlace" href="#tips">
+            <div className="aviso-texto">
+              <p>
+                <strong>Lucas te avisa:</strong> en el peor caso, el {fechaDia(riesgo.desde)}
+                {riesgo.hasta !== riesgo.desde && ` y el ${fechaDia(riesgo.hasta)}`} quedarías en rojo (
+                <span className="cifra">{enSoles(riesgo.peorMonto)}</span>).
+              </p>
+              <a className="boton boton-chico" href="#tips">
                 Cómo evitarlo
               </a>
-            </p>
+            </div>
+            <LucasPose pose="alerta" tamano={88} />
           </section>
         ) : mes.diasEnRojo ? (
           <section className="aviso aviso-corto" role="status" aria-label="Aviso de Lucas">
-            <LucasPose pose="alerta" tamano={56} />
-            <p>
-              <strong>Lucas te avisa:</strong> llegas a tu cobro, pero con lo que planificaste el{' '}
-              {fechaDia(mes.primerRojo)} quedarías en rojo (<span className="cifra">{enSoles(mes.peorMonto)}</span>).
-            </p>
-            <Link className="boton boton-chico" to="/lucas/que-viene">
-              Ver en Qué viene
-            </Link>
+            <div className="aviso-texto">
+              <p>
+                <strong>Lucas te avisa:</strong> llegas a tu cobro, pero con lo que planificaste el{' '}
+                {fechaDia(mes.primerRojo)} quedarías en rojo (<span className="cifra">{enSoles(mes.peorMonto)}</span>).
+              </p>
+              <Link className="boton boton-chico" to="/lucas/que-viene">
+                Ver en Qué viene
+              </Link>
+            </div>
+            <LucasPose pose="alerta" tamano={88} />
           </section>
         ) : (
           <section className="aviso aviso-corto aviso-bien" role="status" aria-label="Aviso de Lucas">
-            <LucasPose pose="celebra" tamano={56} />
-            <p>
-              <strong>Vas bien:</strong> llegas a tu cobro sin quedar en rojo, incluso si gastas un poco más.
-            </p>
+            <div className="aviso-texto">
+              <p>
+                <strong>Vas bien:</strong> llegas a tu cobro sin quedar en rojo, incluso si gastas un poco más.
+              </p>
+            </div>
+            <LucasPose pose="celebra" tamano={88} />
           </section>
         )}
         <ExplicameFacil puntos={explicarResumen(cliente)} />

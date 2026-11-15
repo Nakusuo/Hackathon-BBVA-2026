@@ -337,10 +337,12 @@
   position: relative;
   display: grid;
   gap: 4px;
-  padding: 18px 20px;
-  border-radius: 24px;
+  padding: 20px;
+  border-radius: 20px;
   background: var(--azul-profundo);
   color: var(--sobre-azul);
+  /* Una segunda tarjeta asoma por debajo, como en una billetera: una sombra sólida, sin capas que tapen el contenido. */
+  box-shadow: 0 10px 0 -4px var(--azul-profundo), 0 18px 30px -18px var(--azul-profundo);
 }
 
 .hero-etiqueta,
@@ -356,29 +358,37 @@
 
 .hero-actual {
   justify-self: start;
-  margin-top: 4px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 0.14);
+  margin-top: 6px;
   font-weight: 600;
 }
 
-/* Gastar más de lo seguro se marca con tinte y borde rojo claro, y siempre con el texto «de más»:
-   blanco sobre el tinte queda en 6.8:1 y el borde en 3.8:1 contra el azul. */
+/* Gastar más de lo seguro se marca con un subrayado rojo claro; el texto «de más» dice lo mismo sin depender del color. */
 .hero-actual-alto {
-  background: rgb(255 138 128 / 0.24);
-  box-shadow: inset 0 0 0 2px var(--riesgo-claro);
+  text-decoration: underline;
+  text-decoration-color: var(--riesgo-claro);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
 }
 
+/* El corte punteado separa lo que gastas de lo que cobras, como el recorte de la referencia. */
 .hero-cobro {
   display: flex;
   justify-content: space-between;
-  margin-top: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1.5px dashed rgb(255 255 255 / 0.35);
+}
+
+@media (min-width: 760px) {
+  .hero {
+    max-width: 560px;
+  }
 }
 
 .hero-barra {
   display: block;
-  height: 8px;
+  height: 6px;
+  margin-top: 4px;
   border-radius: 4px;
   background: rgb(255 255 255 / 0.18);
   overflow: hidden;
@@ -398,12 +408,31 @@
   gap: 10px;
 }
 
-.aviso-corto > .lucas-pose {
-  margin-top: -4px;
-}
-
 .aviso-corto p {
   margin: 0;
+}
+
+/* Tarjeta de aviso: el texto y su botón a la izquierda, y Lucas grande a la derecha como protagonista. */
+.aviso.aviso-corto {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px 14px 16px;
+  border-radius: var(--radio);
+}
+
+.aviso-texto {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+}
+
+.aviso.aviso-corto > .lucas-pose {
+  margin: 0;
+}
+
+.aviso.aviso-corto + .facil {
+  margin-top: 12px;
 }
 
 .boton-chico {
@@ -424,6 +453,17 @@
   border-radius: 999px;
   background: var(--superficie);
   border: 1px solid var(--borde);
+}
+
+/* En Tips las cifras van en línea con su texto, sin cajas que compitan con los tips de abajo. */
+#tips .impacto {
+  gap: 4px 18px;
+}
+
+#tips .impacto span {
+  padding: 0;
+  border: 0;
+  background: none;
 }
 
 .impacto .impacto-nota {

@@ -351,9 +351,14 @@ details[open] summary::after {
   margin-top: 4px;
 }
 
+/* Botón de texto con borde fino: no compite con las cifras ni parece un sticker. */
 .facil-boton {
   justify-self: start;
   gap: 8px;
+  border-color: var(--borde);
+  border-radius: var(--radio-chico);
+  color: var(--tinta);
+  font-weight: 600;
 }
 
 .facil-boton[aria-expanded='true'] {
