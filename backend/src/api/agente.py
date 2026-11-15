@@ -96,6 +96,8 @@ class Agente:
             "goal_proposal": _propuesta(r.get("propuesta_meta")),
             "options": [{"id": o["id"], "label": o["texto"], "question": o["pregunta"]} for o in r.get("opciones") or []],
         }
+        if customer_id in IDS_DEL_CHAT and r["intencion"] == "fen":
+            respuesta["answer"] = chat_demo.solo_alerta(respuesta["answer"])
         if customer_id in IDS_DEL_CHAT and r["intencion"] in chat_demo.INTENCIONES_A_CONCILIAR and not chat_demo.respaldada_por_la_demo(respuesta["answer"]):
             return chat_demo.apoyo()
         return respuesta

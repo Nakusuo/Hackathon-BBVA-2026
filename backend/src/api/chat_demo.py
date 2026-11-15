@@ -199,3 +199,8 @@ def apoyo() -> dict:
     texto = (f"Es normal que la plata preocupe, y se resuelve por partes. Lo primero que te conviene: {primero['action']} "
              f"(ahorras unos {_soles(primero['estimated_impact'])}). Si quieres, te digo si llegas a tu cobro o cómo está tu salud financiera. Tú decides.")
     return _respuesta(texto, [primero], ["get_recos"], "apoyo")
+
+
+def solo_alerta(texto: str) -> str:
+    """En la demo, El Niño muestra la alerta y sus acciones; la lista de recomendaciones que el agente agrega es del cliente de la base."""
+    return texto.split("\n- ")[0].strip()
