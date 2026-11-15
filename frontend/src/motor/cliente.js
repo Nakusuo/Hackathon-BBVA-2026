@@ -4,6 +4,7 @@ import {
   ajusteDe,
   apartadoMaximo,
   conPlanificados,
+  conRegistrados,
   diasEnRojo,
   diasEnRojoDelMes,
   evaluarCambio,
@@ -21,8 +22,9 @@ import { PERSONA_INICIAL, personaPorId } from './personas.js'
 
 const REPETICIONES_APARTADO = 3
 
-function totalesPorCategoria(p) {
+function totalesPorCategoria(p, registrados) {
   const totales = { ...p.gastoBasePorCategoria, suscripciones: 0 }
+  for (const m of registrados) if (m.tipo === 'gasto') totales[m.categoria] = (totales[m.categoria] ?? 0) + m.monto
   for (const g of p.gastosFrecuentes) totales[g.categoria] = (totales[g.categoria] ?? 0) + g.vecesMes * g.ticket
   for (const s of p.suscripciones) totales.suscripciones += s.monto
   return totales
@@ -93,8 +95,7 @@ function seguimientoDe(definicion, cambio) {
 
 // Cada tip se mide sobre los otros ya elegidos; el orden de las tarjetas se fija con su efecto por sí solo,
 // para que no salten al elegir.
-function recomendacionesCon(definicion, activos) {
-  const p = definicion.persona
+function recomendacionesCon(definicion, p, activos) {
   const solos = definicion.cambios.map((c) => ({ cambio: c, mejora: evaluarCambio(p, c).mejora }))
   return solos
     .sort((a, b) => b.mejora - a.mejora)
@@ -106,12 +107,12 @@ function recomendacionesCon(definicion, activos) {
 
 // Todo lo que cambia con la persona elegida, con «Lo hago» o con un gasto o ingreso planificado se recalcula aquí.
 // `pagosExtra` son gastos de prueba (la bandeja de avisos los usa para mostrar cómo se mueve el riesgo).
-// `planificados` son los que la persona agregó en el simulador. Este es el único punto que cambia por
+// `planificados` son los que la persona agregó en el simulador; `registrados`, lo que ya hizo y anotó (cambia el saldo). Este es el único punto que cambia por
 // POST /api/v1/simulations: hoy ese contrato no lleva fecha por movimiento y el signo de `expense` sigue en
 // discusión (PR #10).
-export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra = [], planificados = []) {
+export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra = [], planificados = [], registrados = []) {
   const definicion = personaPorId(personaId)
-  const p = definicion.persona
+  const p = conRegistrados(definicion.persona, registrados)
   const cambios = definicion.cambios
   const activos = cambios.filter((c) => elegidos.includes(c.id))
   const ajuste = conPlanificados({ ...ajusteDe(activos), pagosExtra }, planificados)
@@ -119,7 +120,7 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
   const peor = peorDia(p, pronostico)
   const pronosticoConTodos = simular(p, conPlanificados(ajusteDe(cambios), planificados))
   const peorConTodos = peorDia(p, pronosticoConTodos)
-  const totales = totalesPorCategoria(p)
+  const totales = totalesPorCategoria(p, registrados)
   const veces = Object.fromEntries(p.gastosFrecuentes.map((g) => [g.id, g.vecesMes]))
   const aprendido = definicion.aprendido(p, veces)
 
@@ -130,7 +131,8 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
     saldoHoy: p.saldoHoy,
     cuenta: { nombre: 'Cuenta de ahorros', terminacion: '0001' },
     tarjeta: { nombre: 'Tarjeta de crédito', terminacion: '0002', ...definicion.tarjeta },
-    movimientosRecientes: definicion.movimientosRecientes,
+    movimientosRecientes: movimientosConRegistrados(definicion.movimientosRecientes, registrados),
+    registrados,
     proximoIngreso: { ...primerCobro(p), tipo: p.tipoIngreso },
     ingresos: p.ingresos,
     gastoDiarioActual: Math.round(gastoVariableDiario(p, ajuste.frecuencias)),
@@ -160,7 +162,7 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
       .map((c) => ({ ...c, total: Math.round((totales[c.id] ?? 0) * 100) / 100 }))
       .sort((a, b) => b.total - a.total),
     suscripciones: p.suscripciones,
-    recomendaciones: recomendacionesCon(definicion, activos),
+    recomendaciones: recomendacionesCon(definicion, p, activos),
     conTodos: {
       peorFecha: peorConTodos.fecha,
       peorMonto: peorConTodos.banda[0],
@@ -174,6 +176,18 @@ export function vistaCon(elegidos = [], personaId = PERSONA_INICIAL, pagosExtra 
   }
 }
 
+// Lo anotado a mano se lee igual que lo que trae el banco: el gasto con signo negativo, más nuevo primero.
+function movimientosConRegistrados(recientes, registrados) {
+  const propios = registrados.map((m) => ({
+    id: m.id,
+    fecha: m.fecha,
+    concepto: m.concepto,
+    monto: m.tipo === 'gasto' ? -m.monto : m.monto,
+    categoria: m.tipo === 'gasto' ? m.categoria : 'ingreso',
+  }))
+  return [...propios, ...recientes].sort((a, b) => b.fecha.localeCompare(a.fecha))
+}
+
 // La persona de la demo por defecto, para quien todavía no eligió otra.
 const inicial = personaPorId(PERSONA_INICIAL)
 export const persona = inicial.persona
@@ -183,7 +197,7 @@ export const cliente = vistaCon()
 // Lo que el simulador propone cuando un gasto deja en rojo: cuánto cabe ese día y, si nada, cuánto después del
 // siguiente cobro. Usa el mismo ajuste de la vista (tips y lo planificado).
 export function cuantoCabe(vista, fecha) {
-  const p = personaPorId(vista.personaId).persona
+  const p = conRegistrados(personaPorId(vista.personaId).persona, vista.registrados)
   const siguiente = p.ingresos.filter((i) => i.fecha > fecha).sort((a, b) => a.fecha.localeCompare(b.fecha))[0]
   return {
     ese: gastoMaximoEn(p, fecha, vista.ajuste),
