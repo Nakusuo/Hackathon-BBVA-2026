@@ -118,3 +118,12 @@ def test_comprar_con_precio_y_fecha_es_una_meta_y_sin_fecha_una_simulacion():
 def test_el_nombre_de_la_meta_sale_de_la_frase(pregunta, nombre):
     from src.agente_analitico.grafo import nombre_de_meta
     assert nombre_de_meta(pregunta) == nombre
+
+
+@pytest.mark.parametrize("seguimiento,esperado", [("¿y para julio?", (8, "para julio")), ("¿y en 4 meses?", (4, "en 4 meses")), ("¿y a fin de año?", (2, "a fin de año"))])
+def test_en_un_seguimiento_manda_el_plazo_nuevo_aunque_la_pregunta_anterior_traiga_otro(seguimiento, esperado):
+    from datetime import date
+
+    from src.agente_analitico.grafo import con_contexto, plazo_de
+    q = con_contexto(seguimiento, "quiero ahorrar para un viaje a Cusco de 3000 soles en 6 meses")
+    assert plazo_de(q, date(2026, 11, 14)) == esperado

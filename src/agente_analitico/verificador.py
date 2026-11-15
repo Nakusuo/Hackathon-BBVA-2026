@@ -38,8 +38,6 @@ def aplanar(obj, salida: set | None = None) -> set:
     if isinstance(obj, (int, float)):
         v = float(obj)
         salida.add(v)
-        if v < 0:   # el texto escribe un saldo negativo como «-S/ 290» y el patron lee 290, sin el signo
-            salida.add(-v)
         if 0 < abs(v) <= 1:
             salida.add(round(v * 100, 4))
         return salida
@@ -64,11 +62,19 @@ def _lecturas(s: str) -> list[float]:
     return [] if n is None else [n]
 
 
+# Un monto en soles con signo menos delante («-S/ 290», «−S/ 290», «S/ -290») es negativo. Solo se mira junto a «S/»: un guion suelto
+# también aparece en fechas («2025-11») y en listas, y ahí no es un signo.
+NEGATIVO = re.compile(r"(?:[-−]\s?S/\s?|S/\s?[-−])$")
+
+
 def verificar(texto: str, permitidos: set, extra: set | None = None) -> dict:
+    """Con signo: un saldo de -290 solo respalda «-S/ 290»; escribirlo como «S/ 290» queda sin respaldo."""
     ok_const = CONSTANTES | (extra or set())
     sin_respaldo = []
     for m in PATRON.finditer(texto):
         lecturas = _lecturas(m.group(1))
+        if NEGATIVO.search(texto[max(0, m.start() - 4):m.start()]):
+            lecturas = [-n for n in lecturas]
         if not lecturas:
             continue
         if any(n in ok_const or any(abs(n - p) <= max(0.51, 0.006 * abs(p)) for p in permitidos) for n in lecturas):

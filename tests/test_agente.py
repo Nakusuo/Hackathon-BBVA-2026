@@ -1,5 +1,6 @@
 """Pruebas de extremo a extremo del agente con plantillas (sin red ni LLM). Se omiten si faltan los modelos entrenados."""
 import os
+import re
 
 import pytest
 
@@ -211,14 +212,13 @@ def test_el_ciclo_de_vigilancia_avisa_lo_urgente_primero_sin_repetir_y_sin_gasta
 
 
 @pytest.mark.parametrize("modo", ["agente_unico", "multiagente"])
-def test_simular_un_gasto_vuelve_a_puntuar_el_pronostico_y_no_lo_calcula_el_redactor(agente, modo):
+def test_simular_un_gasto_resta_exactamente_el_monto_y_no_lo_calcula_el_redactor(agente, modo):
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
     r = responder(apps[modo], cid, "Quiero comprar una entrada a un concierto por 450 soles, la preventa es en 2 semanas, ¿afecta mis ahorros?")
-    sin = repo.contexto(cid)["pronostico"]["saldo_esperado"]
-    con = repo._pronostico(repo.fila_de(cid), -450.0)["saldo_esperado"]
+    sin = round(repo.contexto(cid)["pronostico"]["saldo_esperado"])
     assert r["intencion"] == "simular" and r["proveedor"] == "plantilla" and r["llamadas_llm"] == 0 and not r["cifras_sin_respaldo"]
-    assert con < sin and f"S/ {con:,.0f}" in r["respuesta"] and f"S/ {sin:,.0f}" in r["respuesta"] and "S/ 450" in r["respuesta"]
+    assert f"rondaría S/ {sin - 450:,.0f} en vez de S/ {sin:,.0f}" in r["respuesta"] and "S/ 450" in r["respuesta"]
     assert "2 semanas" not in r["respuesta"] and r["respuesta"].rstrip().endswith("Tu decides.")
 
 
@@ -258,17 +258,31 @@ def test_un_saludo_se_responde_al_instante_sin_modelo_ni_cifras_del_cliente(agen
     assert r["opciones"] and "S/" not in r["respuesta"]
 
 
-def test_el_plan_de_una_meta_parte_de_las_finanzas_de_la_persona_suma_el_convenio_y_cierra_los_numeros(agente, reloj_de_prueba):
+def test_el_plan_de_una_meta_parte_de_ingreso_gasto_y_ahorro_del_mismo_periodo(agente, reloj_de_prueba):
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
     r = responder(apps["agente_unico"], cid, "quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo")
-    f = repo.contexto(cid)["features"]
+    fl = repo.flujo_reciente(cid)
     assert r["intencion"] == "meta" and r["proveedor"] == "plantilla" and not r["cifras_sin_respaldo"]
     bloques = r["respuesta"].split("\n\n")
     assert [b.split("\n")[0] for b in bloques if b.startswith("## ")] == ["## Lo que puedes hacer", "## Convenio del banco", "## Los números"] and "## Tu punto de partida" in bloques[0]
-    assert f"Ganas unos S/ {f['ingreso_medio']:,.0f} al mes" in r["respuesta"]
-    assert "Autos Andinos: S/ 2,000 de descuento" in r["respuesta"] and "- Precio: S/ 12,000" in r["respuesta"] and "- Te toca juntar: S/ 10,000" in r["respuesta"]
-    assert "Para tenerlo a fin de año necesitas S/ 5,000 al mes" in r["respuesta"]
+    assert f"ganaste unos S/ {fl['ingreso']:,.0f} al mes y gastaste S/ {fl['gasto']:,.0f}" in r["respuesta"]
+    assert abs(fl["ingreso"] - fl["gasto"] - fl["sobra"]) <= 1 and "- Precio: S/ 12,000" in r["respuesta"]
+
+
+def test_la_meta_se_propone_con_un_plazo_al_que_si_se_llega_y_sin_un_convenio_que_vence_antes(agente, reloj_de_prueba):
+    from datetime import date
+
+    from src.agente_analitico.grafo import _sumar_meses, responder
+    repo, apps, cid = agente
+    r = responder(apps["agente_unico"], cid, "quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo")
+    assert "con el plan no alcanza" in r["respuesta"]
+    meses = int(re.search(r"llegas en (\d+) meses", r["respuesta"]).group(1))
+    fecha = _sumar_meses(date(2026, 11, 14), meses)
+    assert r["propuesta_meta"]["fecha"] == fecha.isoformat()   # la fecha a la que llega con el plan, no la que pidió
+    if fecha > date(2027, 3, 31):
+        assert "antes de que juntes la plata: no lo descuento" in r["respuesta"] and "Te toca juntar" not in r["respuesta"]
+        assert r["propuesta_meta"]["objetivo"] == 12000.0
 
 
 def test_un_plan_sin_precio_dice_cuanto_se_puede_apartar_y_pide_el_precio(agente, reloj_de_prueba):
@@ -279,12 +293,15 @@ def test_un_plan_sin_precio_dice_cuanto_se_puede_apartar_y_pide_el_precio(agente
     assert "Viajes Horizonte" in r["respuesta"] and "no aplica: cubre solo pasajes nacionales" in r["respuesta"] and "Vale hasta" not in r["respuesta"]
 
 
-def test_el_convenio_que_si_cubre_el_pedido_se_ofrece_con_su_vigencia_y_su_descuento_con_tope(agente, reloj_de_prueba):
+def test_el_convenio_vigente_en_la_fecha_de_compra_se_descuenta_con_su_tope(agente, reloj_de_prueba):
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
-    r = responder(apps["agente_unico"], cid, "quiero ahorrar para un viaje a Cusco de 3000 soles en 6 meses")
-    assert "Vale hasta el domingo 28 de febrero de 2027" in r["respuesta"] and "- Descuento con Viajes Horizonte: -S/ 200" in r["respuesta"] and "- Te toca juntar: S/ 2,800" in r["respuesta"]
-    assert "necesitas S/ 467 al mes" in r["respuesta"] and not r["cifras_sin_respaldo"]
+    r = responder(apps["agente_unico"], cid, "quiero ahorrar para un viaje a Cusco de 3000 soles en 2 meses")
+    assert "con el plan sí llegas" in r["respuesta"] and not r["cifras_sin_respaldo"]
+    assert "Vale hasta el domingo 28 de febrero de 2027" in r["respuesta"] and "- Descuento con Viajes Horizonte: S/ 200" in r["respuesta"]
+    assert "- Te toca juntar: S/ 2,800" in r["respuesta"] and "necesitas S/ 1,400 al mes" in r["respuesta"]
+    lejos = responder(apps["agente_unico"], cid, "quiero ahorrar para un viaje a Cusco de 3000 soles en 6 meses")
+    assert "Vence el domingo 28 de febrero de 2027, antes de que juntes la plata" in lejos["respuesta"] and "necesitas S/ 500 al mes" in lejos["respuesta"]
 
 
 def test_una_meta_sin_convenio_ni_plazo_dice_en_cuantos_meses_se_llega_con_el_plan(agente):
@@ -348,9 +365,7 @@ def test_el_ahorro_programado_no_se_cuenta_como_gasto(agente):
 def test_un_plan_con_precio_propone_guardar_la_meta_con_lo_que_falta_juntar_y_su_fecha(agente, reloj_de_prueba):
     from src.agente_analitico.grafo import responder
     repo, apps, cid = agente
-    carro = responder(apps["agente_unico"], cid, "quiero comprar un carro a fin de año, esta 12mil soles cuanto debo ir ahorrando para poder comprarlo")
-    assert carro["propuesta_meta"] == {"nombre": "Carro", "objetivo": 10000.0, "fecha": "2026-12-31"} and "¿La guardo en tus metas?" in carro["respuesta"]
-    cusco = responder(apps["agente_unico"], cid, "quiero ahorrar para un viaje a Cusco de 3000 soles en 6 meses")
-    assert cusco["propuesta_meta"] == {"nombre": "Viaje a Cusco", "objetivo": 2800.0, "fecha": "2027-05-14"} and not cusco["cifras_sin_respaldo"]
+    cusco = responder(apps["agente_unico"], cid, "quiero ahorrar para un viaje a Cusco de 3000 soles en 2 meses")
+    assert cusco["propuesta_meta"] == {"nombre": "Viaje a Cusco", "objetivo": 2800.0, "fecha": "2027-01-14"} and "¿La guardo en tus metas?" in cusco["respuesta"]
     sin_precio = responder(apps["agente_unico"], cid, "propon un plan de ahorro para poder irme de viaje a Brasil")
     assert sin_precio["propuesta_meta"] is None and "¿La guardo" not in sin_precio["respuesta"]

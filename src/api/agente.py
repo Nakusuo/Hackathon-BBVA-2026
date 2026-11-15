@@ -32,11 +32,13 @@ def para_el_chat(texto: str, intencion: str, opciones: list[dict]) -> str:
         texto = re.sub(r"^Hola, [^.\n]{1,30}\.\s*", "", texto)
     if opciones:
         texto = texto.replace(" • ".join(o["texto"] for o in opciones), "").replace("  ", " ")
-    return re.sub(r"\s*Tu decides?\.\s*$", "", texto.strip(), flags=re.I).strip() or texto.strip()
+    return re.sub(r"\s*T[uú] decides?\.\s*$", "", texto.strip(), flags=re.I).strip() or texto.strip()
 
 
 # Conversaciones recordadas en memoria del proceso: solo la ultima pregunta con tema, nunca la respuesta. Se olvidan al reiniciar la API.
 CONVERSACIONES_RECORDADAS = 500
+# Cada seguimiento lleva la pregunta anterior detrás: se recorta para que no crezca sin fin. Lo nuevo va delante, así que se pierde lo más viejo.
+LARGO_RECORDADO = 300
 
 
 def _propuesta(p: dict | None) -> dict | None:
@@ -51,7 +53,7 @@ class Agente:
 
     def _recordar(self, clave: tuple[str, str], pregunta: str) -> None:
         with self._candado:
-            self._previas[clave] = pregunta
+            self._previas[clave] = pregunta[:LARGO_RECORDADO]
             self._previas.move_to_end(clave)
             while len(self._previas) > CONVERSACIONES_RECORDADAS:
                 self._previas.popitem(last=False)

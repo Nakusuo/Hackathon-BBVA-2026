@@ -13,7 +13,7 @@ RESPUESTA = {"respuesta": "Hola, Constructor.\nEn 30 dias tu saldo ronda S/ 2,00
 
 
 class RepoFalso:
-    pos = {"C00016": 0}
+    pos = {"C00016": 0, "C00168": 1}
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def client(monkeypatch):
         return {**RESPUESTA, **grafo}
 
     monkeypatch.setattr("src.agente_analitico.grafo.responder", responder_falso)
-    agente = Agente(RepoFalso(), {}, {"demo-001": "C00016", "independiente": "C00016"})
+    agente = Agente(RepoFalso(), {}, {"demo-001": "C00016", "independiente": "C00016", "formal": "C00168"})
     app.dependency_overrides[obtener_agente] = lambda: agente
     cliente = TestClient(app)
     cliente.agente, cliente.vistos = agente, vistos
@@ -106,3 +106,15 @@ def test_la_propuesta_de_meta_viaja_con_los_nombres_del_contrato(client):
     assert client.post(BASE_URL, json=mensaje()).json()["goal_proposal"] is None
     client.agente.grafo = {"intencion": "meta", "propuesta_meta": {"nombre": "Viaje a Cusco", "objetivo": 2800.0, "fecha": "2027-05-14"}}
     assert client.post(BASE_URL, json=mensaje()).json()["goal_proposal"] == {"name": "Viaje a Cusco", "target": 2800.0, "date": "2027-05-14"}
+
+
+def test_la_memoria_no_mezcla_clientes_con_el_mismo_id_de_conversacion_y_no_crece_sin_fin(client):
+    from src.api.agente import LARGO_RECORDADO
+    client.agente.grafo = {"intencion": "meta"}
+    client.post(BASE_URL, json=mensaje(customer_id="independiente", message="quiero ahorrar para un carro de 12 mil", conversation_id="conv-x"))
+    client.post(BASE_URL, json=mensaje(customer_id="formal", message="¿y en 6 meses?", conversation_id="conv-x"))
+    assert client.vistos[-1] == ("C00168", "¿y en 6 meses?")
+    for _ in range(20):
+        client.post(BASE_URL, json=mensaje(customer_id="independiente", message="¿y en 6 meses?", conversation_id="conv-x"))
+    assert all(len(v) <= LARGO_RECORDADO for v in client.agente._previas.values())
+    assert client.vistos[-1][1].startswith("¿y en 6 meses?") and "carro de 12 mil" not in client.vistos[-1][1][LARGO_RECORDADO + 20:]

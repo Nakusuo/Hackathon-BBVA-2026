@@ -241,19 +241,21 @@ MESES_DEL_ANO = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
 
 
 def plazo_de(pregunta: str, hoy) -> tuple[int, str] | None:
-    """Meses que faltan para la fecha que nombra la frase y como decirla: «a fin de año», «en 8 meses», «para julio». Sin plazo en la frase devuelve None."""
+    """Meses que faltan para la fecha que nombra la frase y como decirla: «a fin de año», «en 8 meses», «para julio». Si hay varias, manda la que aparece
+    primero: en un seguimiento la pregunta nueva va delante de la anterior. Sin plazo en la frase devuelve None."""
     t = pregunta.lower()
-    m = re.search(r"en (\d+|un|dos|tres|seis) (mes(?:es)?|a[ñn]os?)", t)
-    if m:
+    hallados = []
+    for m in re.finditer(r"en (\d+|un|dos|tres|seis) (mes(?:es)?|a[ñn]os?)", t):
         n = {"un": 1, "dos": 2, "tres": 3, "seis": 6}.get(m.group(1)) or int(m.group(1))
         n = n * 12 if m.group(2).startswith("a") else n
-        return (n, f"en {n} meses") if n > 0 else None
-    if re.search(r"fin(?:es)? de a[ñn]o|navidad|a[ñn]o nuevo", t):
-        return max(1, 12 - hoy.month + (1 if hoy.day <= 15 else 0)), "a fin de año"
+        if n > 0:
+            hallados.append((m.start(), (n, f"en {n} meses")))
+    for m in re.finditer(r"fin(?:es)? de a[ñn]o|navidad|a[ñn]o nuevo", t):
+        hallados.append((m.start(), (max(1, 12 - hoy.month + (1 if hoy.day <= 15 else 0)), "a fin de año")))
     for i, nombre in enumerate(MESES_DEL_ANO, 1):
-        if re.search(rf"\b(?:para|en|hasta|a) {nombre}\b", t) or (nombre == "septiembre" and "setiembre" in t):
-            return (i - hoy.month) % 12 or 12, f"para {nombre}"
-    return None
+        for m in re.finditer(rf"\b(?:para|en|hasta|a) (?:{nombre}|setiembre)\b" if nombre == "septiembre" else rf"\b(?:para|en|hasta|a) {nombre}\b", t):
+            hallados.append((m.start(), ((i - hoy.month) % 12 or 12, f"para {nombre}")))
+    return min(hallados)[1] if hallados else None
 
 
 # Respuestas que solo se entienden con la pregunta anterior: «sí», «¿y en 6 meses?», «cuesta 12 mil», «para julio»
@@ -372,9 +374,11 @@ def _a_simulador(est, repo, **_):
     monto = monto_de(est.get("pregunta", ""))
     sin = c["pronostico"]
     vivo = c["movimientos_vivos"]["neto"] if c["pronostico_reestimado"] else 0.0
-    con = repo._pronostico(repo.fila_de(c["customer_id"]), vivo - monto)
-    return {"simulacion": {"gasto": round(monto, 2), "saldo_esperado_sin_gasto": round(sin["saldo_esperado"], 0), "saldo_esperado_con_gasto": round(con["saldo_esperado"], 0),
-                           "saldo_bajo_con_gasto": round(con["saldo_bajo"], 0), "prob_rojo_sin_gasto": round(sin["p_rojo"], 2), "prob_rojo_con_gasto": round(con["p_rojo"], 2),
+    # El saldo baja exactamente lo que se gasta (es una resta, no una prediccion); el modelo vuelto a puntuar solo aporta el riesgo, y gastar nunca lo baja.
+    riesgo_con = max(repo._pronostico(repo.fila_de(c["customer_id"]), vivo - monto)["p_rojo"], sin["p_rojo"])
+    esperado, bajo = round(sin["saldo_esperado"], 0), round(sin["saldo_bajo"], 0)
+    return {"simulacion": {"gasto": round(monto, 2), "saldo_esperado_sin_gasto": esperado, "saldo_esperado_con_gasto": esperado - round(monto, 0),
+                           "saldo_bajo_con_gasto": bajo - round(monto, 0), "prob_rojo_sin_gasto": round(sin["p_rojo"], 2), "prob_rojo_con_gasto": round(riesgo_con, 2),
                            "porcentaje_del_ingreso_mensual": round(100 * monto / max(c["features"]["ingreso_medio"], 1.0), 0), "horizonte_dias": 30}}
 
 
@@ -424,6 +428,7 @@ def _a_gastos(est, repo, **_):
     resto = round(sum(r["soles"] for r in g["por_rubro"][RUBROS_A_LA_VISTA:]), 0)
     return {"gastos": {"periodo": f"del {d.day} al {h.day} de {MESES_DEL_ANO[h.month - 1]} de {h.year}", "total": g["total"], "movimientos": g["movimientos"], "rubros": rubros,
                        "resto": resto, "mismo_tramo_mes_anterior": g["mismo_tramo_mes_anterior"], "diferencia": round(g["total"] - g["mismo_tramo_mes_anterior"], 0),
+                       "diferencia_sin_signo": abs(round(g["total"] - g["mismo_tramo_mes_anterior"], 0)),
                        "apartado": g["apartado"], "datos_de_otra_fecha": c["desfase_datos_dias"] > VENTANA_DATOS_DIAS}}
 
 
@@ -431,38 +436,54 @@ RECORTE_HORMIGA = 0.5   # supuesto visible del plan: bajar a la mitad los gastos
 
 
 def _a_meta(est, repo, **_):
-    """Plan para una meta: de donde parte la persona, que ajustes le suman, que convenio del banco aplica y los números finales.
-    Todas las cuentas se hacen aquí con sus datos; el redactor solo las cuenta."""
+    """Plan para una meta: de donde parte la persona, que ajustes le suman, que convenio del banco aplica y los numeros finales.
+    Todas las cuentas se hacen aqui con sus datos; el redactor solo las cuenta."""
     from datetime import date
 
     c, pregunta = est["ctx"], est.get("pregunta", "")
     f, hoy = c["features"], date.fromisoformat(c["hoy"])
-    gasto = round(f["gasto_sobre_ingreso"] * f["ingreso_medio"], 0)
-    aparta = repo.ahorro_reciente(c["customer_id"])["apartado_promedio_mensual"]
+    flujo = repo.flujo_reciente(c["customer_id"])
+    gasto = flujo["gasto"]
     ajustes = [{"que": "Bajar a la mitad tus gastos hormiga (delivery y antojos)", "soles_al_mes": round(RECORTE_HORMIGA * f["pct_hormiga"] * gasto, 0)},
                {"que": "Cancelar la suscripción que pagas dos veces", "soles_al_mes": round(c["monto_duplicada"], 0) if c["duplicadas"] else 0.0},
                {"que": "Activar el redondeo de tus gastos", "soles_al_mes": float(c["ahorro_redondeo_mensual"])}]
     ajustes = [a for a in ajustes if a["soles_al_mes"] >= 10]
-    capacidad = aparta + sum(a["soles_al_mes"] for a in ajustes)
-    d = {"ingreso_mensual": round(f["ingreso_medio"], 0), "gasto_mensual": gasto, "apartas_hoy_por_mes": aparta, "ajustes": ajustes, "podrias_apartar_por_mes": capacidad, "convenio": None}
+    # Lo que se puede apartar sin tocar el saldo es lo que sobra entre ingreso y gasto, mas lo que liberan los ajustes
+    capacidad = max(0.0, flujo["sobra"] + sum(a["soles_al_mes"] for a in ajustes))
+    d = {"meses_vistos": flujo["meses"], "ingreso_mensual": flujo["ingreso"], "gasto_mensual": gasto, "sobra_al_mes": flujo["sobra"], "falta_al_mes": max(0.0, -flujo["sobra"]),
+         "apartas_hoy_por_mes": flujo["apartado"],
+         "ajustes": ajustes, "podrias_apartar_por_mes": capacidad, "convenio": None}
     conv = CA.campana_para(pregunta, hoy)
     if conv:
         d["convenio"] = {"aliado": conv["aliado"], "beneficio": CA.beneficio(conv), "rubro": conv["rubro"], "condicion": conv["condicion"], "aplica": conv["aplica"], "motivo": conv["motivo"],
-                         "vigente_hasta": CL.texto_fecha(date.fromisoformat(conv["hasta"]))}
+                         "vigente_hasta": CL.texto_fecha(date.fromisoformat(conv["hasta"])), "vence_antes": False}
     monto = monto_de(pregunta)
-    if monto:
-        rebaja = CA.descuento(conv, monto) if conv else 0.0
-        a_juntar = monto - rebaja
-        meses, cuando = plazo_de(pregunta, hoy) or (None, None)
-        d["numeros"] = {"precio": round(monto, 0), "descuento": rebaja, "a_juntar": a_juntar, "meses_pedidos": meses, "cuando": cuando, "por_mes_pedido": float(-(-a_juntar // meses)) if meses else None,
-                        "meses_con_el_plan": int(-(-a_juntar // capacidad)) if capacidad > 0 else None}
-        # Lo que la app guarda si la persona acepta: el monto a juntar y la fecha. El aporte de cada cobro lo recalcula la app con su propio pronostico.
-        plazo_meses = meses or d["numeros"]["meses_con_el_plan"]
-        if plazo_meses:
-            fecha = date(hoy.year, 12, 31) if cuando == "a fin de año" else _sumar_meses(hoy, plazo_meses)
-            d["propuesta"] = {"nombre": nombre_de_meta(pregunta), "objetivo": a_juntar, "fecha": fecha.isoformat()}
-    else:
+    if not monto:
         d["numeros"] = {"precio": None, "juntarias_en_6_meses": capacidad * 6, "juntarias_en_12_meses": capacidad * 12}
+        return {"meta": d}
+    meses_pedidos, cuando = plazo_de(pregunta, hoy) or (None, None)
+
+    def cuentas(rebaja: float) -> dict:
+        a_juntar = monto - rebaja
+        por_mes = float(-(-a_juntar // meses_pedidos)) if meses_pedidos else None
+        meses_plan = int(-(-a_juntar // capacidad)) if capacidad > 0 else None
+        alcanza = bool(meses_pedidos) and capacidad >= por_mes
+        # La meta se guarda con un plazo al que si se llega: el pedido si alcanza, y si no el del plan
+        if alcanza:
+            fecha = date(hoy.year, 12, 31) if cuando == "a fin de año" else _sumar_meses(hoy, meses_pedidos)
+        else:
+            fecha = _sumar_meses(hoy, meses_plan) if meses_plan else None
+        return {"precio": round(monto, 0), "descuento": rebaja, "a_juntar": a_juntar, "meses_pedidos": meses_pedidos, "cuando": cuando, "por_mes_pedido": por_mes,
+                "alcanza": alcanza, "meses_con_el_plan": meses_plan, "fecha": fecha}
+
+    n = cuentas(CA.descuento(conv, monto) if conv else 0.0)
+    if n["descuento"] and (n["fecha"] is None or n["fecha"] > date.fromisoformat(conv["hasta"])):
+        d["convenio"]["vence_antes"] = True   # un descuento que vence antes de juntar la plata no ayuda a esta meta
+        n = cuentas(0.0)
+    fecha = n.pop("fecha")
+    d["numeros"] = n
+    if fecha:
+        d["propuesta"] = {"nombre": nombre_de_meta(pregunta), "objetivo": n["a_juntar"], "fecha": fecha.isoformat()}
     return {"meta": d}
 
 
@@ -554,8 +575,11 @@ def _soles(v: float) -> str:
 def _lineas_simulacion(s: dict) -> list[str]:
     L = [f"Con ese gasto de {_soles(s['gasto'])}, en {s['horizonte_dias']} días tu saldo rondaría {_soles(s['saldo_esperado_con_gasto'])} en vez de {_soles(s['saldo_esperado_sin_gasto'])}.",
          f"En un mes malo podría bajar hasta {_soles(s['saldo_bajo_con_gasto'])}."]
-    if s["prob_rojo_con_gasto"] >= 0.15:
-        L.append(f"Riesgo de quedar en rojo: {s['prob_rojo_con_gasto']:.0%}. Conviene esperar a tu próximo ingreso o bajar el monto.")
+    antes, despues = s["prob_rojo_sin_gasto"], s["prob_rojo_con_gasto"]
+    if despues >= 0.15 and despues > antes:
+        L.append(f"Con ese gasto tu riesgo de quedar en rojo sube de {antes:.0%} a {despues:.0%}. Conviene esperar a tu próximo ingreso o bajar el monto.")
+    elif despues >= 0.15:
+        L.append(f"Tu riesgo de quedar en rojo ya es de {despues:.0%}, con o sin este gasto.")
     elif s["saldo_bajo_con_gasto"] < 0:
         L.append("El riesgo de quedar en rojo es bajo, pero en un mes malo sí quedarías en negativo.")
     else:
@@ -567,7 +591,7 @@ def _lineas_gastos(g: dict) -> list[str]:
     periodo = g["periodo"][0].upper() + g["periodo"][1:]
     L = ["## Este mes", f"{periodo} gastaste {_soles(g['total'])} en {g['movimientos']} movimientos."]
     if g["mismo_tramo_mes_anterior"] and abs(g["diferencia"]) >= 1:
-        L.append(f"Son {_soles(abs(g['diferencia']))} {'más' if g['diferencia'] > 0 else 'menos'} que a esta altura del mes pasado ({_soles(g['mismo_tramo_mes_anterior'])}).")
+        L.append(f"Son {_soles(g['diferencia_sin_signo'])} {'más' if g['diferencia'] > 0 else 'menos'} que a esta altura del mes pasado ({_soles(g['mismo_tramo_mes_anterior'])}).")
     if g["apartado"]:
         L.append(f"Además apartaste {_soles(g['apartado'])} para ahorrar, que no cuenta como gasto.")
     if g["datos_de_otra_fecha"]:
@@ -580,33 +604,44 @@ def _lineas_gastos(g: dict) -> list[str]:
 
 
 def _lineas_meta(m: dict) -> list[str]:
-    """Cuatro bloques separados por una línea en blanco (el chat pinta cada uno en su propio mensaje): punto de partida, que hacer, convenio y números."""
-    L = ["## Tu punto de partida", f"Ganas unos {_soles(m['ingreso_mensual'])} al mes y gastas {_soles(m['gasto_mensual'])}.",
-         f"Hoy apartas {_soles(m['apartas_hoy_por_mes'])} al mes." if m["apartas_hoy_por_mes"] > 0 else "En los últimos meses no apartaste nada."]
+    """Cuatro bloques separados por una linea en blanco (el chat pinta cada uno en su propio mensaje): punto de partida, que hacer, convenio y numeros."""
+    sobra, aparta, capacidad = m["sobra_al_mes"], m["apartas_hoy_por_mes"], m["podrias_apartar_por_mes"]
+    L = ["## Tu punto de partida", f"En los últimos {m['meses_vistos']} meses ganaste unos {_soles(m['ingreso_mensual'])} al mes y gastaste {_soles(m['gasto_mensual'])}."]
+    if sobra < 0:
+        L.append(f"Gastas {_soles(m['falta_al_mes'])} más de lo que ganas: primero hay que cerrar ese hueco.")
+    elif aparta > sobra:
+        L.append(f"Te sobran {_soles(sobra)} y apartas {_soles(aparta)}: la diferencia sale de tu saldo.")
+    else:
+        L.append(f"Te sobran {_soles(sobra)} al mes" + (f" y de eso ya apartas {_soles(aparta)}." if aparta > 0 else "."))
     if m["ajustes"]:
-        L += ["", "## Lo que puedes hacer", *[f"- {a['que']}: +{_soles(a['soles_al_mes'])} al mes" for a in m["ajustes"]], f"Con eso apartarías {_soles(m['podrias_apartar_por_mes'])} al mes."]
+        L += ["", "## Lo que puedes hacer", *[f"- {a['que']}: +{_soles(a['soles_al_mes'])} al mes" for a in m["ajustes"]]]
+        L.append(f"Con eso podrías apartar {_soles(capacidad)} al mes sin tocar tu saldo." if capacidad > 0 else "Aun así no te queda margen para apartar.")
     cv = m["convenio"]
     if cv:
         L += ["", "## Convenio del banco", f"{cv['aliado']}: {cv['beneficio']} en {cv['rubro']}, {cv['condicion']}."]
-        L.append(f"Vale hasta el {cv['vigente_hasta']}." if cv["aplica"] else f"Para lo que buscas no aplica: {cv['motivo']}.")
+        if not cv["aplica"]:
+            L.append(f"Para lo que buscas no aplica: {cv['motivo']}.")
+        elif cv["vence_antes"]:
+            L.append(f"Vence el {cv['vigente_hasta']}, antes de que juntes la plata: no lo descuento.")
+        else:
+            L.append(f"Vale hasta el {cv['vigente_hasta']}.")
         L.append("Es un convenio de ejemplo.")
     n = m["numeros"]
     L += ["", "## Los números"]
     if n["precio"] is None:
-        if m["podrias_apartar_por_mes"] > 0:
-            L.append(f"A ese ritmo juntarías {_soles(n['juntarias_en_6_meses'])} en 6 meses y {_soles(n['juntarias_en_12_meses'])} en 12 meses.")
+        if capacidad > 0:
+            L.append(f"Apartando {_soles(capacidad)} al mes juntarías {_soles(n['juntarias_en_6_meses'])} en 6 meses y {_soles(n['juntarias_en_12_meses'])} en 12 meses.")
         L.append("Dime cuánto cuesta y para cuándo, y cierro los números.")
         return L
     L.append(f"- Precio: {_soles(n['precio'])}")
     if n["descuento"]:
-        L += [f"- Descuento con {cv['aliado']}: -{_soles(n['descuento'])}", f"- Te toca juntar: {_soles(n['a_juntar'])}"]
+        L += [f"- Descuento con {cv['aliado']}: {_soles(n['descuento'])}", f"- Te toca juntar: {_soles(n['a_juntar'])}"]
     if n["meses_pedidos"]:
-        alcanza = m["podrias_apartar_por_mes"] >= n["por_mes_pedido"]
-        L.append(f"Para tenerlo {n['cuando']} necesitas {_soles(n['por_mes_pedido'])} al mes: {'con el plan sí llegas' if alcanza else 'con el plan no alcanza'}.")
-        if alcanza:
+        L.append(f"Para tenerlo {n['cuando']} necesitas {_soles(n['por_mes_pedido'])} al mes: {'con el plan sí llegas' if n['alcanza'] else 'con el plan no alcanza'}.")
+        if n["alcanza"]:
             return L
     if n["meses_con_el_plan"]:
-        L.append(f"Apartando {_soles(m['podrias_apartar_por_mes'])} al mes llegas en {n['meses_con_el_plan']} meses.")
+        L.append(f"Apartando {_soles(capacidad)} al mes llegas en {n['meses_con_el_plan']} meses.")
     else:
         L.append("Hoy no te queda margen para apartar: primero hay que bajar gastos.")
     return L
@@ -704,7 +739,7 @@ def plantilla(est) -> str:
     elif ev.get("tipo") == "baja_de_tasa":
         L.append(f"La tasa de referencia del BCRP bajó de {ev['desde']:.2f}% a {ev['hasta']:.2f}%.")
     elif ev.get("tipo") == "fen_comunicado":
-        L.append(f"El ENFEN público el comunicado N.o {ev['numero']}.")
+        L.append(f"El ENFEN publicó el comunicado N.o {ev['numero']}.")
     elif ev.get("tipo") == "riesgo_rojo":
         L.append(f"Tu saldo podría quedar en rojo: la probabilidad es {ev['p_rojo']:.0%}.")
     elif ev.get("tipo") == "calendario_laboral":
