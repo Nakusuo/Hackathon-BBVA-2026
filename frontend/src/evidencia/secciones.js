@@ -14,6 +14,17 @@ export function veredicto(lucas, base, mejor) {
   return a > b ? 'mejor' : 'peor'
 }
 
+// Una lectura del tipo de cambio ({ datos, origen }) lista para mostrar. Si la API no respondió, el dato es el grabado y se dice
+// «dato anterior» igual que cuando la API misma avisa que el valor es viejo: un dato viejo no se presenta como actual.
+export function lecturaDolar({ datos, origen }) {
+  return {
+    tasa: datos.tasa,
+    fecha: datos.fecha,
+    fuente: datos.fuente.startsWith('BCRP') ? 'BCRP' : 'dato grabado',
+    anterior: datos.desactualizado || datos.esRespaldo || origen === 'respaldo',
+  }
+}
+
 const ic = (archivo, ...ruta) => [cifra(archivo, ...ruta, 'ic95', 0), cifra(archivo, ...ruta, 'ic95', 1)]
 
 export function impactoPorCliente() {

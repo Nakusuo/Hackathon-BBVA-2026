@@ -24,6 +24,11 @@ def _leer_alias(texto: str) -> dict[str, str]:
     return {alias.strip(): cliente.strip() for alias, cliente in pares}
 
 
+def cliente_de_la_base(customer_id: str) -> str | None:
+    """Cliente de la base que corresponde al identificador del front, sin cargar el agente. None si no es uno de los conocidos."""
+    return _leer_alias(os.environ.get("LUCAS_CLIENTES_DEMO", ALIAS_POR_DEFECTO)).get(customer_id)
+
+
 def para_el_chat(texto: str, intencion: str, opciones: list[dict]) -> str:
     """El chat ya muestra «Orientación, no asesoría. Tú decides.» bajo la caja de texto y saluda una sola vez:
     se quitan el saludo y el cierre que el agente repite en cada respuesta. Si hay opciones, el chat las pinta como botones
