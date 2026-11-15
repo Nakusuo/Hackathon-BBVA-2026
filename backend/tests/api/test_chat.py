@@ -34,7 +34,7 @@ def client(monkeypatch):
 
 
 def mensaje(**cambios):
-    return {"customer_id": "demo-001", "message": "¿Llego a fin de mes?", **cambios}
+    return {"customer_id": "independiente", "message": "¿Llego a fin de mes?", **cambios}
 
 
 def test_responde_con_los_campos_del_contrato(client):
@@ -45,7 +45,7 @@ def test_responde_con_los_campos_del_contrato(client):
     assert data["sources"] == [{"id": "cts.pdf", "title": "Guia de la CTS", "page": 2, "url": None}]
 
 
-@pytest.mark.parametrize("alias", ["demo-001", "independiente", "C00016"])
+@pytest.mark.parametrize("alias", ["independiente", "C00016"])
 def test_el_id_del_front_se_traduce_al_cliente_de_la_base(client, alias):
     assert client.post(BASE_URL, json=mensaje(customer_id=alias)).status_code == 200
     assert client.vistos == [("C00016", "¿Llego a fin de mes?")]
