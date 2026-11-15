@@ -395,13 +395,15 @@ Por segmento:
 
 |  | n | ruteo_correcto | respuestas_sin_cifras_inventadas | sin_frases_prohibidas | cierra_con_tu_decides | pedidos_prohibidos_rechazados | latencia_media_s | latencia_p95_s | llamadas_llm_por_respuesta | por_plantilla |
 |---|---|---|---|---|---|---|---|---|---|---|
-| agente_unico | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.933 | 3.086 | 0.000 | 1.000 |
-| multiagente | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.397 | 1.118 | 0.000 | 1.000 |
+| agente_unico | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.869 | 2.850 | 0.000 | 1.000 |
+| multiagente | 69.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 0.310 | 1.022 | 0.000 | 1.000 |
 
 
 Fallos de ruteo (agente unico): ninguno
 
-**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo 2026-11-14)**: preguntas de perfil 11/11, pedidos adversarios 16/16, datos vivos y vigilancia OK, traduccion ingles OK, quechua OK; 17 llamadas y 45,463 tokens de entrada con `gemini-3.5-flash-lite`; latencia media por respuesta 4.0 s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.
+**Agente con Gemini real (una sola corrida de QA, `LLM_USO=siempre`, reloj fijo 2026-11-14)**: preguntas de perfil 11/11, pedidos adversarios 16/16, datos vivos y vigilancia OK, traduccion ingles OK, quechua OK; 51 llamadas y 140,543 tokens de entrada con `gemini-3.5-flash-lite`; latencia media por respuesta 3.7 s. Detalle de cada respuesta en `models/metricas_qa_agente.json`. El juez LLM esta apagado (`JUEZ_LLM=0`): la verificacion de cifras es determinista.
+
+**QA conversacional con Gemini real**: conversaciones de varias preguntas seguidas 14/14 (sin cortarse ni repetirse), preguntas-trampa con datos que no existen 9/9 (sin inventar ni prometer), mensajes de apertura («hola», «oye», «ayudame», contar como se siente) 25/25 y botones 8/8; los saludos no gastan tokens: si; mayor tiempo de respuesta 7 s; reintentos por cuota agotada del plan gratuito: 0. Diseno y detalle en el informe 9.10.
 
 
 ## 7. Escalabilidad y valor
@@ -465,15 +467,15 @@ La base de los montos es la ultima gratificacion real del cliente (equivale a un
 ## 9. QA y comparativa de modelos
 La puerta de calidad (`python eval/puerta_de_calidad.py --gemini`) reune pruebas, metricas de los modelos, conexiones en tiempo real, agente, seguridad y frescura, y reporta PASS, WARN (conocido y documentado), FAIL o NOT RUN con el motivo. El detalle completo, incluida la lista de **lo que no se pudo verificar**, esta en [QA_ANALITICA.md](QA_ANALITICA.md).
 
-Ultima corrida (2026-11-14T18:19:41): **49 PASS, 3 WARN, 0 FAIL, 3 NOT RUN**.
+Ultima corrida (2026-11-14T23:27:27): **52 PASS, 3 WARN, 0 FAIL, 3 NOT RUN**.
 
 | # | Estado | Que | Detalle |
 |---|---|---|---|
-| P1b | NOT RUN | Pruebas del agente del producto (PR #5, Jeffrey) en el arbol unido: no son de esta rama, se reportan aparte | no hay pruebas del agente del producto en esta rama |
+| P1b | NOT RUN | Pruebas del agente del producto (PR #5, Jeffrey): no estan en esta rama; se corren en la rama develop al integrar todo (proximo paso) | no hay pruebas del agente del producto en esta rama |
 | M6 | WARN | Equidad por segmento: brecha de cobertura <= 0.05 y razon de error entre segmentos | la cobertura es pareja (brecha 0.018) pero el error del peor segmento (0) es 1.58 veces el del mejor: el ingreso irregular es mas dificil de pronosticar. Documentado. |
 | M12 | WARN | Programa de puntos: rentable sin depender de consumo nuevo | solo con lo medido pierde S/ 5.52 por usuario al anio y no se paga nunca; se paga con 6.9% mas de consumo o con 3.3% mas de ahorro apartado. Proyeccion a 5 anios (supuestos del equipo): se paga en el anio 1 (prudente), 1 (base) y 1 (optimista). Aceptado por el equipo: lo decide un piloto con grupo de control. |
-| C9b | NOT RUN | Google Cloud Translation: llamada real con clave | no hay GOOGLE_TRANSLATE_API_KEY (la clave de Gemini no se usa con otras APIs de Google). Se traduce con Gemini. |
-| C10b | NOT RUN | Calidad del quechua revisada por un hablante nativo | no hay revision de un hablante nativo; el aviso al usuario lo dice |
+| C9b | NOT RUN | Google Cloud Translation: llamada real con clave (proximo paso) | proximo paso: no hay GOOGLE_TRANSLATE_API_KEY propia (una clave de Gemini da 401 en esa API). El contrato esta probado con respuestas simuladas y se traduce con Gemini. |
+| C10b | NOT RUN | Calidad del quechua revisada por un hablante nativo (proximo paso) | proximo paso: hay evidencia objetiva (FLORES-200) pero la revision de un hablante nativo queda para despues; el aviso al usuario lo dice |
 | S5 | WARN | Sin archivos pesados ni datos generados en el repositorio (solo data/sample), salvo la carga temporal documentada | 56 archivos de data/generado cargados A PROPOSITO para la integracion final (ver _manifiesto.json, todo sintetico); quitarlos al terminar con: git rm -r --cached data/generado |
 
 La comparativa de modelos (candidatos medidos, el elegido y por que, con su limite) esta en [comparativa_modelos.md](comparativa_modelos.md) y sus graficas en `docs/presentacion/`.
@@ -497,4 +499,4 @@ Un chrF por encima del piso de copiar el origen muestra que la salida se parece 
 No hay clave propia y la de Gemini no se usa contra otras APIs de Google. Lo que si se verifico: (1) el pedido y la respuesta del proveedor contra la documentacion oficial de la API v2 (`POST https://translation.googleapis.com/language/translate/v2`, cuerpo `q`, `source`, `target`, `format`, respuesta `data.translations[].translatedText`; el quechua `qu` esta en la lista de idiomas; la clave puede ir en la cabecera `X-goog-api-key` y la documentacion desaconseja ponerla en la URL); (2) siete pruebas con respuestas simuladas en `tests/test_traduccion.py` (forma del pedido, clave solo en cabecera, sin clave no hay pedido, marcadores espaciados por Google, marcador perdido se descarta, errores 429 y 5xx se reintentan y 403 y 400 no, respuesta mal formada, caida a Gemini). **No se probo** una llamada real: cuando haya una clave, basta definir `GOOGLE_TRANSLATE_API_KEY` y correr la puerta de calidad.
 
 
-<!-- huella_metricas: 781fc3be87a20fa7 (la puerta de calidad compara esta huella con la de las metricas actuales) -->
+<!-- huella_metricas: 89259a180d49264b (la puerta de calidad compara esta huella con la de las metricas actuales) -->
