@@ -602,6 +602,26 @@ Lo que esta rama entrega **ya esta validado** y sirve de **piso**: el agente uni
 """
 
 
+def seccion_presentacion() -> str:
+    """9.16: donde esta la presentacion final y como se mantiene (texto fijo: los numeros salen de models/*.json al compilarla)."""
+    return """
+
+### 9.16 Presentacion final (10 laminas, interactiva)
+**Donde esta:** `docs/presentacion/final/index.html`. Es un solo archivo: se abre con doble clic en el navegador (Chrome o Edge) y se avanza con las flechas; `F` = pantalla completa; el numero de lamina va en la URL (`#5`). Las imagenes se leen de las carpetas hermanas (`docs/presentacion/diagramas`, `graficas`, `modelos`), asi que **hay que conservar la estructura de carpetas**.
+
+**Como esta hecha:** `docs/presentacion/final/plantilla.html` (HTML, CSS y JS a mano) + `eval/construir_presentacion_final.py`, que mete dentro los datos reales (`models/*.json`, `docs/presentacion/mapa_de_consultas.json`, series publicas del BCRP, QA y puerta de calidad) y las fuentes tipograficas. Nada de cifras escritas a mano en las laminas: si cambian los modelos, se vuelve a compilar y se actualizan.
+
+**Orden:** 1 portada con la pregunta y la revelacion de Lucas, 2 contexto y decision, 3 orquestacion de todo (nodos clicables), 4 camino de cada mensaje por el grafo del agente (LangGraph), 5 seguridad con simulador de ataques, 6 modelos y valor para la persona, 7 eventos (El Nino, mercado y normas, movimientos), 8 RAG y ahorro de tokens con calculadora, 9 demo (solo el enlace), 10 resultados y como escala.
+
+**Lo que falta enchufar (no requiere tocar codigo):**
+- Enlace de la demo en vivo: `python eval/construir_presentacion_final.py --demo-url URL`, o abrir `index.html?demo=URL`.
+- Integrantes en la portada: `--equipo "Nombre 1,Nombre 2"`.
+- Diagramas del equipo: copiar `arquitectura.png` y `seguridad.png` en `docs/presentacion/final/imagenes/`; aparecen solos como pestana en las laminas 3 y 5.
+
+**Mejoras que puede anadir quien integre:** conectar el boton de la lamina 9 a la API real, reemplazar el simulador de ataques de la lamina 5 por llamadas al agente en vivo, y alimentar las laminas 7 y 8 con los datos de la API en lugar de la foto del dia de compilacion.
+"""
+
+
 def seccion_conversacional() -> str:
     """9.10 a 9.12: chat conversacional (como se valido), inventario de integracion (modelos, APIs, variables) y post-validacion obligatoria."""
     r = (QA or {}).get("resumen", {})
@@ -887,7 +907,7 @@ agente = construir_grafo(repo, rag, "agente_unico")
 **9. Mantener actualizado.** BCRP: automatico (cache y respaldo). ENFEN: la vigilancia avisa si hay un comunicado nuevo; hay que bajarlo e indexarlo. RAG: `python -m src.datos_publicos.descargar` y `Buscador` tras `indice.actualizar_incremental()` (solo embebe lo nuevo). Normas: ver 8.5. Evaluar todo: `python eval/puerta_de_calidad.py --gemini`.
 
 **10. Lo que no hay que hacer.** No usar el LLM para calcular: toda cifra sale de una herramienta y pasa por el juez, y si el LLM inventa una cifra, devuelve codigo o promete algo, la respuesta cae a la plantilla. No tratar un proyecto de ley como ley. No presentar un dato desactualizado como actual. No mover dinero ni recomendar comprar o vender dolares ni en que invertir: esos pedidos se cortan antes de llegar a cualquier modelo.
-""" + seccion_integracion_extra() + seccion_integracion_extra2() + seccion_conversacional() + seccion_guia_integracion() + seccion_linea_base()
+""" + seccion_integracion_extra() + seccion_integracion_extra2() + seccion_conversacional() + seccion_guia_integracion() + seccion_linea_base() + seccion_presentacion()
 
 
 def seccion_integracion_extra() -> str:

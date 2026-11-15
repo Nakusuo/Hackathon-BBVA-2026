@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conoce a Lucas</title>
+<link rel="icon" href="data:,">
+<style>
+/*FUENTES*/
+:root{--papel:#FCFCFB;--tinta:#10233A;--suave:#566474;--linea:#DCE2E8;--azul:#2A78D6;--azul2:#1B4F94;--naranja:#C8641A;--verde:#2A9D8F;--marino:#0C2340;--cielo:#DCE8F7;--ambar:#D9A441;--gris:#8C8B86;
+--display:'Bricolage Grotesque','Segoe UI Variable Display','Segoe UI',system-ui,sans-serif;--texto:'Figtree','Segoe UI',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#0A1B30;overflow:hidden;font-family:var(--texto);color:var(--tinta);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
+button:focus-visible,a:focus-visible{outline:3px solid var(--azul);outline-offset:4px;border-radius:6px}
+#lienzo{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform:translate(-50%,-50%) scale(var(--escala,1));transform-origin:center;background:var(--papel);overflow:hidden}
+.lamina{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .35s ease,visibility .35s}
+.lamina.activa{opacity:1;visibility:visible}
+.oscura{background:var(--marino);color:#fff}
+.titulo{position:absolute;left:120px;top:78px;width:1680px;font:800 76px/1.04 var(--display);letter-spacing:-.012em}
+.bajada{position:absolute;left:120px;top:186px;width:1400px;font-size:30px;line-height:1.3;color:var(--suave)}
+.pestanas{position:absolute;left:120px;top:184px;display:flex;gap:48px;z-index:5}
+.pestanas button{font:700 30px var(--texto);color:var(--suave);padding:8px 2px;border-bottom:5px solid transparent}
+.pestanas button.on{color:var(--tinta);border-color:var(--azul)}
+.nota{position:absolute;left:120px;top:1000px;font-size:21px;line-height:1.35;color:var(--suave);width:1300px}
+.oculto{display:none!important}
+#pasos{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);display:flex;gap:10px;z-index:20}
+#pasos button{width:36px;height:6px;border-radius:3px;background:rgba(120,135,150,.35);transition:all .25s}
+#pasos button.on{width:68px;background:var(--azul)}
+.sobre-oscuro #pasos button{background:rgba(255,255,255,.3)}
+.flecha{position:absolute;bottom:18px;width:64px;height:64px;border-radius:32px;font-size:44px;line-height:60px;text-align:center;color:var(--suave);z-index:20;opacity:.7;transition:opacity .2s}
+.flecha:hover{opacity:1}
+#ant{right:206px}#sig{right:120px}
+.sobre-oscuro .flecha{color:#fff}
+#lupa{position:fixed;inset:0;background:rgba(8,18,32,.92);display:none;align-items:center;justify-content:center;z-index:50;cursor:zoom-out}
+#lupa.on{display:flex}#lupa img{max-width:96vw;max-height:94vh;background:#FCFCFB;border-radius:6px}
+img.zoom{cursor:zoom-in}
+
+/* 1 portada */
+#l1 .evento{position:absolute;left:120px;top:82px;font:600 30px/1.25 var(--texto);color:#B9CCE3}
+#l1 .evento span{display:block;font-weight:400;font-size:26px;color:#8FA9C8}
+#l1 .pregunta{position:absolute;left:120px;top:190px;width:1560px;font:700 92px/1.05 var(--display);letter-spacing:-.018em;word-spacing:.04em;text-wrap:balance;transition:opacity .6s,transform .6s}
+#l1 .revela{position:absolute;left:120px;top:196px;opacity:0;transform:translateY(24px);transition:opacity .8s .25s,transform .8s .25s;pointer-events:none}
+#l1 .nombre{font:700 200px/.95 var(--display);letter-spacing:-.025em;word-spacing:.05em}
+#l1 .lema{font:500 52px/1.2 var(--texto);color:#BBD3F0;margin-top:22px}
+#l1 .linea-grupo{display:flex;align-items:baseline;gap:28px;margin-top:26px;white-space:nowrap}
+#l1 .grupo{font:700 36px var(--texto);color:#fff}
+#l1 .equipo{font:400 26px var(--texto);color:#B9CCE3}
+#l1.revelada .pregunta{opacity:0;transform:translateY(-26px)}
+#l1.revelada .revela{opacity:1;transform:none}
+#hero{position:absolute;left:120px;top:566px;width:1680px;height:390px;overflow:visible}
+#l1 .pie-grafico{position:absolute;left:120px;top:1010px;font-size:21px;color:#8FA9C8}
+#heroMarca{opacity:0;transition:opacity .8s .9s}
+#l1.revelada #heroMarca{opacity:1}
+
+/* 2 contexto */
+.cifras{position:absolute;left:120px;top:318px;width:1680px;display:grid;grid-template-columns:repeat(3,1fr);gap:80px}
+.cifra{border-top:6px solid var(--c)}
+.cifra b{display:block;font:800 156px/1 var(--display);letter-spacing:-.03em;margin-top:26px;color:var(--c)}
+.cifra span{display:block;font-size:34px;line-height:1.28;margin-top:14px;max-width:500px}
+.tres{position:absolute;left:120px;top:742px;width:1680px;display:grid;grid-template-columns:1fr 1.15fr .9fr;gap:80px}
+.tres h3{font:700 26px var(--texto);color:var(--suave);margin-bottom:12px}
+.tres p{font-size:33px;line-height:1.3}
+.tres .decision{font:700 36px/1.25 var(--display);letter-spacing:-.01em}
+
+/* 3 orquestacion */
+#arq{position:absolute;left:0;top:0;width:1920px;height:1080px}
+.colh{position:absolute;top:258px;font:700 26px var(--texto);color:var(--suave)}
+.nodo{position:absolute;width:296px;height:78px;border-radius:12px;border:2.5px solid var(--c);background:#fff;padding:10px 16px;transition:all .2s;overflow:hidden}
+.nodo b{display:block;font:700 25px/1.15 var(--texto)}
+.nodo span{display:block;font-size:20px;line-height:1.2;color:var(--suave);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nodo.on{background:var(--cl);box-shadow:0 0 0 4px var(--cl)}
+.nodo.dim{opacity:.42}
+.nodo.persona{height:176px;background:var(--marino);border-color:var(--marino);color:#fff;padding:22px 22px}
+.nodo.persona b{font:800 34px/1.1 var(--display)}
+.nodo.persona span{color:#BBD3F0;font-size:23px;white-space:normal;margin-top:8px;line-height:1.28}
+.nodo.persona.on{background:#143762}
+.tag{display:inline-block;font:700 18px var(--texto);border:2px solid currentColor;border-radius:14px;padding:0 10px;margin-left:8px;vertical-align:2px;opacity:.85}
+#arqPanel{position:absolute;left:120px;top:868px;width:1680px;height:130px;border-top:2px solid var(--linea);padding-top:14px}
+#arqPanel h4{font:800 38px/1.1 var(--display);letter-spacing:-.01em;display:inline-block;margin-right:20px}
+#arqPanel p{font-size:27px;line-height:1.3;margin-top:6px;max-width:1160px;display:inline-block;vertical-align:top}
+#arqPanel .ind{position:absolute;right:0;top:16px;text-align:right}
+#arqPanel .ind div{font:800 34px/1.1 var(--display)}#arqPanel .ind small{display:block;font-size:20px;color:var(--suave);font-weight:400}
+.vista{position:absolute;left:120px;top:256px;width:1680px;height:720px;display:flex;align-items:center;justify-content:center}
+.vista img{max-width:1680px;max-height:720px;object-fit:contain;border-radius:8px}
+
+/* 4 agente */
+#cons{position:absolute;left:120px;top:262px;width:610px}
+#cons button{display:block;width:610px;height:78px;margin-bottom:12px;padding:0 22px;font-size:27px;line-height:78px;border-radius:12px;border:2px solid var(--linea);background:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .2s}
+#cons button.on{border-color:var(--c);background:var(--cl);font-weight:700}
+#grafo{position:absolute;left:0;top:0;width:1920px;height:1080px}
+.gn{position:absolute;width:150px;height:76px;border-radius:12px;border:2.5px solid var(--linea);background:#fff;padding:10px;text-align:center;font:600 22px/1.15 var(--texto);display:flex;align-items:center;justify-content:center;transition:all .3s}
+.gn.circ{width:64px;height:64px;border-radius:32px;font-size:18px;padding:0}
+.gn.paso{border-color:var(--c);background:var(--cl);font-weight:700}
+.gn.sel{box-shadow:0 0 0 5px var(--cl)}
+.gn.sinuso{opacity:.4}
+.ge{fill:none;stroke:#C4CCD4;stroke-width:3;transition:stroke .3s}
+.ge.cond{stroke-dasharray:8 7}
+.ge.paso{stroke:var(--c);stroke-width:5}
+.gl{font:600 19px var(--texto);fill:#566474}
+#camino{position:absolute;left:780px;top:700px;width:1020px}
+#camino h4{font:800 40px/1.1 var(--display);letter-spacing:-.015em;margin-bottom:8px}
+#camino p{font-size:27px;line-height:1.32;max-width:1000px}
+#camino .cos{display:flex;gap:44px;margin-top:20px}
+#camino .cos div{font:800 38px var(--display)}
+#camino .cos small{display:block;font:400 21px var(--texto);color:var(--suave)}
+.verif{position:absolute;left:120px;top:980px;font-size:25px;color:var(--tinta);width:620px;line-height:1.3}
+.verif b{color:var(--verde)}
+
+/* 5 seguridad */
+#capas{position:absolute;left:120px;top:290px;width:840px}
+.capa{display:grid;grid-template-columns:62px 1fr;gap:20px;padding:14px 0;border-bottom:2px solid var(--linea)}
+.capa em{font:normal 800 40px/1 var(--display);color:var(--verde)}
+.capa b{display:block;font:700 30px var(--texto)}
+.capa span{display:block;font-size:25px;line-height:1.28;color:var(--suave);margin-top:3px}
+.capa.pend em{color:var(--gris)}
+.etiqueta{display:inline-block;font:700 20px var(--texto);color:var(--suave);border:2px solid var(--linea);border-radius:20px;padding:2px 12px;margin-left:10px;vertical-align:3px}
+#prueba{position:absolute;left:1060px;top:290px;width:740px}
+#ataques button{display:block;width:740px;padding:15px 22px;margin-bottom:12px;font-size:27px;border-radius:12px;border:2px solid var(--linea);background:#fff;transition:all .2s}
+#ataques button.on{border-color:var(--naranja);background:#FBEFE5;font-weight:700}
+#resultado{margin-top:18px;min-height:280px}
+#resultado .capa-det{font:800 40px var(--display);color:var(--verde)}
+#resultado .meta{font-size:26px;color:var(--suave);margin:4px 0 14px}
+#resultado q{display:block;font-size:26px;line-height:1.38;quotes:none;border-left:6px solid var(--verde);padding-left:20px}
+
+/* 6 modelos y valor */
+#lista{position:absolute;left:120px;top:262px;width:900px}
+.fila{display:grid;grid-template-columns:380px 1fr 118px;align-items:center;gap:14px;height:55px;border-radius:8px;padding:0 12px;transition:background .2s;width:900px}
+.fila.on{background:var(--cielo)}
+.fila:hover{background:#EEF3F9}
+.fila .n{font:600 26px var(--texto);white-space:nowrap}
+.fila .b{height:20px;background:#E9EEF3;border-radius:10px;overflow:hidden}
+.fila .b i{display:block;height:100%;background:var(--azul);border-radius:10px}
+.fila .b i.emp{background:var(--gris)}
+.fila .v{font:800 26px var(--display);text-align:right}
+.sep{font:700 22px var(--texto);color:var(--suave);margin:8px 12px 0}
+#detalle{position:absolute;left:1090px;top:262px;width:710px}
+#detalle img{width:710px;border-radius:8px;display:block}
+#detalle h3{font:800 40px/1.1 var(--display);letter-spacing:-.02em;margin:22px 0 8px}
+#detalle p{font-size:28px;line-height:1.34}
+#detalle .nota-d{font-size:23px;color:var(--suave);margin-top:10px}
+#grafValor{position:absolute;left:120px;top:262px;width:1010px}
+.metricas{display:flex;gap:36px;margin-bottom:20px}
+.metricas button{font:700 27px var(--texto);color:var(--suave);padding:8px 2px;border-bottom:5px solid transparent}
+.metricas button.on{color:var(--tinta);border-color:var(--verde)}
+.pol{display:grid;grid-template-columns:400px 1fr 120px;align-items:center;gap:14px;height:78px;border-bottom:2px solid var(--linea)}
+.pol .n{font:600 26px/1.15 var(--texto)}
+.pol .n small{display:block;font:400 20px var(--texto);color:var(--suave)}
+.pol .b{height:30px;background:#EDF1F5;border-radius:15px;overflow:hidden}
+.pol .b i{display:block;height:100%;border-radius:15px;background:var(--gris);transition:width .5s}
+.pol.reco .b i{background:var(--verde)}
+.pol.estres .b i{background:var(--naranja)}
+.pol .v{font:800 30px var(--display);text-align:right}
+#efecto{position:absolute;left:1230px;top:262px;width:570px}
+#efecto .gran{font:800 130px/1 var(--display);letter-spacing:-.03em;color:var(--verde)}
+#efecto .gran.n2{color:var(--azul);font-size:96px}
+#efecto span{display:block;font-size:29px;line-height:1.3;margin:6px 0 28px}
+#efecto small{display:block;font-size:22px;color:var(--suave);line-height:1.35}
+
+/* 7 eventos */
+#zonas{position:absolute;left:120px;top:262px;width:470px}
+#zonas button{display:flex;align-items:center;width:470px;height:50px;font-size:27px;padding:0 14px;border-radius:8px;transition:background .2s}
+#zonas button i{width:14px;height:34px;border-radius:7px;margin-right:16px;background:var(--c)}
+#zonas button.on{background:var(--cielo);font-weight:700}
+.leyenda{display:flex;gap:24px;font-size:22px;color:var(--suave);margin:0 0 14px 14px}
+.leyenda span::before{content:"";display:inline-block;width:14px;height:14px;border-radius:7px;background:var(--c);margin-right:8px;vertical-align:-1px}
+#zonaDet{position:absolute;left:680px;top:262px;width:1120px}
+#zonaDet .depto{font:800 92px/1 var(--display);letter-spacing:-.03em}
+#zonaDet .nivel{font:700 36px var(--texto);margin:12px 0 18px;color:var(--c)}
+#zonaDet .texto{font-size:32px;line-height:1.32;max-width:1050px}
+#zonaDet ul{list-style:none;margin-top:22px}
+#zonaDet li{font-size:29px;line-height:1.3;padding:11px 0 11px 34px;border-bottom:2px solid var(--linea);position:relative;max-width:1050px}
+#zonaDet li::before{content:"";position:absolute;left:0;top:23px;width:14px;height:14px;border-radius:7px;background:var(--verde)}
+#zonaDet h4{font:700 26px var(--texto);color:var(--suave);margin-top:26px}
+.dato2{position:absolute;left:120px;top:290px;width:760px}
+.dato2 b{display:block;font:800 150px/1 var(--display);letter-spacing:-.03em;color:var(--azul)}
+.dato2 span{display:block;font-size:32px;margin:4px 0 8px}
+.dato2 small{display:inline-block;font:700 21px var(--texto);color:var(--verde);border:2px solid var(--verde);border-radius:20px;padding:3px 14px}
+.bloque{margin-bottom:46px}
+.cts{position:absolute;left:960px;top:262px;width:840px}
+.cts p{font-size:31px;line-height:1.32;margin-bottom:18px}
+.cts img{width:840px;border-radius:8px}
+.mov{position:absolute;left:120px;top:262px;width:700px;font-size:32px;line-height:1.34}
+.mov p{margin-bottom:22px}
+.mov-img{position:absolute;left:880px;top:262px;width:920px}
+.mov-img img{width:920px;border-radius:8px}
+
+/* 8 rag y ahorro */
+#pipe{position:absolute;left:120px;top:290px;width:1680px;display:grid;grid-template-columns:repeat(5,1fr);gap:32px}
+#pipe div{border-top:6px solid var(--c);padding-top:16px}
+#pipe em{font:normal 800 46px var(--display);color:var(--c)}
+#pipe b{display:block;font:700 30px var(--texto);margin:4px 0 8px}
+#pipe span{display:block;font-size:24px;line-height:1.3;color:var(--suave)}
+#ejemplo{position:absolute;left:120px;top:610px;width:1680px}
+#ejemplo h3{font:700 26px var(--texto);color:var(--suave);margin-bottom:10px}
+.frag{display:grid;grid-template-columns:900px 140px 1fr;gap:20px;align-items:center;font-size:27px;padding:9px 0;border-bottom:2px solid var(--linea)}
+.frag .bar{height:16px;background:#E9EEF3;border-radius:8px;overflow:hidden}.frag .bar i{display:block;height:100%;background:var(--azul);border-radius:8px}
+.frag .sim{font:800 27px var(--display);text-align:right}
+.tokens{margin-top:18px;font:700 34px var(--display)}
+.tokens span{color:var(--azul)}
+#ahorroG{position:absolute;left:120px;top:262px;width:1040px}
+#ahorroG h3{font:700 26px var(--texto);color:var(--suave);margin:0 0 10px}
+.ba{display:grid;grid-template-columns:330px 1fr 150px;align-items:center;gap:16px;height:84px;border-bottom:2px solid var(--linea)}
+.ba .n{font:600 27px/1.15 var(--texto)}.ba .n small{display:block;font:400 20px var(--texto);color:var(--suave)}
+.ba .b{height:34px;background:#E9EEF3;border-radius:17px;overflow:hidden;position:relative}
+.ba .b i{position:absolute;left:0;top:0;bottom:0;border-radius:17px;background:var(--verde);transition:width .7s}
+.ba .v{font:800 36px var(--display);text-align:right;color:var(--verde)}
+.apila{display:flex;height:60px;border-radius:12px;overflow:hidden;margin:6px 0 6px}
+.apila div{display:flex;align-items:center;justify-content:center;color:#fff;font:700 23px var(--texto);min-width:0;transition:flex .3s}
+.leyenda2{display:flex;gap:30px;font-size:22px;color:var(--suave);margin-bottom:18px}
+.leyenda2 span::before{content:"";display:inline-block;width:14px;height:14px;border-radius:3px;background:var(--c);margin-right:8px;vertical-align:-1px}
+#ahorroG a{display:inline-block;font:700 26px var(--texto);color:var(--azul);margin-top:16px;cursor:pointer}
+#calc{position:absolute;left:1230px;top:262px;width:570px}
+#calc h3{font:700 26px var(--texto);color:var(--suave)}
+#calc .gran{font:800 84px/1 var(--display);letter-spacing:-.03em;margin:8px 0 16px}
+#calc input[type=range]{width:570px;accent-color:var(--azul);margin:6px 0 24px}
+.lin{display:flex;justify-content:space-between;align-items:baseline;font-size:29px;padding:11px 0;border-bottom:2px solid var(--linea)}
+.lin b{font:800 34px var(--display)}
+.lin.res b{color:var(--verde)}
+.lin small{font-size:22px;color:var(--suave)}
+
+/* 9 demo */
+#l9 .titulo{top:236px;font-size:150px;line-height:.95}
+#l9 .via{position:absolute;left:120px;top:520px;display:flex;gap:56px;font:600 36px var(--texto)}
+#l9 .via span{padding-bottom:12px;border-bottom:5px solid var(--azul)}
+#l9 .boton{position:absolute;left:120px;top:690px;display:inline-block;font:800 50px var(--display);letter-spacing:-.01em;color:#fff;background:var(--azul);padding:34px 64px;border-radius:20px;text-decoration:none;transition:transform .15s,background .2s}
+#l9 .boton:hover{background:var(--azul2);transform:translateY(-3px)}
+#l9 .url{position:absolute;left:120px;top:858px;font-size:28px;color:var(--suave)}
+
+/* 10 cierre */
+.kpis{position:absolute;left:120px;top:262px;width:760px}
+.kpi{padding:14px 0 16px;border-bottom:2px solid rgba(255,255,255,.18)}
+.kpi b{display:block;font:800 92px/1 var(--display);letter-spacing:-.03em}
+.kpi span{display:block;font-size:28px;line-height:1.28;color:#C9D8EC;margin-top:4px}
+.escala{position:absolute;left:1000px;top:262px;width:800px}
+.escala h3{font:700 26px var(--texto);color:#8FA9C8;margin-bottom:10px}
+.palanca{border-bottom:2px solid rgba(255,255,255,.18)}
+.palanca button{display:flex;justify-content:space-between;align-items:center;width:100%;padding:16px 0;font:700 30px/1.2 var(--texto);color:#fff}
+.palanca button::after{content:"+";font:400 40px var(--texto);color:#8FA9C8}
+.palanca.on button::after{content:"-"}
+.palanca div{max-height:0;overflow:hidden;font-size:26px;line-height:1.35;color:#C9D8EC;transition:max-height .35s}
+.palanca.on div{max-height:150px;padding-bottom:16px}
+#l10 .nota{color:#8FA9C8;top:990px;width:1680px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="lienzo">
+
+<!-- 1 portada -->
+<section class="lamina oscura" id="l1">
+  <div class="evento">Hackathon BBVA en Perú 2026<span>AI Financial Life</span></div>
+  <h1 class="pregunta">¿Qué pasa cuando no sabes si te alcanzará la plata hasta tu próximo ingreso?</h1>
+  <div class="revela"><div class="nombre">Conoce a Lucas</div><div class="lema">Tu compañero de finanzas</div><div class="linea-grupo"><div class="grupo">Grupo 2</div><div class="equipo" id="equipo"></div></div></div>
+  <svg id="hero" viewBox="0 0 1680 390" aria-hidden="true"></svg>
+  <div class="pie-grafico">Saldo esperado a 30 días de una persona sintética. La banda es donde cae 8 de cada 10 veces.</div>
+</section>
+
+<!-- 2 contexto -->
+<section class="lamina" id="l2">
+  <h2 class="titulo">Tener cuenta no es saber si llegas a fin de mes</h2>
+  <div class="cifras">
+    <div class="cifra" style="--c:var(--azul)"><b>61 %</b><span>de los adultos no cubriría un imprevisto equivalente a un mes de ingresos</span></div>
+    <div class="cifra" style="--c:var(--naranja)"><b>69.8 %</b><span>del empleo en el país es informal</span></div>
+    <div class="cifra" style="--c:var(--verde)"><b>24 %</b><span>menos cargos por sobregiro cuando el cliente recibe alertas a tiempo</span></div>
+  </div>
+  <div class="tres">
+    <div><h3>El problema</h3><p>Nadie les avisa a tiempo si el saldo alcanza hasta el próximo ingreso, ni qué cambio concreto los saca del rojo.</p></div>
+    <div><h3>La decisión que mejoramos</h3><p class="decision">¿Cuánto puedo gastar o ahorrar este mes sin quedarme en rojo antes de mi próximo ingreso?</p></div>
+    <div><h3>Para quién</h3><p>Trabajadores dependientes e independientes del sector privado en Perú.</p></div>
+  </div>
+  <div class="nota">Fuentes: SBS y CAF 2026; INEI, EPEN I trimestre 2026; FCA, Occasional Paper 10 (Reino Unido, 2015).</div>
+</section>
+
+<!-- 3 orquestacion -->
+<section class="lamina" id="l3">
+  <h2 class="titulo">Así se orquesta todo alrededor de la persona</h2>
+  <div class="pestanas" id="pest3"><button data-v="orq" class="on">Orquestación</button><button data-v="arq" class="oculto">Arquitectura</button><button data-v="sis">Analítica e IA</button><button data-v="dat">Datos</button></div>
+  <div id="v3orq">
+    <svg id="arq" viewBox="0 0 1920 1080"></svg>
+    <div id="arqNodos"></div>
+    <div id="arqPanel"></div>
+  </div>
+  <div id="v3img" class="oculto"><div class="vista"><img class="zoom" id="img3" alt="Diagrama"></div></div>
+</section>
+
+<!-- 4 agente -->
+<section class="lamina" id="l4">
+  <h2 class="titulo">Cada mensaje toma un solo camino</h2>
+  <p class="bajada">Elige un mensaje y mira por qué nodos del agente pasa. Toca un nodo para ver qué hace.</p>
+  <div id="cons"></div>
+  <svg id="grafo" viewBox="0 0 1920 1080"></svg>
+  <div id="grafoNodos"></div>
+  <div id="camino"></div>
+  <div class="verif"><b>Verificador:</b> una cifra sin respaldo se rechaza antes de llegar a la persona.</div>
+</section>
+
+<!-- 5 seguridad -->
+<section class="lamina" id="l5">
+  <h2 class="titulo">Cada capa corta un riesgo distinto</h2>
+  <div class="pestanas" id="pest5"><button data-v="dia" class="oculto">Diagrama</button><button data-v="pru" class="on">Pon a prueba a Lucas</button></div>
+  <div id="v5pru">
+    <div id="capas"></div>
+    <div id="prueba"><div id="ataques"></div><div id="resultado"></div></div>
+  </div>
+  <div id="v5dia" class="oculto"><div class="vista"><img class="zoom" id="img5" alt="Diagrama de seguridad"></div></div>
+</section>
+
+<!-- 6 modelos y valor -->
+<section class="lamina" id="l6">
+  <h2 class="titulo">Cada modelo le gana a una alternativa sencilla</h2>
+  <div class="pestanas" id="pest6"><button data-v="mod" class="on">Modelos y evidencia</button><button data-v="val">Valor para la persona</button></div>
+  <div id="v6mod"><div id="lista"></div><div id="detalle"></div></div>
+  <div id="v6val" class="oculto"><div id="grafValor"></div><div id="efecto"></div></div>
+</section>
+
+<!-- 7 eventos -->
+<section class="lamina" id="l7">
+  <h2 class="titulo">Lucas se adelanta a lo que viene</h2>
+  <div class="pestanas" id="pest7"><button data-i="0" class="on">El Niño</button><button data-i="1">Mercado y normas</button><button data-i="2">Tus movimientos</button></div>
+  <div id="v7a"><div id="zonas"></div><div id="zonaDet"></div></div>
+  <div id="v7b" class="oculto">
+    <div class="dato2">
+      <div class="bloque"><b id="tc"></b><span>por dólar, tipo de cambio venta</span><small id="tcf"></small></div>
+      <div class="bloque"><b id="tr"></b><span>tasa de referencia</span><small id="trf"></small></div>
+      <p style="font-size:26px;color:var(--suave);line-height:1.35">Si la API falla, Lucas usa la caché, luego el último valor y luego una serie grabada. Un dato viejo no se presenta como actual.</p>
+    </div>
+    <div class="cts">
+      <p>La libre disposición del 100 % de la CTS vence el 31 de diciembre de 2026 (Ley 32322). El proyecto que la extiende a 2028 sigue en evaluación y Lucas no lo trata como ley.</p>
+      <img class="zoom" src="../graficas/calendario_laboral_2026_2027.png" alt="Calendario laboral 2026 y 2027">
+    </div>
+  </div>
+  <div id="v7c" class="oculto">
+    <div class="mov">
+      <p>Cada ingreso o gasto que se registra actualiza el saldo y el riesgo al instante, sin duplicados.</p>
+      <p>Lucas avisa lo más urgente primero, una sola vez y hasta tres avisos por semana.</p>
+      <p>Cada aviso dice por qué, con qué supuestos y con qué confianza.</p>
+    </div>
+    <div class="mov-img"><img class="zoom" src="../graficas/serie_diaria_ejemplo_de_un_cliente.png" alt="Saldo esperado a 30 días de una persona sintética"></div>
+  </div>
+</section>
+
+<!-- 8 rag y ahorro -->
+<section class="lamina" id="l8">
+  <h2 class="titulo">La IA lee tres fragmentos, no una biblioteca</h2>
+  <div class="pestanas" id="pest8"><button data-i="0" class="on">Cómo lee</button><button data-i="1">Cuánto ahorra</button></div>
+  <div id="v8a"><div id="pipe"></div><div id="ejemplo"></div></div>
+  <div id="v8b" class="oculto"><div id="ahorroG"></div><div id="calc"></div></div>
+</section>
+
+<!-- 9 demo -->
+<section class="lamina" id="l9">
+  <h2 class="titulo">Lucas en vivo</h2>
+  <div class="via"><span>Aviso a tiempo</span><span>Saldo con banda</span><span>Qué hacer y por qué</span><span>Chat con botones</span></div>
+  <a class="boton" id="botonDemo" href="#" target="_blank" rel="noopener">Abrir la demo</a>
+  <div class="url" id="urlDemo"></div>
+</section>
+
+<!-- 10 cierre -->
+<section class="lamina oscura" id="l10">
+  <h2 class="titulo">Lucas funciona y está listo para escalar</h2>
+  <div class="kpis" id="kpis"></div>
+  <div class="escala" id="escala"><h3>Cómo crece desde aquí</h3></div>
+  <div class="nota">Datos sintéticos. Lucas orienta decisiones: no reemplaza a un asesor ni promete resultados.</div>
+</section>
+
+<div id="pasos"></div>
+<button class="flecha" id="ant" aria-label="Lámina anterior">&#8249;</button>
+<button class="flecha" id="sig" aria-label="Lámina siguiente">&#8250;</button>
+</div>
+<div id="lupa"><img alt=""></div>
+
+<script>/*DATOS*/</script>
+<script>
+(function(){
+'use strict';
+const D = window.DATOS, NS = 'http://www.w3.org/2000/svg';
+const $ = (s, r=document) => r.querySelector(s), $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = (n, d=0) => Number(n).toLocaleString('en-US', {minimumFractionDigits:d, maximumFractionDigits:d});
+const pct = (x, d=1) => fmt(x*100, d) + ' %';
+const sol = (x, d=2) => 'S/ ' + fmt(x, d);
+const laminas = $$('.lamina'); let actual = 0, revelada = false;
+
+function escalar(){ const e = Math.min(innerWidth/1920, innerHeight/1080); $('#lienzo').style.setProperty('--escala', e); }
+addEventListener('resize', escalar); escalar();
+
+/* navegacion */
+const pasos = $('#pasos');
+laminas.forEach((_, i) => { const b = document.createElement('button'); b.setAttribute('aria-label', 'Ir a la lámina ' + (i+1)); b.onclick = () => ir(i); pasos.appendChild(b); });
+function ir(n){
+  n = Math.max(0, Math.min(laminas.length-1, n));
+  laminas.forEach((l,i) => l.classList.toggle('activa', i === n));
+  $$('#pasos button').forEach((b,i) => b.classList.toggle('on', i === n));
+  $('#lienzo').classList.toggle('sobre-oscuro', laminas[n].classList.contains('oscura'));
+  actual = n; if (n === 0) animarHero(); history.replaceState(null, '', '#' + (n+1));
+}
+function siguiente(){ if (actual === 0 && !revelada){ revelar(); return; } ir(actual+1); }
+function anterior(){ if (actual === 0 && revelada){ revelada = false; $('#l1').classList.remove('revelada'); return; } ir(actual-1); }
+function revelar(){ revelada = true; $('#l1').classList.add('revelada'); }
+$('#sig').onclick = siguiente; $('#ant').onclick = anterior;
+addEventListener('keydown', e => {
+  if (e.key === 'Escape') { $('#lupa').classList.remove('on'); return; }
+  const enCampo = e.target.matches && e.target.matches('input');
+  if (['ArrowRight','PageDown'].includes(e.key) && !enCampo) { e.preventDefault(); siguiente(); }
+  else if ([' ','Enter'].includes(e.key) && !(e.target.matches && e.target.matches('input,button,a'))) { e.preventDefault(); siguiente(); }
+  else if (['ArrowLeft','PageUp'].includes(e.key) && !enCampo) { e.preventDefault(); anterior(); }
+  else if (e.key === 'Home') ir(0); else if (e.key === 'End') ir(laminas.length-1);
+  else if (e.key.toLowerCase() === 'f') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); }
+});
+let tx = null; addEventListener('touchstart', e => tx = e.touches[0].clientX); addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 60) dx < 0 ? siguiente() : anterior(); tx = null; });
+$('#l1').addEventListener('click', e => { if (!e.target.closest('button,a') && !revelada) revelar(); });
+
+function lupa(src){ const l = $('#lupa'); $('img', l).src = src; l.classList.add('on'); }
+$('#lupa').onclick = () => $('#lupa').classList.remove('on');
+document.addEventListener('click', e => { const i = e.target.closest('img.zoom'); if (i) lupa(i.src); });
+function pestanas(id, cb){ const c = $(id); c.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $$('button', c).forEach(x => x.classList.toggle('on', x === b)); cb(b.dataset.v !== undefined ? b.dataset.v : +b.dataset.i); }); }
+function existe(src, cb){ const i = new Image(); i.onload = () => cb(true); i.onerror = () => cb(false); i.src = src; }
+const el = (tag, attrs={}, html='') => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); e.innerHTML = html; return e; };
+
+/* 1 portada: la persona, su saldo y la pregunta que lleva a Lucas */
+const P = D.persona; let heroLen = 0;
+(function hero(){
+  const s = P.serie, n = s.length, W = 1680, H = 390, y0 = -300, y1 = 1500;
+  const X = i => i/(n-1)*W, Y = v => H - (Math.min(Math.max(v,y0),y1) - y0)/(y1-y0)*H;
+  const banda = 'M' + s.map((d,i) => X(i)+','+Y(d.alto)).join(' L') + ' L' + s.slice().reverse().map((d,i) => X(n-1-i)+','+Y(d.bajo)).join(' L') + ' Z';
+  const linea = 'M' + s.map((d,i) => X(i)+','+Y(d.esperado)).join(' L');
+  const dr = P.dia_de_riesgo ? P.dia_de_riesgo-1 : null, f = 'font-family="Figtree,Segoe UI,sans-serif"', fd = 'font-family="Bricolage Grotesque,Segoe UI,sans-serif"';
+  const marca = dr === null ? '' : `<g id="heroMarca"><line x1="${X(dr)}" x2="${X(dr)}" y1="0" y2="${H}" stroke="#F08A4B" stroke-width="3" stroke-dasharray="9 8"/><circle cx="${X(dr)}" cy="${Y(s[dr].esperado)}" r="12" fill="#F08A4B"/>
+    <text x="${X(dr)+26}" y="40" fill="#F3A878" ${f} font-size="28" font-weight="600">Día ${dr+1}</text><text x="${X(dr)+26}" y="92" fill="#fff" ${fd} font-size="52" font-weight="700" letter-spacing="-0.5">¿Y si ese día te quedas sin plata?</text></g>`;
+  $('#hero').innerHTML = `<defs><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7DB4F0" stop-opacity=".10"/><stop offset="1" stop-color="#7DB4F0" stop-opacity=".30"/></linearGradient></defs>
+    <path d="${banda}" fill="url(#gb)"/><line x1="0" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="#F08A4B" stroke-width="3" stroke-dasharray="10 8"/>
+    <text x="0" y="${Y(0)-12}" fill="#F3A878" ${f} font-size="26" font-weight="600">saldo 0</text>
+    <path id="heroLinea" d="${linea}" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="0" y="${H+34}" fill="#8FA9C8" ${f} font-size="24">hoy</text><text x="${W}" y="${H+34}" text-anchor="end" fill="#8FA9C8" ${f} font-size="24">día 30</text>${marca}`;
+  heroLen = $('#heroLinea').getTotalLength();
+})();
+function animarHero(){ const l = $('#heroLinea'); l.style.transition = 'none'; l.style.strokeDasharray = heroLen; l.style.strokeDashoffset = heroLen; l.getBoundingClientRect(); l.style.transition = 'stroke-dashoffset 2.4s ease-out'; l.style.strokeDashoffset = 0; }
+if (D.equipo && D.equipo.length) $('#equipo').textContent = D.equipo.join('  ·  ');
+
+/* 3 orquestacion */
+(function orq(){
+  const M = id => D.modelos.find(x => x.slug === id), E = D.extras, K = D.mapa.costos;
+  const C = {azul:['#2A78D6','#E8F0FB'], verde:['#2A9D8F','#E5F4F2'], naranja:['#C8641A','#FBEFE5'], gris:['#8C8B86','#F0EFED'], marino:['#0C2340','#143762']};
+  const N = [
+    {id:'gen',col:0,c:'azul',t:'Generador sintético',s:'500 clientes, 3.3 M movimientos',d:'Datos 100 % sintéticos de 2019 a 2025 con ingresos irregulares, suscripciones duplicadas, datos incompletos y movimientos atípicos sembrados, y una verdad oculta para medir.',m:[['3.3 M','movimientos'],['500','clientes']]},
+    {id:'bcrp',col:0,c:'verde',t:'BCRP',s:'Tipo de cambio, inflación y tasa',d:'Series oficiales en vivo, con caché y serie grabada de respaldo. Cada dato dice su fecha y su origen.',m:[[D.publicos.tipo_de_cambio ? sol(D.publicos.tipo_de_cambio.valor,3) : '', 'por dólar']]},
+    {id:'enfen',col:0,c:'verde',t:'ENFEN',s:'Comunicados de El Niño',d:'Alerta por zona con la fuente oficial. La vigilancia avisa cuando sale un comunicado nuevo.',m:[['17 a 20','comunicados de 2026']]},
+    {id:'norm',col:0,c:'verde',t:'Normas y fuentes oficiales',s:'Código del Consumidor, SBS, CTS',d:'Documentos oficiales troceados y vectorizados, siempre con cita y enlace.',m:[['3,761','fragmentos']]},
+    {id:'seg',col:1,c:'azul',t:'Segmentos',s:'K-Prototypes, 5 perfiles',d:'Agrupa clientes mezclando variables numéricas y categóricas. De ahí salen los niveles de Luchador a Campeón y el tono de cada respuesta.',m:[[fmt(M('01_segmentacion').elegido.valor,2),'concordancia con arquetipos']]},
+    {id:'pron',col:1,c:'azul',t:'Pronóstico de saldo',s:'30 días y serie diaria con banda',d:'LightGBM con bandas conformales: un saldo esperado por cada día y el rango donde cae 8 de cada 10 veces.',m:[['−' + fmt(M('02_saldo_30_dias').mejora_pct) + ' %','error vs promedio móvil'],[fmt(E.cobertura.saldo_30d,2),'cobertura de la banda']]},
+    {id:'rojo',col:1,c:'azul',t:'Alerta de saldo en rojo',s:'Probabilidad y día de riesgo',d:'Un clasificador calibrado: el porcentaje de riesgo se puede leer como probabilidad. Lucas dice «hacia el día X», no una fecha exacta.',m:[[fmt(E.calibracion.lightgbm,3),'error de calibración'],[fmt(M('04_dia_de_riesgo').elegido.valor,1) + ' días','error del día de riesgo']]},
+    {id:'pol',col:1,c:'azul',t:'Política de ahorro',s:'Lucas y ahorro automático',d:'Reproducción contrafactual: evita días en rojo y forma colchón con una reserva que se puede usar.',m:[['−' + fmt((1 - E.politicas[2].dias_rojo/E.politicas[0].dias_rojo)*100) + ' %','días en rojo'],[fmt(E.politicas[2].colchon_meses,1) + ' meses','de colchón']]},
+    {id:'mov',col:1,c:'azul',t:'Movimientos y hábitos',s:'Categorías, fijos y atípicos',d:'Clasifica cada movimiento, detecta gastos fijos, suscripciones duplicadas y movimientos raros.',m:[[fmt(M('07_glosas').elegido.valor,2),'F1 de categorías'],[fmt(M('08_gastos_recurrentes').elegido.valor,2),'F1 de gastos fijos']]},
+    {id:'rag',col:2,c:'naranja',t:'RAG',s:'FAISS, BM25 y filtro de relevancia',d:'Busca los 3 fragmentos más parecidos a la pregunta. Bajo 0.70 de similitud no se contesta.',m:[[fmt(M('13_rag').elegido.valor,2),'recall@4']]},
+    {id:'cal',col:2,c:'naranja',t:'Calendario laboral',s:'Gratificación, CTS, retiro',d:'Reglas con la frase literal de la norma. La libre disposición del 100 % de la CTS vence el 31 de diciembre de 2026.',m:[['Ley 32322','vigente']]},
+    {id:'viv',col:2,c:'naranja',t:'Datos vivos',s:'Tus ingresos y gastos nuevos',d:'Lo que la persona registra actualiza el saldo y el riesgo al instante, sin duplicados y sin guardar el texto del movimiento.',m:[['0','duplicados']]},
+    {id:'vig',col:2,c:'naranja',t:'Vigilancia',s:'Avisos únicos, máximo 3 por semana',d:'Lo más urgente primero y una sola vez: riesgo de rojo, gratificación pendiente, gasto atípico, comunicado del ENFEN.',m:[['3','avisos por semana como máximo']]},
+    {id:'rou',col:3,c:'verde',t:'Router y seguridad',s:'Reglas, 0 tokens',d:'Reconoce el tema y corta seguridad y operaciones antes de cualquier modelo.',m:[['0','tokens']]},
+    {id:'her',col:3,c:'verde',t:'Herramientas',s:'Toda cifra nace aquí',d:'Los modelos y el RAG responden con datos. El LLM nunca calcula.',m:[]},
+    {id:'red',col:3,c:'verde',t:'Redactar',s:'Plantilla o IA, nunca las dos a la vez',d:'Una plantilla redacta lo conocido; la IA solo lo nuevo, con 3 fragmentos y sin el id ni la zona de la persona.',m:[[pct(K.mezcla_de_evaluacion.proporcion_que_llega_a_la_ia), 'de los mensajes llega a la IA']]},
+    {id:'jue',col:3,c:'verde',t:'Verificador y juez',s:'Cifras con respaldo',d:'Rechaza cifras sin respaldo y respuestas cortadas, vacías, evasivas, con código o con promesas.',m:[['0','cifras sin respaldo en ' + D.calidad.agente_plantillas.n + ' preguntas']]},
+    {id:'pla',col:3,c:'gris',t:'Plantilla de respaldo',s:'Si la IA falla o inventa',d:'Misma respuesta verificada, mismas cifras y citas, sin IA.',m:[]},
+    {id:'tra',col:3,c:'verde',t:'Traducción',s:'Español, inglés y quechua',d:'Protege cifras y nombres y avisa que la traducción es automática.',m:[]},
+    {id:'ui',col:4,c:'marino',persona:true,t:'Tu pantalla',s:'Aviso a tiempo, saldo con banda, qué hacer y por qué, y chat con botones.',d:'La persona recibe un aviso antes de quedarse en rojo, ve su saldo con banda y entiende por qué se le recomienda cada cosa, con supuestos y confianza. Cada botón la lleva a una respuesta real.',m:[['8 de 8','botones que llevan a una respuesta real']]},
+    {id:'api',col:4,c:'gris',persona:true,t:'API y app',s:'Integración final con el equipo',tag:'en integración',d:'El agente se conecta a la API del equipo y cambia de proveedor de IA con tres variables de entorno.',m:[['3','variables para cambiar de IA']]}];
+  const A = [['gen','seg'],['gen','pron'],['gen','rojo'],['gen','pol'],['gen','mov'],['bcrp','pron'],['enfen','vig'],['norm','rag'],['norm','cal'],
+    ['seg','her'],['pron','her'],['rojo','her'],['pol','her'],['mov','her'],['rag','her'],['cal','her'],['viv','her'],['vig','red'],['rou','her'],
+    ['red','ui'],['tra','ui'],['jue','api']];
+  const X0 = 120, DX = 336, Y0 = 296, H = 78, G = 12, pos = {};
+  const porCol = [0,1,2,3,4].map(c => N.filter(n => n.col === c));
+  porCol.forEach((lst, c) => lst.forEach((n,i) => { n.x = X0 + c*DX; n.y = Y0 + (n.persona ? i*(176+G) : i*(H+G)); n.h = n.persona ? 176 : H; pos[n.id] = n; }));
+  ['Fuentes','Modelos','Conocimiento','Agente','La persona'].forEach((t,c) => { const h = document.createElement('div'); h.className = 'colh'; h.style.left = (X0 + c*DX) + 'px'; h.textContent = t; $('#arqNodos').appendChild(h); });
+  N.forEach(n => { const b = document.createElement('button'); b.className = 'nodo' + (n.persona ? ' persona' : ''); b.dataset.id = n.id; b.style.cssText = `left:${n.x}px;top:${n.y}px;--c:${C[n.c][0]};--cl:${C[n.c][1]}`;
+    b.innerHTML = `<b>${n.t}${n.tag ? `<span class="tag">${n.tag}</span>` : ''}</b><span>${n.s}</span>`; $('#arqNodos').appendChild(b); });
+  const svg = $('#arq');
+  A.forEach(([a,b]) => { const p = pos[a], q = pos[b]; const x1 = p.x + 296, y1 = p.y + p.h/2, x2 = q.x, y2 = q.y + q.h/2; svg.appendChild(el('path', {d:`M${x1},${y1} C${x1+70},${y1} ${x2-70},${y2} ${x2},${y2}`, fill:'none', stroke:'#D5DCE3', 'stroke-width':2.5, 'data-a':a, 'data-b':b})); });
+  function elegir(id){
+    const n = pos[id];
+    $$('.nodo').forEach(b => { const rel = b.dataset.id === id || A.some(([a,c]) => (a===id && c===b.dataset.id) || (c===id && a===b.dataset.id)); b.classList.toggle('on', b.dataset.id === id); b.classList.toggle('dim', !rel); });
+    $$('#arq path').forEach(p => { const act = p.dataset.a === id || p.dataset.b === id; p.setAttribute('stroke', act ? C[n.c][0] : '#E6EAEE'); p.setAttribute('stroke-width', act ? 4.5 : 2.5); });
+    $('#arqPanel').innerHTML = `<h4>${n.t}</h4><p>${n.d}</p><div class="ind">${n.m.map(x => `<div>${x[0]}<small>${x[1]}</small></div>`).join('')}</div>`;
+  }
+  $('#arqNodos').addEventListener('click', e => { const b = e.target.closest('.nodo'); if (b) elegir(b.dataset.id); });
+  elegir('pron');
+  const imgs = {arq:'imagenes/arquitectura.png', sis:'../diagramas/arquitectura_del_sistema.png', dat:'../diagramas/modelo_de_datos.png'};
+  existe(imgs.arq, ok => { if (ok) $('#pest3 [data-v="arq"]').classList.remove('oculto'); });
+  pestanas('#pest3', v => { const o = v === 'orq'; $('#v3orq').classList.toggle('oculto', !o); $('#v3img').classList.toggle('oculto', o); if (!o) $('#img3').src = imgs[v]; });
+})();
+
+/* 4 agente: grafo real y camino de cada mensaje */
+(function agente(){
+  const MP = D.mapa, K = MP.costos;
+  const carr = {herramientas_y_plantilla:{t:'Tema conocido',d:'Los modelos calculan y una plantilla redacta, sin IA.',c:'#2A78D6',cl:'#E8F0FB'}, plantilla_fija:{t:'Seguridad o fuera de alcance',d:'Una plantilla fija responde, sin IA y sin datos de nadie.',c:'#8C8B86',cl:'#F0EFED'},
+    preguntas_frecuentes:{t:'Pregunta ya respondida',d:'Sale de las preguntas frecuentes, con sus citas, sin llamar a la IA.',c:'#2A9D8F',cl:'#E5F4F2'}, rag_y_ia:{t:'Pregunta nueva de concepto',d:'La IA redacta con 3 fragmentos del RAG y el verificador la revisa.',c:'#C8641A',cl:'#FBEFE5'}};
+  const nodos = [
+    {id:'ini',t:'Inicio',circ:true,x:780,y:290,d:'Entra el mensaje de la persona.'},
+    {id:'car',t:'Cargar contexto',x:937,y:284,d:'Reúne lo que se sabe de la persona: saldo, pronóstico, nivel, calendario laboral y movimientos vivos.'},
+    {id:'tre',t:'Traducir entrada',x:1174,y:284,d:'Detecta el idioma (español, inglés o quechua) y traduce la pregunta protegiendo cifras y nombres.'},
+    {id:'rou',t:'Router',x:1411,y:284,d:'Reglas que reconocen el tema sin gastar tokens y cortan seguridad y operaciones.'},
+    {id:'her',t:'Herramientas',x:1650,y:284,d:'Los modelos calculan y el RAG busca fuentes. Toda cifra nace aquí; el LLM nunca calcula.'},
+    {id:'red',t:'Redactar',x:1650,y:470,d:'Una plantilla redacta lo conocido y las preguntas frecuentes se reutilizan; solo lo nuevo llega a la IA, sin el id ni la zona de la persona.'},
+    {id:'jue',t:'Juez',x:1460,y:470,d:'Verifica cada cifra y rechaza respuestas cortadas, vacías, evasivas, con código o con promesas. Si rechaza, reintenta una vez.'},
+    {id:'pla',t:'Plantilla',x:1270,y:470,d:'Respuesta determinista con las mismas cifras y citas. Es el respaldo si la IA falla o inventa.'},
+    {id:'fin',t:'Finalizar',x:1080,y:470,d:'Cierra con «Tu decides.», agrega las opciones (botones) y guarda lo aprendido en las preguntas frecuentes.'},
+    {id:'trs',t:'Traducir salida',x:890,y:470,d:'Devuelve la respuesta en el idioma de la persona, con las cifras protegidas y un aviso de traducción.'},
+    {id:'end',t:'Fin',circ:true,x:780,y:476,d:'La persona recibe la respuesta y sus botones.'}];
+  const cx = n => n.x + (n.circ ? 32 : 75), W = 150, byId = Object.fromEntries(nodos.map(n => [n.id, n]));
+  const aristas = [['ini','car','h'],['car','tre','h'],['tre','rou','h'],['rou','her','h'],['her','red','v'],['red','jue','hl'],['jue','pla','hl',1],['pla','fin','hl'],['jue','fin','arco',1],['jue','red','retorno',1],['fin','trs','hl'],['trs','end','hl']];
+  const svg = $('#grafo');
+  svg.innerHTML = `<defs><marker id="pt" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="context-stroke"/></marker></defs>`;
+  function ruta(a,b,tipo){
+    const A = byId[a], B = byId[b], ya = A.y + (A.circ ? 32 : 38), yb = B.y + (B.circ ? 32 : 38);
+    if (tipo === 'h') return `M${A.x + (A.circ?64:W)},${ya} L${B.x - 4},${yb}`;
+    if (tipo === 'hl') return `M${A.x},${ya} L${B.x + (B.circ?64:W) + 4},${yb}`;
+    if (tipo === 'v') return `M${cx(A)},${A.y+76} L${cx(B)},${B.y-4}`;
+    if (tipo === 'arco') return `M${cx(A)},${A.y+80} C${cx(A)},${A.y+170} ${cx(B)},${B.y+170} ${cx(B)},${B.y+80}`;
+    return `M${cx(A)+30},${A.y+80} C${cx(A)+30},${A.y+125} ${cx(B)-30},${B.y+125} ${cx(B)-30},${B.y+80}`;
+  }
+  aristas.forEach(([a,b,t,c],i) => { svg.appendChild(el('path', {d:ruta(a,b,t), class:'ge' + (c ? ' cond' : ''), 'marker-end':'url(#pt)', id:'e'+i})); });
+  svg.appendChild(el('text', {x:1313, y:458, class:'gl'}, 'si falla o inventa')); svg.appendChild(el('text', {x:1215, y:690, class:'gl'}, 'si la aprueba')); svg.appendChild(el('text', {x:1580, y:600, class:'gl'}, 'reintento'));
+  const cont = $('#grafoNodos');
+  nodos.forEach(n => { const b = document.createElement('button'); b.className = 'gn' + (n.circ ? ' circ' : ''); b.dataset.id = n.id; b.style.left = n.x + 'px'; b.style.top = n.y + 'px'; b.textContent = n.t; cont.appendChild(b); });
+  $('#cons').innerHTML = MP.consultas.map((q,i) => { const c = carr[q.camino]; return `<button data-i="${i}" style="--c:${c.c};--cl:${c.cl}">${q.consulta}</button>`; }).join('');
+  const recorrido = {herramientas_y_plantilla:['ini','car','tre','rou','her','red','jue','pla','fin','trs','end'], plantilla_fija:['ini','car','tre','rou','her','red','jue','pla','fin','trs','end'],
+    preguntas_frecuentes:['ini','car','tre','rou','her','red','jue','fin','trs','end'], rag_y_ia:['ini','car','tre','rou','her','red','jue','fin','trs','end']};
+  const quien = {herramientas_y_plantilla:'Redactar usa una plantilla.', plantilla_fija:'Redactar usa una plantilla fija.', preguntas_frecuentes:'Redactar reutiliza una respuesta verificada.', rag_y_ia:'Redactar llama a la IA con 3 fragmentos y el Juez la revisa.'};
+  let msg = 0, sel = null;
+  function pintar(){
+    const q = MP.consultas[msg], c = carr[q.camino], vis = recorrido[q.camino];
+    $$('#cons button').forEach((b,j) => b.classList.toggle('on', j === msg));
+    $$('.gn').forEach(b => { const i = vis.indexOf(b.dataset.id); b.style.setProperty('--c', c.c); b.style.setProperty('--cl', c.cl); b.style.transitionDelay = (i >= 0 ? i*70 : 0) + 'ms'; b.classList.toggle('paso', i >= 0); b.classList.toggle('sinuso', i < 0); b.classList.toggle('sel', b.dataset.id === sel); });
+    aristas.forEach(([a,b],i) => { const ia = vis.indexOf(a), ib = vis.indexOf(b); const uso = ia >= 0 && ib >= 0 && (ib === ia+1); const p = $('#e'+i); p.classList.toggle('paso', uso); p.style.setProperty('--c', c.c); p.style.transitionDelay = (uso ? ia*70 : 0) + 'ms'; });
+    const nodo = sel ? byId[sel] : null, tokens = q.usa_llm ? (q.tokens_de_entrada + q.tokens_de_salida) : 0;
+    $('#camino').innerHTML = (nodo ? `<h4>${nodo.t}</h4><p>${nodo.d}</p>` : `<h4>${c.t}</h4><p>${c.d} ${quien[q.camino]}</p>`) + `<div class="cos"><div>${fmt(tokens)}<small>tokens</small></div><div>${q.usa_llm ? sol(K.por_llamada.soles.total,4) : 'S/ 0'}<small>costo estimado</small></div><div>${q.usa_llm ? '1' : '0'}<small>llamadas a la IA</small></div></div>`;
+  }
+  $('#cons').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { msg = +b.dataset.i; sel = null; pintar(); } });
+  cont.addEventListener('click', e => { const b = e.target.closest('.gn'); if (b) { sel = sel === b.dataset.id ? null : b.dataset.id; pintar(); } });
+  pintar();
+})();
+
+/* 5 seguridad */
+(function seg(){
+  const capas = [['Entrada','El router corta la seguridad y las operaciones antes de cualquier modelo.'],['Datos mínimos','El LLM no recibe el id ni la zona de la persona.'],['Calcular y redactar por separado','Los modelos calculan, la IA solo redacta.'],
+    ['Verificador de cifras','Toda cifra debe venir de una herramienta.'],['Juez de la respuesta','Rechaza respuestas cortadas, vacías, evasivas, con código o con promesas.'],['Plantilla de respaldo','Si la IA falla o inventa, responde la plantilla verificada.']];
+  $('#capas').innerHTML = capas.map((c,i) => `<div class="capa"><em>${i+1}</em><div><b>${c[0]}</b><span>${c[1]}</span></div></div>`).join('') + `<div class="capa pend"><em>7</em><div><b>Base de datos<span class="etiqueta">en integración</span></b><span>Acceso por roles y filas protegidas por cliente.</span></div></div>`;
+  const A = D.ataques;
+  $('#ataques').innerHTML = `<h3 style="font:800 44px/1.1 var(--display);letter-spacing:-.02em;margin-bottom:18px">Pon a prueba a Lucas</h3>` + A.map((a,i) => `<button data-i="${i}">${a.pedido}</button>`).join('');
+  function ver(i){
+    $$('#ataques button').forEach((b,j) => b.classList.toggle('on', j === i));
+    const a = A[i], r = a.respuesta.replace(/^Hola, [^.]*\.\s*/, '');
+    $('#resultado').innerHTML = `<div class="capa-det">${a.capa}</div><div class="meta">Llamadas a la IA: ${a.llamadas_llm}. Rechazado antes de calcular nada. ${D.calidad.qa.adversas_ok.replace('/',' de ')} pedidos de ataque rechazados en la QA real.</div><q>${r}</q>`;
+  }
+  $('#ataques').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) ver(+b.dataset.i); });
+  ver(0);
+  existe('imagenes/seguridad.png', ok => { if (ok) { $('#pest5 [data-v="dia"]').classList.remove('oculto'); $('#img5').src = 'imagenes/seguridad.png'; $$('#pest5 button').forEach(b => b.classList.toggle('on', b.dataset.v === 'dia')); $('#v5pru').classList.add('oculto'); $('#v5dia').classList.remove('oculto'); } });
+  pestanas('#pest5', v => { $('#v5pru').classList.toggle('oculto', v !== 'pru'); $('#v5dia').classList.toggle('oculto', v !== 'dia'); });
+})();
+
+/* 6 modelos y valor */
+(function mod(){
+  const cortos = {'02_saldo_30_dias':'Saldo a 30 días','14_serie_diaria':'Serie diaria de 30 días','03_alerta_rojo':'Alerta de saldo en rojo','04_dia_de_riesgo':'Día de riesgo','08_gastos_recurrentes':'Gastos fijos y suscripciones','07_glosas':'Categoría de cada movimiento',
+    '09_atipicos':'Movimientos atípicos','01_segmentacion':'Segmentos de clientes','11_politica_de_ahorro':'Política de ahorro','05_proyeccion_mensual_error':'Proyección mensual','10_sentimiento':'Sentimiento de mensajes','12_agente':'Arquitectura del agente','13_rag':'Recuperación de fuentes'};
+  const frases = {
+    '02_saldo_30_dias': m => `El error baja ${fmt(m.mejora_pct)} % frente al promedio móvil de 3 meses. La banda al 80 % cubre ${fmt(D.extras.cobertura.saldo_30d,2)}.`,
+    '14_serie_diaria': m => `Un pronóstico por cada uno de los 30 días, con banda calibrada día por día: cobertura entre ${fmt(D.extras.cobertura.serie_minima,2)} y ${fmt(D.extras.cobertura.serie_maxima,2)}.`,
+    '03_alerta_rojo': m => `La ventaja en PR-AUC es modesta. Lo que importa: el porcentaje de riesgo se puede leer como probabilidad (error de calibración ${fmt(D.extras.calibracion.lightgbm,3)} frente a ${fmt(D.extras.calibracion.regla,3)}).`,
+    '04_dia_de_riesgo': m => `Se equivoca ${fmt(m.elegido.valor,1)} días en promedio frente a ${fmt(m.referencia.valor,1)}. Por eso Lucas dice «hacia el día X», no una fecha exacta.`,
+    '08_gastos_recurrentes': m => `Detecta suscripciones y gastos fijos sin marcar como fijo cualquier compra repetida: F1 de ${fmt(m.elegido.valor,2)} frente a ${fmt(m.referencia.valor,2)}.`,
+    '07_glosas': m => `Entiende en qué se gastó cada movimiento: F1 macro de ${fmt(m.elegido.valor,2)} frente a ${fmt(m.referencia.valor,2)} del diccionario.`,
+    '09_atipicos': m => `De cada 100 movimientos marcados como raros, ${fmt(m.elegido.valor*100)} lo son, frente a ${fmt(m.referencia.valor*100)} con la regla estadística.`,
+    '01_segmentacion': m => `Recupera los arquetipos reales de clientes: concordancia de ${fmt(m.elegido.valor,2)} frente a ${fmt(D.extras.segmentacion_ari.reglas,2)} de las reglas 2 por 2.`,
+    '11_politica_de_ahorro': m => `${fmt(m.elegido.valor,2)} días en rojo por cliente al mes frente a ${fmt(m.referencia.valor,2)} sin hacer nada, con ${fmt(D.extras.politicas[2].colchon_meses,1)} meses de colchón frente a ${fmt(D.extras.politicas[0].colchon_meses,1)}.`,
+    '05_proyeccion_mensual_error': m => `Proyecta ingresos, gastos y neto a 6 meses con la banda recalibrada: error de ${fmt(m.elegido.valor,2)} veces el ingreso mensual.`,
+    '10_sentimiento': m => `En frases nuevas supera al léxico, pero sigue siendo débil: por eso no está en producción.`,
+    '12_agente': m => `Un agente único y uno con supervisor miden igual: se usa el más simple y fácil de auditar.`,
+    '13_rag': m => `Con filtro de módulo, la búsqueda densa y la híbrida empatan: se mantiene la densa.`};
+  const L = D.modelos.map(m => ({...m, corto: cortos[m.slug] || m.titulo}));
+  const fila = (m,i) => { const emp = Math.abs(m.mejora_pct) < 1, w = Math.max(3, Math.min(100, Math.abs(m.mejora_pct))); const txt = emp ? 'empate' : (m.mejora_pct > 100 ? '+' + fmt(m.mejora_pct) + ' %' : '+' + fmt(m.mejora_pct,1) + ' %');
+    return `<button class="fila" data-i="${i}"><span class="n">${m.corto}</span><span class="b"><i class="${emp?'emp':''}" style="width:${w}%"></i></span><span class="v">${txt}</span></button>`; };
+  $('#lista').innerHTML = L.slice(0,9).map((m,i) => fila(m,i)).join('') + `<div class="sep">Otras comparaciones</div>` + L.slice(9).map((m,i) => fila(m, i+9)).join('');
+  function ver(i){
+    const m = L[i]; $$('#lista .fila').forEach((b,j) => b.classList.toggle('on', j === i));
+    const ref = m.slug === '11_politica_de_ahorro' ? 'No hacer nada' : m.referencia.nombre, d = m.fmt === '.1f' ? 1 : (m.fmt === '.2f' ? 2 : 3);
+    $('#detalle').innerHTML = `<img class="zoom" src="${m.imagen}" alt="${m.titulo}"><h3>${m.elegido.nombre}</h3><p>${(frases[m.slug] || (()=>''))(m)}</p><div class="nota-d">${m.metrica}: ${fmt(m.elegido.valor, d)} frente a ${fmt(m.referencia.valor, d)} de ${ref}. Datos sintéticos.</div>`;
+  }
+  $('#lista').addEventListener('click', e => { const b = e.target.closest('.fila'); if (b) ver(+b.dataset.i); });
+  ver(0);
+  const E = D.extras, pol = E.politicas; let metrica = 'dias';
+  $('#grafValor').innerHTML = `<div class="metricas"><button data-m="dias" class="on">Días en rojo al mes</button><button data-m="colchon">Colchón final en meses de ingreso</button></div><div id="polFilas"></div>`;
+  function pintar(){
+    const max = metrica === 'dias' ? Math.max(...pol.map(p => p.dias_rojo)) : Math.max(...pol.map(p => p.colchon_meses));
+    $('#polFilas').innerHTML = pol.map(p => { const v = metrica === 'dias' ? p.dias_rojo : p.colchon_meses, w = Math.max(2, v/max*100), reco = p.clave === 'lucas_mas_ahorro_ajustado';
+      return `<div class="pol ${reco ? 'reco' : ''} ${p.prueba_de_estres ? 'estres' : ''}"><div class="n">${p.nombre}${p.prueba_de_estres ? '<small>prueba de estrés, no recomendada</small>' : (reco ? '<small>política recomendada</small>' : '')}</div><div class="b"><i style="width:${w}%"></i></div><div class="v">${fmt(v, 2)}</div></div>`; }).join('');
+  }
+  $('#grafValor').addEventListener('click', e => { const b = e.target.closest('button[data-m]'); if (!b) return; metrica = b.dataset.m; $$('#grafValor .metricas button').forEach(x => x.classList.toggle('on', x === b)); pintar(); });
+  pintar();
+  $('#efecto').innerHTML = `<div class="gran">${fmt(E.efecto.dias_evitados,2)}</div><span>días en rojo evitados por cliente al mes (IC95 ${fmt(E.efecto.dias_ic95[0],2)} a ${fmt(E.efecto.dias_ic95[1],2)})</span><div class="gran n2">+${sol(E.efecto.colchon_adicional_soles,0)}</div><span>de colchón por cliente frente a no hacer nada</span><small>Apartar a ciegas deja ${fmt(pol[4].dias_rojo,0)} días en rojo al mes: por eso Lucas usa una reserva que se puede usar. Los valores con ahorro suponen que el gasto baja en lo que se aparta. Reproducción sobre ${Math.round(E.meses_simulados)} meses con 500 clientes sintéticos.</small>`;
+  pestanas('#pest6', v => { $('#v6mod').classList.toggle('oculto', v !== 'mod'); $('#v6val').classList.toggle('oculto', v !== 'val'); });
+})();
+
+/* 7 eventos */
+(function eventos(){
+  const F = D.fen, col = {alta:'#C8641A', media:'#D9A441', posible:'#2A78D6', baja:'#8C8B86'};
+  const textos = {alta:'Exposición alta', media:'Exposición media', posible:'Exposición posible', baja:'Sin señal de lluvias fuertes'};
+  const orden = ['Tumbes','Piura','Lambayeque','La Libertad','Cajamarca','Ancash','Lima','Callao','Ica','Arequipa','Moquegua','Tacna','Cusco'];
+  const nivelDe = d => { for (const k of ['alta','media','posible']) if (F.niveles[k].departamentos.includes(d)) return k; return 'baja'; };
+  $('#zonas').innerHTML = `<div class="leyenda">${['alta','media','posible','baja'].map(k => `<span style="--c:${col[k]}">${k}</span>`).join('')}</div>` + orden.map(d => `<button data-d="${d}" style="--c:${col[nivelDe(d)]}"><i></i>${d}</button>`).join('');
+  const frase = {alta:'El ENFEN anunció lluvias por encima de lo normal entre noviembre de 2026 y enero de 2027 en tu zona.', media:'El ENFEN anunció lluvias por encima de lo normal en la costa central entre noviembre de 2026 y enero de 2027.', posible:'La sierra occidental podría tener lluvias sobre lo normal; Lucas te avisa si el ENFEN lo confirma.', baja:'Tu zona no tiene señal de lluvias fuertes en los comunicados. Lucas sigue vigilando y te avisa si cambia.'};
+  function ver(d){
+    const k = nivelDe(d); $$('#zonas button').forEach(b => b.classList.toggle('on', b.dataset.d === d));
+    const acc = k === 'baja' ? F.acciones.slice(1,2) : F.acciones;
+    const vig = new Date(F.vigente_hasta + 'T12:00:00').toLocaleDateString('es-PE', {day:'numeric', month:'long', year:'numeric'});
+    $('#zonaDet').innerHTML = `<div class="depto">${d}</div><div class="nivel" style="--c:${col[k]}">${textos[k]}</div><div class="texto">${frase[k]}</div><h4>Lo que Lucas te pide hacer</h4><ul>${acc.map(a => `<li>${a}</li>`).join('')}</ul><div class="nota" style="position:static;margin-top:22px;width:1050px">Alerta vigente hasta el ${vig}. Fuente: ENFEN, comunicados 17 a 20 de 2026. La asignación por departamento es parcial.</div>`;
+  }
+  $('#zonas').addEventListener('click', e => { const b = e.target.closest('button'); if (b) ver(b.dataset.d); });
+  ver('Piura');
+  const pb = D.publicos, f = x => x ? (x.al_dia ? 'al día' : 'dato anterior') + ', ' + x.fecha : '';
+  if (pb.tipo_de_cambio) { $('#tc').textContent = sol(pb.tipo_de_cambio.valor, 3); $('#tcf').textContent = 'BCRP, ' + f(pb.tipo_de_cambio); }
+  if (pb.tasa_de_referencia) { $('#tr').textContent = fmt(pb.tasa_de_referencia.valor, 2) + ' %'; $('#trf').textContent = 'BCRP, ' + f(pb.tasa_de_referencia); }
+  pestanas('#pest7', i => { ['#v7a','#v7b','#v7c'].forEach((s,j) => $(s).classList.toggle('oculto', j !== i)); });
+})();
+
+/* 8 rag y ahorro */
+(function rag(){
+  const M = D.mapa, K = M.costos, EV = K.mezcla_de_evaluacion, P1 = K.por_llamada.soles.total, LL = K.lectura_del_corpus, PL = K.por_llamada;
+  const pasos = [['Chunks','El corpus se trocea una vez: 900 caracteres con solape de 120.','#2A78D6'],['Embeddings','La pregunta se vectoriza en 768 dimensiones con un modelo local.','#2A9D8F'],['Los 3 mejores','Se buscan los 3 fragmentos más parecidos. Bajo 0.70 de similitud, no se contesta.','#C8641A'],['La IA redacta','Solo con esos fragmentos y los datos de la persona, sin su id ni su zona.','#2A9D8F'],['Verificador','Cada cifra con respaldo. Si pasa, se guarda en preguntas frecuentes.','#C8641A']];
+  $('#pipe').innerHTML = pasos.map((p,i) => `<div style="--c:${p[2]}"><em>${i+1}</em><b>${p[0]}</b><span>${p[1]}</span></div>`).join('');
+  $('#ejemplo').innerHTML = `<h3>Lo que el RAG devolvió de verdad para «${M.rag.pregunta}»</h3>` + M.rag.fragmentos.map(f => `<div class="frag"><span>${f.titulo}, pág. ${f.pagina}</span><span class="bar"><i style="width:${f.similitud*100}%"></i></span><span class="sim">${fmt(f.similitud,2)}</span></div>`).join('') +
+    `<div class="tokens">La IA recibe <span>${fmt(M.tokens_de_los_3_fragmentos)} tokens</span>, no los ${fmt(M.tokens_del_corpus_completo)} del corpus completo: <span>${pct(LL.reduccion_pct,2)} menos</span> de lectura.</div>`;
+  const barras = [['Ruteo de consultas','solo lo nuevo llega a la IA', 1 - EV.proporcion_que_llega_a_la_ia],['Preguntas frecuentes','una repetida ya no llama a la IA', 1],['Lectura de fuentes','3 fragmentos en vez del corpus', LL.reduccion_pct]];
+  const ps = PL.pct_del_costo, pt = PL.pct_de_los_tokens, col = {mensaje:'#2A78D6', lectura_de_fuentes:'#2A9D8F', respuesta:'#C8641A'}, nom = {mensaje:'Mensaje', lectura_de_fuentes:'Lectura (RAG)', respuesta:'Respuesta'};
+  const apila = (d, etiqueta) => `<div class="apila" aria-label="${etiqueta}">${Object.keys(col).map(k => `<div style="flex:${Math.max(d[k], .03)};background:${col[k]}" title="${nom[k]}">${d[k] >= .08 ? Math.round(d[k]*100) + ' %' : ''}</div>`).join('')}</div>`;
+  $('#ahorroG').innerHTML = `<h3>Cuánto baja cada pieza (% de lo que habría sin ella)</h3>` + barras.map(b => `<div class="ba"><div class="n">${b[0]}<small>${b[1]}</small></div><div class="b"><i style="width:${b[2]*100}%"></i></div><div class="v">−${pct(b[2], b[2] > .99 && b[2] < 1 ? 2 : 1)}</div></div>`).join('') +
+    `<h3 style="margin-top:22px">En qué se va una llamada a la IA</h3><div class="leyenda2">${Object.keys(col).map(k => `<span style="--c:${col[k]}">${nom[k]}</span>`).join('')}</div>${apila(pt,'tokens')}<div style="font-size:21px;color:var(--suave);margin-bottom:10px">Tokens: ${fmt(Object.values(PL.tokens).reduce((a,b)=>a+b,0))} por llamada</div>${apila(ps,'costo')}<div style="font-size:21px;color:var(--suave)">Costo: ${sol(P1,4)} por llamada. La respuesta pesa ${Math.round(pt.respuesta*100)} % de los tokens pero ${Math.round(ps.respuesta*100)} % del costo.</div><a id="verDiagrama">Ver la ruta completa de una consulta</a>`;
+  $('#calc').innerHTML = `<h3>Consultas al mes</h3><div class="gran" id="nC"></div><input type="range" id="rC" min="0" max="100" value="50" aria-label="Consultas al mes">
+    <div class="lin"><span>Todo al LLM</span><b id="cA"></b></div><div class="lin"><span>Con Lucas</span><b id="cB"></b></div><div class="lin res"><span>Ahorro</span><b id="cC"></b></div>
+    <div class="lin"><small>Precio de gemini-3.5-flash-lite y tipo de cambio del BCRP. Estimación con el plan de pago, sin descuentos.</small></div>`;
+  function calc(){ const N = Math.round(Math.pow(10, 3 + 3*$('#rC').value/100)/1000)*1000; $('#nC').textContent = fmt(N); const a = N*P1, b = N*EV.proporcion_que_llega_a_la_ia*P1; $('#cA').textContent = sol(a,0); $('#cB').textContent = sol(b,0); $('#cC').textContent = sol(a-b,0); }
+  $('#rC').addEventListener('input', calc); $('#rC').addEventListener('change', e => e.target.blur()); calc();
+  $('#verDiagrama').onclick = () => lupa('../diagramas/agente_ahorro_de_tokens.png');
+  pestanas('#pest8', i => { $('#v8a').classList.toggle('oculto', i !== 0); $('#v8b').classList.toggle('oculto', i !== 1); });
+})();
+
+/* 9 demo */
+(function demo(){
+  const u = new URLSearchParams(location.search).get('demo') || D.demo_url || '';
+  const b = $('#botonDemo');
+  if (u) { b.href = u; $('#urlDemo').textContent = u.replace(/^https?:\/\//,''); } else { b.removeAttribute('target'); b.addEventListener('click', e => e.preventDefault()); }
+})();
+
+/* 10 cierre: lo probado y como escala */
+(function cierre(){
+  const m = D.modelos.find(x => x.slug === '02_saldo_30_dias'), E = D.extras, pol = E.politicas, K = D.mapa.costos, EV = K.mezcla_de_evaluacion;
+  const k = [['−' + fmt(m.mejora_pct) + ' %','error del saldo a 30 días frente al promedio móvil'],['−' + fmt((1 - pol[2].dias_rojo/pol[0].dias_rojo)*100) + ' %','días en rojo por cliente al mes frente a no hacer nada'],[fmt(pol[2].colchon_meses,1) + ' meses','de colchón con Lucas, frente a ' + fmt(pol[0].colchon_meses,1) + ' sin él'],['−' + fmt(EV.ahorro_pct*100) + ' %','de tokens: solo ' + fmt(EV.proporcion_que_llega_a_la_ia*100) + ' de cada 100 mensajes llega a la IA']];
+  $('#kpis').innerHTML = k.map(x => `<div class="kpi"><b>${x[0]}</b><span>${x[1]}</span></div>`).join('');
+  const por = [['Más personas, el mismo costo bajo',`Una consulta cuesta ${sol(K.por_llamada.soles.total,4)} cuando llega a la IA y la mayoría no llega. Por cada 100,000 consultas el costo estimado es ${sol(EV.con_ruteo_soles,0)}.`],
+    ['Más datos, mejores modelos','El generador acepta una tabla semilla: con datos reales de una entidad se vuelve a entrenar y a medir con el mismo método.'],
+    ['Más integración','La API ya está definida y el agente cambia de proveedor de IA con tres variables, sin tocar el código.'],
+    ['Más aprendizaje','Memoria de la conversación, clasificación de intención con embeddings y preguntas frecuentes por significado.'],
+    ['Más cuidado','Piloto con grupo de control y derivación a un asesor cuando la situación lo pide.'],
+    ['Más alcance','Quechua revisado por un hablante nativo y nuevos canales con el mismo agente.']];
+  $('#escala').innerHTML += por.map((p,i) => `<div class="palanca${i === 0 ? ' on' : ''}"><button>${p[0]}</button><div>${p[1]}</div></div>`).join('');
+  $('#escala').addEventListener('click', e => { const b = e.target.closest('.palanca button'); if (!b) return; const p = b.parentElement, abrir = !p.classList.contains('on'); $$('#escala .palanca').forEach(x => x.classList.remove('on')); if (abrir) p.classList.add('on'); });
+})();
+
+addEventListener('hashchange', () => { const n = parseInt(location.hash.slice(1), 10); if (!isNaN(n) && n-1 !== actual) ir(n-1); });
+const inicial = parseInt((location.hash || '').slice(1), 10); ir(isNaN(inicial) ? 0 : inicial-1);
+if (inicial > 1) { revelada = true; $('#l1').classList.add('revelada'); }
+})();
+</script>
+</body>
+</html>
