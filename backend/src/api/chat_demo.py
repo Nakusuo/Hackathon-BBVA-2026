@@ -20,6 +20,9 @@ INTENCIONES_DEL_AGENTE = (
     "tipo_de_cambio",
     # El riesgo por El Niño depende de la zona y del aviso del ENFEN, que no están en los datos de la pantalla.
     "fen",
+    # El plan de una meta (también en dólares) y la compra los arma el agente, con su propuesta «Crear meta».
+    "meta",
+    "compra",
 )
 INTENCIONES_DE_PRONOSTICO = ("pronostico", "riesgo_rojo", "general")
 # El agente las contesta, pero con el cliente de la base puede citar su saldo o su salud: si una cifra no está en los JSON de la demo, se usa la plantilla.
